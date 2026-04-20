@@ -1,5 +1,5 @@
 import { Container, Graphics } from 'pixi.js';
-import type { OreType, QualityLot } from '@data/types';
+import type { OreType, QualityLot, QualityAttributes } from '@data/types';
 import { consumptionManager } from '@services/ConsumptionManager';
 
 export type HarvesterState = 'RUNNING' | 'FUEL_EMPTY' | 'HOPPER_FULL' | 'IDLE';
@@ -12,6 +12,7 @@ export interface HarvesterConfig {
   worldX: number;
   worldY: number;
   depositConcentration: number; // 0–100
+  depositAttributes?: QualityAttributes;
 }
 
 export class HarvesterBase {
@@ -53,8 +54,10 @@ export class HarvesterBase {
 
     this.state = 'RUNNING';
 
-    // Accumulate fractional units
-    const unitsPerSec = (this.config.ber * this.config.depositConcentration / 100) / 60;
+    // BER formula with ER attribute (spec 01/03)
+    const erMultiplier = (this.config.depositAttributes?.ER ?? 500) / 500; // ER 500 = 1.0x, 1000 = 2.0x
+    const flBonus = (this.config.depositAttributes?.FL ?? 0) / 1000 * this.config.ber * 0.5;
+    const unitsPerSec = ((this.config.ber * this.config.depositConcentration / 100 * erMultiplier) + flBonus) / 60;
     this._accumulatedUnits += unitsPerSec * delta * consumptionManager.productivityMultiplier;
 
     // Flush whole units into hopper

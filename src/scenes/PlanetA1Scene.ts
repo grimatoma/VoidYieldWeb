@@ -18,6 +18,7 @@ import { TrafficOverlay } from '../ui/TrafficOverlay';
 import { ProcessingPlant } from '@entities/ProcessingPlant';
 import { SolarPanel } from '@entities/SolarPanel';
 import { ProductionDashboard } from '../ui/ProductionDashboard';
+import { ProductionOverlay } from '../ui/ProductionOverlay';
 import { SCHEMATICS } from '@data/schematics';
 import { TradeHub } from '@entities/TradeHub';
 import { ResearchLab } from '@entities/ResearchLab';
@@ -29,6 +30,7 @@ import { consumptionManager } from '@services/ConsumptionManager';
 import { zoneManager } from '@services/ZoneManager';
 import { FleetPanel } from '../ui/FleetPanel';
 import { CoverageOverlay } from '../ui/CoverageOverlay';
+import type { Fabricator } from '@entities/Fabricator';
 
 const WORLD_WIDTH = 2800;
 const WORLD_HEIGHT = 2000;
@@ -67,6 +69,8 @@ export class PlanetA1Scene implements Scene {
   private _dashRefreshTimer = 0;
   private fleetPanel!: FleetPanel;
   private coverageOverlay!: CoverageOverlay;
+  private productionOverlay!: ProductionOverlay;
+  private fabricators: Fabricator[] = [];
 
   async enter(app: Application): Promise<void> {
     this.app = app;
@@ -120,6 +124,10 @@ export class PlanetA1Scene implements Scene {
     this.coverageOverlay = new CoverageOverlay();
     this.worldContainer.addChild(this.coverageOverlay.container);
     this.coverageOverlay.render([this.droneBay]);
+
+    // Production Overlay ([O] key)
+    this.productionOverlay = new ProductionOverlay(WORLD_WIDTH, WORLD_HEIGHT);
+    this.worldContainer.addChild(this.productionOverlay.container);
 
     // Auto-harvest-support zone (GasCollector is at 300,900; depot at 1400,1000)
     zoneManager.enable(300, 900, this.storageDepot);
@@ -207,6 +215,9 @@ export class PlanetA1Scene implements Scene {
       if (action === 'production_dashboard' && pressed) {
         this.productionDashboard.toggle();
       }
+      if (action === 'production_overlay' && pressed) {
+        this.productionOverlay.setVisible(!this.productionOverlay.visible);
+      }
       if (action === 'journal' && pressed) {
         this.techTreePanel.toggle();
       }
@@ -231,8 +242,11 @@ export class PlanetA1Scene implements Scene {
     if (this._dashRefreshTimer >= 1.0) {
       this._dashRefreshTimer = 0;
       if (this.productionDashboard.visible) {
-        this.productionDashboard.refresh(this.storageDepot, [this.processingPlant]);
+        this.productionDashboard.refresh(this.storageDepot, [this.processingPlant], this.fabricators);
       }
+    }
+    if (this.productionOverlay.visible) {
+      this.productionOverlay.render([this.processingPlant], this.fabricators);
     }
   }
 

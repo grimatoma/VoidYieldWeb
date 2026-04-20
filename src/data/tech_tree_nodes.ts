@@ -81,7 +81,7 @@ export const TECH_NODES: TechNode[] = [
     effectType: 'unlock_drone',
     effectValue: 2,
   },
-  // Branch 2 — Research
+  // Branch 2 — Research/Processing
   {
     nodeId: 'sample_analysis_1',
     name: 'Sample Analysis I',
@@ -92,6 +92,28 @@ export const TECH_NODES: TechNode[] = [
     prerequisites: [],
     effectType: 'lab_time',
     effectValue: 60,
+  },
+  {
+    nodeId: 'metallurgy_1',
+    name: 'Metallurgy I',
+    description: 'Unlocks Alloy Refinery recipe and Fabricator construction.',
+    branch: 2,
+    rpCost: 200,
+    crCost: 400,
+    prerequisites: ['sample_analysis_1'],
+    effectType: 'unlock_fabricator_prereq',
+    effectValue: 1,
+  },
+  {
+    nodeId: 'fabricator_unlock',
+    name: 'Fabricator Unlock',
+    description: 'Allows building Fabricators (2-slot, 2-input advanced factories).',
+    branch: 2,
+    rpCost: 800,
+    crCost: 0,
+    prerequisites: ['metallurgy_1'],
+    effectType: 'unlock_fabricator',
+    effectValue: 1,
   },
   // Branch 3 — Logistics
   {

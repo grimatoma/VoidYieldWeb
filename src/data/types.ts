@@ -1,10 +1,34 @@
-export type OreType = 'vorax' | 'krysite' | 'gas' | 'steel_bars' | 'compressed_gas' | 'water';
+export type OreType = 'vorax' | 'krysite' | 'gas' | 'steel_bars' | 'compressed_gas' | 'water' | 'alloy_rods';
 export type SizeClass = 'small' | 'medium' | 'large';
+export type QualityGrade = 'F' | 'D' | 'C' | 'B' | 'A' | 'S';
+
+export interface QualityAttributes {
+  OQ?: number; // Overall Quality (1–1000)
+  CR?: number; // Crystallinity
+  CD?: number; // Crystal Density
+  DR?: number; // Ductility Rating
+  FL?: number; // Flow Rate
+  HR?: number; // Hardness Rating
+  MA?: number; // Malleability
+  PE?: number; // Purity/Efficiency
+  SR?: number; // Structural Rigidity
+  UT?: number; // Utility Rating
+  ER?: number; // Extraction Rate modifier
+}
+
+export function getQualityGrade(oq: number): QualityGrade {
+  if (oq >= 950) return 'S';
+  if (oq >= 800) return 'A';
+  if (oq >= 600) return 'B';
+  if (oq >= 400) return 'C';
+  if (oq >= 200) return 'D';
+  return 'F';
+}
 
 export interface QualityLot {
   oreType: OreType;
   quantity: number;
-  attributes: Record<string, number>; // empty for M2, filled at M9
+  attributes: QualityAttributes;
 }
 
 export interface DepositData {
@@ -16,6 +40,7 @@ export interface DepositData {
   yieldRemaining: number;
   sizeClass: SizeClass;
   isExhausted: boolean;
+  qualityAttributes?: QualityAttributes;
 }
 
 export interface WaypointData {

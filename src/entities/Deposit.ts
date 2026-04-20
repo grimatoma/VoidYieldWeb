@@ -8,6 +8,7 @@ const ORE_COLORS: Record<OreType, number> = {
   steel_bars: 0xD4A843,
   compressed_gas: 0x90CAF9,
   water: 0x29B6F6,
+  alloy_rods: 0xFFD700,
 };
 
 export class Deposit {
@@ -33,7 +34,7 @@ export class Deposit {
       this.data.isExhausted = true;
       this._redraw(); // grey out
     }
-    return { oreType: this.data.oreType, quantity: actual, attributes: {} };
+    return { oreType: this.data.oreType, quantity: actual, attributes: this.data.qualityAttributes ?? {} };
   }
 
   private _redraw(): void {

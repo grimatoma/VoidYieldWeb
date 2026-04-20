@@ -8,6 +8,7 @@ const SELL_PRICES: Record<OreType, number> = {
   steel_bars: 5,
   compressed_gas: 1,
   water: 1,
+  alloy_rods: 15,
 };
 
 export class StorageDepot {

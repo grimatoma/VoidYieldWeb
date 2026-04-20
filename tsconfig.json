@@ -18,6 +18,7 @@
       "@scenes/*": ["src/scenes/*"],
       "@entities/*": ["src/entities/*"],
       "@data/*": ["src/data/*"],
+      "@ui/*": ["src/ui/*"],
       "@assets/*": ["assets/*"]
     }
   },
