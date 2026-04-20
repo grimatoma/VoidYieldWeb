@@ -1,5 +1,7 @@
 import { Container, Graphics, Text, TextStyle } from 'pixi.js';
 import { ScoutDrone } from './ScoutDrone';
+import { RefineryDrone } from './RefineryDrone';
+import { HeavyDrone } from './HeavyDrone';
 import { gameState } from '@services/GameState';
 
 export class DroneBay {
@@ -44,6 +46,22 @@ export class DroneBay {
 
   getDrones(): readonly ScoutDrone[] {
     return this._drones;
+  }
+
+  purchaseRefineryDrone(worldContainer: Container): RefineryDrone | null {
+    if (gameState.credits < RefineryDrone.COST) return null;
+    gameState.addCredits(-RefineryDrone.COST);
+    const drone = new RefineryDrone(this.x, this.y);
+    worldContainer.addChild(drone.container);
+    return drone;
+  }
+
+  purchaseHeavyDrone(worldContainer: Container): HeavyDrone | null {
+    if (gameState.credits < HeavyDrone.COST) return null;
+    gameState.addCredits(-HeavyDrone.COST);
+    const drone = new HeavyDrone(this.x, this.y);
+    worldContainer.addChild(drone.container);
+    return drone;
   }
 
   isNearby(px: number, py: number, radius = 40): boolean {

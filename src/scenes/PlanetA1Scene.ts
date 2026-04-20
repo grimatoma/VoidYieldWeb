@@ -26,6 +26,9 @@ import { HabitationModule } from '@entities/HabitationModule';
 import { WaterCondenser } from '@entities/WaterCondenser';
 import { PopulationHUD } from '../ui/PopulationHUD';
 import { consumptionManager } from '@services/ConsumptionManager';
+import { zoneManager } from '@services/ZoneManager';
+import { FleetPanel } from '../ui/FleetPanel';
+import { CoverageOverlay } from '../ui/CoverageOverlay';
 
 const WORLD_WIDTH = 2800;
 const WORLD_HEIGHT = 2000;
@@ -62,6 +65,8 @@ export class PlanetA1Scene implements Scene {
   private waterCondenser!: WaterCondenser;
   private populationHUD!: PopulationHUD;
   private _dashRefreshTimer = 0;
+  private fleetPanel!: FleetPanel;
+  private coverageOverlay!: CoverageOverlay;
 
   async enter(app: Application): Promise<void> {
     this.app = app;
@@ -106,6 +111,18 @@ export class PlanetA1Scene implements Scene {
     // Traffic overlay (T key)
     this.trafficOverlay = new TrafficOverlay();
     this.worldContainer.addChild(this.trafficOverlay.container);
+
+    // Fleet panel ([T] key replaces traffic overlay toggle)
+    this.fleetPanel = new FleetPanel();
+    app.stage.addChild(this.fleetPanel.container);
+
+    // Coverage overlay ([B] key)
+    this.coverageOverlay = new CoverageOverlay();
+    this.worldContainer.addChild(this.coverageOverlay.container);
+    this.coverageOverlay.render([this.droneBay]);
+
+    // Auto-harvest-support zone (GasCollector is at 300,900; depot at 1400,1000)
+    zoneManager.enable(300, 900, this.storageDepot);
 
     // Solar panels (power supply)
     const sp1 = new SolarPanel(450, 340);
@@ -179,7 +196,13 @@ export class PlanetA1Scene implements Scene {
         }
       }
       if (action === 'fleet_panel' && pressed) {
-        this.trafficOverlay.setVisible(!this.trafficOverlay.visible);
+        this.fleetPanel.toggle();
+      }
+      if (action === 'coverage_overlay' && pressed) {
+        this.coverageOverlay.setVisible(!this.coverageOverlay.visible);
+      }
+      if (action === 'fleet_dispatch' && pressed) {
+        fleetManager.fleetDispatch();
       }
       if (action === 'production_dashboard' && pressed) {
         this.productionDashboard.toggle();
@@ -197,6 +220,8 @@ export class PlanetA1Scene implements Scene {
     miningService.update(delta);
     harvesterManager.update(delta);
     fleetManager.update(delta);
+    zoneManager.update(delta);
+    if (this.fleetPanel.visible) this.fleetPanel.update();
     this.trafficOverlay.update(fleetManager.getDrones());
     this.processingPlant.update(delta);
     this.researchLab.update(delta);
@@ -218,6 +243,7 @@ export class PlanetA1Scene implements Scene {
     this.camera.unmount(this.app.canvas);
     harvesterManager.clear(this.worldContainer);
     fleetManager.clear();
+    zoneManager.reset();
     this.processingPlant.destroy();
     for (const sp of this.solarPanels) sp.destroy();
     this.solarPanels = [];

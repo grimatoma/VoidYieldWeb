@@ -70,6 +70,17 @@ export const TECH_NODES: TechNode[] = [
     effectType: 'unlock_drone',
     effectValue: 1,
   },
+  {
+    nodeId: 'refinery_drone_unlock',
+    name: 'Refinery Drone',
+    description: 'Unlocks Refinery Drone purchase at Drone Bay (75 CR). Handles FUEL and EMPTY circuits automatically.',
+    branch: 1,
+    rpCost: 300,
+    crCost: 0,
+    prerequisites: ['improved_drill'],
+    effectType: 'unlock_drone',
+    effectValue: 2,
+  },
   // Branch 2 — Research
   {
     nodeId: 'sample_analysis_1',
