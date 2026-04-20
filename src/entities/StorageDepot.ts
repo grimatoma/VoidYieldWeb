@@ -12,6 +12,7 @@ const SELL_PRICES: Record<OreType, number> = {
   rocket_fuel: 2,
   shards: 3,
   aethite: 8,
+  void_cores: 60,
 };
 
 export class StorageDepot {

@@ -33,6 +33,8 @@ import { CoverageOverlay } from '../ui/CoverageOverlay';
 import type { Fabricator } from '@entities/Fabricator';
 import { GalaxyMap } from '@ui/GalaxyMap';
 import { EventBus } from '@services/EventBus';
+import { LogisticsOverlay } from '@ui/LogisticsOverlay';
+import { logisticsManager } from '@services/LogisticsManager';
 
 const WORLD_WIDTH = 2800;
 const WORLD_HEIGHT = 2000;
@@ -74,6 +76,7 @@ export class PlanetA1Scene implements Scene {
   private productionOverlay!: ProductionOverlay;
   private fabricators: Fabricator[] = [];
   private galaxyMap!: GalaxyMap;
+  private logisticsOverlay!: LogisticsOverlay;
 
   async enter(app: Application): Promise<void> {
     this.app = app;
@@ -122,6 +125,26 @@ export class PlanetA1Scene implements Scene {
     // Fleet panel ([T] key replaces traffic overlay toggle)
     this.fleetPanel = new FleetPanel();
     app.stage.addChild(this.fleetPanel.container);
+
+    // Logistics Overlay ([L] key)
+    this.logisticsOverlay = new LogisticsOverlay();
+    this.logisticsOverlay.onDispatch((routeId) => {
+      logisticsManager.dispatch(routeId);
+    });
+    app.stage.addChild(this.logisticsOverlay.container);
+
+    // Register this planet's depot with logistics manager
+    logisticsManager.registerPlanet('planet_a1', this.storageDepot);
+
+    // Example route for demo (A1→B, steel_bars)
+    logisticsManager.addRoute({
+      sourcePlanet: 'planet_a1',
+      destPlanet: 'planet_b',
+      cargoType: 'steel_bars',
+      cargoQty: 200,
+      cargoClass: 'bulk',
+      tripTimeSec: 180,
+    });
 
     // Coverage overlay ([B] key)
     this.coverageOverlay = new CoverageOverlay();
@@ -182,6 +205,7 @@ export class PlanetA1Scene implements Scene {
     });
     this.galaxyMap.setPlanets([
       { id: 'planet_a1', label: 'Planet A1', x: 0, y: 0, unlocked: true, current: true },
+      { id: 'planet_a2', label: 'A2 Asteroid', x: 0, y: 0, unlocked: true, current: false },
       { id: 'planet_b', label: 'Planet B', x: 0, y: 0, unlocked: true, current: false },
     ]);
     app.stage.addChild(this.galaxyMap.container);
@@ -238,6 +262,12 @@ export class PlanetA1Scene implements Scene {
       if (action === 'galaxy_map' && pressed) {
         this.galaxyMap.toggle();
       }
+      if (action === 'logistics_overlay' && pressed) {
+        this.logisticsOverlay.toggle();
+        if (this.logisticsOverlay.visible) {
+          this.logisticsOverlay.refresh(logisticsManager.getRoutes());
+        }
+      }
     });
   }
 
@@ -255,6 +285,11 @@ export class PlanetA1Scene implements Scene {
     this.researchLab.update(delta);
     consumptionManager.update(delta, this.storageDepot);
     this.waterCondenser.update(delta);
+    logisticsManager.update(delta);
+    // Refresh logistics overlay at same cadence as dashboard
+    if (this.logisticsOverlay.visible) {
+      this.logisticsOverlay.refresh(logisticsManager.getRoutes());
+    }
     this._dashRefreshTimer += delta;
     if (this._dashRefreshTimer >= 1.0) {
       this._dashRefreshTimer = 0;
@@ -279,6 +314,7 @@ export class PlanetA1Scene implements Scene {
     for (const sp of this.solarPanels) sp.destroy();
     this.solarPanels = [];
     consumptionManager.reset();
+    logisticsManager.unregisterPlanet('planet_a1');
     this.app.stage.removeChildren();
     this.sites = [];
   }

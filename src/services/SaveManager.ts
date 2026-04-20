@@ -26,6 +26,9 @@ export interface SaveData {
   need_satisfaction_state: Record<string, unknown>;
   active_trade_routes: unknown[];
   ship_fleet: unknown[];
+  a2_visited?: boolean;
+  void_cores_produced?: number;
+  a3_unlocked?: boolean;
 }
 
 export function defaultSaveData(): SaveData {

@@ -11,6 +11,9 @@ export class GameState {
   private _sectorBonuses: string[] = [];
   private _techTreeUnlocks: string[] = [];
   private _paused: boolean = false;
+  private _a2Visited: boolean = false;
+  private _voidCoresProduced: number = 0;
+  private _a3Unlocked: boolean = false;
 
   get credits(): number { return this._credits; }
   get researchPoints(): number { return this._researchPoints; }
@@ -18,6 +21,9 @@ export class GameState {
   get phaseFlags(): Readonly<Record<string, number>> { return this._phaseFlags; }
   get sectorNumber(): number { return this._sectorNumber; }
   get paused(): boolean { return this._paused; }
+  get a2Visited(): boolean { return this._a2Visited; }
+  get voidCoresProduced(): number { return this._voidCoresProduced; }
+  get a3Unlocked(): boolean { return this._a3Unlocked; }
 
   addCredits(amount: number): void {
     this._credits = Math.max(0, this._credits + amount);
@@ -65,6 +71,22 @@ export class GameState {
     EventBus.emit('scene:changed', planet);
   }
 
+  visitA2(): void {
+    this._a2Visited = true;
+    this._checkA3Unlock();
+  }
+
+  addVoidCoresProduced(n: number): void {
+    this._voidCoresProduced += n;
+    this._checkA3Unlock();
+  }
+
+  private _checkA3Unlock(): void {
+    if (!this._a3Unlocked && this._a2Visited && this._voidCoresProduced >= 10) {
+      this._a3Unlocked = true;
+    }
+  }
+
   serialize(): Partial<SaveData> {
     return {
       credits: this._credits,
@@ -74,6 +96,9 @@ export class GameState {
       sector_number: this._sectorNumber,
       sector_bonuses: [...this._sectorBonuses],
       tech_tree_unlocks: [...this._techTreeUnlocks],
+      a2_visited: this._a2Visited,
+      void_cores_produced: this._voidCoresProduced,
+      a3_unlocked: this._a3Unlocked,
     };
   }
 
@@ -85,6 +110,9 @@ export class GameState {
     this._sectorNumber = data.sector_number;
     this._sectorBonuses = [...data.sector_bonuses];
     this._techTreeUnlocks = [...data.tech_tree_unlocks];
+    this._a2Visited = (data as any).a2_visited ?? false;
+    this._voidCoresProduced = (data as any).void_cores_produced ?? 0;
+    this._a3Unlocked = (data as any).a3_unlocked ?? false;
   }
 
   reset(): void {
@@ -96,6 +124,9 @@ export class GameState {
     this._sectorNumber = d.sector_number;
     this._sectorBonuses = [];
     this._techTreeUnlocks = [];
+    this._a2Visited = false;
+    this._voidCoresProduced = 0;
+    this._a3Unlocked = false;
     this._paused = false;
   }
 }

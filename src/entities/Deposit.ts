@@ -12,6 +12,7 @@ const ORE_COLORS: Record<OreType, number> = {
   rocket_fuel: 0xFF4400,
   shards: 0xE040FB,
   aethite: 0x40C4FF,
+  void_cores: 0x7C4DFF,
 };
 
 export class Deposit {

@@ -86,6 +86,7 @@ export class GalaxyMap {
     // Planet positions on the map (in panel space)
     const planetMapPositions: Record<string, { x: number; y: number }> = {
       planet_a1: { x: 360, y: 270 },
+      planet_a2: { x: 480, y: 200 },
       planet_b: { x: 580, y: 250 },
     };
 
@@ -137,16 +138,33 @@ export class GalaxyMap {
       }
     }
 
-    // Route line between A1 and B if both unlocked
+    // Route lines
     const a1 = this._planetNodes.find((n) => n.id === 'planet_a1');
+    const a2 = this._planetNodes.find((n) => n.id === 'planet_a2');
     const b = this._planetNodes.find((n) => n.id === 'planet_b');
-    if (a1?.unlocked && b?.unlocked) {
-      const lineG = new Graphics();
+
+    const lineG = new Graphics();
+
+    // A1 → A2 if both unlocked
+    if (a1?.unlocked && a2?.unlocked) {
+      lineG.moveTo(360, 270).lineTo(480, 200);
+      lineG.stroke({ width: 1, color: 0x334477, alpha: 0.6 });
+    }
+
+    // A2 → B if both unlocked
+    if (a2?.unlocked && b?.unlocked) {
+      lineG.moveTo(480, 200).lineTo(580, 250);
+      lineG.stroke({ width: 1, color: 0x334477, alpha: 0.6 });
+    }
+
+    // A1 → B if both unlocked and A2 not in the mix
+    if (a1?.unlocked && b?.unlocked && (!a2?.unlocked)) {
       lineG.moveTo(360, 270).lineTo(580, 250);
       lineG.stroke({ width: 1, color: 0x334477, alpha: 0.6 });
-      // Insert before planet circles (after stars)
-      this.container.addChildAt(lineG, 4);
     }
+
+    // Insert before planet circles (after stars)
+    this.container.addChildAt(lineG, 4);
   }
 
   setVisible(v: boolean): void {

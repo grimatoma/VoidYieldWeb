@@ -1,4 +1,4 @@
-export type OreType = 'vorax' | 'krysite' | 'gas' | 'steel_bars' | 'compressed_gas' | 'water' | 'alloy_rods' | 'rocket_fuel' | 'shards' | 'aethite';
+export type OreType = 'vorax' | 'krysite' | 'gas' | 'steel_bars' | 'compressed_gas' | 'water' | 'alloy_rods' | 'rocket_fuel' | 'shards' | 'aethite' | 'void_cores';
 
 export type RocketComponentType = 'hull' | 'engine' | 'fuel_tank' | 'avionics' | 'landing_gear';
 
@@ -71,4 +71,21 @@ export interface DroneTask {
   targetY: number;
   executeDurationSec: number;  // 2.0 for MINE, 0.3 for CARRY
   onExecute?: () => void;
+}
+
+export type RouteStatus = 'IDLE' | 'LOADING' | 'IN_TRANSIT' | 'DELIVERING' | 'STALLED';
+export type CargoClass = 'bulk' | 'refined' | 'components';
+
+export interface TradeRoute {
+  routeId: string;
+  sourcePlanet: string;
+  destPlanet: string;
+  cargoType: OreType;
+  cargoQty: number;       // units per trip
+  cargoClass: CargoClass;
+  status: RouteStatus;
+  tripTimeSec: number;    // real seconds for one trip
+  tripsCompleted: number;
+  elapsedSec: number;     // time since last dispatch
+  autoDispatch: boolean;  // false for M11 (manual only)
 }
