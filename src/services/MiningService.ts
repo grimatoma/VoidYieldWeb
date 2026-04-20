@@ -7,6 +7,7 @@ import type { StorageDepot } from '@entities/StorageDepot';
 export class MiningService {
   private depot: StorageDepot | null = null;
   private miningCooldown = 0; // seconds remaining before can mine again
+  private _hasSurveyed = false;
 
   setDepot(depot: StorageDepot): void { this.depot = depot; }
 
@@ -23,6 +24,7 @@ export class MiningService {
       const cr = this.depot.sellAll();
       if (cr > 0) {
         gameState.addCredits(cr);
+        EventBus.emit('ore:sold', cr);
         return `Sold for ${cr} CR`;
       }
       return lots.length > 0 ? 'Deposited (nothing to sell)' : 'Depot is empty';
@@ -40,6 +42,11 @@ export class MiningService {
     if (added > 0) {
       this.miningCooldown = 0.5; // brief cooldown between mines
       EventBus.emit('inventory:changed');
+      EventBus.emit('ore:collected', lot.oreType, added);
+      if (!this._hasSurveyed) {
+        this._hasSurveyed = true;
+        EventBus.emit('deposit:surveyed');
+      }
       return `Mined ${added}x ${lot.oreType}`;
     }
     return null;

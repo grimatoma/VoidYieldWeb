@@ -6,10 +6,13 @@
  * migration phases (M1+) will add panels here.
  */
 import { HUD } from './HUD';
+import { TutorialOverlay } from './TutorialOverlay';
+import { tutorialManager } from '@services/TutorialManager';
 
 export class UILayer {
   private _root: HTMLElement;
   private _hud: HUD | null = null;
+  private _tutorial: TutorialOverlay | null = null;
 
   constructor() {
     // Reuse existing element if hot-reload already created it
@@ -27,11 +30,18 @@ export class UILayer {
   init(): void {
     this._hud = new HUD();
     this._hud.mount(this._root);
+
+    if (tutorialManager.shouldShow()) {
+      this._tutorial = new TutorialOverlay();
+      this._tutorial.mount(this._root);
+    }
   }
 
   destroy(): void {
     this._hud?.destroy();
     this._hud = null;
+    this._tutorial?.destroy();
+    this._tutorial = null;
     this._root.remove();
   }
 }

@@ -1,6 +1,6 @@
 import { EventBus } from './EventBus';
 
-export const FORMAT_VERSION = 1;
+export const FORMAT_VERSION = 2;
 const SAVE_KEY = 'voidyield_savegame';
 const AUTOSAVE_INTERVAL_MS = 5 * 60 * 1000;
 
@@ -31,7 +31,26 @@ export interface SaveData {
   a3_unlocked?: boolean;
   planet_c_visited?: boolean;
   sector_manager?: { sectorBonuses: string[]; warpGateBuilt: boolean; galacticHubBuilt: boolean };
+  stranding_manager?: { rocketFuel: number; isStranded: boolean };
+  tutorial_state?: { step: number; completed: boolean; skipped: boolean };
 }
+
+/**
+ * Migration table: each key is the FROM version; the function returns a SaveData
+ * migrated to the next version. Migrations run in sequence until FORMAT_VERSION
+ * is reached, so saves from any past version are always recoverable.
+ */
+// eslint-disable-next-line @typescript-eslint/no-use-before-define
+const MIGRATIONS: Record<number, (data: unknown) => SaveData> = {
+  // v1 -> v2: introduced stranding_manager field -- fill missing field with default
+  1: (data: unknown) => ({
+    ...defaultSaveData(),
+    ...(data as Partial<SaveData>),
+    format_version: 2,
+    stranding_manager: (data as Partial<SaveData>).stranding_manager
+      ?? { rocketFuel: 100, isStranded: false },
+  }),
+};
 
 export function defaultSaveData(): SaveData {
   return {
@@ -79,10 +98,24 @@ export class SaveManager {
     const raw = localStorage.getItem(SAVE_KEY);
     if (!raw) return null;
     try {
-      const parsed = JSON.parse(raw) as SaveData;
+      let parsed = JSON.parse(raw) as SaveData;
+      // Run migrations in sequence if version is behind
       if (parsed.format_version !== FORMAT_VERSION) {
-        console.warn(`SaveManager: format mismatch (${parsed.format_version} vs ${FORMAT_VERSION}), resetting`);
-        return null;
+        let version = parsed.format_version ?? 1;
+        if (version > FORMAT_VERSION) {
+          console.warn(`SaveManager: save is from a newer version (${version}), resetting`);
+          return null;
+        }
+        console.info(`SaveManager: migrating save from v${version} to v${FORMAT_VERSION}`);
+        while (version < FORMAT_VERSION) {
+          const migrate = MIGRATIONS[version];
+          if (!migrate) {
+            console.warn(`SaveManager: no migration path from v${version}, resetting`);
+            return null;
+          }
+          parsed = migrate(parsed) as SaveData;
+          version++;
+        }
       }
 
       // Check for offline simulation (5+ minutes since last save)
@@ -105,6 +138,7 @@ export class SaveManager {
 
   clearSave(): void {
     localStorage.removeItem(SAVE_KEY);
+    EventBus.emit('save:autosave'); // notify any UI watching save state
   }
 
   hasSave(): boolean {

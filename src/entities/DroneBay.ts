@@ -3,6 +3,7 @@ import { ScoutDrone } from './ScoutDrone';
 import { RefineryDrone } from './RefineryDrone';
 import { HeavyDrone } from './HeavyDrone';
 import { gameState } from '@services/GameState';
+import { EventBus } from '@services/EventBus';
 
 export class DroneBay {
   readonly container: Container;
@@ -41,6 +42,7 @@ export class DroneBay {
     const drone = new ScoutDrone(this.x, this.y);
     worldContainer.addChild(drone.container);
     this._drones.push(drone);
+    EventBus.emit('drone:purchased', 'scout');
     return drone;
   }
 
@@ -53,6 +55,7 @@ export class DroneBay {
     gameState.addCredits(-RefineryDrone.COST);
     const drone = new RefineryDrone(this.x, this.y);
     worldContainer.addChild(drone.container);
+    EventBus.emit('drone:purchased', 'refinery');
     return drone;
   }
 
@@ -61,6 +64,7 @@ export class DroneBay {
     gameState.addCredits(-HeavyDrone.COST);
     const drone = new HeavyDrone(this.x, this.y);
     worldContainer.addChild(drone.container);
+    EventBus.emit('drone:purchased', 'heavy');
     return drone;
   }
 

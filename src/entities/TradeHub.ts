@@ -1,5 +1,6 @@
 import { Container, Graphics, Text, TextStyle } from 'pixi.js';
 import { gameState } from '@services/GameState';
+import { EventBus } from '@services/EventBus';
 
 export interface CatalogItem {
   itemId: string;
@@ -51,6 +52,7 @@ export class TradeHub {
     gameState.addCredits(-totalCost);
     const cur = this._inventory.get(itemId) ?? 0;
     this._inventory.set(itemId, cur + qty);
+    EventBus.emit('shop:purchase', itemId);
     return true;
   }
 

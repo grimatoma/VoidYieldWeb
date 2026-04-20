@@ -2,6 +2,7 @@ import EventEmitter from 'eventemitter3';
 
 export type GameEvents = {
   'game:saved': [];
+  'game:save-requested': [];
   'game:loaded': [];
   'game:paused': [paused: boolean];
   'credits:changed': [credits: number];
@@ -17,10 +18,19 @@ export type GameEvents = {
   'galactichub:built': [];
   'sector:complete': [];
   'prestige:initiate': [];
+  'prestige:reset': [bonus: string, startFuel: number];
   'sector:reset': [selectedBonus: string];
   'offline:simulation_needed': [offlineSeconds: number];
   'offline:dispatched': [];
   'fleet:count_changed': [count: number];
+  'tutorial:step_changed': [step: number];
+  'tutorial:completed': [];
+  'deposit:surveyed': [];
+  'harvester:built': [];
+  'ore:collected': [oreType: string, qty: number];
+  'ore:sold': [credits: number];
+  'shop:purchase': [itemId: string];
+  'drone:purchased': [droneType: string];
 };
 
 class TypedEventBus extends EventEmitter<GameEvents> {}

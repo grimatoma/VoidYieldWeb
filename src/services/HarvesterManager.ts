@@ -9,6 +9,7 @@ export class HarvesterManager {
   add(h: HarvesterBase, worldContainer: Container): void {
     this.harvesters.push(h);
     worldContainer.addChild(h.container);
+    EventBus.emit('harvester:built');
   }
 
   clear(worldContainer: Container): void {
