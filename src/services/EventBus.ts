@@ -10,6 +10,8 @@ export type GameEvents = {
   'fullscreen:toggled': [isFullscreen: boolean];
   'save:autosave': [];
   'inventory:changed': [];
+  'population:changed': [count: number, capacity: number];
+  'needs:changed': [compressed_gas_pct: number, water_pct: number];
 };
 
 class TypedEventBus extends EventEmitter<GameEvents> {}

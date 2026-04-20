@@ -1,5 +1,6 @@
 import { Container, Graphics } from 'pixi.js';
 import type { OreType, QualityLot } from '@data/types';
+import { consumptionManager } from '@services/ConsumptionManager';
 
 export type HarvesterState = 'RUNNING' | 'FUEL_EMPTY' | 'HOPPER_FULL' | 'IDLE';
 
@@ -54,7 +55,7 @@ export class HarvesterBase {
 
     // Accumulate fractional units
     const unitsPerSec = (this.config.ber * this.config.depositConcentration / 100) / 60;
-    this._accumulatedUnits += unitsPerSec * delta;
+    this._accumulatedUnits += unitsPerSec * delta * consumptionManager.productivityMultiplier;
 
     // Flush whole units into hopper
     const whole = Math.floor(this._accumulatedUnits);

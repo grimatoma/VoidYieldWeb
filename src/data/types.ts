@@ -1,4 +1,4 @@
-export type OreType = 'vorax' | 'krysite' | 'gas' | 'steel_bars';
+export type OreType = 'vorax' | 'krysite' | 'gas' | 'steel_bars' | 'compressed_gas' | 'water';
 export type SizeClass = 'small' | 'medium' | 'large';
 
 export interface QualityLot {

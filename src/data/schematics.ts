@@ -22,4 +22,14 @@ export const SCHEMATICS: Record<string, Schematic> = {
     batchPerMin: 12,
     powerDraw: 3,
   },
+  gas_compressor: {
+    schematicId: 'gas_compressor',
+    name: 'Gas Compressor',
+    inputType: 'gas',
+    inputQty: 1,
+    outputType: 'compressed_gas',
+    outputQty: 1,
+    batchPerMin: 10,
+    powerDraw: 3,
+  },
 };

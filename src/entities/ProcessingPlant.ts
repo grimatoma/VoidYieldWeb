@@ -3,6 +3,7 @@ import type { OreType, QualityLot } from '@data/types';
 import type { Schematic } from '@data/schematics';
 import type { StorageDepot } from './StorageDepot';
 import { powerManager } from '@services/PowerManager';
+import { consumptionManager } from '@services/ConsumptionManager';
 
 export type PlantState = 'RUNNING' | 'STALLED' | 'NO_POWER';
 
@@ -68,7 +69,7 @@ export class ProcessingPlant {
     }
 
     const batchInterval = 60 / this.schematic.batchPerMin;
-    this.batchTimer += delta * throttle;
+    this.batchTimer += delta * throttle * consumptionManager.productivityMultiplier;
 
     if (this.batchTimer >= batchInterval) {
       this.batchTimer -= batchInterval;

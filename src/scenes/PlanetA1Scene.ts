@@ -22,6 +22,10 @@ import { SCHEMATICS } from '@data/schematics';
 import { TradeHub } from '@entities/TradeHub';
 import { ResearchLab } from '@entities/ResearchLab';
 import { TechTreePanel } from '../ui/TechTreePanel';
+import { HabitationModule } from '@entities/HabitationModule';
+import { WaterCondenser } from '@entities/WaterCondenser';
+import { PopulationHUD } from '../ui/PopulationHUD';
+import { consumptionManager } from '@services/ConsumptionManager';
 
 const WORLD_WIDTH = 2800;
 const WORLD_HEIGHT = 2000;
@@ -54,6 +58,9 @@ export class PlanetA1Scene implements Scene {
   private tradeHub!: TradeHub;
   private researchLab!: ResearchLab;
   private techTreePanel!: TechTreePanel;
+  private habitationModule!: HabitationModule;
+  private waterCondenser!: WaterCondenser;
+  private populationHUD!: PopulationHUD;
   private _dashRefreshTimer = 0;
 
   async enter(app: Application): Promise<void> {
@@ -127,6 +134,19 @@ export class PlanetA1Scene implements Scene {
     this.techTreePanel = new TechTreePanel();
     app.stage.addChild(this.techTreePanel.container);
 
+    // Habitation Module at A1-S4
+    this.habitationModule = new HabitationModule(600, 1200);
+    this.worldContainer.addChild(this.habitationModule.container);
+
+    // Water Condenser (no slot required — placeholder, see FIXME in WaterCondenser.ts)
+    this.waterCondenser = new WaterCondenser(500, 1200);
+    this.waterCondenser.link(this.storageDepot);
+    this.worldContainer.addChild(this.waterCondenser.container);
+
+    // Population HUD
+    this.populationHUD = new PopulationHUD();
+    app.stage.addChild(this.populationHUD.container);
+
     // 7. Player
     this.player = new Player(600, 600);
     this.worldContainer.addChild(this.player.container);
@@ -180,6 +200,8 @@ export class PlanetA1Scene implements Scene {
     this.trafficOverlay.update(fleetManager.getDrones());
     this.processingPlant.update(delta);
     this.researchLab.update(delta);
+    consumptionManager.update(delta, this.storageDepot);
+    this.waterCondenser.update(delta);
     this._dashRefreshTimer += delta;
     if (this._dashRefreshTimer >= 1.0) {
       this._dashRefreshTimer = 0;
@@ -192,12 +214,14 @@ export class PlanetA1Scene implements Scene {
   exit(): void {
     this.unsubInteract?.();
     this.hud?.destroy();
+    this.populationHUD.destroy();
     this.camera.unmount(this.app.canvas);
     harvesterManager.clear(this.worldContainer);
     fleetManager.clear();
     this.processingPlant.destroy();
     for (const sp of this.solarPanels) sp.destroy();
     this.solarPanels = [];
+    consumptionManager.reset();
     this.app.stage.removeChildren();
     this.sites = [];
   }
