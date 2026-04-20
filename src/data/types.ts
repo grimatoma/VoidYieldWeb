@@ -1,4 +1,13 @@
-export type OreType = 'vorax' | 'krysite' | 'gas' | 'steel_bars' | 'compressed_gas' | 'water' | 'alloy_rods';
+export type OreType = 'vorax' | 'krysite' | 'gas' | 'steel_bars' | 'compressed_gas' | 'water' | 'alloy_rods' | 'rocket_fuel' | 'shards' | 'aethite';
+
+export type RocketComponentType = 'hull' | 'engine' | 'fuel_tank' | 'avionics' | 'landing_gear';
+
+export interface RocketComponentData {
+  componentType: RocketComponentType;
+  name: string;
+  carrySlots: number;  // how many inventory slots it occupies
+  attributes: QualityAttributes;
+}
 export type SizeClass = 'small' | 'medium' | 'large';
 export type QualityGrade = 'F' | 'D' | 'C' | 'B' | 'A' | 'S';
 

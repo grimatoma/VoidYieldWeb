@@ -7,6 +7,7 @@ export type GameEvents = {
   'credits:changed': [credits: number];
   'rp:changed': [rp: number];
   'scene:changed': [sceneId: string];
+  'scene:travel': [planetId: string];
   'fullscreen:toggled': [isFullscreen: boolean];
   'save:autosave': [];
   'inventory:changed': [];

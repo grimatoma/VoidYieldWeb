@@ -31,6 +31,8 @@ import { zoneManager } from '@services/ZoneManager';
 import { FleetPanel } from '../ui/FleetPanel';
 import { CoverageOverlay } from '../ui/CoverageOverlay';
 import type { Fabricator } from '@entities/Fabricator';
+import { GalaxyMap } from '@ui/GalaxyMap';
+import { EventBus } from '@services/EventBus';
 
 const WORLD_WIDTH = 2800;
 const WORLD_HEIGHT = 2000;
@@ -71,6 +73,7 @@ export class PlanetA1Scene implements Scene {
   private coverageOverlay!: CoverageOverlay;
   private productionOverlay!: ProductionOverlay;
   private fabricators: Fabricator[] = [];
+  private galaxyMap!: GalaxyMap;
 
   async enter(app: Application): Promise<void> {
     this.app = app;
@@ -172,6 +175,17 @@ export class PlanetA1Scene implements Scene {
     this.populationHUD = new PopulationHUD();
     app.stage.addChild(this.populationHUD.container);
 
+    // Galaxy Map
+    this.galaxyMap = new GalaxyMap();
+    this.galaxyMap.onTravel((planetId) => {
+      EventBus.emit('scene:travel', planetId);
+    });
+    this.galaxyMap.setPlanets([
+      { id: 'planet_a1', label: 'Planet A1', x: 0, y: 0, unlocked: true, current: true },
+      { id: 'planet_b', label: 'Planet B', x: 0, y: 0, unlocked: true, current: false },
+    ]);
+    app.stage.addChild(this.galaxyMap.container);
+
     // 7. Player
     this.player = new Player(600, 600);
     this.worldContainer.addChild(this.player.container);
@@ -220,6 +234,9 @@ export class PlanetA1Scene implements Scene {
       }
       if (action === 'journal' && pressed) {
         this.techTreePanel.toggle();
+      }
+      if (action === 'galaxy_map' && pressed) {
+        this.galaxyMap.toggle();
       }
     });
   }

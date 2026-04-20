@@ -1,6 +1,8 @@
 import { Application } from 'pixi.js';
 import { SceneManager } from '@scenes/SceneManager';
 import { BootScene } from '@scenes/BootScene';
+import { PlanetA1Scene } from '@scenes/PlanetA1Scene';
+import { PlanetBScene } from '@scenes/PlanetBScene';
 import { inputManager } from '@services/InputManager';
 import { EventBus } from '@services/EventBus';
 
@@ -23,6 +25,8 @@ async function main(): Promise<void> {
 
   const sceneManager = new SceneManager(app);
   sceneManager.register('boot', async () => new BootScene());
+  sceneManager.register('planet_a1', async () => new PlanetA1Scene());
+  sceneManager.register('planet_b', async () => new PlanetBScene());
 
   // Fullscreen toggle per spec 16
   inputManager.onAction((action) => {
@@ -35,6 +39,11 @@ async function main(): Promise<void> {
         EventBus.emit('fullscreen:toggled', false);
       }
     }
+  });
+
+  // Scene travel via galaxy map
+  EventBus.on('scene:travel', async (planetId: string) => {
+    await sceneManager.switchTo(planetId);
   });
 
   app.ticker.add((ticker) => {

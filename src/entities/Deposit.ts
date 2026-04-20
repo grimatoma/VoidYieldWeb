@@ -9,6 +9,9 @@ const ORE_COLORS: Record<OreType, number> = {
   compressed_gas: 0x90CAF9,
   water: 0x29B6F6,
   alloy_rods: 0xFFD700,
+  rocket_fuel: 0xFF4400,
+  shards: 0xE040FB,
+  aethite: 0x40C4FF,
 };
 
 export class Deposit {

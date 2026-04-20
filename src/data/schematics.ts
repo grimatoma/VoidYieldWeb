@@ -94,4 +94,14 @@ export const SCHEMATICS: Record<string, Schematic> = {
     batchPerMin: 6,
     powerDraw: 3,
   },
+  fuel_synthesizer: {
+    schematicId: 'fuel_synthesizer',
+    name: 'Fuel Synthesizer',
+    inputType: 'compressed_gas',
+    inputQty: 3,
+    outputType: 'rocket_fuel',
+    outputQty: 1,
+    batchPerMin: 4,
+    powerDraw: 3,
+  },
 };
