@@ -627,3 +627,4 @@ Every milestone ends with a game you can actually play and test. Features ship i
 | `15_save_load.md` | M0 (save skeleton, format schema) | Each milestone extends schema; M14 (full state, offline simulation, prestige persistence) |
 | `16_input_map.md` | M0 (all keys defined) | M2 (E, Q wired), M4 (T), M5 (P), M6 (J), M8 (Z, F, B), M9 (O, R), M11 (G, L) |
 | `17_world_generation.md` | M1 (A1 Industrial Site positions) | M2 (deposit positions JSON), M3 (gas deposit positions), M10 (Planet B layout), M13 (Planet C layout + geysers + crystal formations) |
+                             
