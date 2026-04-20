@@ -6,11 +6,8 @@ import { EventBus } from '@services/EventBus';
 
 export class BootScene implements Scene {
   readonly id = 'boot';
-  private app!: Application;
 
   async enter(app: Application): Promise<void> {
-    this.app = app;
-
     // Navy background per spec 13 (#0D1B3E)
     const bg = new Graphics();
     bg.rect(0, 0, app.screen.width, app.screen.height);

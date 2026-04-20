@@ -41,7 +41,7 @@ describe('SaveManager', () => {
 
   it('returns null and warns on version mismatch', () => {
     const data = defaultSaveData();
-    (data as Record<string, unknown>)['format_version'] = 99;
+    (data as unknown as Record<string, unknown>)['format_version'] = 99;
     mockStorage.set('voidyield_savegame', JSON.stringify(data));
     const consoleSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
     expect(sm.loadGame()).toBeNull();
