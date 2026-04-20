@@ -12,6 +12,9 @@ import { HudOverlay } from '../ui/HudOverlay';
 import { miningService } from '@services/MiningService';
 import { harvesterManager } from '@services/HarvesterManager';
 import { GasCollector } from '@entities/GasCollector';
+import { DroneBay } from '@entities/DroneBay';
+import { fleetManager } from '@services/FleetManager';
+import { TrafficOverlay } from '../ui/TrafficOverlay';
 
 const WORLD_WIDTH = 2800;
 const WORLD_HEIGHT = 2000;
@@ -36,6 +39,8 @@ export class PlanetA1Scene implements Scene {
   private storageDepot!: StorageDepot;
   private hud!: HudOverlay;
   private unsubInteract?: () => void;
+  private droneBay!: DroneBay;
+  private trafficOverlay!: TrafficOverlay;
 
   async enter(app: Application): Promise<void> {
     this.app = app;
@@ -73,6 +78,14 @@ export class PlanetA1Scene implements Scene {
     this.storageDepot = new StorageDepot(1400, 1000);
     this.worldContainer.addChild(this.storageDepot.container);
 
+    // Drone Bay at industrial site A1-S2
+    this.droneBay = new DroneBay(900, 250);
+    this.worldContainer.addChild(this.droneBay.container);
+
+    // Traffic overlay (T key)
+    this.trafficOverlay = new TrafficOverlay();
+    this.worldContainer.addChild(this.trafficOverlay.container);
+
     // 7. Player
     this.player = new Player(600, 600);
     this.worldContainer.addChild(this.player.container);
@@ -104,6 +117,9 @@ export class PlanetA1Scene implements Scene {
           miningService.onInteract(this.player.x, this.player.y);
         }
       }
+      if (action === 'fleet_panel' && pressed) {
+        this.trafficOverlay.setVisible(!this.trafficOverlay.visible);
+      }
     });
   }
 
@@ -113,6 +129,8 @@ export class PlanetA1Scene implements Scene {
     this.minimap.update({ x: this.player.x, y: this.player.y });
     miningService.update(delta);
     harvesterManager.update(delta);
+    fleetManager.update(delta);
+    this.trafficOverlay.update(fleetManager.getDrones());
   }
 
   exit(): void {
@@ -120,6 +138,7 @@ export class PlanetA1Scene implements Scene {
     this.hud?.destroy();
     this.camera.unmount(this.app.canvas);
     harvesterManager.clear(this.worldContainer);
+    fleetManager.clear();
     this.app.stage.removeChildren();
     this.sites = [];
   }

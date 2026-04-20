@@ -26,3 +26,15 @@ export interface WaypointData {
   concentration: number;
   analysisComplete: boolean;
 }
+
+export type DroneTaskType = 'MINE' | 'CARRY' | 'IDLE';
+export type DroneState = 'IDLE' | 'MOVING_TO_TARGET' | 'EXECUTING';
+export type DroneType = 'scout' | 'heavy' | 'refinery' | 'survey' | 'builder' | 'cargo';
+
+export interface DroneTask {
+  type: DroneTaskType;
+  targetX: number;
+  targetY: number;
+  executeDurationSec: number;  // 2.0 for MINE, 0.3 for CARRY
+  onExecute?: () => void;
+}
