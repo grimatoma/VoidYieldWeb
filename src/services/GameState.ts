@@ -34,6 +34,27 @@ export class GameState {
     EventBus.emit('rp:changed', this._researchPoints);
   }
 
+  spendResearchPoints(amount: number): boolean {
+    if (this._researchPoints < amount) return false;
+    this._researchPoints -= amount;
+    EventBus.emit('rp:changed', this._researchPoints);
+    return true;
+  }
+
+  addUnlock(nodeId: string): void {
+    if (!this._techTreeUnlocks.includes(nodeId)) {
+      this._techTreeUnlocks.push(nodeId);
+    }
+  }
+
+  hasUnlock(nodeId: string): boolean {
+    return this._techTreeUnlocks.includes(nodeId);
+  }
+
+  get techTreeUnlocks(): readonly string[] {
+    return this._techTreeUnlocks;
+  }
+
   setPaused(paused: boolean): void {
     this._paused = paused;
     EventBus.emit('game:paused', paused);

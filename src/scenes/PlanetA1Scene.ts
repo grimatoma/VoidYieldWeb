@@ -19,6 +19,9 @@ import { ProcessingPlant } from '@entities/ProcessingPlant';
 import { SolarPanel } from '@entities/SolarPanel';
 import { ProductionDashboard } from '../ui/ProductionDashboard';
 import { SCHEMATICS } from '@data/schematics';
+import { TradeHub } from '@entities/TradeHub';
+import { ResearchLab } from '@entities/ResearchLab';
+import { TechTreePanel } from '../ui/TechTreePanel';
 
 const WORLD_WIDTH = 2800;
 const WORLD_HEIGHT = 2000;
@@ -48,6 +51,9 @@ export class PlanetA1Scene implements Scene {
   private processingPlant!: ProcessingPlant;
   private solarPanels: SolarPanel[] = [];
   private productionDashboard!: ProductionDashboard;
+  private tradeHub!: TradeHub;
+  private researchLab!: ResearchLab;
+  private techTreePanel!: TechTreePanel;
   private _dashRefreshTimer = 0;
 
   async enter(app: Application): Promise<void> {
@@ -109,6 +115,18 @@ export class PlanetA1Scene implements Scene {
     this.productionDashboard = new ProductionDashboard();
     app.stage.addChild(this.productionDashboard.container);
 
+    // Trade Hub (no slot required)
+    this.tradeHub = new TradeHub(700, 500);
+    this.worldContainer.addChild(this.tradeHub.container);
+
+    // Research Lab at A1-S3 (occupies 2 slots)
+    this.researchLab = new ResearchLab(1500, 400);
+    this.worldContainer.addChild(this.researchLab.container);
+
+    // Tech Tree panel (J key)
+    this.techTreePanel = new TechTreePanel();
+    app.stage.addChild(this.techTreePanel.container);
+
     // 7. Player
     this.player = new Player(600, 600);
     this.worldContainer.addChild(this.player.container);
@@ -146,6 +164,9 @@ export class PlanetA1Scene implements Scene {
       if (action === 'production_dashboard' && pressed) {
         this.productionDashboard.toggle();
       }
+      if (action === 'journal' && pressed) {
+        this.techTreePanel.toggle();
+      }
     });
   }
 
@@ -158,6 +179,7 @@ export class PlanetA1Scene implements Scene {
     fleetManager.update(delta);
     this.trafficOverlay.update(fleetManager.getDrones());
     this.processingPlant.update(delta);
+    this.researchLab.update(delta);
     this._dashRefreshTimer += delta;
     if (this._dashRefreshTimer >= 1.0) {
       this._dashRefreshTimer = 0;
