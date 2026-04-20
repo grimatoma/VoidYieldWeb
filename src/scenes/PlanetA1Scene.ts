@@ -5,6 +5,11 @@ import { Camera } from '@services/Camera';
 import { IndustrialSite } from '@entities/IndustrialSite';
 import { MinimapOverlay } from '../ui/MinimapOverlay';
 import { inputManager } from '@services/InputManager';
+import { depositMap } from '@services/DepositMap';
+import { DEPOSITS_A1 } from '../data/deposits_a1';
+import { StorageDepot } from '@entities/StorageDepot';
+import { HudOverlay } from '../ui/HudOverlay';
+import { miningService } from '@services/MiningService';
 
 const WORLD_WIDTH = 2800;
 const WORLD_HEIGHT = 2000;
@@ -26,6 +31,9 @@ export class PlanetA1Scene implements Scene {
   private camera!: Camera;
   private minimap!: MinimapOverlay;
   private sites: IndustrialSite[] = [];
+  private storageDepot!: StorageDepot;
+  private hud!: HudOverlay;
+  private unsubInteract?: () => void;
 
   async enter(app: Application): Promise<void> {
     this.app = app;
@@ -52,11 +60,18 @@ export class PlanetA1Scene implements Scene {
     this.sites = SITE_POSITIONS.map(p => new IndustrialSite(p.id, p.x, p.y));
     for (const site of this.sites) this.worldContainer.addChild(site.container);
 
-    // 5. Player
+    // 5. Deposits
+    depositMap.loadPlanet(DEPOSITS_A1, this.worldContainer);
+
+    // 6. Storage depot
+    this.storageDepot = new StorageDepot(1400, 1000);
+    this.worldContainer.addChild(this.storageDepot.container);
+
+    // 7. Player
     this.player = new Player(600, 600);
     this.worldContainer.addChild(this.player.container);
 
-    // 6. Camera
+    // 8. Camera
     this.camera = new Camera(
       this.worldContainer,
       WORLD_WIDTH,
@@ -66,18 +81,33 @@ export class PlanetA1Scene implements Scene {
     );
     this.camera.mount(app.canvas);
 
-    // 7. Minimap HUD (added to stage, not worldContainer)
+    // 9. Minimap HUD (added to stage, not worldContainer)
     this.minimap = new MinimapOverlay(WORLD_WIDTH, WORLD_HEIGHT, app.screen.width, app.screen.height);
     app.stage.addChild(this.minimap.container);
+
+    // 10. HUD overlay
+    this.hud = new HudOverlay();
+    app.stage.addChild(this.hud.container);
+
+    // 11. Mining service wiring
+    miningService.setDepot(this.storageDepot);
+    this.unsubInteract = inputManager.onAction((action, pressed) => {
+      if (action === 'interact' && pressed) {
+        miningService.onInteract(this.player.x, this.player.y);
+      }
+    });
   }
 
   update(delta: number): void {
     this.player.update(delta, inputManager, { width: WORLD_WIDTH, height: WORLD_HEIGHT });
     this.camera.follow({ x: this.player.x, y: this.player.y });
     this.minimap.update({ x: this.player.x, y: this.player.y });
+    miningService.update(delta);
   }
 
   exit(): void {
+    this.unsubInteract?.();
+    this.hud?.destroy();
     this.camera.unmount(this.app.canvas);
     this.app.stage.removeChildren();
     this.sites = [];

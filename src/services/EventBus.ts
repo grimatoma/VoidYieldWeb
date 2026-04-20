@@ -9,6 +9,7 @@ export type GameEvents = {
   'scene:changed': [sceneId: string];
   'fullscreen:toggled': [isFullscreen: boolean];
   'save:autosave': [];
+  'inventory:changed': [];
 };
 
 class TypedEventBus extends EventEmitter<GameEvents> {}
