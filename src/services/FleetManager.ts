@@ -1,15 +1,21 @@
 import type { DroneBase } from '@entities/DroneBase';
 import type { DroneType } from '@data/types';
+import { EventBus } from './EventBus';
+import { droneCount } from '@store/gameStore';
 
 export class FleetManager {
   private _drones: DroneBase[] = [];
 
   add(drone: DroneBase): void {
     this._drones.push(drone);
+    droneCount.value = this._drones.length;
+    EventBus.emit('fleet:count_changed', this._drones.length);
   }
 
   remove(droneId: string): void {
     this._drones = this._drones.filter(d => d.id !== droneId);
+    droneCount.value = this._drones.length;
+    EventBus.emit('fleet:count_changed', this._drones.length);
   }
 
   update(delta: number): void {
@@ -29,6 +35,8 @@ export class FleetManager {
 
   clear(): void {
     this._drones = [];
+    droneCount.value = 0;
+    EventBus.emit('fleet:count_changed', 0);
   }
 
   getDronesByType(type: DroneType): DroneBase[] {

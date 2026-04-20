@@ -10,6 +10,7 @@ export default defineConfig({
       '@entities': resolve(__dirname, 'src/entities'),
       '@data': resolve(__dirname, 'src/data'),
       '@ui': resolve(__dirname, 'src/ui'),
+      '@store': resolve(__dirname, 'src/store'),
       '@assets': resolve(__dirname, 'assets'),
     },
   },

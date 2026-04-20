@@ -8,7 +8,6 @@ import { inputManager } from '@services/InputManager';
 import { depositMap } from '@services/DepositMap';
 import { DEPOSITS_A1 } from '../data/deposits_a1';
 import { StorageDepot } from '@entities/StorageDepot';
-import { HudOverlay } from '../ui/HudOverlay';
 import { miningService } from '@services/MiningService';
 import { harvesterManager } from '@services/HarvesterManager';
 import { GasCollector } from '@entities/GasCollector';
@@ -57,7 +56,6 @@ export class PlanetA1Scene implements Scene {
   private minimap!: MinimapOverlay;
   private sites: IndustrialSite[] = [];
   private storageDepot!: StorageDepot;
-  private hud!: HudOverlay;
   private unsubInteract?: () => void;
   private droneBay!: DroneBay;
   private trafficOverlay!: TrafficOverlay;
@@ -229,11 +227,7 @@ export class PlanetA1Scene implements Scene {
     this.minimap = new MinimapOverlay(WORLD_WIDTH, WORLD_HEIGHT, app.screen.width, app.screen.height);
     app.stage.addChild(this.minimap.container);
 
-    // 10. HUD overlay
-    this.hud = new HudOverlay();
-    app.stage.addChild(this.hud.container);
-
-    // 11. Mining service wiring
+    // 10. Mining service wiring
     miningService.setDepot(this.storageDepot);
     this.unsubInteract = inputManager.onAction((action, pressed) => {
       if (action === 'interact' && pressed) {
@@ -305,7 +299,6 @@ export class PlanetA1Scene implements Scene {
 
   exit(): void {
     this.unsubInteract?.();
-    this.hud?.destroy();
     this.populationHUD.destroy();
     this.camera.unmount(this.app.canvas);
     harvesterManager.clear(this.worldContainer);

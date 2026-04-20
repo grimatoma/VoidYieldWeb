@@ -20,6 +20,7 @@ export type GameEvents = {
   'sector:reset': [selectedBonus: string];
   'offline:simulation_needed': [offlineSeconds: number];
   'offline:dispatched': [];
+  'fleet:count_changed': [count: number];
 };
 
 class TypedEventBus extends EventEmitter<GameEvents> {}

@@ -19,6 +19,7 @@
       "@entities/*": ["src/entities/*"],
       "@data/*": ["src/data/*"],
       "@ui/*": ["src/ui/*"],
+      "@store/*": ["src/store/*"],
       "@assets/*": ["assets/*"]
     }
   },

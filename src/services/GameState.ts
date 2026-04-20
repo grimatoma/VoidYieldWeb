@@ -1,5 +1,6 @@
 import { EventBus } from './EventBus';
 import { SaveData, defaultSaveData } from './SaveManager';
+import { credits as creditsSignal, currentPlanet as currentPlanetSignal } from '@store/gameStore';
 
 /** Central game state — mirrors Godot's game_state autoload. */
 export class GameState {
@@ -30,11 +31,13 @@ export class GameState {
   addCredits(amount: number): void {
     this._credits = Math.max(0, this._credits + amount);
     EventBus.emit('credits:changed', this._credits);
+    creditsSignal.value = this._credits;
   }
 
   setCredits(amount: number): void {
     this._credits = Math.max(0, amount);
     EventBus.emit('credits:changed', this._credits);
+    creditsSignal.value = this._credits;
   }
 
   addResearchPoints(amount: number): void {
@@ -80,6 +83,7 @@ export class GameState {
   setCurrentPlanet(planet: string): void {
     this._currentPlanet = planet;
     EventBus.emit('scene:changed', planet);
+    currentPlanetSignal.value = planet;
   }
 
   visitA2(): void {
@@ -146,6 +150,8 @@ export class GameState {
     this._a3Unlocked = false;
     this._planetCVisited = false;
     this._paused = false;
+    creditsSignal.value = this._credits;
+    currentPlanetSignal.value = this._currentPlanet;
   }
 }
 

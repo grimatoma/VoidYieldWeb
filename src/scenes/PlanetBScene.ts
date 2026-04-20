@@ -8,7 +8,6 @@ import { inputManager } from '@services/InputManager';
 import { depositMap } from '@services/DepositMap';
 import { DEPOSITS_B } from '../data/deposits_b';
 import { StorageDepot } from '@entities/StorageDepot';
-import { HudOverlay } from '../ui/HudOverlay';
 import { miningService } from '@services/MiningService';
 import { harvesterManager } from '@services/HarvesterManager';
 import { GasCollector } from '@entities/GasCollector';
@@ -45,7 +44,6 @@ export class PlanetBScene implements Scene {
   private minimap!: MinimapOverlay;
   private sites: IndustrialSite[] = [];
   private storageDepot!: StorageDepot;
-  private hud!: HudOverlay;
   private unsubInteract?: () => void;
   private gasCollector!: GasCollector;
   private strandingBanner!: Text;
@@ -104,11 +102,7 @@ export class PlanetBScene implements Scene {
     this.minimap = new MinimapOverlay(WORLD_WIDTH, WORLD_HEIGHT, app.screen.width, app.screen.height);
     app.stage.addChild(this.minimap.container);
 
-    // 11. HUD overlay
-    this.hud = new HudOverlay();
-    app.stage.addChild(this.hud.container);
-
-    // 12. Stranding banner (HUD text)
+    // 11. Stranding banner (HUD text)
     this.strandingBanner = new Text({
       text: '⚠ STRANDED — Need 100 RF to launch  [0/100 RF]',
       style: new TextStyle({
@@ -156,7 +150,6 @@ export class PlanetBScene implements Scene {
 
   exit(): void {
     this.unsubInteract?.();
-    this.hud?.destroy();
     this.camera.unmount(this.app.canvas);
     harvesterManager.clear(this.worldContainer);
     fleetManager.clear();

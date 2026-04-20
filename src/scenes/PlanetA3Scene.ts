@@ -8,7 +8,6 @@ import { inputManager } from '@services/InputManager';
 import { depositMap } from '@services/DepositMap';
 import { DEPOSITS_A3 } from '../data/deposits_a3';
 import { StorageDepot } from '@entities/StorageDepot';
-import { HudOverlay } from '../ui/HudOverlay';
 import { miningService } from '@services/MiningService';
 import { harvesterManager } from '@services/HarvesterManager';
 import { GasCollector } from '@entities/GasCollector';
@@ -41,7 +40,6 @@ export class PlanetA3Scene implements Scene {
   private minimap!: MinimapOverlay;
   private sites: IndustrialSite[] = [];
   private storageDepot!: StorageDepot;
-  private hud!: HudOverlay;
   private unsubInteract?: () => void;
   private gasCollector!: GasCollector;
   private warpGate!: WarpGate;
@@ -111,11 +109,7 @@ export class PlanetA3Scene implements Scene {
     this.minimap = new MinimapOverlay(WORLD_WIDTH, WORLD_HEIGHT, app.screen.width, app.screen.height);
     app.stage.addChild(this.minimap.container);
 
-    // 13. HUD overlay
-    this.hud = new HudOverlay();
-    app.stage.addChild(this.hud.container);
-
-    // 14. VOID NEXUS label at top
+    // 13. VOID NEXUS label at top
     this.voidNexusLabel = new Text({
       text: 'VOID NEXUS — The richest planet in the sector',
       style: new TextStyle({
@@ -171,7 +165,6 @@ export class PlanetA3Scene implements Scene {
 
   exit(): void {
     this.unsubInteract?.();
-    this.hud?.destroy();
     this.camera.unmount(this.app.canvas);
     harvesterManager.clear(this.worldContainer);
     fleetManager.clear();

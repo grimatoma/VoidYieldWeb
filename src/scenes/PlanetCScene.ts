@@ -8,7 +8,6 @@ import { inputManager } from '@services/InputManager';
 import { depositMap } from '@services/DepositMap';
 import { DEPOSITS_C } from '../data/deposits_c';
 import { StorageDepot } from '@entities/StorageDepot';
-import { HudOverlay } from '../ui/HudOverlay';
 import { miningService } from '@services/MiningService';
 import { harvesterManager } from '@services/HarvesterManager';
 import { GasCollector } from '@entities/GasCollector';
@@ -42,7 +41,6 @@ export class PlanetCScene implements Scene {
   private minimap!: MinimapOverlay;
   private sites: IndustrialSite[] = [];
   private storageDepot!: StorageDepot;
-  private hud!: HudOverlay;
   private unsubInteract?: () => void;
   private gasCollector!: GasCollector;
   private banner!: Text;
@@ -102,11 +100,7 @@ export class PlanetCScene implements Scene {
     this.minimap = new MinimapOverlay(WORLD_WIDTH, WORLD_HEIGHT, app.screen.width, app.screen.height);
     app.stage.addChild(this.minimap.container);
 
-    // 11. HUD overlay
-    this.hud = new HudOverlay();
-    app.stage.addChild(this.hud.container);
-
-    // 12. Banner: "SHATTERED RING — Void-Touched Ore quality is unpredictable"
+    // 11. Banner: "SHATTERED RING — Void-Touched Ore quality is unpredictable"
     this.banner = new Text({
       text: 'SHATTERED RING — Void-Touched Ore quality is unpredictable',
       style: new TextStyle({
@@ -164,7 +158,6 @@ export class PlanetCScene implements Scene {
 
   exit(): void {
     this.unsubInteract?.();
-    this.hud?.destroy();
     this.camera.unmount(this.app.canvas);
     harvesterManager.clear(this.worldContainer);
     fleetManager.clear();

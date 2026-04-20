@@ -9,6 +9,8 @@ import { PlanetA3Scene } from '@scenes/PlanetA3Scene';
 import { inputManager } from '@services/InputManager';
 import { EventBus } from '@services/EventBus';
 import { voidyieldDebugAPI, injectSceneUpdater } from './debug/VoidYieldDebugAPI';
+import { UILayer } from '@ui/UILayer';
+import '@ui/styles.css';
 
 async function main(): Promise<void> {
   const app = new Application();
@@ -24,6 +26,10 @@ async function main(): Promise<void> {
   const container = document.getElementById('game-container');
   if (!container) throw new Error('Missing #game-container');
   container.appendChild(app.canvas);
+
+  // Mount HTML UI layer above the PixiJS canvas
+  const uiLayer = new UILayer();
+  uiLayer.init();
 
   inputManager.mount();
 

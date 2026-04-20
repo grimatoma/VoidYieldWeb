@@ -6,7 +6,6 @@ import { inputManager } from '@services/InputManager';
 import { depositMap } from '@services/DepositMap';
 import { DEPOSITS_A2 } from '../data/deposits_a2';
 import { MinimapOverlay } from '../ui/MinimapOverlay';
-import { HudOverlay } from '../ui/HudOverlay';
 import { GalaxyMap } from '@ui/GalaxyMap';
 import { gameState } from '@services/GameState';
 import { EventBus } from '@services/EventBus';
@@ -27,7 +26,6 @@ export class PlanetA2Scene implements Scene {
   private player!: Player;
   private camera!: Camera;
   private minimap!: MinimapOverlay;
-  private hud!: HudOverlay;
   private galaxyMap!: GalaxyMap;
   private unsubInteract?: () => void;
   private _cacheFound = false;
@@ -82,11 +80,7 @@ export class PlanetA2Scene implements Scene {
     this.minimap = new MinimapOverlay(WORLD_WIDTH, WORLD_HEIGHT, app.screen.width, app.screen.height);
     app.stage.addChild(this.minimap.container);
 
-    // 9. HUD
-    this.hud = new HudOverlay();
-    app.stage.addChild(this.hud.container);
-
-    // 10. Top banner
+    // 9. Top banner
     const bannerBg = new Graphics();
     bannerBg.rect(0, 0, app.screen.width, 36).fill({ color: 0x000000, alpha: 0.7 });
     app.stage.addChild(bannerBg);
@@ -195,7 +189,6 @@ export class PlanetA2Scene implements Scene {
 
   exit(): void {
     this.unsubInteract?.();
-    this.hud?.destroy();
     this.camera.unmount(this.app.canvas);
     this.app.stage.removeChildren();
   }

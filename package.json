@@ -16,6 +16,7 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
+    "@preact/signals-core": "^1.14.1",
     "eventemitter3": "^5.0.1",
     "pixi.js": "^8.6.0"
   },

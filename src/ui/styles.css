@@ -1,0 +1,104 @@
+/* =============================================================
+   VoidYield — UI Layer base styles
+   Canvas (PixiJS) renders the game world at z-index 10.
+   #ui-layer sits at z-index 20 above it, pointer-events none
+   by default; interactive children opt back in with auto.
+   ============================================================= */
+
+:root {
+  --color-primary: #D4A843;   /* amber  */
+  --color-bg:      #0D1B3E;   /* navy   */
+  --color-accent:  #00B8D4;   /* teal   */
+  --color-danger:  #E53935;
+  --font-mono: 'Space Mono', 'Courier New', monospace;
+  --hud-font-size: 13px;
+  --panel-border: 1px solid var(--color-primary);
+  --panel-pad: 6px 10px;
+}
+
+/* Full-viewport overlay — sits above the canvas */
+#ui-layer {
+  position: fixed;
+  inset: 0;
+  z-index: 20;
+  pointer-events: none;
+  /* no background — transparent over canvas */
+}
+
+/* ── HUD ──────────────────────────────────────────────────── */
+#hud {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  font-family: var(--font-mono);
+  font-size: var(--hud-font-size);
+  color: var(--color-primary);
+  user-select: none;
+}
+
+/* Shared panel chip style */
+.hud-panel {
+  position: absolute;
+  background: var(--color-bg);
+  border: var(--panel-border);
+  padding: var(--panel-pad);
+  white-space: nowrap;
+  line-height: 1.4;
+}
+
+/* Planet name — top left */
+#hud-planet {
+  top: 8px;
+  left: 8px;
+  letter-spacing: 0.05em;
+}
+
+/* Storage bar — top center */
+#hud-storage {
+  top: 8px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+  min-width: 140px;
+}
+
+#hud-storage-label {
+  font-size: 10px;
+  letter-spacing: 0.08em;
+  color: var(--color-accent);
+}
+
+#hud-storage-bar-bg {
+  width: 130px;
+  height: 6px;
+  background: #1A2A4A;
+  border: 1px solid var(--color-primary);
+}
+
+#hud-storage-bar-fill {
+  height: 100%;
+  background: var(--color-primary);
+  transition: width 0.2s ease;
+  width: 0%;
+}
+
+#hud-storage-text {
+  font-size: 10px;
+}
+
+/* Credits — top right */
+#hud-credits {
+  top: 8px;
+  right: 8px;
+  color: var(--color-primary);
+}
+
+/* Drone count — bottom left */
+#hud-drones {
+  bottom: 8px;
+  left: 8px;
+  color: var(--color-accent);
+}
