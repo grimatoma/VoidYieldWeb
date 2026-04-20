@@ -1,8 +1,10 @@
 # VoidYield — Implementation Roadmap
 
-**Version:** 1.0  
-**Date:** 2026-04-18  
-**GDD version this tracks:** GAME_DESIGN.md v0.4
+**Version:** 2.0  
+**Date:** 2026-04-20  
+**GDD version this tracks:** GAME_DESIGN.md v0.4  
+**Implementation:** TypeScript + PixiJS v8 + Vite + Vitest + Playwright  
+**Status:** All milestones M0–M14 complete. 208 unit tests · 96 E2E tests.
 
 ---
 
@@ -14,23 +16,23 @@ Every milestone ends with a game you can actually play and test. Features ship i
 
 ## Milestone Overview Table
 
-| Milestone | Codename | What you can do at the end | Key files touched |
+| Milestone | Codename | What you can do at the end | Key TS files |
 |---|---|---|---|
-| M0 | Engine Foundation | Game launches, saves, F11 works | `save_manager.gd`, `settings_manager.gd`, `main.tscn` |
-| M1 | Walking Simulator | Move around Planet A1, see the world | `planet_a1.tscn`, `player.gd`, `camera_controller.gd` |
-| M2 | First Ore | Mine ore by hand, sell it, watch credits tick | `deposit.gd`, `survey_tool.gd`, `inventory.gd`, `storage_depot.gd` |
-| M3 | First Miner | Harvester fills hopper, you empty it manually | `harvester_base.gd`, `mineral_harvester.gd`, `gas_collector.gd` |
-| M4 | First Drone | Scout Drone automates ore carry loop | `drone_base.gd`, `scout_drone.gd`, `drone_task_queue.gd`, `drone_bay.gd` |
-| M5 | First Factory | Ore Smelter converts Vorax to Steel Bars | `processing_plant.gd`, `industrial_site.gd`, `schematic.gd` |
-| M6 | Tech Gates | RP accumulates, first upgrades unlock | `research_lab.gd`, `tech_tree.gd`, `tech_node.gd` |
-| M7 | Colony Pressure | Pioneers consume gas, productivity drops when supply fails | `consumption_manager.gd`, `habitation_module.gd` |
-| M8 | Full Automation | Drone circuit runs FUEL→EMPTY→CARRY without you | `refinery_drone.gd`, `zone_manager.gd`, `fleet_manager.gd` |
-| M9 | Deep Industry | Fabricators + quality attributes flow through pipeline | `fabricator.gd`, `quality_lot.gd` full implementation |
-| M10 | Second World | Launch rocket, reach Planet B, survive stranding | `launchpad.gd`, `rocket_component.gd`, `planet_b.tscn`, `stranding_manager.gd` |
-| M11 | Space Race | Visit A2, dispatch first Cargo Ship, A3 gate unlocks | `planet_a2.tscn`, `cargo_ship.gd`, `trade_route.gd` |
-| M12 | Tech Tree v2 + Colony v2 | Full tech tree, population climbs to Engineers | `tech_tree.gd` full, `survey_tool.gd` Tier II+III, `speeder.gd` |
-| M13 | Logistics v3 + Multi-planet Economy | Auto-dispatch, Drone Freight Lanes, Jump Relays, Planet C | `logistics_manager.gd`, `jump_relay.gd`, `planet_c.tscn` |
-| M14 | Endgame & Prestige | Warp Gate, Galactic Hub, prestige bonus stacking | `assembly_complex.gd`, `sector_manager.gd`, `planet_a3.tscn` |
+| ✅ M0 | Engine Foundation | Game launches, saves, F11 works | `SaveManager.ts`, `SettingsManager.ts`, `main.ts` |
+| ✅ M1 | Walking Simulator | Move around Planet A1, see the world | `PlanetA1Scene.ts`, `Player.ts`, `Camera.ts` |
+| ✅ M2 | First Ore | Mine ore by hand, sell it, watch credits tick | `DepositMap.ts`, `MiningService.ts`, `StorageDepot.ts` |
+| ✅ M3 | First Miner | Harvester fills hopper, you empty it manually | `HarvesterManager.ts`, `GasCollector.ts` |
+| ✅ M4 | First Drone | Scout Drone automates ore carry loop | `FleetManager.ts`, `Drone.ts` |
+| ✅ M5 | First Factory | Ore Smelter converts Vorax to Steel Bars | `IndustrialSite.ts`, `ProcessingPlant.ts` |
+| ✅ M6 | Tech Gates | RP accumulates, first upgrades unlock | `TechTree.ts`, `ResearchLab.ts` |
+| ✅ M7 | Colony Pressure | Pioneers consume gas, productivity drops when supply fails | `ConsumptionManager.ts` |
+| ✅ M8 | Full Automation | Drone circuit runs FUEL→EMPTY→CARRY without you | `FleetManager.ts` full, `ZoneManager.ts` |
+| ✅ M9 | Deep Industry | Fabricators + quality attributes flow through pipeline | `QualityAttributes.ts`, `Fabricator.ts` |
+| ✅ M10 | Second World | Launch rocket, reach Planet B, survive stranding | `PlanetBScene.ts`, `StrandingManager.ts` |
+| ✅ M11 | Space Race | Visit A2, dispatch first Cargo Ship, A3 gate unlocks | `PlanetA2Scene.ts`, `LogisticsManager.ts`, `GalaxyMap.ts` |
+| ✅ M12 | Tech Tree v2 + Colony v2 | Full tech tree, population climbs to Engineers | `TechTree.ts` full (46 nodes), `Speeder.ts` |
+| ✅ M13 | Logistics v3 + Multi-planet Economy | Auto-dispatch, Drone Freight Lanes, Jump Relays, Planet C | `LogisticsManager.ts` v3, `PlanetCScene.ts` |
+| ✅ M14 | Endgame & Prestige | Warp Gate, Galactic Hub, prestige bonus stacking | `WarpGate.ts`, `GalacticHub.ts`, `SectorManager.ts`, `PlanetA3Scene.ts` |
 
 ---
 
