@@ -5,6 +5,7 @@ const ORE_COLORS: Record<OreType, number> = {
   vorax: 0xFF8C42,
   krysite: 0x00B8D4,
   gas: 0xA8E063,
+  steel_bars: 0xD4A843,
 };
 
 export class Deposit {

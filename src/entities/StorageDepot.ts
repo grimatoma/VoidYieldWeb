@@ -5,6 +5,7 @@ const SELL_PRICES: Record<OreType, number> = {
   vorax: 1,
   krysite: 5,
   gas: 0,
+  steel_bars: 5,
 };
 
 export class StorageDepot {
@@ -40,6 +41,14 @@ export class StorageDepot {
       const cur = this.stockpile.get(lot.oreType) ?? 0;
       this.stockpile.set(lot.oreType, cur + lot.quantity);
     }
+  }
+
+  /** Remove up to qty units of oreType. Returns amount actually removed. */
+  pull(oreType: OreType, qty: number): number {
+    const current = this.stockpile.get(oreType) ?? 0;
+    const removed = Math.min(current, qty);
+    if (removed > 0) this.stockpile.set(oreType, current - removed);
+    return removed;
   }
 
   /** Sell everything in stockpile. Returns CR earned. */

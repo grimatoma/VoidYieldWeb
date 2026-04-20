@@ -15,6 +15,10 @@ import { GasCollector } from '@entities/GasCollector';
 import { DroneBay } from '@entities/DroneBay';
 import { fleetManager } from '@services/FleetManager';
 import { TrafficOverlay } from '../ui/TrafficOverlay';
+import { ProcessingPlant } from '@entities/ProcessingPlant';
+import { SolarPanel } from '@entities/SolarPanel';
+import { ProductionDashboard } from '../ui/ProductionDashboard';
+import { SCHEMATICS } from '@data/schematics';
 
 const WORLD_WIDTH = 2800;
 const WORLD_HEIGHT = 2000;
@@ -41,6 +45,10 @@ export class PlanetA1Scene implements Scene {
   private unsubInteract?: () => void;
   private droneBay!: DroneBay;
   private trafficOverlay!: TrafficOverlay;
+  private processingPlant!: ProcessingPlant;
+  private solarPanels: SolarPanel[] = [];
+  private productionDashboard!: ProductionDashboard;
+  private _dashRefreshTimer = 0;
 
   async enter(app: Application): Promise<void> {
     this.app = app;
@@ -86,6 +94,21 @@ export class PlanetA1Scene implements Scene {
     this.trafficOverlay = new TrafficOverlay();
     this.worldContainer.addChild(this.trafficOverlay.container);
 
+    // Solar panels (power supply)
+    const sp1 = new SolarPanel(450, 340);
+    const sp2 = new SolarPanel(500, 340);
+    this.solarPanels = [sp1, sp2];
+    for (const sp of this.solarPanels) this.worldContainer.addChild(sp.container);
+
+    // Ore Smelter at A1-S1
+    this.processingPlant = new ProcessingPlant(400, 300, SCHEMATICS.ore_smelter);
+    this.processingPlant.link(this.storageDepot, this.storageDepot);
+    this.worldContainer.addChild(this.processingPlant.container);
+
+    // Production dashboard
+    this.productionDashboard = new ProductionDashboard();
+    app.stage.addChild(this.productionDashboard.container);
+
     // 7. Player
     this.player = new Player(600, 600);
     this.worldContainer.addChild(this.player.container);
@@ -120,6 +143,9 @@ export class PlanetA1Scene implements Scene {
       if (action === 'fleet_panel' && pressed) {
         this.trafficOverlay.setVisible(!this.trafficOverlay.visible);
       }
+      if (action === 'production_dashboard' && pressed) {
+        this.productionDashboard.toggle();
+      }
     });
   }
 
@@ -131,6 +157,14 @@ export class PlanetA1Scene implements Scene {
     harvesterManager.update(delta);
     fleetManager.update(delta);
     this.trafficOverlay.update(fleetManager.getDrones());
+    this.processingPlant.update(delta);
+    this._dashRefreshTimer += delta;
+    if (this._dashRefreshTimer >= 1.0) {
+      this._dashRefreshTimer = 0;
+      if (this.productionDashboard.visible) {
+        this.productionDashboard.refresh(this.storageDepot, [this.processingPlant]);
+      }
+    }
   }
 
   exit(): void {
@@ -139,6 +173,9 @@ export class PlanetA1Scene implements Scene {
     this.camera.unmount(this.app.canvas);
     harvesterManager.clear(this.worldContainer);
     fleetManager.clear();
+    this.processingPlant.destroy();
+    for (const sp of this.solarPanels) sp.destroy();
+    this.solarPanels = [];
     this.app.stage.removeChildren();
     this.sites = [];
   }
