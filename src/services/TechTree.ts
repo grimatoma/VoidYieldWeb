@@ -50,7 +50,7 @@ export class TechTree {
     this._purchaseCounts.set(nodeId, count + 1);
 
     gameState.addUnlock(nodeId);
-    EventBus.emit('game:saved');  // trigger autosave
+    EventBus.emit('game:save-requested');  // request an immediate save
     return true;
   }
 
