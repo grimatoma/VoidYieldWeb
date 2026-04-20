@@ -1,7 +1,19 @@
+import { EventBus } from './EventBus';
+
 class StrandingManager {
   private _rocketFuel = 100;  // starts at 100 for A1 (home planet)
   private _isStranded = false;
   private _arrivalFuel = 20;  // fuel remaining on Planet B arrival
+
+  constructor() {
+    // Reset stranding state on prestige; fuel is overridden if fuel_surplus bonus applies
+    EventBus.on('prestige:reset', (_bonus: string, startFuel: number) => {
+      this.reset();
+      if (startFuel !== 100) {
+        this.setFuel(startFuel);
+      }
+    });
+  }
 
   /** Called when player arrives at Planet B for the first time. */
   arriveAtPlanetB(): void {
@@ -27,6 +39,14 @@ class StrandingManager {
   get rocketFuel(): number { return this._rocketFuel; }
   get isStranded(): boolean { return this._isStranded; }
   get canLaunch(): boolean { return this._rocketFuel >= 100; }
+
+  /** Set fuel level directly (e.g. for fuel_surplus prestige bonus). */
+  setFuel(units: number): void {
+    this._rocketFuel = Math.max(0, Math.min(units, 200));
+    if (this._rocketFuel >= 100) {
+      this._isStranded = false;
+    }
+  }
 
   /** For save/load */
   serialize(): { rocketFuel: number; isStranded: boolean } {

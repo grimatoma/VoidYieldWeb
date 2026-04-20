@@ -16,6 +16,13 @@ class LogisticsManager {
   private _routes: TradeRoute[] = [];
   private _nextRouteId = 1;
 
+  constructor() {
+    // Clear routes on prestige so SectorManager needn't call us directly
+    EventBus.on('prestige:reset', () => {
+      this.clearRoutes();
+    });
+  }
+
   /** Scenes call this on enter to register their storage depot. */
   registerPlanet(planetId: string, depot: StorageDepot): void {
     _planetDepots.set(planetId, depot);
@@ -137,6 +144,22 @@ class LogisticsManager {
 
   getRoute(routeId: string): TradeRoute | undefined {
     return this._routes.find(r => r.routeId === routeId);
+  }
+
+  /** Restore trade routes from a saved snapshot (e.g. on game load). */
+  loadRoutes(routes: unknown[]): void {
+    this._routes = [];
+    this._nextRouteId = 1;
+    for (const raw of routes) {
+      const r = raw as TradeRoute;
+      if (!r || !r.routeId) continue;
+      this._routes.push({ ...r });
+      // Keep nextRouteId ahead of any restored id
+      const numericPart = parseInt(r.routeId.replace('route-', ''), 10);
+      if (!isNaN(numericPart) && numericPart >= this._nextRouteId) {
+        this._nextRouteId = numericPart + 1;
+      }
+    }
   }
 
   reset(): void {
