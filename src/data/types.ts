@@ -1,4 +1,6 @@
-export type OreType = 'vorax' | 'krysite' | 'gas' | 'steel_bars' | 'compressed_gas' | 'water' | 'alloy_rods' | 'rocket_fuel' | 'shards' | 'aethite' | 'void_cores';
+export type OreType = 'vorax' | 'krysite' | 'gas' | 'steel_bars' | 'compressed_gas' | 'water' | 'alloy_rods' | 'rocket_fuel' | 'shards' | 'aethite' | 'void_cores' | 'processed_rations' | 'bio_resin' | 'processed_resin' | 'power_cells' | 'bio_circuit_boards';
+
+export type ColonyTier = 'pioneer' | 'colonist' | 'technician' | 'engineer' | 'director';
 
 export type RocketComponentType = 'hull' | 'engine' | 'fuel_tank' | 'avionics' | 'landing_gear';
 

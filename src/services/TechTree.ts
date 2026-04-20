@@ -65,6 +65,32 @@ export class TechTree {
     }
     return total;
   }
+
+  /** Get highest single value for a "tier" effect (e.g. survey_radius, lab_time).
+      Returns the max value among all unlocked nodes of that type. */
+  getMaxEffect(effectType: string): number {
+    let max = 0;
+    for (const node of TECH_NODES) {
+      const count = this.purchaseCount(node.nodeId);
+      if (count > 0 && node.effectType === effectType) {
+        max = Math.max(max, node.effectValue);
+      }
+    }
+    return max;
+  }
+
+  /** Get product of all unlocked multiplier effects of the given type.
+      Returns 1.0 if none unlocked. */
+  getMultiplierEffect(effectType: string): number {
+    let product = 1.0;
+    for (const node of TECH_NODES) {
+      const count = this.purchaseCount(node.nodeId);
+      if (count > 0 && node.effectType === effectType) {
+        product *= node.effectValue;
+      }
+    }
+    return product;
+  }
 }
 
 export const techTree = new TechTree();

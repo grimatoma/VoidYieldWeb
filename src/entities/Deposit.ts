@@ -13,6 +13,11 @@ const ORE_COLORS: Record<OreType, number> = {
   shards: 0xE040FB,
   aethite: 0x40C4FF,
   void_cores: 0x7C4DFF,
+  processed_rations: 0xFFEB3B,
+  bio_resin: 0x66BB6A,
+  processed_resin: 0x8BC34A,
+  power_cells: 0xFFD54F,
+  bio_circuit_boards: 0xFF7043,
 };
 
 export class Deposit {

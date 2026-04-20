@@ -13,6 +13,11 @@ const SELL_PRICES: Record<OreType, number> = {
   shards: 3,
   aethite: 8,
   void_cores: 60,
+  processed_rations: 3,
+  bio_resin: 4,
+  processed_resin: 6,
+  power_cells: 10,
+  bio_circuit_boards: 15,
 };
 
 export class StorageDepot {

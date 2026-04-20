@@ -61,6 +61,18 @@ export const FABRICATOR_SCHEMATICS: Record<string, FabricatorSchematic> = {
       MA: { slot: 'B', weight: 0.3 },
     },
   },
+  bio_circuit_board: {
+    schematicId: 'bio_circuit_board',
+    name: 'Bio-Circuit Board',
+    inputTypeA: 'alloy_rods',
+    inputQtyA: 1,
+    inputTypeB: 'processed_resin',
+    inputQtyB: 1,
+    outputType: 'bio_circuit_boards',
+    outputQty: 1,
+    batchPerHr: 3,
+    powerDraw: 8,
+  },
 };
 
 export const SCHEMATICS: Record<string, Schematic> = {
@@ -102,6 +114,26 @@ export const SCHEMATICS: Record<string, Schematic> = {
     outputType: 'rocket_fuel',
     outputQty: 1,
     batchPerMin: 4,
+    powerDraw: 3,
+  },
+  bio_extractor: {
+    schematicId: 'bio_extractor',
+    name: 'Bio-Extractor',
+    inputType: 'bio_resin',
+    inputQty: 1,
+    outputType: 'processed_resin',
+    outputQty: 1,
+    batchPerMin: 5,
+    powerDraw: 3,
+  },
+  ration_synthesizer: {
+    schematicId: 'ration_synthesizer',
+    name: 'Ration Synthesizer',
+    inputType: 'processed_resin',
+    inputQty: 1,
+    outputType: 'processed_rations',
+    outputQty: 1,
+    batchPerMin: 8,
     powerDraw: 3,
   },
 };

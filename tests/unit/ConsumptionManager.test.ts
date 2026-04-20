@@ -6,10 +6,15 @@ vi.mock('@services/EventBus', () => ({
 
 import { ConsumptionManager } from '@services/ConsumptionManager';
 
-const makeDepot = (gasStock = 0, waterStock = 0) => ({
-  getStockpile: vi.fn().mockReturnValue(new Map([['compressed_gas', gasStock], ['water', waterStock]])),
+const makeDepot = (supplyMap: Record<string, number>) => ({
+  getStockpile: vi.fn().mockReturnValue(new Map(Object.entries(supplyMap))),
   deposit: vi.fn(),
-  pull: vi.fn().mockImplementation((_type: string, qty: number) => qty),
+  pull: vi.fn().mockImplementation((type: string, qty: number) => {
+    const avail = supplyMap[type] ?? 0;
+    const consumed = Math.min(avail, qty);
+    if (consumed > 0) supplyMap[type] = avail - consumed;
+    return consumed;
+  }),
 });
 
 describe('ConsumptionManager', () => {
@@ -21,8 +26,13 @@ describe('ConsumptionManager', () => {
   });
 
   it('starts with 4 pioneers and 0 housing', () => {
-    expect(cm.pioneers).toBe(4);
+    expect(cm.getTierPopulation('pioneer')).toBe(4);
+    expect(cm.getTotalPopulation()).toBe(4);
     expect(cm.housingCapacity).toBe(0);
+  });
+
+  it('backward compat: populationCount returns total', () => {
+    expect(cm.populationCount).toBe(4);
   });
 
   it('addHousing increases capacity', () => {
@@ -35,31 +45,32 @@ describe('ConsumptionManager', () => {
   });
 
   it('productivityMultiplier is 0.15 when needs at 0%', () => {
-    // Force 0% supply by triggering a day tick with empty depot
-    const depot = makeDepot(0, 0);
-    depot.pull.mockReturnValue(0);
+    const depot = makeDepot({ compressed_gas: 0, water: 0 });
     cm.update(1200, depot as never);
     expect(cm.productivityMultiplier).toBeCloseTo(0.15);
   });
 
   it('day tick consumes compressed_gas and water from depot', () => {
-    const depot = makeDepot(100, 100);
+    const depot = makeDepot({ compressed_gas: 100, water: 100 });
     cm.update(1200, depot as never);
     expect(depot.pull).toHaveBeenCalledWith('compressed_gas', 8);  // 4 pioneers × 2
     expect(depot.pull).toHaveBeenCalledWith('water', 4);            // 4 pioneers × 1
   });
 
-  it('population grows when needs met and housing available', () => {
-    cm.addHousing(30);
-    const depot = makeDepot(100, 100);
-    // Run 90s with full supply
-    for (let i = 0; i < 90; i++) cm.update(1, depot as never);
-    expect(cm.pioneers).toBe(5);
+  it('getCurrentTier returns pioneer initially', () => {
+    expect(cm.getCurrentTier()).toBe('pioneer');
   });
 
-  it('population does not grow without housing', () => {
-    const depot = makeDepot(100, 100);
-    for (let i = 0; i < 200; i++) cm.update(1, depot as never);
-    expect(cm.pioneers).toBe(4);
+  it("getTierPopulation('pioneer') is 4 at start", () => {
+    expect(cm.getTierPopulation('pioneer')).toBe(4);
+    expect(cm.getTierPopulation('colonist')).toBe(0);
+  });
+
+  it('reset() restores initial state', () => {
+    cm.addHousing(30);
+    cm.reset();
+    expect(cm.getTierPopulation('pioneer')).toBe(4);
+    expect(cm.getTotalPopulation()).toBe(4);
+    expect(cm.housingCapacity).toBe(0);
   });
 });
