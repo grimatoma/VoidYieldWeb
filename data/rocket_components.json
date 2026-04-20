@@ -1,0 +1,70 @@
+{
+	"hull_assembly": {
+		"display_name": "Hull Assembly",
+		"description": "The structural backbone of the rocket. SR quality determines re-entry heat tolerance and structural integrity.",
+		"required_materials": {
+			"steel_plates": 120,
+			"alloy_rods": 10
+		},
+		"craft_time_seconds": 180,
+		"craft_station": "fabricator",
+		"quality_attribute": "SR",
+		"min_quality_for_safe_launch": 300,
+		"carry_slots": -1
+	},
+	"engine_assembly": {
+		"display_name": "Engine Assembly",
+		"description": "Thrust power and fuel efficiency. Requires Crystal Lattices (Aethite-derived). MA quality sets fuel efficiency multiplier.",
+		"required_materials": {
+			"steel_plates": 50,
+			"alloy_rods": 20,
+			"crystal_lattices": 10
+		},
+		"craft_time_seconds": 240,
+		"craft_station": "fabricator",
+		"quality_attribute": "MA",
+		"carry_slots": 5
+	},
+	"fuel_tank": {
+		"display_name": "Fuel Tank",
+		"description": "Holds propellant. PE quality increases effective fuel capacity.",
+		"required_materials": {
+			"steel_plates": 40,
+			"alloy_rods": 15,
+			"energy_cells": 5
+		},
+		"craft_time_seconds": 120,
+		"craft_station": "crafting_station",
+		"quality_attribute": "PE",
+		"carry_slots": 4
+	},
+	"avionics_core": {
+		"display_name": "Avionics Core",
+		"description": "Navigation precision and sensor range. CD quality sets landing accuracy. Fallback recipe available without Void Cores.",
+		"required_materials": {
+			"crystal_lattices": 15,
+			"alloy_rods": 10,
+			"void_cores": 5
+		},
+		"fallback_materials": {
+			"alloy_rods": 20
+		},
+		"craft_time_seconds": 300,
+		"craft_station": "fabricator",
+		"quality_attribute": "CD",
+		"min_quality_for_safe_launch": 200,
+		"carry_slots": 1
+	},
+	"landing_gear": {
+		"display_name": "Landing Gear",
+		"description": "Shock absorption for landing. High-SR gear survives rough terrain with no damage.",
+		"required_materials": {
+			"steel_plates": 20,
+			"alloy_rods": 8
+		},
+		"craft_time_seconds": 90,
+		"craft_station": "crafting_station",
+		"quality_attribute": "SR",
+		"carry_slots": 3
+	}
+}

@@ -1,0 +1,146 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="800" height="260" viewBox="0 0 800 260">
+  <defs>
+    <style>
+      .label { fill: #C0C0C8; font-family: monospace; font-size: 10px; }
+      .amber { fill: #D4A845; }
+      .green { fill: #7CB87C; }
+      .dim { fill: #4A4A50; }
+      .title { fill: #D4A845; font-family: monospace; font-size: 12px; font-weight: bold; }
+    </style>
+    <marker id="ra" markerWidth="10" markerHeight="8" refX="10" refY="4" orient="auto">
+      <polygon points="0 0, 10 4, 0 8" fill="#D4A845" opacity="0.7"/>
+    </marker>
+  </defs>
+
+  <rect width="800" height="260" fill="#0A0A12"/>
+  <rect x="1" y="1" width="798" height="258" fill="none" stroke="#404048" stroke-width="1"/>
+
+  <text x="20" y="24" class="title">ROCKET ASSEMBLY SEQUENCE</text>
+  <line x1="20" y1="30" x2="780" y2="30" stroke="#404048" stroke-width="1"/>
+
+  <!-- Timeline rail -->
+  <line x1="50" y1="130" x2="750" y2="130" stroke="#404048" stroke-width="2"/>
+
+  <!-- Steps: 7 total, evenly spaced -->
+  <!-- x positions: 50, 150, 250, 350, 450, 570, 700 -->
+
+  <!-- STEP 1: Craft Hull -->
+  <circle cx="50" cy="130" r="14" fill="#1A1A0E" stroke="#D4A845" stroke-width="2"/>
+  <text x="50" y="134" fill="#D4A845" font-family="monospace" font-size="10" text-anchor="middle">1</text>
+  <rect x="22" y="60" width="56" height="52" rx="3" fill="#0E0E1A" stroke="#404048" stroke-width="1"/>
+  <!-- Hull icon (rectangular plates) -->
+  <rect x="30" y="68" width="40" height="8" rx="1" fill="#C0C0C8" opacity="0.5"/>
+  <rect x="30" y="79" width="40" height="8" rx="1" fill="#C0C0C8" opacity="0.5"/>
+  <rect x="30" y="90" width="40" height="8" rx="1" fill="#C0C0C8" opacity="0.5"/>
+  <text x="50" y="150" class="label" text-anchor="middle">HULL</text>
+  <text x="50" y="162" class="label" text-anchor="middle">ASSEMBLY</text>
+  <text x="50" y="178" fill="#4A4A50" font-family="monospace" font-size="8" text-anchor="middle">3 min craft</text>
+  <text x="50" y="188" fill="#4A4A50" font-family="monospace" font-size="8" text-anchor="middle">120 Steel Plates</text>
+  <text x="50" y="202" fill="#C0C0C8" font-family="monospace" font-size="9" text-anchor="middle">SR + DR + HR</text>
+
+  <!-- Arrow -->
+  <line x1="65" y1="130" x2="135" y2="130" stroke="#D4A845" stroke-width="1.5" marker-end="url(#ra)"/>
+
+  <!-- STEP 2: Craft Engine -->
+  <circle cx="150" cy="130" r="14" fill="#1A1A0E" stroke="#D4A845" stroke-width="2"/>
+  <text x="150" y="134" fill="#D4A845" font-family="monospace" font-size="10" text-anchor="middle">2</text>
+  <rect x="122" y="60" width="56" height="52" rx="3" fill="#0E0E1A" stroke="#404048" stroke-width="1"/>
+  <!-- Engine icon -->
+  <ellipse cx="150" cy="80" rx="14" ry="10" fill="none" stroke="#D4A845" stroke-width="1.5" opacity="0.7"/>
+  <rect x="140" y="85" width="20" height="18" rx="1" fill="#D4A845" opacity="0.3"/>
+  <polygon points="144,103 150,112 156,103" fill="#D4A845" opacity="0.8"/>
+  <text x="150" y="150" class="label" text-anchor="middle">ENGINE</text>
+  <text x="150" y="162" class="label" text-anchor="middle">ASSEMBLY</text>
+  <text x="150" y="178" fill="#4A4A50" font-family="monospace" font-size="8" text-anchor="middle">4 min craft</text>
+  <text x="150" y="188" fill="#4A4A50" font-family="monospace" font-size="8" text-anchor="middle">50 Steel+20 Alloy</text>
+  <text x="150" y="202" fill="#C0C0C8" font-family="monospace" font-size="9" text-anchor="middle">PE + CR + HR</text>
+
+  <line x1="165" y1="130" x2="235" y2="130" stroke="#D4A845" stroke-width="1.5" marker-end="url(#ra)"/>
+
+  <!-- STEP 3: Craft Fuel Tank -->
+  <circle cx="250" cy="130" r="14" fill="#1A1A0E" stroke="#D4A845" stroke-width="2"/>
+  <text x="250" y="134" fill="#D4A845" font-family="monospace" font-size="10" text-anchor="middle">3</text>
+  <rect x="222" y="60" width="56" height="52" rx="3" fill="#0E0E1A" stroke="#404048" stroke-width="1"/>
+  <!-- Fuel tank icon -->
+  <ellipse cx="250" cy="74" rx="16" ry="6" fill="none" stroke="#7CB87C" stroke-width="1.5"/>
+  <rect x="234" y="74" width="32" height="26" fill="none" stroke="#7CB87C" stroke-width="1.5"/>
+  <ellipse cx="250" cy="100" rx="16" ry="6" fill="none" stroke="#7CB87C" stroke-width="1.5"/>
+  <rect x="238" y="79" width="24" height="16" rx="1" fill="#7CB87C" opacity="0.2"/>
+  <text x="250" y="150" class="label" text-anchor="middle">FUEL TANK</text>
+  <text x="250" y="162" class="label" text-anchor="middle">+ FILL FUEL</text>
+  <text x="250" y="178" fill="#4A4A50" font-family="monospace" font-size="8" text-anchor="middle">2 min craft</text>
+  <text x="250" y="188" fill="#4A4A50" font-family="monospace" font-size="8" text-anchor="middle">300 gas→100 RF</text>
+  <text x="250" y="202" fill="#C0C0C8" font-family="monospace" font-size="9" text-anchor="middle">PE → capacity</text>
+
+  <line x1="265" y1="130" x2="335" y2="130" stroke="#D4A845" stroke-width="1.5" marker-end="url(#ra)"/>
+
+  <!-- STEP 4: Craft Avionics -->
+  <circle cx="350" cy="130" r="14" fill="#1A1A0E" stroke="#D4A845" stroke-width="2"/>
+  <text x="350" y="134" fill="#D4A845" font-family="monospace" font-size="10" text-anchor="middle">4</text>
+  <rect x="322" y="60" width="56" height="52" rx="3" fill="#0E0E1A" stroke="#404048" stroke-width="1"/>
+  <!-- Avionics icon -->
+  <rect x="332" y="68" width="36" height="28" rx="2" fill="#0A0A20" stroke="#8080C0" stroke-width="1.5"/>
+  <line x1="335" y1="75" x2="365" y2="75" stroke="#8080C0" stroke-width="0.5" opacity="0.6"/>
+  <line x1="335" y1="80" x2="358" y2="80" stroke="#8080C0" stroke-width="0.5" opacity="0.6"/>
+  <line x1="335" y1="85" x2="362" y2="85" stroke="#D4A845" stroke-width="0.5"/>
+  <circle cx="360" cy="90" r="3" fill="#D4A845" opacity="0.7"/>
+  <text x="350" y="150" class="label" text-anchor="middle">AVIONICS</text>
+  <text x="350" y="162" class="label" text-anchor="middle">CORE</text>
+  <text x="350" y="178" fill="#4A4A50" font-family="monospace" font-size="8" text-anchor="middle">5 min craft</text>
+  <text x="350" y="188" fill="#4A4A50" font-family="monospace" font-size="8" text-anchor="middle">Crystal+Alloy+Void</text>
+  <text x="350" y="202" fill="#C0C0C8" font-family="monospace" font-size="9" text-anchor="middle">CD + CR → nav</text>
+
+  <line x1="365" y1="130" x2="435" y2="130" stroke="#D4A845" stroke-width="1.5" marker-end="url(#ra)"/>
+
+  <!-- STEP 5: Craft Landing Gear -->
+  <circle cx="450" cy="130" r="14" fill="#1A1A0E" stroke="#D4A845" stroke-width="2"/>
+  <text x="450" y="134" fill="#D4A845" font-family="monospace" font-size="10" text-anchor="middle">5</text>
+  <rect x="422" y="60" width="56" height="52" rx="3" fill="#0E0E1A" stroke="#404048" stroke-width="1"/>
+  <!-- Landing gear icon -->
+  <line x1="450" y1="68" x2="450" y2="90" stroke="#C0C0C8" stroke-width="2"/>
+  <line x1="450" y1="90" x2="435" y2="108" stroke="#C0C0C8" stroke-width="1.5"/>
+  <line x1="450" y1="90" x2="465" y2="108" stroke="#C0C0C8" stroke-width="1.5"/>
+  <circle cx="435" cy="109" r="4" fill="none" stroke="#C0C0C8" stroke-width="1.5"/>
+  <circle cx="465" cy="109" r="4" fill="none" stroke="#C0C0C8" stroke-width="1.5"/>
+  <text x="450" y="150" class="label" text-anchor="middle">LANDING</text>
+  <text x="450" y="162" class="label" text-anchor="middle">GEAR</text>
+  <text x="450" y="178" fill="#4A4A50" font-family="monospace" font-size="8" text-anchor="middle">90s craft</text>
+  <text x="450" y="188" fill="#4A4A50" font-family="monospace" font-size="8" text-anchor="middle">20 Steel+8 Alloy</text>
+  <text x="450" y="202" fill="#C0C0C8" font-family="monospace" font-size="9" text-anchor="middle">SR + MA</text>
+
+  <line x1="465" y1="130" x2="548" y2="130" stroke="#D4A845" stroke-width="1.5" marker-end="url(#ra)"/>
+
+  <!-- STEP 6: Carry to Launchpad -->
+  <circle cx="563" cy="130" r="14" fill="#1A2A0A" stroke="#7CB87C" stroke-width="2"/>
+  <text x="563" y="134" fill="#7CB87C" font-family="monospace" font-size="10" text-anchor="middle">6</text>
+  <rect x="535" y="60" width="56" height="52" rx="3" fill="#0A1A0A" stroke="#7CB87C" stroke-width="1"/>
+  <!-- Carry icon (player + component) -->
+  <circle cx="563" cy="74" r="7" fill="none" stroke="#7CB87C" stroke-width="1.5"/>
+  <line x1="563" y1="81" x2="563" y2="100" stroke="#7CB87C" stroke-width="1.5"/>
+  <rect x="556" y="84" width="14" height="10" rx="1" fill="#D4A845" opacity="0.7"/>
+  <text x="563" y="150" class="label" text-anchor="middle">CARRY TO</text>
+  <text x="563" y="162" class="label" text-anchor="middle">LAUNCHPAD</text>
+  <text x="563" y="178" fill="#4A4A50" font-family="monospace" font-size="8" text-anchor="middle">Walk + [E] attach</text>
+  <text x="563" y="188" fill="#4A4A50" font-family="monospace" font-size="8" text-anchor="middle">1 component/trip</text>
+  <text x="563" y="202" fill="#7CB87C" font-family="monospace" font-size="9" text-anchor="middle">Each attach: SFX</text>
+
+  <line x1="578" y1="130" x2="678" y2="130" stroke="#7CB87C" stroke-width="2" marker-end="url(#ra)"/>
+
+  <!-- STEP 7: LAUNCH -->
+  <circle cx="700" cy="130" r="22" fill="#1A2A0A" stroke="#7CB87C" stroke-width="2.5"/>
+  <!-- Rocket icon -->
+  <polygon points="700,62 690,108 710,108" fill="#D4A845" opacity="0.9"/>
+  <ellipse cx="700" cy="110" rx="8" ry="5" fill="#D4A845" opacity="0.5"/>
+  <!-- Flame particles -->
+  <line x1="696" y1="112" x2="693" y2="120" stroke="#D4A845" stroke-width="1.5" opacity="0.7"/>
+  <line x1="700" y1="113" x2="700" y2="122" stroke="#D4A845" stroke-width="2" opacity="0.9"/>
+  <line x1="704" y1="112" x2="707" y2="120" stroke="#D4A845" stroke-width="1.5" opacity="0.7"/>
+  <text x="700" y="150" fill="#7CB87C" font-family="monospace" font-size="11" text-anchor="middle" font-weight="bold">LAUNCH</text>
+  <text x="700" y="164" fill="#4A4A50" font-family="monospace" font-size="8" text-anchor="middle">All 5 components</text>
+  <text x="700" y="174" fill="#4A4A50" font-family="monospace" font-size="8" text-anchor="middle">+ 100 Rocket Fuel</text>
+  <text x="700" y="188" fill="#D4A845" font-family="monospace" font-size="9" text-anchor="middle">PLANET B UNLOCKED</text>
+
+  <!-- Estimated total time -->
+  <rect x="20" y="220" width="760" height="28" rx="3" fill="#0E0E1A" stroke="#404048" stroke-width="1"/>
+  <text x="400" y="238" fill="#4A4A50" font-family="monospace" font-size="10" text-anchor="middle">Total construction time (focused play): ~30–60 minutes  ·  Quality of materials determines engine thrust, landing precision, hull integrity</text>
+</svg>

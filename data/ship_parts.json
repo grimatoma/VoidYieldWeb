@@ -1,0 +1,30 @@
+{
+	"hull_plating": {
+		"name": "Hull Plating",
+		"description": "Salvaged metal panels welded to the frame.",
+		"requires_scrap": 40,
+		"requires_shards": 0,
+		"credits_cost": 0
+	},
+	"ion_drive": {
+		"name": "Ion Drive",
+		"description": "Krysite-powered plasma thruster for deep space.",
+		"requires_scrap": 0,
+		"requires_shards": 20,
+		"credits_cost": 300
+	},
+	"navigation_core": {
+		"name": "Navigation Core",
+		"description": "Star chart processor and gravitational scanner.",
+		"requires_scrap": 30,
+		"requires_shards": 15,
+		"credits_cost": 500
+	},
+	"fuel_cell": {
+		"name": "Fuel Cell",
+		"description": "Compressed krysite energy matrix for one jump.",
+		"requires_scrap": 50,
+		"requires_shards": 10,
+		"credits_cost": 0
+	}
+}

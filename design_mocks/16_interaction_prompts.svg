@@ -1,0 +1,157 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 540" shape-rendering="crispEdges" font-family="monospace">
+  <rect width="960" height="540" fill="#1a1a1d"/>
+  <text x="16" y="28" fill="#d4a843" font-size="14" font-weight="bold">WORLD-SPACE INTERACTION PROMPTS</text>
+  <text x="16" y="46" fill="#a88a4a" font-size="10">float above nearest interactable · amber = available · red = blocked · green = completed</text>
+
+  <!-- grid of prompts with context -->
+  <g font-size="10">
+
+    <!-- MINE -->
+    <g transform="translate(60,110)">
+      <text x="0" y="-10" fill="#a88a4a" font-size="9">[E] MINE (default)</text>
+      <rect x="0" y="0" width="80" height="20" fill="#1a1a1d" fill-opacity="0.9" stroke="#d4a843"/>
+      <rect x="4" y="4" width="12" height="12" fill="none" stroke="#d4a843"/>
+      <text x="7" y="14" fill="#d4a843">E</text>
+      <text x="22" y="14" fill="#d4a843">MINE</text>
+      <polygon points="36,20 40,26 44,20" fill="#d4a843"/>
+      <rect x="36" y="34" width="12" height="16" fill="#8b5a2a"/>
+    </g>
+
+    <!-- SELL -->
+    <g transform="translate(220,110)">
+      <text x="0" y="-10" fill="#a88a4a" font-size="9">[E] SELL</text>
+      <rect x="0" y="0" width="80" height="20" fill="#1a1a1d" fill-opacity="0.9" stroke="#d4a843"/>
+      <rect x="4" y="4" width="12" height="12" fill="none" stroke="#d4a843"/>
+      <text x="7" y="14" fill="#d4a843">E</text>
+      <text x="22" y="14" fill="#d4a843">SELL</text>
+      <polygon points="36,20 40,26 44,20" fill="#d4a843"/>
+      <rect x="30" y="34" width="24" height="20" fill="#d4a843"/>
+    </g>
+
+    <!-- DEPOSIT -->
+    <g transform="translate(380,110)">
+      <text x="0" y="-10" fill="#a88a4a" font-size="9">[E] DEPOSIT</text>
+      <rect x="0" y="0" width="92" height="20" fill="#1a1a1d" fill-opacity="0.9" stroke="#d4a843"/>
+      <rect x="4" y="4" width="12" height="12" fill="none" stroke="#d4a843"/>
+      <text x="7" y="14" fill="#d4a843">E</text>
+      <text x="22" y="14" fill="#d4a843">DEPOSIT</text>
+      <polygon points="42,20 46,26 50,20" fill="#d4a843"/>
+      <rect x="30" y="34" width="30" height="22" fill="#8b5a2a"/>
+    </g>
+
+    <!-- BUY -->
+    <g transform="translate(540,110)">
+      <text x="0" y="-10" fill="#a88a4a" font-size="9">[E] BUY</text>
+      <rect x="0" y="0" width="72" height="20" fill="#1a1a1d" fill-opacity="0.9" stroke="#d4a843"/>
+      <rect x="4" y="4" width="12" height="12" fill="none" stroke="#d4a843"/>
+      <text x="7" y="14" fill="#d4a843">E</text>
+      <text x="22" y="14" fill="#d4a843">BUY</text>
+      <polygon points="32,20 36,26 40,20" fill="#d4a843"/>
+      <rect x="24" y="34" width="24" height="20" fill="#5a8fa8"/>
+    </g>
+
+    <!-- BUILD -->
+    <g transform="translate(700,110)">
+      <text x="0" y="-10" fill="#a88a4a" font-size="9">[E] BUILD</text>
+      <rect x="0" y="0" width="82" height="20" fill="#1a1a1d" fill-opacity="0.9" stroke="#d4a843"/>
+      <rect x="4" y="4" width="12" height="12" fill="none" stroke="#d4a843"/>
+      <text x="7" y="14" fill="#d4a843">E</text>
+      <text x="22" y="14" fill="#d4a843">BUILD</text>
+      <polygon points="36,20 40,26 44,20" fill="#d4a843"/>
+      <rect x="24" y="34" width="36" height="22" fill="#2a2a2e" stroke="#4a4a50" stroke-dasharray="2,2"/>
+    </g>
+
+    <!-- LAUNCH -->
+    <g transform="translate(60,220)">
+      <text x="0" y="-10" fill="#a88a4a" font-size="9">[E] LAUNCH (special)</text>
+      <rect x="0" y="0" width="90" height="20" fill="#1a1a1d" fill-opacity="0.9" stroke="#7cb87c"/>
+      <rect x="4" y="4" width="12" height="12" fill="none" stroke="#7cb87c"/>
+      <text x="7" y="14" fill="#7cb87c">E</text>
+      <text x="22" y="14" fill="#7cb87c">LAUNCH</text>
+      <polygon points="40,20 44,26 48,20" fill="#7cb87c"/>
+      <rect x="28" y="34" width="32" height="26" fill="#4a4a50"/>
+      <polygon points="30,34 44,26 58,34" fill="#5a8fa8"/>
+    </g>
+
+    <!-- BLOCKED -->
+    <g transform="translate(220,220)">
+      <text x="0" y="-10" fill="#a88a4a" font-size="9">BLOCKED (storage full)</text>
+      <rect x="0" y="0" width="112" height="20" fill="#1a1a1d" fill-opacity="0.9" stroke="#8b3a2a"/>
+      <rect x="4" y="4" width="12" height="12" fill="none" stroke="#8b3a2a"/>
+      <text x="7" y="14" fill="#8b3a2a">E</text>
+      <text x="22" y="14" fill="#8b3a2a">FULL</text>
+      <polygon points="52,20 56,26 60,20" fill="#8b3a2a"/>
+      <rect x="42" y="34" width="28" height="22" fill="#8b5a2a"/>
+    </g>
+
+    <!-- COMPLETED -->
+    <g transform="translate(380,220)">
+      <text x="0" y="-10" fill="#a88a4a" font-size="9">COMPLETED (tick)</text>
+      <rect x="0" y="0" width="70" height="20" fill="#1a1a1d" fill-opacity="0.9" stroke="#7cb87c"/>
+      <polyline points="6,10 10,14 16,6" fill="none" stroke="#7cb87c" stroke-width="2"/>
+      <text x="22" y="14" fill="#7cb87c">DONE</text>
+      <polygon points="32,20 36,26 40,20" fill="#7cb87c"/>
+    </g>
+
+    <!-- MOBILE variant -->
+    <g transform="translate(540,220)">
+      <text x="0" y="-10" fill="#a88a4a" font-size="9">MOBILE (no keycap)</text>
+      <rect x="0" y="0" width="64" height="20" fill="#1a1a1d" fill-opacity="0.9" stroke="#d4a843"/>
+      <text x="12" y="14" fill="#d4a843">MINE</text>
+      <polygon points="28,20 32,26 36,20" fill="#d4a843"/>
+    </g>
+
+    <!-- CONFIGURE -->
+    <g transform="translate(700,220)">
+      <text x="0" y="-10" fill="#a88a4a" font-size="9">[E] CONFIGURE</text>
+      <rect x="0" y="0" width="110" height="20" fill="#1a1a1d" fill-opacity="0.9" stroke="#d4a843"/>
+      <rect x="4" y="4" width="12" height="12" fill="none" stroke="#d4a843"/>
+      <text x="7" y="14" fill="#d4a843">E</text>
+      <text x="22" y="14" fill="#d4a843">CONFIGURE</text>
+      <polygon points="52,20 56,26 60,20" fill="#d4a843"/>
+    </g>
+
+  </g>
+
+  <!-- mining progress ring sample -->
+  <g transform="translate(80,360)">
+    <text x="0" y="-10" fill="#a88a4a" font-size="9">MINING PROGRESS RING (circular, 1.5s)</text>
+    <g>
+      <circle cx="40" cy="40" r="32" fill="none" stroke="#1a1a1d" stroke-width="6"/>
+      <!-- partial arc ~65% -->
+      <path d="M 40 8 A 32 32 0 1 1 12 52" fill="none" stroke="#d4a843" stroke-width="6"/>
+      <rect x="30" y="26" width="20" height="28" fill="#5a8fa8"/>
+    </g>
+    <!-- full -->
+    <g transform="translate(120,0)">
+      <circle cx="40" cy="40" r="32" fill="none" stroke="#1a1a1d" stroke-width="6"/>
+      <circle cx="40" cy="40" r="32" fill="none" stroke="#7cb87c" stroke-width="6"/>
+      <text x="20" y="46" fill="#7cb87c" font-size="11">DONE</text>
+    </g>
+    <!-- particles -->
+    <g transform="translate(260,0)">
+      <circle cx="40" cy="40" r="32" fill="none" stroke="#4a4a50" stroke-width="2" stroke-dasharray="2,3"/>
+      <g fill="#d4a843">
+        <rect x="14" y="22" width="4" height="4"/>
+        <rect x="60" y="18" width="3" height="3"/>
+        <rect x="26" y="60" width="4" height="4"/>
+        <rect x="56" y="58" width="3" height="3"/>
+        <rect x="40" y="10" width="3" height="3"/>
+      </g>
+      <text x="12" y="100" fill="#a88a4a" font-size="9">ORE BURST ON COMPLETE</text>
+    </g>
+  </g>
+
+  <!-- floating numbers -->
+  <g transform="translate(560,360)">
+    <text x="0" y="-10" fill="#a88a4a" font-size="9">FLOATING NUMBER (gain feedback)</text>
+    <text x="0" y="20" fill="#7cb87c" font-size="18" font-weight="bold">+1</text>
+    <text x="40" y="28" fill="#7cb87c" font-size="16" font-weight="bold" opacity="0.7">+5</text>
+    <text x="90" y="36" fill="#7cb87c" font-size="14" font-weight="bold" opacity="0.4">+25 CR</text>
+  </g>
+
+  <g>
+    <rect x="0" y="516" width="960" height="24" fill="#1a1a1d"/>
+    <text x="8" y="532" fill="#a88a4a" font-size="10">06 — INTERACTION PROMPTS + MINING PROGRESS + FLOATING NUMBERS</text>
+  </g>
+</svg>

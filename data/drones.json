@@ -1,0 +1,29 @@
+{
+	"scout_drone": {
+		"name": "Scout Drone",
+		"description": "Tiny hovering mining bot. Nimble, cheap, and expendable.",
+		"cost": 20,
+		"speed": 60.0,
+		"carry_capacity": 3,
+		"mine_time": 3.0,
+		"scene": "res://scenes/drones/scout_drone.tscn"
+	},
+	"heavy_drone": {
+		"name": "Heavy Drone",
+		"description": "Industrial armoured unit. Slow but hauls massive loads.",
+		"cost": 150,
+		"speed": 40.0,
+		"carry_capacity": 10,
+		"mine_time": 2.0,
+		"scene": "res://scenes/drones/heavy_drone.tscn"
+	},
+	"refinery_drone": {
+		"name": "Refinery Drone",
+		"description": "Autonomous circuit drone. Mines, hauls, and refuels without input.",
+		"cost": 200,
+		"speed": 100.0,
+		"carry_capacity": 20,
+		"mine_time": 2.0,
+		"scene": "res://scenes/drones/refinery_drone.tscn"
+	}
+}

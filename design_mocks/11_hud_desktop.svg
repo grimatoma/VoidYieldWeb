@@ -1,0 +1,185 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 540" shape-rendering="crispEdges" font-family="monospace">
+  <defs>
+    <pattern id="stars" width="60" height="60" patternUnits="userSpaceOnUse">
+      <rect width="60" height="60" fill="#0a0a10"/>
+      <rect x="10" y="15" width="1" height="1" fill="#d4a843"/>
+      <rect x="40" y="30" width="1" height="1" fill="#a88a4a"/>
+      <rect x="25" y="50" width="1" height="1" fill="#7cb87c"/>
+    </pattern>
+    <pattern id="rock" width="32" height="32" patternUnits="userSpaceOnUse">
+      <rect width="32" height="32" fill="#3a3a3e"/>
+      <rect x="4" y="6" width="3" height="2" fill="#2a2a2e"/>
+      <rect x="20" y="18" width="4" height="3" fill="#2a2a2e"/>
+      <rect x="12" y="24" width="2" height="2" fill="#4a4a50"/>
+    </pattern>
+  </defs>
+
+  <!-- world -->
+  <rect width="960" height="540" fill="url(#stars)"/>
+  <rect x="0" y="120" width="960" height="420" fill="url(#rock)"/>
+
+  <!-- ore nodes + crystal + rare metal + void stone to hint multi-asteroid -->
+  <g>
+    <rect x="220" y="200" width="28" height="24" fill="#8b5a2a"/>
+    <rect x="224" y="196" width="20" height="4" fill="#a86a33"/>
+    <g transform="translate(540,330)">
+      <polygon points="0,20 10,0 20,20 10,26" fill="#5a8fa8"/>
+      <polygon points="4,20 10,8 16,20" fill="#8fc0d8"/>
+    </g>
+    <rect x="720" y="240" width="26" height="22" fill="#6b4520"/>
+  </g>
+
+  <!-- player -->
+  <g>
+    <rect x="460" y="290" width="24" height="32" fill="#5a8fa8"/>
+    <rect x="464" y="294" width="4" height="4" fill="#d4a843"/>
+    <rect x="476" y="294" width="4" height="4" fill="#d4a843"/>
+    <rect x="466" y="322" width="6" height="6" fill="#2a2a2e"/>
+    <rect x="472" y="322" width="6" height="6" fill="#2a2a2e"/>
+  </g>
+
+  <!-- prompt above player -->
+  <g>
+    <rect x="436" y="262" width="72" height="20" fill="#1a1a1d" fill-opacity="0.9" stroke="#d4a843"/>
+    <rect x="440" y="266" width="12" height="12" fill="none" stroke="#d4a843"/>
+    <text x="444" y="276" fill="#d4a843" font-size="10">E</text>
+    <text x="458" y="276" fill="#d4a843" font-size="10">MINE</text>
+    <polygon points="468,282 472,288 476,282" fill="#d4a843"/>
+  </g>
+
+  <!-- =========== TOP-LEFT: MULTI-RESOURCE RAIL =========== -->
+  <g transform="translate(8,8)">
+    <!-- outer frame -->
+    <rect width="168" height="166" fill="#2a2a2e" stroke="#4a4a50" stroke-width="2"/>
+    <g fill="#d4a843">
+      <rect x="3" y="3" width="3" height="3"/>
+      <rect x="162" y="3" width="3" height="3"/>
+      <rect x="3" y="160" width="3" height="3"/>
+      <rect x="162" y="160" width="3" height="3"/>
+    </g>
+    <rect x="0" y="0" width="168" height="14" fill="#15151a"/>
+    <text x="6" y="11" fill="#a88a4a" font-size="8">RESOURCES</text>
+    <text x="128" y="11" fill="#4a4a50" font-size="7">A1</text>
+
+    <!-- Row: ORE (active) -->
+    <g transform="translate(4,18)">
+      <rect width="160" height="22" fill="#1a1a1d"/>
+      <rect x="4" y="4" width="14" height="14" fill="#8b5a2a"/>
+      <rect x="6" y="4" width="10" height="3" fill="#a86a33"/>
+      <text x="22" y="10" fill="#a88a4a" font-size="7">ORE</text>
+      <text x="22" y="19" fill="#d4a843" font-size="11" font-weight="bold">0047</text>
+      <!-- mini storage bar -->
+      <rect x="70" y="14" width="86" height="5" fill="#0a0a10" stroke="#4a4a50"/>
+      <g fill="#d4a843">
+        <rect x="71" y="15" width="6" height="3"/>
+        <rect x="78" y="15" width="6" height="3"/>
+        <rect x="85" y="15" width="6" height="3"/>
+        <rect x="92" y="15" width="6" height="3"/>
+        <rect x="99" y="15" width="6" height="3"/>
+        <rect x="106" y="15" width="6" height="3"/>
+        <rect x="113" y="15" width="6" height="3"/>
+        <rect x="120" y="15" width="6" height="3"/>
+        <rect x="127" y="15" width="6" height="3"/>
+      </g>
+      <text x="70" y="12" fill="#a88a4a" font-size="6">POOL 38/50</text>
+    </g>
+
+    <!-- Row: CRYSTAL -->
+    <g transform="translate(4,42)">
+      <rect width="160" height="22" fill="#1a1a1d"/>
+      <polygon points="6,18 12,4 18,18 12,22" fill="#5a8fa8"/>
+      <polygon points="8,18 12,8 16,18" fill="#8fc0d8"/>
+      <text x="22" y="10" fill="#a88a4a" font-size="7">CRYSTAL</text>
+      <text x="22" y="19" fill="#d4a843" font-size="11" font-weight="bold">012</text>
+      <rect x="70" y="14" width="86" height="5" fill="#0a0a10" stroke="#4a4a50"/>
+      <g fill="#5a8fa8">
+        <rect x="71" y="15" width="6" height="3"/>
+        <rect x="78" y="15" width="6" height="3"/>
+        <rect x="85" y="15" width="6" height="3"/>
+      </g>
+      <text x="70" y="12" fill="#a88a4a" font-size="6">POOL 12/50</text>
+    </g>
+
+    <!-- Row: FUEL CRYSTAL (rare) -->
+    <g transform="translate(4,66)">
+      <rect width="160" height="22" fill="#1a1a1d"/>
+      <polygon points="6,18 12,4 18,18" fill="#7cb87c"/>
+      <rect x="10" y="12" width="4" height="4" fill="#aae5aa"/>
+      <text x="22" y="10" fill="#a88a4a" font-size="7">FUEL CRYSTAL</text>
+      <text x="22" y="19" fill="#d4a843" font-size="11" font-weight="bold">003</text>
+      <text x="100" y="17" fill="#a88a4a" font-size="7">RARE</text>
+    </g>
+
+    <!-- Row: RARE METAL (locked) -->
+    <g transform="translate(4,90)" opacity="0.4">
+      <rect width="160" height="22" fill="#1a1a1d"/>
+      <rect x="4" y="6" width="14" height="12" fill="#8b7a50"/>
+      <text x="22" y="10" fill="#a88a4a" font-size="7">RARE METAL</text>
+      <text x="22" y="19" fill="#4a4a50" font-size="11" font-weight="bold">---</text>
+      <text x="100" y="17" fill="#4a4a50" font-size="7">A3 LOCK</text>
+    </g>
+
+    <!-- Row: VOID STONE (locked) -->
+    <g transform="translate(4,114)" opacity="0.4">
+      <rect width="160" height="22" fill="#1a1a1d"/>
+      <rect x="4" y="6" width="14" height="12" fill="#3a2a4a"/>
+      <rect x="7" y="9" width="8" height="6" fill="#5a3a6a"/>
+      <text x="22" y="10" fill="#a88a4a" font-size="7">VOID STONE</text>
+      <text x="22" y="19" fill="#4a4a50" font-size="11" font-weight="bold">---</text>
+      <text x="100" y="17" fill="#4a4a50" font-size="7">A3 LOCK</text>
+    </g>
+
+    <!-- Player inventory readout -->
+    <g transform="translate(4,138)">
+      <rect width="160" height="22" fill="#15151a"/>
+      <text x="6" y="10" fill="#a88a4a" font-size="7">INVENTORY</text>
+      <text x="6" y="19" fill="#d4a843" font-size="10" font-weight="bold">07/10</text>
+      <!-- tiny ore icons representing carried -->
+      <g transform="translate(60,8)">
+        <rect x="0" y="4" width="6" height="6" fill="#8b5a2a"/>
+        <rect x="8" y="4" width="6" height="6" fill="#8b5a2a"/>
+        <rect x="16" y="4" width="6" height="6" fill="#8b5a2a"/>
+        <rect x="24" y="4" width="6" height="6" fill="#8b5a2a"/>
+        <rect x="32" y="4" width="6" height="6" fill="#8b5a2a"/>
+        <rect x="40" y="4" width="6" height="6" fill="#8b5a2a"/>
+        <rect x="48" y="4" width="6" height="6" fill="#8b5a2a"/>
+        <rect x="56" y="4" width="6" height="6" fill="none" stroke="#4a4a50"/>
+        <rect x="64" y="4" width="6" height="6" fill="none" stroke="#4a4a50"/>
+        <rect x="72" y="4" width="6" height="6" fill="none" stroke="#4a4a50"/>
+      </g>
+    </g>
+  </g>
+
+  <!-- =========== TOP-RIGHT: CREDITS + COG =========== -->
+  <g transform="translate(800,8)">
+    <rect width="152" height="28" fill="#2a2a2e" stroke="#4a4a50"/>
+    <rect x="1" y="1" width="2" height="2" fill="#d4a843"/>
+    <rect x="149" y="1" width="2" height="2" fill="#d4a843"/>
+    <rect x="1" y="25" width="2" height="2" fill="#d4a843"/>
+    <rect x="149" y="25" width="2" height="2" fill="#d4a843"/>
+    <rect x="6" y="6" width="16" height="16" fill="#d4a843"/>
+    <rect x="9" y="9" width="10" height="10" fill="#8b6a20"/>
+    <text x="28" y="16" fill="#a88a4a" font-size="8">CR</text>
+    <text x="28" y="26" fill="#d4a843" font-size="12" font-weight="bold">000,230</text>
+  </g>
+  <g transform="translate(932,42)">
+    <rect width="20" height="20" fill="#2a2a2e" stroke="#4a4a50"/>
+    <circle cx="10" cy="10" r="4" fill="none" stroke="#d4a843"/>
+    <circle cx="10" cy="10" r="1.5" fill="#d4a843"/>
+  </g>
+
+  <!-- tiny map / asteroid indicator -->
+  <g transform="translate(840,42)">
+    <rect width="86" height="20" fill="#2a2a2e" stroke="#4a4a50"/>
+    <text x="4" y="13" fill="#a88a4a" font-size="8">A1 · IRON ROCK</text>
+  </g>
+
+  <!-- floating +1 near player -->
+  <text x="490" y="270" fill="#7cb87c" font-size="12">+1</text>
+
+  <!-- label banner -->
+  <g>
+    <rect x="0" y="516" width="960" height="24" fill="#1a1a1d"/>
+    <text x="8" y="532" fill="#a88a4a" font-size="10">01 — HUD (DESKTOP)  ·  multi-resource rail  ·  unlocked (ore/crystal/fuel) + locked (rare metal/void stone)</text>
+  </g>
+</svg>

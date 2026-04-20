@@ -1,0 +1,63 @@
+{
+	"drill_bit_mk2": {
+		"name": "Drill Bit Mk.II",
+		"description": "+50% manual mine speed",
+		"cost": 50,
+		"category": "player",
+		"max_purchases": 1
+	},
+	"cargo_pockets": {
+		"name": "Cargo Pockets",
+		"description": "+5 ore inventory capacity",
+		"cost": 75,
+		"category": "player",
+		"max_purchases": 3
+	},
+	"thruster_boots": {
+		"name": "Thruster Boots",
+		"description": "+20% movement speed",
+		"cost": 5,
+		"category": "player",
+		"max_purchases": 1
+	},
+	"storage_expansion": {
+		"name": "Storage Expansion",
+		"description": "+25 depot capacity",
+		"cost": 25,
+		"category": "outpost",
+		"max_purchases": 5,
+		"scales": true
+	},
+	"drone_drill_1": {
+		"name": "Drone Drill I",
+		"description": "-20% drone mine time per level",
+		"cost": 50,
+		"category": "drones",
+		"max_purchases": 3,
+		"bay_only": true
+	},
+	"drone_cargo_rack": {
+		"name": "Drone Cargo Rack",
+		"description": "+2 drone carry capacity per level",
+		"cost": 75,
+		"category": "drones",
+		"max_purchases": 3,
+		"bay_only": true
+	},
+	"fleet_license": {
+		"name": "Fleet License",
+		"description": "+1 active drone slot",
+		"cost": 100,
+		"category": "drones",
+		"max_purchases": 10,
+		"scales": true,
+		"bay_only": true
+	},
+	"auto_sell": {
+		"name": "Auto-Sell",
+		"description": "Depot auto-sells at 80% capacity",
+		"cost": 500,
+		"category": "automation",
+		"max_purchases": 1
+	}
+}

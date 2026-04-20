@@ -1,0 +1,140 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="800" height="320" viewBox="0 0 800 320">
+  <defs>
+    <style>
+      .bg { fill: #0A0A12; }
+      .border { fill: none; stroke: #404048; stroke-width: 1; }
+      .amber { fill: #D4A845; }
+      .amber-stroke { fill: none; stroke: #D4A845; stroke-width: 1.5; }
+      .green { fill: #7CB87C; }
+      .green-stroke { fill: none; stroke: #7CB87C; stroke-width: 1.5; }
+      .dim { fill: #4A4A50; }
+      .label { fill: #C0C0C8; font-family: monospace; font-size: 11px; }
+      .title { fill: #D4A845; font-family: monospace; font-size: 12px; font-weight: bold; }
+      .step-title { fill: #E0E0E8; font-family: monospace; font-size: 11px; font-weight: bold; }
+      .arrow { fill: #404048; }
+    </style>
+    <marker id="arrowhead" markerWidth="8" markerHeight="6" refX="8" refY="3" orient="auto">
+      <polygon points="0 0, 8 3, 0 6" fill="#D4A845" opacity="0.7"/>
+    </marker>
+  </defs>
+
+  <!-- Background -->
+  <rect width="800" height="320" class="bg"/>
+  <rect x="1" y="1" width="798" height="318" class="border"/>
+
+  <!-- Title -->
+  <text x="20" y="24" class="title">SURVEY FLOW — DEPOSIT DISCOVERY SEQUENCE</text>
+  <line x1="20" y1="30" x2="780" y2="30" stroke="#404048" stroke-width="1"/>
+
+  <!-- Step boxes: 5 steps across -->
+  <!-- Step 1: Player Walking -->
+  <rect x="20" y="50" width="130" height="200" rx="4" fill="#0E0E1A" stroke="#404048" stroke-width="1"/>
+  <text x="85" y="68" class="step-title" text-anchor="middle">STEP 1</text>
+  <text x="85" y="82" class="amber" font-family="monospace" font-size="10" text-anchor="middle">TRAVERSE</text>
+  <!-- Player icon -->
+  <circle cx="85" cy="115" r="10" fill="none" stroke="#7CB87C" stroke-width="2"/>
+  <line x1="85" y1="125" x2="85" y2="155" stroke="#7CB87C" stroke-width="2"/>
+  <line x1="65" y1="140" x2="105" y2="140" stroke="#7CB87C" stroke-width="2"/>
+  <line x1="85" y1="155" x2="70" y2="175" stroke="#7CB87C" stroke-width="2"/>
+  <line x1="85" y1="155" x2="100" y2="175" stroke="#7CB87C" stroke-width="2"/>
+  <!-- Ground dots -->
+  <circle cx="50" cy="190" r="2" fill="#4A4A50"/>
+  <circle cx="70" cy="195" r="2" fill="#4A4A50"/>
+  <circle cx="90" cy="192" r="2" fill="#4A4A50"/>
+  <circle cx="110" cy="196" r="2" fill="#4A4A50"/>
+  <text x="85" y="222" class="label" text-anchor="middle">Survey tool</text>
+  <text x="85" y="236" class="label" text-anchor="middle">equipped.</text>
+  <text x="85" y="250" class="label" text-anchor="middle" fill="#4A4A50">Ping active.</text>
+
+  <!-- Arrow 1 -->
+  <line x1="155" y1="150" x2="175" y2="150" stroke="#D4A845" stroke-width="1.5" marker-end="url(#arrowhead)" opacity="0.7"/>
+
+  <!-- Step 2: Signal Detected -->
+  <rect x="180" y="50" width="130" height="200" rx="4" fill="#0E0E1A" stroke="#404048" stroke-width="1"/>
+  <text x="245" y="68" class="step-title" text-anchor="middle">STEP 2</text>
+  <text x="245" y="82" class="amber" font-family="monospace" font-size="10" text-anchor="middle">SIGNAL RISES</text>
+  <!-- Scan radius rings -->
+  <circle cx="245" cy="145" r="55" fill="none" stroke="#D4A845" stroke-width="0.5" opacity="0.2"/>
+  <circle cx="245" cy="145" r="35" fill="none" stroke="#D4A845" stroke-width="0.5" opacity="0.4"/>
+  <circle cx="245" cy="145" r="18" fill="none" stroke="#D4A845" stroke-width="1" opacity="0.7"/>
+  <circle cx="245" cy="145" r="6" fill="#D4A845" opacity="0.5"/>
+  <!-- Tone bars -->
+  <rect x="210" y="195" width="6" height="10" fill="#D4A845" opacity="0.4"/>
+  <rect x="220" y="190" width="6" height="15" fill="#D4A845" opacity="0.5"/>
+  <rect x="230" y="183" width="6" height="22" fill="#D4A845" opacity="0.7"/>
+  <rect x="240" y="176" width="6" height="29" fill="#D4A845" opacity="0.9"/>
+  <rect x="250" y="183" width="6" height="22" fill="#D4A845" opacity="0.7"/>
+  <rect x="260" y="190" width="6" height="15" fill="#D4A845" opacity="0.5"/>
+  <rect x="270" y="195" width="6" height="10" fill="#D4A845" opacity="0.4"/>
+  <text x="245" y="230" class="label" text-anchor="middle">Tone rises.</text>
+  <text x="245" y="244" class="label" text-anchor="middle">Concentration</text>
+  <text x="245" y="258" fill="#D4A845" font-family="monospace" font-size="11" text-anchor="middle">71% →</text>
+
+  <!-- Arrow 2 -->
+  <line x1="315" y1="150" x2="335" y2="150" stroke="#D4A845" stroke-width="1.5" marker-end="url(#arrowhead)" opacity="0.7"/>
+
+  <!-- Step 3: Hold for Scan -->
+  <rect x="340" y="50" width="130" height="200" rx="4" fill="#0E0E1A" stroke="#404048" stroke-width="1"/>
+  <text x="405" y="68" class="step-title" text-anchor="middle">STEP 3</text>
+  <text x="405" y="82" class="amber" font-family="monospace" font-size="10" text-anchor="middle">HOLD (6s)</text>
+  <!-- Scan progress arc -->
+  <circle cx="405" cy="130" r="38" fill="none" stroke="#4A4A50" stroke-width="4"/>
+  <circle cx="405" cy="130" r="38" fill="none" stroke="#D4A845" stroke-width="4"
+          stroke-dasharray="200 40" stroke-dashoffset="60" stroke-linecap="round"/>
+  <text x="405" y="125" class="amber" font-family="monospace" font-size="14" text-anchor="middle" font-weight="bold">6s</text>
+  <text x="405" y="140" fill="#7CB87C" font-family="monospace" font-size="9" text-anchor="middle">SCANNING</text>
+  <!-- Result preview -->
+  <rect x="358" y="178" width="94" height="54" rx="2" fill="#0A0A20" stroke="#D4A845" stroke-width="0.5"/>
+  <text x="405" y="192" fill="#D4A845" font-family="monospace" font-size="9" text-anchor="middle">◆ KRYSITE VEIN</text>
+  <text x="405" y="205" class="label" text-anchor="middle">Concentration: 71%</text>
+  <text x="405" y="218" class="label" text-anchor="middle">Grade: B  Size: LARGE</text>
+  <text x="405" y="231" fill="#4A4A50" font-family="monospace" font-size="9" text-anchor="middle">Est. lifetime: 6–9 hrs</text>
+
+  <!-- Arrow 3 -->
+  <line x1="475" y1="150" x2="495" y2="150" stroke="#D4A845" stroke-width="1.5" marker-end="url(#arrowhead)" opacity="0.7"/>
+
+  <!-- Step 4: Marker Placed -->
+  <rect x="500" y="50" width="130" height="200" rx="4" fill="#0E0E1A" stroke="#404048" stroke-width="1"/>
+  <text x="565" y="68" class="step-title" text-anchor="middle">STEP 4</text>
+  <text x="565" y="82" class="amber" font-family="monospace" font-size="10" text-anchor="middle">MARK [M]</text>
+  <!-- World marker icon -->
+  <polygon points="565,100 555,130 565,128 575,130" fill="#D4A845" opacity="0.9"/>
+  <circle cx="565" cy="98" r="9" fill="#0A0A12" stroke="#D4A845" stroke-width="2"/>
+  <text x="565" y="102" fill="#D4A845" font-family="monospace" font-size="9" text-anchor="middle">◆</text>
+  <!-- Minimap snippet -->
+  <rect x="530" y="148" width="70" height="70" rx="2" fill="#070710" stroke="#404048" stroke-width="1"/>
+  <text x="537" y="160" fill="#4A4A50" font-family="monospace" font-size="7">MINIMAP</text>
+  <!-- Dots on minimap -->
+  <circle cx="548" cy="172" r="2" fill="#D4A845"/>
+  <circle cx="570" cy="168" r="3" fill="#D4A845" opacity="0.8"/>
+  <circle cx="560" cy="185" r="2" fill="#7CB87C"/>
+  <circle cx="588" cy="178" r="2" fill="#D4A845" opacity="0.5"/>
+  <text x="565" y="230" class="label" text-anchor="middle">Waypoint set.</text>
+  <text x="565" y="244" class="label" text-anchor="middle">Minimap icon</text>
+  <text x="565" y="258" class="label" text-anchor="middle">appears.</text>
+
+  <!-- Arrow 4 -->
+  <line x1="635" y1="150" x2="655" y2="150" stroke="#D4A845" stroke-width="1.5" marker-end="url(#arrowhead)" opacity="0.7"/>
+
+  <!-- Step 5: Journal Logged -->
+  <rect x="660" y="50" width="120" height="200" rx="4" fill="#0E0E1A" stroke="#404048" stroke-width="1"/>
+  <text x="720" y="68" class="step-title" text-anchor="middle">STEP 5</text>
+  <text x="720" y="82" class="amber" font-family="monospace" font-size="10" text-anchor="middle">JOURNAL [J]</text>
+  <!-- Journal icon -->
+  <rect x="700" y="93" width="40" height="52" rx="3" fill="#0A0A20" stroke="#7CB87C" stroke-width="1.5"/>
+  <line x1="707" y1="107" x2="733" y2="107" stroke="#4A4A50" stroke-width="1"/>
+  <line x1="707" y1="115" x2="733" y2="115" stroke="#4A4A50" stroke-width="1"/>
+  <line x1="707" y1="123" x2="725" y2="123" stroke="#D4A845" stroke-width="1"/>
+  <line x1="707" y1="131" x2="728" y2="131" stroke="#4A4A50" stroke-width="1"/>
+  <circle cx="735" cy="123" r="4" fill="#D4A845" opacity="0.7"/>
+  <!-- Status -->
+  <rect x="680" y="162" width="80" height="18" rx="2" fill="#0A2A0A" stroke="#7CB87C" stroke-width="0.5"/>
+  <text x="720" y="175" fill="#7CB87C" font-family="monospace" font-size="9" text-anchor="middle">LOGGED ✓</text>
+  <text x="720" y="205" class="label" text-anchor="middle">Grade + size +</text>
+  <text x="720" y="219" class="label" text-anchor="middle">attributes stored.</text>
+  <text x="720" y="233" class="label" text-anchor="middle">Plan harvester</text>
+  <text x="720" y="247" class="label" text-anchor="middle">investment.</text>
+
+  <!-- Bottom label -->
+  <text x="400" y="298" class="label" text-anchor="middle" opacity="0.6">Scanning is not instant — each stage requires holding still. Tone pitch rises toward deposit peak.</text>
+</svg>

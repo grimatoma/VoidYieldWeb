@@ -1,0 +1,123 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 540" shape-rendering="crispEdges" font-family="monospace">
+  <rect width="960" height="540" fill="#1a1a1d"/>
+  <text x="40" y="270" fill="#4a4a50" font-size="28">(game world dimmed — player at relay station)</text>
+
+  <!-- Panel: 320×440 centered -->
+  <g transform="translate(320,50)">
+    <rect width="320" height="440" fill="#2a2a2e" stroke="#4a4a50" stroke-width="2"/>
+    <!-- rivets -->
+    <rect x="4"   y="4"   width="3" height="3" fill="#d4a843"/>
+    <rect x="313" y="4"   width="3" height="3" fill="#d4a843"/>
+    <rect x="4"   y="433" width="3" height="3" fill="#d4a843"/>
+    <rect x="313" y="433" width="3" height="3" fill="#d4a843"/>
+    <!-- header -->
+    <rect x="0" y="0" width="320" height="34" fill="#15151a"/>
+    <text x="12" y="23" fill="#d4a843" font-size="13" font-weight="bold">RELAY STATION</text>
+    <!-- close button -->
+    <g transform="translate(292,8)">
+      <rect width="18" height="18" fill="#2a2a2e" stroke="#8b3a2a"/>
+      <text x="4" y="14" fill="#8b3a2a" font-size="12">X</text>
+    </g>
+
+    <!-- STATUS SCREEN (amber LED readout) -->
+    <g transform="translate(14,46)">
+      <rect width="292" height="88" fill="#15151a" stroke="#4a4a50"/>
+      <!-- scanlines -->
+      <g fill="#d4a843" fill-opacity="0.07">
+        <rect y="4"  width="292" height="1"/>
+        <rect y="12" width="292" height="1"/>
+        <rect y="20" width="292" height="1"/>
+        <rect y="28" width="292" height="1"/>
+        <rect y="36" width="292" height="1"/>
+        <rect y="44" width="292" height="1"/>
+        <rect y="52" width="292" height="1"/>
+        <rect y="60" width="292" height="1"/>
+        <rect y="68" width="292" height="1"/>
+        <rect y="76" width="292" height="1"/>
+        <rect y="84" width="292" height="1"/>
+      </g>
+      <!-- STATUS line -->
+      <text x="10" y="16" fill="#a88a4a" font-size="9">STATUS</text>
+      <text x="72" y="18" fill="#7cb87c" font-size="16" font-weight="bold">LINKED</text>
+      <!-- connected-to -->
+      <text x="10" y="34" fill="#a88a4a" font-size="8">CONNECTED TO</text>
+      <text x="116" y="34" fill="#d4a843" font-size="10" font-weight="bold">A1 · IRON ROCK</text>
+      <!-- signal bar -->
+      <text x="10" y="50" fill="#a88a4a" font-size="8">SIGNAL</text>
+      <g transform="translate(64,40)">
+        <rect width="192" height="10" fill="#0a0a10" stroke="#4a4a50"/>
+        <rect x="2"   y="2" width="22" height="6" fill="#7cb87c"/>
+        <rect x="26"  y="2" width="22" height="6" fill="#7cb87c"/>
+        <rect x="50"  y="2" width="22" height="6" fill="#7cb87c"/>
+        <rect x="74"  y="2" width="22" height="6" fill="#7cb87c"/>
+        <rect x="98"  y="2" width="22" height="6" fill="#7cb87c"/>
+        <rect x="122" y="2" width="22" height="6" fill="#7cb87c"/>
+        <rect x="146" y="2" width="22" height="6" fill="#7cb87c"/>
+        <rect x="170" y="2" width="18" height="6" fill="#7cb87c" fill-opacity="0.25"/>
+      </g>
+      <text x="264" y="50" fill="#7cb87c" font-size="8">87%</text>
+      <!-- last ping / uptime -->
+      <text x="10" y="66" fill="#a88a4a" font-size="8">LAST PING</text>
+      <text x="92" y="66" fill="#d4a843" font-size="9">3s AGO</text>
+      <text x="10" y="80" fill="#4a4a50" font-size="7">UPTIME 00:14:32  ·  PACKETS SENT 847  ·  ERR 0</text>
+    </g>
+
+    <!-- divider + LOGISTICS label -->
+    <rect x="14" y="148" width="292" height="1" fill="#4a4a50"/>
+    <text x="14"  y="164" fill="#a88a4a" font-size="9">LOGISTICS</text>
+
+    <!-- Ship status row -->
+    <g transform="translate(14,172)">
+      <rect width="292" height="38" fill="#1a1a1d" stroke="#4a4a50"/>
+      <text x="10" y="16" fill="#a88a4a" font-size="9">SHIP STATUS</text>
+      <text x="10" y="30" fill="#4a4a50" font-size="7">Location</text>
+      <text x="116" y="30" fill="#d4a843" font-size="11" font-weight="bold">DOCKED · A1</text>
+    </g>
+
+    <!-- Cargo routes row -->
+    <g transform="translate(14,214)">
+      <rect width="292" height="38" fill="#1a1a1d" stroke="#4a4a50"/>
+      <text x="10" y="16" fill="#a88a4a" font-size="9">CARGO ROUTES</text>
+      <text x="10" y="30" fill="#4a4a50" font-size="7">Active</text>
+      <text x="116" y="30" fill="#d4a843" font-size="11">0 / 4 SLOTS</text>
+    </g>
+
+    <!-- divider + ACTIONS label -->
+    <rect x="14" y="266" width="292" height="1" fill="#4a4a50"/>
+    <text x="14"  y="282" fill="#a88a4a" font-size="9">ACTIONS</text>
+
+    <!-- CALL SHIP button (available) -->
+    <g transform="translate(14,290)">
+      <rect width="292" height="50" fill="#2a2a2e" stroke="#5a8fa8" stroke-width="2"/>
+      <!-- physical bevel -->
+      <rect x="2" y="2"  width="288" height="2" fill="#3a4a58"/>
+      <rect x="2" y="46" width="288" height="2" fill="#15151a"/>
+      <text x="72" y="26" fill="#5a8fa8" font-size="13" font-weight="bold">CALL SHIP HERE</text>
+      <text x="78" y="40" fill="#a88a4a" font-size="8">10 FUEL  ·  ~2 MIN TRANSIT</text>
+    </g>
+
+    <!-- CONFIGURE ROUTES button (locked) -->
+    <g transform="translate(14,350)">
+      <rect width="292" height="50" fill="#2a2a2e" stroke="#8b3a2a" stroke-width="1"/>
+      <rect x="2" y="2"  width="288" height="2" fill="#15151a"/>
+      <!-- padlock -->
+      <rect x="94" y="16" width="14" height="12" fill="#8b3a2a"/>
+      <rect x="97" y="12" width="8"  height="6"  fill="none" stroke="#8b3a2a" stroke-width="2"/>
+      <text x="116" y="26" fill="#8b3a2a" font-size="12">CONFIGURE ROUTES</text>
+      <text x="66"  y="40" fill="#4a4a50" font-size="8">RELAY UPGRADE REQ.  ·  500 CR</text>
+    </g>
+
+    <!-- RELAY UPGRADE teaser row -->
+    <g transform="translate(14,412)">
+      <rect width="292" height="18" fill="#1a1a1d" stroke="#4a4a50"/>
+      <text x="10" y="13" fill="#4a4a50" font-size="8">SHOP: RELAY UPGRADE  500 CR  — unlocks cargo routes</text>
+    </g>
+
+    <!-- flavor -->
+    <text x="14" y="434" fill="#4a4a50" font-size="7">SIGNAL FLICKERS DURING SOLAR EVENTS — COSMETIC</text>
+  </g>
+
+  <!-- Bottom label bar -->
+  <rect x="0" y="516" width="960" height="24" fill="#1a1a1d"/>
+  <text x="8" y="532" fill="#a88a4a" font-size="10">13 — RELAY STATION PANEL  ·  signal status, ship tracking, call-ship, cargo routes locked until upgraded</text>
+</svg>

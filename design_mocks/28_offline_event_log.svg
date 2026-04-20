@@ -1,0 +1,118 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="800" height="580" viewBox="0 0 800 580">
+  <defs>
+    <style>text { font-family: monospace; }</style>
+  </defs>
+
+  <!-- Background (blurred world map suggestion) -->
+  <rect width="800" height="580" fill="#0D1B3E"/>
+  <!-- Faint map grid suggestion -->
+  <rect x="0" y="0" width="800" height="580" fill="#0D1B3E"/>
+  <ellipse cx="200" cy="300" rx="160" ry="140" fill="#101E3A" opacity="0.5"/>
+  <ellipse cx="600" cy="280" rx="120" ry="100" fill="#101E3A" opacity="0.4"/>
+  <!-- Dim building dots suggesting world -->
+  <circle cx="180" cy="260" r="3" fill="#1A3060" opacity="0.6"/>
+  <circle cx="200" cy="280" r="2" fill="#1A3060" opacity="0.4"/>
+  <circle cx="220" cy="270" r="2" fill="#1A3060" opacity="0.5"/>
+  <circle cx="160" cy="300" r="4" fill="#1A3060" opacity="0.3"/>
+
+  <!-- Overlay dim -->
+  <rect width="800" height="580" fill="#0A1428" opacity="0.7"/>
+
+  <!-- ═══ MAIN PANEL ═══ -->
+  <rect x="160" y="40" width="480" height="490" rx="8" fill="#0D1628" stroke="#2A4080" stroke-width="2"/>
+  <!-- Glow effect -->
+  <rect x="160" y="40" width="480" height="490" rx="8" fill="none" stroke="#3A60C0" stroke-width="1" opacity="0.4"/>
+
+  <!-- Header -->
+  <rect x="160" y="40" width="480" height="52" rx="8" fill="#091428"/>
+  <rect x="160" y="72" width="480" height="20" fill="#091428"/>
+  <!-- Title icon: dispatch scroll -->
+  <rect x="178" y="52" width="20" height="26" rx="2" fill="#1A2A4A" stroke="#5A90C0" stroke-width="1"/>
+  <line x1="182" y1="60" x2="194" y2="60" stroke="#5A90C0" stroke-width="1.5"/>
+  <line x1="182" y1="66" x2="194" y2="66" stroke="#5A90C0" stroke-width="1"/>
+  <line x1="182" y1="72" x2="190" y2="72" stroke="#5A90C0" stroke-width="1"/>
+  <text x="210" y="60" fill="#E8C87A" font-family="monospace" font-size="13" font-weight="bold">EMPIRE DISPATCH</text>
+  <text x="210" y="78" fill="#5A90C0" font-family="monospace" font-size="10">While you were away — 4h 23m</text>
+  <text x="560" y="60" fill="#2A4060" font-family="monospace" font-size="9">Session ended 04:23 ago</text>
+
+  <line x1="170" y1="94" x2="630" y2="94" stroke="#2A4060" stroke-width="1"/>
+
+  <!-- ═══ EVENT 1: Cargo Ship Routes ═══ -->
+  <rect x="170" y="100" width="460" height="68" rx="4" fill="#091E30"/>
+  <!-- Icon -->
+  <rect x="180" y="112" width="28" height="28" rx="4" fill="#0D2A40" stroke="#3A7AAA" stroke-width="1.5"/>
+  <polygon points="194,114 188,132 200,132" fill="#5A90C0" opacity="0.9"/>
+  <ellipse cx="194" cy="134" rx="6" ry="3" fill="#5A90C0" opacity="0.5"/>
+  <!-- Event text -->
+  <text x="218" y="120" fill="#7ABCD4" font-family="monospace" font-size="10" font-weight="bold">ISV Carver — 3 routes completed</text>
+  <text x="218" y="136" fill="#C8C8D8" font-family="monospace" font-size="9">A1 → Planet B   ·   Outbound: 2,400 Steel Bars, 600 Alloy Rods</text>
+  <text x="218" y="150" fill="#C8C8D8" font-family="monospace" font-size="9">                    Return: 1,800 Crystal Lattice, 300 Energy Cells</text>
+  <!-- Credit gain badge -->
+  <rect x="530" y="110" width="90" height="16" rx="3" fill="#0A2A0A" stroke="#3A7A3A" stroke-width="1"/>
+  <text x="575" y="122" fill="#7ABD7A" font-family="monospace" font-size="8" text-anchor="middle">+1,820 CR</text>
+
+  <!-- ═══ EVENT 2: Harvester Summary ═══ -->
+  <rect x="170" y="174" width="460" height="82" rx="4" fill="#0A1E18"/>
+  <!-- Icon -->
+  <rect x="180" y="186" width="28" height="28" rx="4" fill="#0A2018" stroke="#3A7A5A" stroke-width="1.5"/>
+  <line x1="194" y1="188" x2="194" y2="212" stroke="#3A9A6A" stroke-width="2"/>
+  <ellipse cx="194" cy="186" rx="8" ry="3" fill="none" stroke="#3A9A6A" stroke-width="1.5"/>
+  <!-- Event text -->
+  <text x="218" y="196" fill="#7ABD7A" font-family="monospace" font-size="10" font-weight="bold">Harvesters extracted 4,820 ore units</text>
+  <text x="218" y="212" fill="#C8C8D8" font-family="monospace" font-size="9">Vorax ×3,240  ·  Krysite ×1,580  ·  across 6 active harvesters</text>
+  <!-- Stall callout — highlighted differently -->
+  <rect x="178" y="222" width="444" height="26" rx="3" fill="#1A0A08" stroke="#A04040" stroke-width="1"/>
+  <text x="186" y="232" fill="#E06060" font-family="monospace" font-size="9" font-weight="bold">⚠  Harvester A7: ran out of gas after 2h — paused for 2h 23m</text>
+  <text x="186" y="244" fill="#8A4A4A" font-family="monospace" font-size="8">Est. ~1,100 units lost  ·  Refuel before next session or assign drone to FUEL task</text>
+
+  <!-- ═══ EVENT 3: Survey Discovery ═══ -->
+  <rect x="170" y="262" width="460" height="56" rx="4" fill="#10101E"/>
+  <!-- Icon -->
+  <rect x="180" y="274" width="28" height="28" rx="4" fill="#101028" stroke="#6060B0" stroke-width="1.5"/>
+  <circle cx="194" cy="284" r="8" fill="none" stroke="#8080D0" stroke-width="1.5" opacity="0.7"/>
+  <circle cx="194" cy="284" r="4" fill="#8080D0" opacity="0.5"/>
+  <circle cx="194" cy="284" r="1.5" fill="#8080D0"/>
+  <!-- Event text -->
+  <text x="218" y="284" fill="#9090D0" font-family="monospace" font-size="10" font-weight="bold">Survey Drone — new deposit found</text>
+  <text x="218" y="300" fill="#C8C8D8" font-family="monospace" font-size="9">Grade B Aethite deposit in Sector 6  ·  OQ:680 CD:820 CR:590</text>
+  <text x="218" y="314" fill="#5A5A8A" font-family="monospace" font-size="8">Added to Survey Journal  ·  Recommended: Crystal Harvester placement</text>
+
+  <!-- ═══ EVENT 4: Factory Outputs ═══ -->
+  <rect x="170" y="324" width="460" height="82" rx="4" fill="#0E1420"/>
+  <!-- Icon -->
+  <rect x="180" y="336" width="28" height="28" rx="4" fill="#0E1830" stroke="#4060A0" stroke-width="1.5"/>
+  <rect x="186" y="342" width="16" height="16" rx="2" fill="#141E38" stroke="#4060A0" stroke-width="1"/>
+  <line x1="190" y1="348" x2="198" y2="348" stroke="#6080C0" stroke-width="1.5"/>
+  <line x1="190" y1="352" x2="196" y2="352" stroke="#6080C0" stroke-width="1"/>
+  <!-- Event text -->
+  <text x="218" y="346" fill="#7A9AD4" font-family="monospace" font-size="10" font-weight="bold">Factories produced</text>
+  <text x="218" y="362" fill="#C8C8D8" font-family="monospace" font-size="9">Steel Bars ×1,240  ·  Alloy Rods ×520  ·  Power Cells ×88</text>
+  <!-- Stall callout -->
+  <rect x="178" y="372" width="444" height="26" rx="3" fill="#1A0A08" stroke="#A04040" stroke-width="1"/>
+  <text x="186" y="382" fill="#E06060" font-family="monospace" font-size="9" font-weight="bold">⚠  Assembly Complex stalled after 1h 12m</text>
+  <text x="186" y="394" fill="#8A4A4A" font-family="monospace" font-size="8">Bio-Circuit Board input depleted  ·  Fabricator upstream had no Processed Resin</text>
+
+  <!-- ═══ EVENT 5: Net Credits ═══ -->
+  <rect x="170" y="412" width="460" height="50" rx="4" fill="#0A1E0A"/>
+  <!-- Icon -->
+  <rect x="180" y="424" width="28" height="28" rx="4" fill="#0A2010" stroke="#3A8A3A" stroke-width="1.5"/>
+  <text x="194" y="441" fill="#5ABD5A" font-family="monospace" font-size="14" text-anchor="middle" font-weight="bold">₡</text>
+  <!-- Credit summary -->
+  <text x="218" y="434" fill="#7ABD7A" font-family="monospace" font-size="11" font-weight="bold">Net credits this session: +4,820 CR</text>
+  <text x="218" y="452" fill="#C8C8D8" font-family="monospace" font-size="9">Auto-sell: 2,410 Steel Bars (×2 CR)  ·  Route deliveries: +1,820 CR  ·  Expenses: −350 CR</text>
+
+  <!-- Separator -->
+  <line x1="170" y1="470" x2="630" y2="470" stroke="#2A4060" stroke-width="1"/>
+
+  <!-- Issues summary -->
+  <rect x="170" y="476" width="460" height="28" rx="3" fill="#120808" stroke="#703030" stroke-width="1"/>
+  <text x="400" y="490" fill="#E06060" font-family="monospace" font-size="9" text-anchor="middle" font-weight="bold">2 ISSUES REQUIRE ATTENTION before next session</text>
+  <text x="400" y="502" fill="#8A5050" font-family="monospace" font-size="8" text-anchor="middle">Harvester A7 needs gas  ·  Assembly Complex needs Bio-Circuit Boards</text>
+
+  <!-- Action buttons -->
+  <rect x="178" y="510" width="200" height="30" rx="5" fill="#0D1628" stroke="#3A6090" stroke-width="1.5"/>
+  <text x="278" y="530" fill="#5A90C0" font-family="monospace" font-size="11" text-anchor="middle" font-weight="bold">[ DISMISS ]</text>
+
+  <rect x="418" y="510" width="212" height="30" rx="5" fill="#0A2A0A" stroke="#3A7A3A" stroke-width="2"/>
+  <text x="524" y="530" fill="#7ABD7A" font-family="monospace" font-size="11" text-anchor="middle" font-weight="bold">[ VIEW DASHBOARD ]</text>
+</svg>

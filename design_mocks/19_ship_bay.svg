@@ -1,0 +1,139 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 540" shape-rendering="crispEdges" font-family="monospace">
+  <rect width="960" height="540" fill="#1a1a1d"/>
+
+  <!-- LEFT: 5 ship progression silhouettes -->
+  <text x="16" y="26" fill="#d4a843" font-size="12" font-weight="bold">SHIP ASSEMBLY STAGES</text>
+  <g transform="translate(20,50)">
+    <!-- 0% empty gantry -->
+    <g>
+      <rect width="110" height="140" fill="#15151a" stroke="#4a4a50"/>
+      <!-- gantry -->
+      <rect x="8" y="10" width="4" height="120" fill="#4a4a50"/>
+      <rect x="98" y="10" width="4" height="120" fill="#4a4a50"/>
+      <rect x="8" y="10" width="94" height="4" fill="#4a4a50"/>
+      <rect x="8" y="126" width="94" height="4" fill="#4a4a50"/>
+      <text x="36" y="154" fill="#a88a4a" font-size="9">0%</text>
+    </g>
+    <!-- 25% hull skeleton -->
+    <g transform="translate(122,0)">
+      <rect width="110" height="140" fill="#15151a" stroke="#4a4a50"/>
+      <rect x="8" y="10" width="4" height="120" fill="#4a4a50"/>
+      <rect x="98" y="10" width="4" height="120" fill="#4a4a50"/>
+      <!-- skeleton -->
+      <rect x="44" y="40" width="22" height="60" fill="none" stroke="#8b3a2a"/>
+      <rect x="54" y="30" width="2" height="80" fill="#8b3a2a"/>
+      <text x="34" y="154" fill="#a88a4a" font-size="9">25%</text>
+    </g>
+    <!-- 50% plated -->
+    <g transform="translate(244,0)">
+      <rect width="110" height="140" fill="#15151a" stroke="#4a4a50"/>
+      <rect x="8" y="10" width="4" height="120" fill="#4a4a50"/>
+      <rect x="98" y="10" width="4" height="120" fill="#4a4a50"/>
+      <rect x="44" y="40" width="22" height="60" fill="#4a4a50"/>
+      <rect x="46" y="42" width="18" height="4" fill="#8b5a2a"/>
+      <rect x="50" y="90" width="10" height="14" fill="#1a1a1d"/>
+      <text x="34" y="154" fill="#a88a4a" font-size="9">50%</text>
+    </g>
+    <!-- 75% engine wiring -->
+    <g transform="translate(366,0)">
+      <rect width="110" height="140" fill="#15151a" stroke="#4a4a50"/>
+      <rect x="8" y="10" width="4" height="120" fill="#4a4a50"/>
+      <rect x="98" y="10" width="4" height="120" fill="#4a4a50"/>
+      <rect x="44" y="36" width="22" height="68" fill="#4a4a50"/>
+      <rect x="50" y="94" width="4" height="12" fill="#5a8fa8"/>
+      <rect x="56" y="94" width="4" height="12" fill="#5a8fa8"/>
+      <rect x="38" y="70" width="6" height="2" fill="#d4a843"/>
+      <rect x="66" y="60" width="6" height="2" fill="#d4a843"/>
+      <text x="34" y="154" fill="#a88a4a" font-size="9">75%</text>
+    </g>
+    <!-- 100% complete -->
+    <g transform="translate(488,0)">
+      <rect width="110" height="140" fill="#15151a" stroke="#7cb87c"/>
+      <rect x="8" y="10" width="4" height="120" fill="#4a4a50"/>
+      <rect x="98" y="10" width="4" height="120" fill="#4a4a50"/>
+      <polygon points="55,28 44,40 66,40" fill="#8b5a2a"/>
+      <rect x="44" y="40" width="22" height="60" fill="#8b5a2a"/>
+      <rect x="46" y="46" width="18" height="3" fill="#a86a33"/>
+      <rect x="46" y="54" width="18" height="3" fill="#a86a33"/>
+      <rect x="50" y="100" width="4" height="14" fill="#d4a843"/>
+      <rect x="56" y="100" width="4" height="14" fill="#d4a843"/>
+      <rect x="50" y="116" width="10" height="6" fill="#7cb87c" fill-opacity="0.8"/>
+      <text x="30" y="154" fill="#7cb87c" font-size="9">100%</text>
+    </g>
+  </g>
+
+  <!-- RIGHT: active panel for 25% -->
+  <g transform="translate(620,30)">
+    <rect width="320" height="460" fill="#2a2a2e" stroke="#4a4a50" stroke-width="2"/>
+    <g fill="#d4a843">
+      <rect x="4" y="4" width="3" height="3"/>
+      <rect x="313" y="4" width="3" height="3"/>
+      <rect x="4" y="453" width="3" height="3"/>
+      <rect x="313" y="453" width="3" height="3"/>
+    </g>
+    <rect x="0" y="0" width="320" height="34" fill="#15151a"/>
+    <text x="12" y="22" fill="#d4a843" font-size="13" font-weight="bold">SHIP BAY</text>
+    <text x="240" y="22" fill="#7cb87c" font-size="12">25%</text>
+
+    <!-- large preview -->
+    <g transform="translate(70,54)">
+      <rect width="180" height="160" fill="#15151a" stroke="#4a4a50"/>
+      <rect x="10" y="10" width="4" height="140" fill="#4a4a50"/>
+      <rect x="166" y="10" width="4" height="140" fill="#4a4a50"/>
+      <rect x="74" y="40" width="32" height="84" fill="none" stroke="#8b3a2a" stroke-width="2"/>
+      <rect x="88" y="30" width="4" height="100" fill="#8b3a2a"/>
+    </g>
+
+    <!-- divider -->
+    <rect x="14" y="228" width="292" height="2" fill="#4a4a50"/>
+    <text x="14" y="246" fill="#a88a4a" font-size="10">COMPONENTS</text>
+
+    <!-- hull plating -->
+    <g transform="translate(14,256)">
+      <rect width="292" height="32" fill="#1a1a1d" stroke="#4a4a50"/>
+      <text x="8" y="14" fill="#d4a843" font-size="10">HULL PLATING</text>
+      <text x="8" y="26" fill="#a88a4a" font-size="8">2 / 5</text>
+      <rect x="100" y="10" width="80" height="10" fill="#15151a"/>
+      <rect x="102" y="12" width="30" height="6" fill="#d4a843"/>
+      <rect x="196" y="6" width="90" height="20" fill="#2a2a2e" stroke="#d4a843"/>
+      <text x="200" y="20" fill="#d4a843" font-size="9">CRAFT 50 ORE</text>
+    </g>
+
+    <!-- engine core -->
+    <g transform="translate(14,292)">
+      <rect width="292" height="32" fill="#1a1a1d" stroke="#4a4a50"/>
+      <text x="8" y="14" fill="#d4a843" font-size="10">ENGINE CORE</text>
+      <text x="8" y="26" fill="#a88a4a" font-size="8">0 / 1</text>
+      <text x="100" y="21" fill="#8b3a2a" font-size="9">RARE DROP — KEEP MINING</text>
+    </g>
+
+    <!-- nav module -->
+    <g transform="translate(14,328)">
+      <rect width="292" height="32" fill="#1a1a1d" stroke="#7cb87c"/>
+      <text x="8" y="14" fill="#7cb87c" font-size="10">NAV MODULE</text>
+      <text x="8" y="26" fill="#a88a4a" font-size="8">1 / 1</text>
+      <text x="220" y="21" fill="#7cb87c" font-size="9">INSTALLED</text>
+      <polyline points="200,18 204,22 210,14" fill="none" stroke="#7cb87c" stroke-width="2"/>
+    </g>
+
+    <!-- fuel cell -->
+    <g transform="translate(14,364)" opacity="0.55">
+      <rect width="292" height="32" fill="#1a1a1d" stroke="#4a4a50"/>
+      <text x="8" y="14" fill="#a88a4a" font-size="10">FUEL CELL</text>
+      <text x="8" y="26" fill="#4a4a50" font-size="8">NOT REQUIRED FOR FIRST LAUNCH</text>
+    </g>
+
+    <!-- LAUNCH locked -->
+    <g transform="translate(40,408)">
+      <rect width="240" height="36" fill="#1a1a1d" stroke="#4a4a50"/>
+      <rect x="110" y="10" width="12" height="10" fill="#4a4a50"/>
+      <rect x="113" y="6" width="6" height="6" fill="none" stroke="#4a4a50"/>
+      <text x="130" y="22" fill="#4a4a50" font-size="12">LAUNCH LOCKED</text>
+    </g>
+  </g>
+
+  <g>
+    <rect x="0" y="516" width="960" height="24" fill="#1a1a1d"/>
+    <text x="8" y="532" fill="#a88a4a" font-size="10">09 — SHIP BAY  ·  0/25/50/75/100% silhouettes + active panel</text>
+  </g>
+</svg>

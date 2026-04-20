@@ -1,0 +1,173 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="800" height="500" viewBox="0 0 800 500">
+  <defs>
+    <style>
+      .label { fill: #C0C0C8; font-family: monospace; font-size: 10px; }
+      .amber { fill: #D4A845; }
+      .green { fill: #7CB87C; }
+      .dim { fill: #4A4A50; }
+      .title { fill: #D4A845; font-family: monospace; font-size: 12px; font-weight: bold; }
+    </style>
+  </defs>
+
+  <rect width="800" height="500" fill="#0A0A12"/>
+  <rect x="1" y="1" width="798" height="498" fill="none" stroke="#404048" stroke-width="1"/>
+
+  <!-- Title bar -->
+  <rect x="0" y="0" width="800" height="36" fill="#0E0E1A"/>
+  <text x="20" y="23" class="title">CRAFTING STATION — SCHEMATIC: SCOUT DRONE MK.II</text>
+  <text x="750" y="23" fill="#4A4A50" font-family="monospace" font-size="10" text-anchor="end">[ESC] CLOSE</text>
+  <line x1="0" y1="36" x2="800" y2="36" stroke="#D4A845" stroke-width="1" opacity="0.5"/>
+
+  <!-- ══ LEFT PANEL: SCHEMATIC INFO ══ -->
+  <rect x="15" y="50" width="215" height="390" rx="4" fill="#0E0E1A" stroke="#404048" stroke-width="1"/>
+  <text x="122" y="72" fill="#D4A845" font-family="monospace" font-size="11" text-anchor="middle" font-weight="bold">SCHEMATIC</text>
+
+  <!-- Drone icon placeholder -->
+  <rect x="82" y="82" width="80" height="80" rx="4" fill="#0A0A20" stroke="#404048" stroke-width="1"/>
+  <polygon points="122,102 108,130 136,130" fill="#D4A845" opacity="0.8"/>
+  <circle cx="122" cy="100" r="8" fill="#0A0A12" stroke="#D4A845" stroke-width="1.5"/>
+  <line x1="108" y1="115" x2="136" y2="115" stroke="#D4A845" stroke-width="1.5" opacity="0.6"/>
+
+  <text x="122" y="178" fill="#C0C0C8" font-family="monospace" font-size="11" text-anchor="middle">Scout Drone Mk.II</text>
+  <text x="122" y="192" fill="#4A4A50" font-family="monospace" font-size="9" text-anchor="middle">Autonomous miner</text>
+
+  <line x1="25" y1="200" x2="220" y2="200" stroke="#404048" stroke-width="1"/>
+
+  <text x="25" y="218" fill="#4A4A50" font-family="monospace" font-size="9">REQUIRES:</text>
+  <text x="25" y="234" class="label">• 10 Steel Plates</text>
+  <text x="25" y="248" class="label">• 5 Alloy Rods</text>
+
+  <line x1="25" y1="260" x2="220" y2="260" stroke="#404048" stroke-width="1"/>
+
+  <text x="25" y="278" fill="#4A4A50" font-family="monospace" font-size="9">CRAFT TIME:</text>
+  <text x="25" y="293" class="label">~45 seconds</text>
+
+  <text x="25" y="313" fill="#4A4A50" font-family="monospace" font-size="9">QUALITY MATTERS:</text>
+  <text x="25" y="328" fill="#7CB87C" font-family="monospace" font-size="9">UT → Mine Speed</text>
+  <text x="25" y="342" fill="#7CB87C" font-family="monospace" font-size="9">PE → Move Speed</text>
+  <text x="25" y="356" fill="#7CB87C" font-family="monospace" font-size="9">SR → Durability</text>
+  <text x="25" y="370" fill="#7CB87C" font-family="monospace" font-size="9">DR → Carry Cap.</text>
+
+  <!-- ══ CENTER PANEL: INGREDIENTS ══ -->
+  <rect x="243" y="50" width="310" height="390" rx="4" fill="#0E0E1A" stroke="#404048" stroke-width="1"/>
+  <text x="398" y="72" fill="#D4A845" font-family="monospace" font-size="11" text-anchor="middle" font-weight="bold">INGREDIENTS</text>
+
+  <!-- Slot 1: Steel Plates -->
+  <rect x="258" y="82" width="280" height="130" rx="3" fill="#0A0A20" stroke="#D4A845" stroke-width="1"/>
+  <text x="268" y="98" fill="#D4A845" font-family="monospace" font-size="9">SLOT 1 — STEEL PLATES (×10)</text>
+  <text x="268" y="112" fill="#C0C0C8" font-family="monospace" font-size="9">Lot: Vorax-072  OQ:620 MA:740 SR:510</text>
+
+  <!-- Attribute bars for Steel Plates -->
+  <!-- MA bar (highlighted - good) -->
+  <text x="268" y="128" fill="#D4A845" font-family="monospace" font-size="8">MA</text>
+  <rect x="290" y="119" width="150" height="10" rx="1" fill="#070710" stroke="#404048" stroke-width="0.5"/>
+  <rect x="291" y="120" width="111" height="8" rx="0.5" fill="#D4A845" opacity="0.8"/>
+  <text x="445" y="128" fill="#D4A845" font-family="monospace" font-size="8">740  GOOD ★</text>
+
+  <!-- SR bar -->
+  <text x="268" y="144" fill="#C0C0C8" font-family="monospace" font-size="8">SR</text>
+  <rect x="290" y="135" width="150" height="10" rx="1" fill="#070710" stroke="#404048" stroke-width="0.5"/>
+  <rect x="291" y="136" width="76" height="8" rx="0.5" fill="#C0C0C8" opacity="0.45"/>
+  <text x="445" y="144" fill="#C0C0C8" font-family="monospace" font-size="8">510  FAIR</text>
+
+  <!-- DR bar -->
+  <text x="268" y="160" fill="#C0C0C8" font-family="monospace" font-size="8">DR</text>
+  <rect x="290" y="151" width="150" height="10" rx="1" fill="#070710" stroke="#404048" stroke-width="0.5"/>
+  <rect x="291" y="152" width="84" height="8" rx="0.5" fill="#C0C0C8" opacity="0.45"/>
+  <text x="445" y="160" fill="#C0C0C8" font-family="monospace" font-size="8">560  FAIR</text>
+
+  <!-- OQ bar -->
+  <text x="268" y="176" fill="#C0C0C8" font-family="monospace" font-size="8">OQ</text>
+  <rect x="290" y="167" width="150" height="10" rx="1" fill="#070710" stroke="#404048" stroke-width="0.5"/>
+  <rect x="291" y="168" width="93" height="8" rx="0.5" fill="#C0C0C8" opacity="0.45"/>
+  <text x="445" y="176" fill="#C0C0C8" font-family="monospace" font-size="8">620  FAIR</text>
+
+  <!-- Slot 2: Alloy Rods -->
+  <rect x="258" y="224" width="280" height="145" rx="3" fill="#0A0A20" stroke="#D4A845" stroke-width="1"/>
+  <text x="268" y="240" fill="#D4A845" font-family="monospace" font-size="9">SLOT 2 — ALLOY RODS (×5)</text>
+  <text x="268" y="254" fill="#C0C0C8" font-family="monospace" font-size="9">Lot: Krysite-A19  UT:880 CR:760 PE:420</text>
+
+  <!-- UT bar (highlighted - excellent) -->
+  <text x="268" y="272" fill="#D4A845" font-family="monospace" font-size="8">UT</text>
+  <rect x="290" y="263" width="150" height="10" rx="1" fill="#070710" stroke="#404048" stroke-width="0.5"/>
+  <rect x="291" y="264" width="132" height="8" rx="0.5" fill="#D4A845" opacity="0.9"/>
+  <text x="445" y="272" fill="#D4A845" font-family="monospace" font-size="8">880  EXCL ★</text>
+
+  <!-- CR bar (highlighted - good) -->
+  <text x="268" y="288" fill="#D4A845" font-family="monospace" font-size="8">CR</text>
+  <rect x="290" y="279" width="150" height="10" rx="1" fill="#070710" stroke="#404048" stroke-width="0.5"/>
+  <rect x="291" y="280" width="114" height="8" rx="0.5" fill="#D4A845" opacity="0.75"/>
+  <text x="445" y="288" fill="#D4A845" font-family="monospace" font-size="8">760  GOOD ★</text>
+
+  <!-- PE bar -->
+  <text x="268" y="304" fill="#C0C0C8" font-family="monospace" font-size="8">PE</text>
+  <rect x="290" y="295" width="150" height="10" rx="1" fill="#070710" stroke="#404048" stroke-width="0.5"/>
+  <rect x="291" y="296" width="63" height="8" rx="0.5" fill="#C0C0C8" opacity="0.4"/>
+  <text x="445" y="304" fill="#C0C0C8" font-family="monospace" font-size="8">420  FAIR</text>
+
+  <!-- OQ bar -->
+  <text x="268" y="320" fill="#C0C0C8" font-family="monospace" font-size="8">OQ</text>
+  <rect x="290" y="311" width="150" height="10" rx="1" fill="#070710" stroke="#404048" stroke-width="0.5"/>
+  <rect x="291" y="312" width="78" height="8" rx="0.5" fill="#C0C0C8" opacity="0.4"/>
+  <text x="445" y="320" fill="#C0C0C8" font-family="monospace" font-size="8">520  FAIR</text>
+
+  <!-- Swap hint -->
+  <text x="398" y="390" fill="#4A4A50" font-family="monospace" font-size="9" text-anchor="middle">[ ← → ] SWAP LOT — different lots = different quality outcome</text>
+  <text x="398" y="403" fill="#4A4A50" font-family="monospace" font-size="9" text-anchor="middle">Lot: Krysite-B44  UT:390 CR:450  →  much worse result</text>
+
+  <!-- ══ RIGHT PANEL: OUTPUT PREVIEW ══ -->
+  <rect x="566" y="50" width="218" height="390" rx="4" fill="#0E0E1A" stroke="#7CB87C" stroke-width="1.5"/>
+  <text x="675" y="72" fill="#7CB87C" font-family="monospace" font-size="11" text-anchor="middle" font-weight="bold">OUTPUT PREVIEW</text>
+
+  <!-- Grade badge -->
+  <rect x="645" y="80" width="60" height="30" rx="3" fill="#1A2A0A" stroke="#D4A845" stroke-width="1.5"/>
+  <text x="675" y="101" fill="#D4A845" font-family="monospace" font-size="20" text-anchor="middle" font-weight="bold">B</text>
+
+  <text x="675" y="122" fill="#C0C0C8" font-family="monospace" font-size="9" text-anchor="middle">Scout Drone Mk.II</text>
+  <text x="675" y="134" fill="#4A4A50" font-family="monospace" font-size="8" text-anchor="middle">CRAFTED ITEM STATS:</text>
+
+  <line x1="576" y1="140" x2="774" y2="140" stroke="#404048" stroke-width="1"/>
+
+  <!-- Stat: Mine Speed -->
+  <text x="576" y="158" fill="#4A4A50" font-family="monospace" font-size="9">MINE SPEED</text>
+  <rect x="576" y="162" width="120" height="10" rx="1" fill="#070710" stroke="#404048" stroke-width="0.5"/>
+  <rect x="577" y="163" width="96" height="8" rx="0.5" fill="#D4A845" opacity="0.8"/>
+  <text x="702" y="171" fill="#D4A845" font-family="monospace" font-size="9">+31%</text>
+  <text x="576" y="180" fill="#7CB87C" font-family="monospace" font-size="8">← UT:880 (excellent)</text>
+
+  <!-- Stat: Move Speed -->
+  <text x="576" y="198" fill="#4A4A50" font-family="monospace" font-size="9">MOVE SPEED</text>
+  <rect x="576" y="202" width="120" height="10" rx="1" fill="#070710" stroke="#404048" stroke-width="0.5"/>
+  <rect x="577" y="203" width="54" height="8" rx="0.5" fill="#C0C0C8" opacity="0.5"/>
+  <text x="702" y="211" fill="#C0C0C8" font-family="monospace" font-size="9">+14%</text>
+  <text x="576" y="220" fill="#4A4A50" font-family="monospace" font-size="8">← PE:420 (fair)</text>
+
+  <!-- Stat: Carry Capacity -->
+  <text x="576" y="238" fill="#4A4A50" font-family="monospace" font-size="9">CARRY CAP</text>
+  <rect x="576" y="242" width="120" height="10" rx="1" fill="#070710" stroke="#404048" stroke-width="0.5"/>
+  <rect x="577" y="243" width="66" height="8" rx="0.5" fill="#C0C0C8" opacity="0.5"/>
+  <text x="702" y="251" fill="#C0C0C8" font-family="monospace" font-size="9">+1 unit</text>
+  <text x="576" y="260" fill="#4A4A50" font-family="monospace" font-size="8">← DR:560 (fair)</text>
+
+  <!-- Stat: Durability -->
+  <text x="576" y="278" fill="#4A4A50" font-family="monospace" font-size="9">DURABILITY</text>
+  <rect x="576" y="282" width="120" height="10" rx="1" fill="#070710" stroke="#404048" stroke-width="0.5"/>
+  <rect x="577" y="283" width="75" height="8" rx="0.5" fill="#C0C0C8" opacity="0.5"/>
+  <text x="702" y="291" fill="#C0C0C8" font-family="monospace" font-size="9">125 HP</text>
+  <text x="576" y="300" fill="#4A4A50" font-family="monospace" font-size="8">← SR:510 (fair)</text>
+
+  <line x1="576" y1="310" x2="774" y2="310" stroke="#404048" stroke-width="1"/>
+
+  <text x="675" y="328" fill="#D4A845" font-family="monospace" font-size="9" text-anchor="middle">★ HIGH UT ALLOY RODS</text>
+  <text x="675" y="341" fill="#D4A845" font-family="monospace" font-size="9" text-anchor="middle">make this a strong miner.</text>
+  <text x="675" y="354" fill="#4A4A50" font-family="monospace" font-size="9" text-anchor="middle">Upgrade PE lot for faster</text>
+  <text x="675" y="367" fill="#4A4A50" font-family="monospace" font-size="9" text-anchor="middle">movement speed.</text>
+
+  <!-- Craft button -->
+  <rect x="591" y="400" width="168" height="28" rx="4" fill="#1A2A0A" stroke="#7CB87C" stroke-width="2"/>
+  <text x="675" y="419" fill="#7CB87C" font-family="monospace" font-size="12" text-anchor="middle" font-weight="bold">[ CRAFT ]</text>
+
+  <!-- Footer -->
+  <line x1="0" y1="452" x2="800" y2="452" stroke="#404048" stroke-width="1"/>
+  <text x="400" y="472" fill="#4A4A50" font-family="monospace" font-size="10" text-anchor="middle">Higher attribute values in key stats = better crafted item. The same schematic with S-tier UT Alloy Rods yields +40% mine speed.</text>
+</svg>

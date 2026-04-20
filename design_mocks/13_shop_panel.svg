@@ -1,0 +1,101 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 540" shape-rendering="crispEdges" font-family="monospace">
+  <!-- dimmed world behind -->
+  <rect width="960" height="540" fill="#1a1a1d"/>
+  <rect width="640" height="540" fill="#2a2a2e" fill-opacity="0.6"/>
+  <text x="200" y="270" fill="#4a4a50" font-size="32">(game world dimmed)</text>
+
+  <!-- shop panel slides in from right -->
+  <g transform="translate(640,0)">
+    <rect width="320" height="540" fill="#2a2a2e" stroke="#4a4a50" stroke-width="2"/>
+    <!-- rivets -->
+    <g fill="#d4a843">
+      <rect x="4" y="4" width="3" height="3"/>
+      <rect x="313" y="4" width="3" height="3"/>
+      <rect x="4" y="533" width="3" height="3"/>
+      <rect x="313" y="533" width="3" height="3"/>
+    </g>
+    <!-- header -->
+    <rect x="0" y="0" width="320" height="40" fill="#1a1a1d"/>
+    <text x="12" y="26" fill="#d4a843" font-size="14" font-weight="bold">SHOP TERMINAL</text>
+    <g transform="translate(290,12)">
+      <rect width="18" height="18" fill="#2a2a2e" stroke="#8b3a2a"/>
+      <text x="4" y="14" fill="#8b3a2a" font-size="12">X</text>
+    </g>
+    <!-- credits row -->
+    <rect x="0" y="40" width="320" height="26" fill="#15151a"/>
+    <text x="12" y="58" fill="#a88a4a" font-size="9">CR</text>
+    <text x="32" y="58" fill="#d4a843" font-size="12" font-weight="bold">000,230</text>
+    <!-- tabs -->
+    <g transform="translate(0,66)">
+      <rect width="320" height="28" fill="#2a2a2e"/>
+      <rect x="0" y="0" width="106" height="28" fill="#2a2a2e"/>
+      <rect x="0" y="26" width="106" height="2" fill="#d4a843"/>
+      <text x="20" y="18" fill="#d4a843" font-size="10">DRONES</text>
+      <text x="124" y="18" fill="#a88a4a" font-size="10">UPGRADES</text>
+      <text x="230" y="18" fill="#a88a4a" font-size="10">BUILD</text>
+    </g>
+
+    <!-- ROW 1 affordable -->
+    <g transform="translate(8,104)">
+      <rect width="304" height="82" fill="#1a1a1d" stroke="#4a4a50"/>
+      <rect x="8" y="8" width="32" height="32" fill="#2a2a2e"/>
+      <rect x="14" y="14" width="20" height="18" fill="#7cb87c"/>
+      <rect x="18" y="32" width="4" height="6" fill="#4a4a50"/>
+      <rect x="28" y="32" width="4" height="6" fill="#4a4a50"/>
+      <text x="50" y="22" fill="#d4a843" font-size="11" font-weight="bold">SCOUT DRONE</text>
+      <text x="50" y="36" fill="#a88a4a" font-size="8">60px/s · 3 ore · 3s</text>
+      <text x="50" y="52" fill="#a88a4a" font-size="8">"Small, cheap, fast."</text>
+      <rect x="230" y="52" width="66" height="22" fill="#2a2a2e" stroke="#d4a843"/>
+      <text x="240" y="67" fill="#d4a843" font-size="11" font-weight="bold">25 CR</text>
+    </g>
+
+    <!-- ROW 2 unaffordable -->
+    <g transform="translate(8,194)" opacity="0.55">
+      <rect width="304" height="82" fill="#1a1a1d" stroke="#4a4a50"/>
+      <rect x="8" y="8" width="32" height="32" fill="#2a2a2e"/>
+      <rect x="12" y="14" width="24" height="22" fill="#5a8fa8"/>
+      <text x="50" y="22" fill="#a88a4a" font-size="11" font-weight="bold">HEAVY DRONE</text>
+      <text x="50" y="36" fill="#a88a4a" font-size="8">40px/s · 10 ore · 2s</text>
+      <text x="50" y="52" fill="#a88a4a" font-size="8">"Slow but hauls."</text>
+      <rect x="230" y="52" width="66" height="22" fill="#2a2a2e" stroke="#8b3a2a"/>
+      <text x="236" y="67" fill="#8b3a2a" font-size="11" font-weight="bold">150 CR</text>
+    </g>
+
+    <!-- ROW 3 owned -->
+    <g transform="translate(8,284)">
+      <rect width="304" height="82" fill="#1a1a1d" stroke="#4a4a50"/>
+      <rect x="8" y="8" width="32" height="32" fill="#2a2a2e"/>
+      <rect x="14" y="14" width="20" height="22" fill="#d4a843"/>
+      <text x="50" y="22" fill="#d4a843" font-size="11" font-weight="bold">ORE HAULER</text>
+      <text x="50" y="36" fill="#a88a4a" font-size="8">80px/s · 5 ore · 3s</text>
+      <text x="50" y="52" fill="#a88a4a" font-size="8">Skips pool — direct sell.</text>
+      <rect x="220" y="52" width="76" height="22" fill="#1a1a1d" stroke="#7cb87c"/>
+      <text x="226" y="67" fill="#7cb87c" font-size="10" font-weight="bold">INSTALLED</text>
+    </g>
+
+    <!-- Fleet License -->
+    <g transform="translate(8,374)">
+      <rect width="304" height="60" fill="#1a1a1d" stroke="#4a4a50"/>
+      <text x="12" y="20" fill="#d4a843" font-size="11" font-weight="bold">FLEET LICENSE</text>
+      <text x="12" y="34" fill="#a88a4a" font-size="8">+1 active drone slot</text>
+      <g>
+        <rect x="12" y="42" width="10" height="10" fill="#d4a843"/>
+        <rect x="26" y="42" width="10" height="10" fill="#d4a843"/>
+        <rect x="40" y="42" width="10" height="10" fill="#4a4a50"/>
+        <rect x="54" y="42" width="10" height="10" fill="#4a4a50"/>
+        <text x="72" y="51" fill="#a88a4a" font-size="8">LV 2 / 4</text>
+      </g>
+      <rect x="230" y="20" width="66" height="22" fill="#2a2a2e" stroke="#d4a843"/>
+      <text x="240" y="35" fill="#d4a843" font-size="11" font-weight="bold">200 CR</text>
+    </g>
+
+    <!-- footer hint -->
+    <rect x="0" y="510" width="320" height="30" fill="#15151a"/>
+    <text x="12" y="529" fill="#a88a4a" font-size="8">[E] / TAP ROW TO BUY    ESC CLOSE</text>
+  </g>
+
+  <g>
+    <rect x="0" y="516" width="640" height="24" fill="#1a1a1d"/>
+    <text x="8" y="532" fill="#a88a4a" font-size="10">03 — SHOP PANEL  ·  affordable / unaffordable / owned / leveled states</text>
+  </g>
+</svg>
