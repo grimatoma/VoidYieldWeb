@@ -14,6 +14,7 @@ import { harvesterManager } from '@services/HarvesterManager';
 import { GasCollector } from '@entities/GasCollector';
 import { fleetManager } from '@services/FleetManager';
 import { strandingManager } from '@services/StrandingManager';
+import { logisticsManager } from '@services/LogisticsManager';
 
 const WORLD_WIDTH = 3200;
 const WORLD_HEIGHT = 2400;
@@ -119,8 +120,9 @@ export class PlanetBScene implements Scene {
     this.strandingBanner.position.set(10, 50);
     app.stage.addChild(this.strandingBanner);
 
-    // 13. Mining service wiring
+    // 13. Mining service wiring + logistics registration
     miningService.setDepot(this.storageDepot);
+    logisticsManager.registerPlanet('planet_b', this.storageDepot);
     this.unsubInteract = inputManager.onAction((action, pressed) => {
       if (action === 'interact' && pressed) {
         const harvesterResult = harvesterManager.onInteract(this.player.x, this.player.y);
@@ -158,6 +160,7 @@ export class PlanetBScene implements Scene {
     this.camera.unmount(this.app.canvas);
     harvesterManager.clear(this.worldContainer);
     fleetManager.clear();
+    logisticsManager.unregisterPlanet('planet_b');
     this.app.stage.removeChildren();
     this.sites = [];
   }

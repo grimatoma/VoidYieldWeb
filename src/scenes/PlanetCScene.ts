@@ -16,6 +16,7 @@ import { fleetManager } from '@services/FleetManager';
 import { GalaxyMap } from '@ui/GalaxyMap';
 import { gameState } from '@services/GameState';
 import { EventBus } from '@services/EventBus';
+import { logisticsManager } from '@services/LogisticsManager';
 
 const WORLD_WIDTH = 4000;
 const WORLD_HEIGHT = 3000;
@@ -135,6 +136,7 @@ export class PlanetCScene implements Scene {
 
     // 15. Mining service wiring
     miningService.setDepot(this.storageDepot);
+    logisticsManager.registerPlanet('planet_c', this.storageDepot);
     this.unsubInteract = inputManager.onAction((action, pressed) => {
       if (action === 'interact' && pressed) {
         const harvesterResult = harvesterManager.onInteract(this.player.x, this.player.y);
@@ -166,6 +168,7 @@ export class PlanetCScene implements Scene {
     this.camera.unmount(this.app.canvas);
     harvesterManager.clear(this.worldContainer);
     fleetManager.clear();
+    logisticsManager.unregisterPlanet('planet_c');
     this.app.stage.removeChildren();
     this.sites = [];
   }

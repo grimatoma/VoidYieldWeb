@@ -89,6 +89,25 @@ export class ConsumptionManager {
     return total;
   }
 
+  /** Directly set population at a tier — for testing/debug only */
+  setTierPopulation(tier: ColonyTier, count: number): void {
+    this._tierPopulation.set(tier, Math.max(0, count));
+    EventBus.emit('population:changed', this.getTotalPopulation(), this._housingCapacity);
+  }
+
+  /** Reset all population to initial state */
+  resetPopulation(): void {
+    const tiers: ColonyTier[] = ['pioneer', 'colonist', 'technician', 'engineer', 'director'];
+    for (const tier of tiers) {
+      this._tierPopulation.set(tier, 0);
+      this._tierBasicNeedsPct.set(tier, 1.0);
+      this._tierLuxuryNeedsPct.set(tier, 1.0);
+      this._luxurySatisfiedTimer.set(tier, 0);
+    }
+    this._tierPopulation.set('pioneer', 4);
+    EventBus.emit('population:changed', this.getTotalPopulation(), this._housingCapacity);
+  }
+
   /** Get highest tier with population > 0 */
   getCurrentTier(): ColonyTier {
     for (const tier of ['director', 'engineer', 'technician', 'colonist', 'pioneer'] as ColonyTier[]) {

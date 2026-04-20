@@ -25,6 +25,14 @@ class LogisticsManager {
     _planetDepots.delete(planetId);
   }
 
+  getDepot(planetId: string): StorageDepot | undefined {
+    return _planetDepots.get(planetId);
+  }
+
+  clearRoutes(): void {
+    this._routes = [];
+  }
+
   /** Create a new manual trade route. */
   addRoute(params: {
     sourcePlanet: string;

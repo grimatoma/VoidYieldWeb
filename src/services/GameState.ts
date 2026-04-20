@@ -49,6 +49,11 @@ export class GameState {
     return true;
   }
 
+  setResearchPoints(amount: number): void {
+    this._researchPoints = Math.max(0, amount);
+    EventBus.emit('rp:changed', this._researchPoints);
+  }
+
   addUnlock(nodeId: string): void {
     if (!this._techTreeUnlocks.includes(nodeId)) {
       this._techTreeUnlocks.push(nodeId);

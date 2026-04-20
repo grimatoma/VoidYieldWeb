@@ -80,6 +80,20 @@ export class StorageDepot {
 
   getStockpile(): Map<OreType, number> { return this.stockpile; }
 
+  /** Set stockpile amount for a specific ore type — for testing/debug only */
+  setStock(oreType: OreType, qty: number): void {
+    if (qty <= 0) {
+      this.stockpile.delete(oreType);
+    } else {
+      this.stockpile.set(oreType, qty);
+    }
+  }
+
+  /** Clear all stockpile — for testing/debug only */
+  clearStock(): void {
+    this.stockpile.clear();
+  }
+
   isNearby(px: number, py: number, radius = 40): boolean {
     const dx = px - this.x;
     const dy = py - this.y;

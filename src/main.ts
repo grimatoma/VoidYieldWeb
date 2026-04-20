@@ -7,6 +7,7 @@ import { PlanetBScene } from '@scenes/PlanetBScene';
 import { PlanetCScene } from '@scenes/PlanetCScene';
 import { inputManager } from '@services/InputManager';
 import { EventBus } from '@services/EventBus';
+import { voidyieldDebugAPI, injectSceneUpdater } from './debug/VoidYieldDebugAPI';
 
 async function main(): Promise<void> {
   const app = new Application();
@@ -57,6 +58,13 @@ async function main(): Promise<void> {
   });
 
   await sceneManager.switchTo('boot');
+
+  // Mount debug API in dev/test builds for E2E testing
+  if ((import.meta as { env?: { DEV?: boolean } }).env?.DEV) {
+    injectSceneUpdater((dt) => sceneManager.update(dt));
+    window.__voidyield__ = voidyieldDebugAPI;
+    console.info('[VoidYield] Debug API mounted at window.__voidyield__');
+  }
 }
 
 main().catch(console.error);
