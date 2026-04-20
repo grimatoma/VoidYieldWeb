@@ -18,6 +18,11 @@ const ORE_COLORS: Record<OreType, number> = {
   processed_resin: 0x8BC34A,
   power_cells: 0xFFD54F,
   bio_circuit_boards: 0xFF7043,
+  dark_gas: 0x263238,
+  void_touched_ore: 0x9C27B0,
+  resonance_shards: 0xE91E63,
+  ferrovoid: 0x4E342E,
+  warp_components: 0x00BCD4,
 };
 
 export class Deposit {

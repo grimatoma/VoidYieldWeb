@@ -4,6 +4,7 @@ import { BootScene } from '@scenes/BootScene';
 import { PlanetA1Scene } from '@scenes/PlanetA1Scene';
 import { PlanetA2Scene } from '@scenes/PlanetA2Scene';
 import { PlanetBScene } from '@scenes/PlanetBScene';
+import { PlanetCScene } from '@scenes/PlanetCScene';
 import { inputManager } from '@services/InputManager';
 import { EventBus } from '@services/EventBus';
 
@@ -29,6 +30,7 @@ async function main(): Promise<void> {
   sceneManager.register('planet_a1', async () => new PlanetA1Scene());
   sceneManager.register('planet_a2', async () => new PlanetA2Scene());
   sceneManager.register('planet_b', async () => new PlanetBScene());
+  sceneManager.register('planet_c', async () => new PlanetCScene());
 
   // Fullscreen toggle per spec 16
   inputManager.onAction((action) => {

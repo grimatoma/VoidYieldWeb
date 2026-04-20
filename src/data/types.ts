@@ -1,4 +1,4 @@
-export type OreType = 'vorax' | 'krysite' | 'gas' | 'steel_bars' | 'compressed_gas' | 'water' | 'alloy_rods' | 'rocket_fuel' | 'shards' | 'aethite' | 'void_cores' | 'processed_rations' | 'bio_resin' | 'processed_resin' | 'power_cells' | 'bio_circuit_boards';
+export type OreType = 'vorax' | 'krysite' | 'gas' | 'steel_bars' | 'compressed_gas' | 'water' | 'alloy_rods' | 'rocket_fuel' | 'shards' | 'aethite' | 'void_cores' | 'processed_rations' | 'bio_resin' | 'processed_resin' | 'power_cells' | 'bio_circuit_boards' | 'dark_gas' | 'void_touched_ore' | 'resonance_shards' | 'ferrovoid' | 'warp_components';
 
 export type ColonyTier = 'pioneer' | 'colonist' | 'technician' | 'engineer' | 'director';
 
@@ -77,6 +77,14 @@ export interface DroneTask {
 
 export type RouteStatus = 'IDLE' | 'LOADING' | 'IN_TRANSIT' | 'DELIVERING' | 'STALLED';
 export type CargoClass = 'bulk' | 'refined' | 'components';
+export type CargoShipType = 'bulk_freighter' | 'liquid_tanker' | 'container_ship' | 'heavy_transport';
+
+export interface CargoShipSpec {
+  type: CargoShipType;
+  capacity: number;
+  fuelPerTrip: number;
+  allowedCargoClasses: CargoClass[];
+}
 
 export interface TradeRoute {
   routeId: string;
@@ -90,4 +98,6 @@ export interface TradeRoute {
   tripsCompleted: number;
   elapsedSec: number;     // time since last dispatch
   autoDispatch: boolean;  // false for M11 (manual only)
+  shipType: CargoShipType;
+  autoDispatchThreshold: number;  // 0 = manual, 0.8 = dispatch when 80% of cargo available
 }

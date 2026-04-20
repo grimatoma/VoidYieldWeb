@@ -14,6 +14,7 @@ export class GameState {
   private _a2Visited: boolean = false;
   private _voidCoresProduced: number = 0;
   private _a3Unlocked: boolean = false;
+  private _planetCVisited: boolean = false;
 
   get credits(): number { return this._credits; }
   get researchPoints(): number { return this._researchPoints; }
@@ -24,6 +25,7 @@ export class GameState {
   get a2Visited(): boolean { return this._a2Visited; }
   get voidCoresProduced(): number { return this._voidCoresProduced; }
   get a3Unlocked(): boolean { return this._a3Unlocked; }
+  get planetCVisited(): boolean { return this._planetCVisited; }
 
   addCredits(amount: number): void {
     this._credits = Math.max(0, this._credits + amount);
@@ -76,6 +78,10 @@ export class GameState {
     this._checkA3Unlock();
   }
 
+  visitPlanetC(): void {
+    this._planetCVisited = true;
+  }
+
   addVoidCoresProduced(n: number): void {
     this._voidCoresProduced += n;
     this._checkA3Unlock();
@@ -99,6 +105,7 @@ export class GameState {
       a2_visited: this._a2Visited,
       void_cores_produced: this._voidCoresProduced,
       a3_unlocked: this._a3Unlocked,
+      planet_c_visited: this._planetCVisited,
     };
   }
 
@@ -113,6 +120,7 @@ export class GameState {
     this._a2Visited = (data as any).a2_visited ?? false;
     this._voidCoresProduced = (data as any).void_cores_produced ?? 0;
     this._a3Unlocked = (data as any).a3_unlocked ?? false;
+    this._planetCVisited = (data as any).planet_c_visited ?? false;
   }
 
   reset(): void {
@@ -127,6 +135,7 @@ export class GameState {
     this._a2Visited = false;
     this._voidCoresProduced = 0;
     this._a3Unlocked = false;
+    this._planetCVisited = false;
     this._paused = false;
   }
 }

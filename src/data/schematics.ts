@@ -75,6 +75,52 @@ export const FABRICATOR_SCHEMATICS: Record<string, FabricatorSchematic> = {
   },
 };
 
+export interface AssemblySchematic {
+  schematicId: string;
+  name: string;
+  inputTypeA: OreType;
+  inputQtyA: number;
+  inputTypeB: OreType;
+  inputQtyB: number;
+  inputTypeC: OreType;
+  inputQtyC: number;
+  outputType: OreType;
+  outputQty: number;
+  batchPerHr: number;
+  powerDraw: number;
+}
+
+export const ASSEMBLY_SCHEMATICS: Record<string, AssemblySchematic> = {
+  rocket_engine: {
+    schematicId: 'rocket_engine',
+    name: 'Rocket Engine',
+    inputTypeA: 'steel_bars',
+    inputQtyA: 2,
+    inputTypeB: 'alloy_rods',
+    inputQtyB: 2,
+    inputTypeC: 'compressed_gas',
+    inputQtyC: 3,
+    outputType: 'rocket_fuel',
+    outputQty: 5,
+    batchPerHr: 2,
+    powerDraw: 15,
+  },
+  warp_capacitor: {
+    schematicId: 'warp_capacitor',
+    name: 'Warp Capacitor',
+    inputTypeA: 'void_cores',
+    inputQtyA: 1,
+    inputTypeB: 'alloy_rods',
+    inputQtyB: 2,
+    inputTypeC: 'resonance_shards',
+    inputQtyC: 3,
+    outputType: 'warp_components',
+    outputQty: 1,
+    batchPerHr: 1,
+    powerDraw: 15,
+  },
+};
+
 export const SCHEMATICS: Record<string, Schematic> = {
   ore_smelter: {
     schematicId: 'ore_smelter',

@@ -18,6 +18,11 @@ const SELL_PRICES: Record<OreType, number> = {
   processed_resin: 6,
   power_cells: 10,
   bio_circuit_boards: 15,
+  dark_gas: 1,
+  void_touched_ore: 5,
+  resonance_shards: 15,
+  ferrovoid: 12,
+  warp_components: 50,
 };
 
 export class StorageDepot {

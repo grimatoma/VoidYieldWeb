@@ -56,11 +56,13 @@ describe('LogisticsOverlay', () => {
         cargoType: 'steel_bars' as const,
         cargoQty: 100,
         cargoClass: 'bulk' as const,
+        shipType: 'bulk_freighter' as const,
         status: 'IDLE' as const,
         tripTimeSec: 180,
         tripsCompleted: 0,
         elapsedSec: 0,
         autoDispatch: false,
+        autoDispatchThreshold: 0,
       },
     ];
     expect(() => overlay.refresh(fakeRoutes)).not.toThrow();
@@ -91,11 +93,13 @@ describe('LogisticsOverlay', () => {
       cargoType: 'steel_bars' as const,
       cargoQty: 100,
       cargoClass: 'bulk' as const,
+      shipType: 'bulk_freighter' as const,
       status: 'IDLE' as const,
       tripTimeSec: 180,
       tripsCompleted: 0,
       elapsedSec: 0,
       autoDispatch: false,
+      autoDispatchThreshold: 0,
     };
 
     overlay.refresh([fakeRoute]);

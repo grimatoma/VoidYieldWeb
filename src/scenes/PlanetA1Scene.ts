@@ -207,6 +207,7 @@ export class PlanetA1Scene implements Scene {
       { id: 'planet_a1', label: 'Planet A1', x: 0, y: 0, unlocked: true, current: true },
       { id: 'planet_a2', label: 'A2 Asteroid', x: 0, y: 0, unlocked: true, current: false },
       { id: 'planet_b', label: 'Planet B', x: 0, y: 0, unlocked: true, current: false },
+      { id: 'planet_c', label: 'Planet C', x: 0, y: 0, unlocked: true, current: false },
     ]);
     app.stage.addChild(this.galaxyMap.container);
 

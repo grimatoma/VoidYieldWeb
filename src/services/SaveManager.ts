@@ -29,6 +29,7 @@ export interface SaveData {
   a2_visited?: boolean;
   void_cores_produced?: number;
   a3_unlocked?: boolean;
+  planet_c_visited?: boolean;
 }
 
 export function defaultSaveData(): SaveData {

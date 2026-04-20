@@ -382,6 +382,17 @@ export const TECH_NODES: TechNode[] = [
     effectType: 'auto_pull',
     effectValue: 1,
   },
+  {
+    nodeId: 'assembly_complex_unlock',
+    name: 'Assembly Complex',
+    description: 'Unlocks Assembly Complex (3-slot, 3-input Tier 3 factory). 15 Power/sec.',
+    branch: 2,
+    rpCost: 1200,
+    crCost: 2000,
+    prerequisites: ['fabricator_unlock', 'energy_efficiency_2'],
+    effectType: 'unlock_assembly_complex',
+    effectValue: 1,
+  },
   // ===== Branch 3 — Expansion (continued) =====
   // Fleet caps
   {

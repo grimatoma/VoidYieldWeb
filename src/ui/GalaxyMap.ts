@@ -88,14 +88,24 @@ export class GalaxyMap {
       planet_a1: { x: 360, y: 270 },
       planet_a2: { x: 480, y: 200 },
       planet_b: { x: 580, y: 250 },
+      planet_c: { x: 640, y: 330 },
     };
 
     for (const node of this._planetNodes) {
       const pos = planetMapPositions[node.id] ?? { x: 480, y: 270 };
       const g = new Graphics();
 
-      // Planet circle
-      const color = node.current ? 0xD4A843 : node.unlocked ? 0x00B8D4 : 0x333355;
+      // Planet circle — use void-touched pink for planet_c
+      let color: number;
+      if (node.current) {
+        color = 0xD4A843;
+      } else if (!node.unlocked) {
+        color = 0x333355;
+      } else if (node.id === 'planet_c') {
+        color = 0xE91E63; // pink-red for void-touched
+      } else {
+        color = 0x00B8D4;
+      }
       g.circle(pos.x, pos.y, node.current ? 14 : 10).fill(color);
       if (node.current) {
         g.circle(pos.x, pos.y, 14).stroke({ width: 2, color: 0xFFFFFF, alpha: 0.5 });
