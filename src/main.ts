@@ -5,6 +5,7 @@ import { PlanetA1Scene } from '@scenes/PlanetA1Scene';
 import { PlanetA2Scene } from '@scenes/PlanetA2Scene';
 import { PlanetBScene } from '@scenes/PlanetBScene';
 import { PlanetCScene } from '@scenes/PlanetCScene';
+import { PlanetA3Scene } from '@scenes/PlanetA3Scene';
 import { inputManager } from '@services/InputManager';
 import { EventBus } from '@services/EventBus';
 import { voidyieldDebugAPI, injectSceneUpdater } from './debug/VoidYieldDebugAPI';
@@ -32,6 +33,7 @@ async function main(): Promise<void> {
   sceneManager.register('planet_a2', async () => new PlanetA2Scene());
   sceneManager.register('planet_b', async () => new PlanetBScene());
   sceneManager.register('planet_c', async () => new PlanetCScene());
+  sceneManager.register('planet_a3', async () => new PlanetA3Scene());
 
   // Fullscreen toggle per spec 16
   inputManager.onAction((action) => {

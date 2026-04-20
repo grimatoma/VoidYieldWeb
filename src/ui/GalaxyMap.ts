@@ -89,13 +89,14 @@ export class GalaxyMap {
       planet_a2: { x: 480, y: 200 },
       planet_b: { x: 580, y: 250 },
       planet_c: { x: 640, y: 330 },
+      planet_a3: { x: 720, y: 200 },
     };
 
     for (const node of this._planetNodes) {
       const pos = planetMapPositions[node.id] ?? { x: 480, y: 270 };
       const g = new Graphics();
 
-      // Planet circle — use void-touched pink for planet_c
+      // Planet circle — use void-touched pink for planet_c, deep teal for planet_a3
       let color: number;
       if (node.current) {
         color = 0xD4A843;
@@ -103,6 +104,8 @@ export class GalaxyMap {
         color = 0x333355;
       } else if (node.id === 'planet_c') {
         color = 0xE91E63; // pink-red for void-touched
+      } else if (node.id === 'planet_a3') {
+        color = 0x00B8D4; // deep teal for Void Nexus
       } else {
         color = 0x00B8D4;
       }
@@ -152,6 +155,7 @@ export class GalaxyMap {
     const a1 = this._planetNodes.find((n) => n.id === 'planet_a1');
     const a2 = this._planetNodes.find((n) => n.id === 'planet_a2');
     const b = this._planetNodes.find((n) => n.id === 'planet_b');
+    const a3 = this._planetNodes.find((n) => n.id === 'planet_a3');
 
     const lineG = new Graphics();
 
@@ -171,6 +175,12 @@ export class GalaxyMap {
     if (a1?.unlocked && b?.unlocked && (!a2?.unlocked)) {
       lineG.moveTo(360, 270).lineTo(580, 250);
       lineG.stroke({ width: 1, color: 0x334477, alpha: 0.6 });
+    }
+
+    // B → A3 (Void Nexus route) if both unlocked
+    if (b?.unlocked && a3?.unlocked) {
+      lineG.moveTo(580, 250).lineTo(720, 200);
+      lineG.stroke({ width: 1, color: 0x00B8D4, alpha: 0.6 });
     }
 
     // Insert before planet circles (after stars)

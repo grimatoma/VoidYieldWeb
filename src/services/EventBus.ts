@@ -13,6 +13,13 @@ export type GameEvents = {
   'inventory:changed': [];
   'population:changed': [count: number, capacity: number];
   'needs:changed': [compressed_gas_pct: number, water_pct: number];
+  'warpgate:built': [];
+  'galactichub:built': [];
+  'sector:complete': [];
+  'prestige:initiate': [];
+  'sector:reset': [selectedBonus: string];
+  'offline:simulation_needed': [offlineSeconds: number];
+  'offline:dispatched': [];
 };
 
 class TypedEventBus extends EventEmitter<GameEvents> {}

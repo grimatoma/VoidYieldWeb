@@ -30,6 +30,7 @@ export interface SaveData {
   void_cores_produced?: number;
   a3_unlocked?: boolean;
   planet_c_visited?: boolean;
+  sector_manager?: { sectorBonuses: string[]; warpGateBuilt: boolean; galacticHubBuilt: boolean };
 }
 
 export function defaultSaveData(): SaveData {
@@ -83,6 +84,18 @@ export class SaveManager {
         console.warn(`SaveManager: format mismatch (${parsed.format_version} vs ${FORMAT_VERSION}), resetting`);
         return null;
       }
+
+      // Check for offline simulation (5+ minutes since last save)
+      const now = Math.floor(Date.now() / 1000);
+      const lastSave = parsed.last_save_timestamp ?? now;
+      const offlineSeconds = now - lastSave;
+      if (offlineSeconds >= 300) {
+        // Emit after a short delay so game systems can initialize first
+        setTimeout(() => {
+          EventBus.emit('offline:simulation_needed', offlineSeconds);
+        }, 1000);
+      }
+
       return parsed;
     } catch (err) {
       console.error('SaveManager: corrupt save, resetting', err);

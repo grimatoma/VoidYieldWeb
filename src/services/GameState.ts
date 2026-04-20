@@ -54,6 +54,10 @@ export class GameState {
     EventBus.emit('rp:changed', this._researchPoints);
   }
 
+  setSectorNumber(n: number): void {
+    this._sectorNumber = Math.max(1, n);
+  }
+
   addUnlock(nodeId: string): void {
     if (!this._techTreeUnlocks.includes(nodeId)) {
       this._techTreeUnlocks.push(nodeId);
