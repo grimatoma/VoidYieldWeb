@@ -10,6 +10,8 @@ import { DEPOSITS_A1 } from '../data/deposits_a1';
 import { StorageDepot } from '@entities/StorageDepot';
 import { HudOverlay } from '../ui/HudOverlay';
 import { miningService } from '@services/MiningService';
+import { harvesterManager } from '@services/HarvesterManager';
+import { GasCollector } from '@entities/GasCollector';
 
 const WORLD_WIDTH = 2800;
 const WORLD_HEIGHT = 2000;
@@ -63,7 +65,11 @@ export class PlanetA1Scene implements Scene {
     // 5. Deposits
     depositMap.loadPlanet(DEPOSITS_A1, this.worldContainer);
 
-    // 6. Storage depot
+    // 6. Gas collector on gas deposit
+    const gasCollector = new GasCollector(300, 900, 80);
+    harvesterManager.add(gasCollector, this.worldContainer);
+
+    // 7. Storage depot
     this.storageDepot = new StorageDepot(1400, 1000);
     this.worldContainer.addChild(this.storageDepot.container);
 
@@ -93,7 +99,10 @@ export class PlanetA1Scene implements Scene {
     miningService.setDepot(this.storageDepot);
     this.unsubInteract = inputManager.onAction((action, pressed) => {
       if (action === 'interact' && pressed) {
-        miningService.onInteract(this.player.x, this.player.y);
+        const harvesterResult = harvesterManager.onInteract(this.player.x, this.player.y);
+        if (harvesterResult === null) {
+          miningService.onInteract(this.player.x, this.player.y);
+        }
       }
     });
   }
@@ -103,12 +112,14 @@ export class PlanetA1Scene implements Scene {
     this.camera.follow({ x: this.player.x, y: this.player.y });
     this.minimap.update({ x: this.player.x, y: this.player.y });
     miningService.update(delta);
+    harvesterManager.update(delta);
   }
 
   exit(): void {
     this.unsubInteract?.();
     this.hud?.destroy();
     this.camera.unmount(this.app.canvas);
+    harvesterManager.clear(this.worldContainer);
     this.app.stage.removeChildren();
     this.sites = [];
   }

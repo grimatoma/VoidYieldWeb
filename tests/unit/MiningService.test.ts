@@ -20,7 +20,7 @@ vi.mock('@services/Inventory', () => ({
 import { MiningService } from '@services/MiningService';
 import { depositMap } from '@services/DepositMap';
 import { gameState } from '@services/GameState';
-import { inventory } from '@services/Inventory';
+import { inventory as _inventory } from '@services/Inventory';
 
 describe('MiningService', () => {
   let svc: MiningService;
