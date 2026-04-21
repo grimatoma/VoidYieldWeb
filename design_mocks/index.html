@@ -1,0 +1,935 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>VoidYield — Design Mocks</title>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg:         #080A0D;
+      --bg-elev:    #0B1020;
+      --navy:       #0D1B3E;
+      --navy-deep:  #050914;
+      --amber:      #D4A843;
+      --amber-soft: #E8C876;
+      --amber-dim:  rgba(212, 168, 67, 0.3);
+      --amber-ghost:rgba(212, 168, 67, 0.08);
+      --teal:       #00B8D4;
+      --teal-soft:  #4ECDC4;
+      --teal-dim:   rgba(0, 184, 212, 0.22);
+      --panel:      rgba(13, 27, 62, 0.72);
+      --panel-solid:#0E1A38;
+      --text:       #D8E2EE;
+      --text-dim:   rgba(216, 226, 238, 0.6);
+      --text-faint: rgba(216, 226, 238, 0.35);
+      --border:     1px solid rgba(212, 168, 67, 0.28);
+      --border-teal:1px solid rgba(0, 184, 212, 0.28);
+      --shadow-glow: 0 0 24px rgba(212, 168, 67, 0.12);
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    html { scroll-behavior: smooth; }
+
+    html, body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'Space Mono', 'Courier New', monospace;
+      min-height: 100vh;
+      line-height: 1.5;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    body {
+      background:
+        radial-gradient(ellipse at 20% 0%, rgba(13, 27, 62, 0.8) 0%, transparent 55%),
+        radial-gradient(ellipse at 80% 10%, rgba(0, 184, 212, 0.08) 0%, transparent 45%),
+        var(--bg);
+      background-attachment: fixed;
+    }
+
+    a { color: inherit; text-decoration: none; }
+
+    /* ─── STARFIELD ACCENT ─── */
+    .stars {
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      z-index: 0;
+      background-image:
+        radial-gradient(1px 1px at 20% 30%, rgba(212,168,67,0.7), transparent),
+        radial-gradient(1px 1px at 70% 20%, rgba(0,184,212,0.5), transparent),
+        radial-gradient(1px 1px at 40% 80%, rgba(255,255,255,0.6), transparent),
+        radial-gradient(1px 1px at 85% 65%, rgba(212,168,67,0.5), transparent),
+        radial-gradient(1px 1px at 15% 60%, rgba(255,255,255,0.4), transparent),
+        radial-gradient(1px 1px at 55% 40%, rgba(0,184,212,0.4), transparent),
+        radial-gradient(1px 1px at 90% 90%, rgba(255,255,255,0.5), transparent),
+        radial-gradient(1px 1px at 30% 15%, rgba(212,168,67,0.4), transparent);
+      opacity: 0.45;
+    }
+
+    /* ─── HERO ─── */
+    .hero {
+      position: relative;
+      padding: 80px 48px 56px;
+      border-bottom: var(--border);
+      background:
+        linear-gradient(180deg, rgba(13, 27, 62, 0.6) 0%, rgba(8, 10, 13, 0.2) 100%);
+      overflow: hidden;
+      z-index: 1;
+    }
+
+    .hero::before {
+      content: '';
+      position: absolute;
+      top: -50%;
+      right: -10%;
+      width: 600px;
+      height: 600px;
+      background: radial-gradient(circle, rgba(0, 184, 212, 0.12) 0%, transparent 65%);
+      pointer-events: none;
+    }
+
+    .hero::after {
+      content: '';
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      height: 1px;
+      background: linear-gradient(90deg, transparent, var(--amber) 50%, transparent);
+      opacity: 0.5;
+    }
+
+    .hero-inner {
+      max-width: 1400px;
+      margin: 0 auto;
+      position: relative;
+    }
+
+    .eyebrow {
+      display: inline-block;
+      padding: 4px 10px;
+      border: var(--border-teal);
+      color: var(--teal);
+      font-size: 10px;
+      letter-spacing: 0.25em;
+      text-transform: uppercase;
+      margin-bottom: 20px;
+      background: var(--teal-dim);
+    }
+
+    .title {
+      font-size: 44px;
+      font-weight: 700;
+      color: var(--amber);
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      line-height: 1.1;
+      text-shadow: 0 0 30px rgba(212, 168, 67, 0.3);
+    }
+    .title span { color: var(--teal); }
+
+    .tagline {
+      margin-top: 16px;
+      font-size: 15px;
+      color: var(--text);
+      max-width: 720px;
+      letter-spacing: 0.02em;
+    }
+
+    .hero-stats {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 28px;
+      margin-top: 32px;
+      padding-top: 24px;
+      border-top: 1px dashed var(--amber-dim);
+    }
+    .stat {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+    .stat-val {
+      font-size: 22px;
+      font-weight: 700;
+      color: var(--amber);
+      letter-spacing: 0.05em;
+    }
+    .stat-lbl {
+      font-size: 10px;
+      color: var(--text-dim);
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+    }
+
+    .hero-cta {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      margin-top: 28px;
+    }
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 10px 18px;
+      border: var(--border);
+      background: var(--panel);
+      color: var(--text);
+      font-family: inherit;
+      font-size: 11px;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      cursor: pointer;
+      transition: all 0.15s ease;
+    }
+    .btn:hover {
+      color: var(--amber);
+      border-color: var(--amber);
+      background: var(--amber-ghost);
+      transform: translateY(-1px);
+    }
+    .btn.primary {
+      color: var(--bg);
+      background: var(--amber);
+      border-color: var(--amber);
+    }
+    .btn.primary:hover {
+      background: var(--amber-soft);
+      color: var(--bg);
+    }
+    .btn.teal {
+      color: var(--teal);
+      border-color: var(--teal);
+    }
+    .btn.teal:hover {
+      background: var(--teal-dim);
+      color: var(--teal-soft);
+    }
+
+    /* ─── LAYOUT ─── */
+    .layout {
+      display: grid;
+      grid-template-columns: 260px 1fr;
+      max-width: 1600px;
+      margin: 0 auto;
+      position: relative;
+      z-index: 1;
+    }
+
+    /* ─── SIDEBAR ─── */
+    aside {
+      position: sticky;
+      top: 0;
+      align-self: start;
+      height: 100vh;
+      overflow-y: auto;
+      padding: 32px 20px 32px 32px;
+      border-right: var(--border);
+      background: rgba(5, 9, 20, 0.6);
+      backdrop-filter: blur(8px);
+    }
+
+    .toc-title {
+      font-size: 10px;
+      font-weight: 700;
+      color: var(--teal);
+      letter-spacing: 0.25em;
+      text-transform: uppercase;
+      margin-bottom: 16px;
+      padding-bottom: 10px;
+      border-bottom: 1px solid var(--teal-dim);
+    }
+
+    .toc-group {
+      margin-bottom: 18px;
+    }
+    .toc-group-title {
+      font-size: 10px;
+      font-weight: 700;
+      color: var(--amber);
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      margin-bottom: 8px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .toc-group-title::before {
+      content: '';
+      width: 6px;
+      height: 6px;
+      background: var(--amber);
+      box-shadow: 0 0 6px var(--amber);
+    }
+
+    .toc-list {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+    .toc-list a {
+      display: flex;
+      align-items: baseline;
+      gap: 8px;
+      padding: 4px 8px;
+      font-size: 11px;
+      color: var(--text-dim);
+      border-left: 2px solid transparent;
+      transition: all 0.12s ease;
+    }
+    .toc-list a:hover {
+      color: var(--amber);
+      border-left-color: var(--amber);
+      background: var(--amber-ghost);
+    }
+    .toc-list .num {
+      color: var(--teal);
+      font-weight: 700;
+      font-size: 10px;
+      min-width: 18px;
+    }
+
+    /* ─── MAIN ─── */
+    main {
+      padding: 48px 48px 80px;
+      min-width: 0;
+    }
+
+    .category {
+      margin-bottom: 48px;
+    }
+    .category-header {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      margin-bottom: 24px;
+      padding: 12px 16px;
+      background: linear-gradient(90deg, var(--teal-dim) 0%, transparent 100%);
+      border-left: 3px solid var(--teal);
+    }
+    .category-icon {
+      width: 10px;
+      height: 10px;
+      background: var(--teal);
+      box-shadow: 0 0 10px var(--teal);
+    }
+    .category-name {
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--teal-soft);
+      letter-spacing: 0.22em;
+      text-transform: uppercase;
+    }
+    .category-count {
+      margin-left: auto;
+      font-size: 10px;
+      color: var(--text-faint);
+      letter-spacing: 0.2em;
+    }
+
+    .mock {
+      margin-bottom: 40px;
+      scroll-margin-top: 24px;
+    }
+
+    .mock-header {
+      display: flex;
+      align-items: baseline;
+      gap: 14px;
+      margin-bottom: 12px;
+      padding-bottom: 10px;
+      border-bottom: 1px dashed var(--amber-dim);
+    }
+
+    .mock-num {
+      font-size: 11px;
+      font-weight: 700;
+      color: var(--teal);
+      letter-spacing: 0.15em;
+      padding: 3px 8px;
+      border: var(--border-teal);
+      background: var(--teal-dim);
+    }
+
+    .mock-title {
+      font-size: 17px;
+      font-weight: 700;
+      color: var(--amber);
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+    }
+
+    .mock-file {
+      margin-left: auto;
+      font-size: 10px;
+      color: var(--text-faint);
+    }
+    .mock-file a:hover { color: var(--teal); }
+
+    .mock-frame {
+      position: relative;
+      background: var(--panel-solid);
+      border: var(--border);
+      padding: 20px;
+      overflow: auto;
+      box-shadow: var(--shadow-glow);
+      transition: box-shadow 0.2s ease, border-color 0.2s ease;
+    }
+    .mock-frame:hover {
+      border-color: var(--amber);
+      box-shadow: 0 0 32px rgba(212, 168, 67, 0.22);
+    }
+    .mock-frame::before {
+      content: '';
+      position: absolute;
+      top: 6px;
+      left: 6px;
+      width: 8px;
+      height: 8px;
+      border-top: 1px solid var(--amber);
+      border-left: 1px solid var(--amber);
+    }
+    .mock-frame::after {
+      content: '';
+      position: absolute;
+      bottom: 6px;
+      right: 6px;
+      width: 8px;
+      height: 8px;
+      border-bottom: 1px solid var(--amber);
+      border-right: 1px solid var(--amber);
+    }
+
+    .mock-frame img {
+      display: block;
+      max-width: 100%;
+      height: auto;
+      margin: 0 auto;
+    }
+
+    /* ─── FOOTER ─── */
+    footer {
+      padding: 32px 24px;
+      text-align: center;
+      color: var(--text-dim);
+      font-size: 11px;
+      border-top: var(--border);
+      letter-spacing: 0.1em;
+      background: rgba(5, 9, 20, 0.5);
+      position: relative;
+      z-index: 1;
+    }
+    footer a { color: var(--teal); }
+    footer a:hover { color: var(--teal-soft); }
+
+    /* ─── BACK TO TOP ─── */
+    .to-top {
+      position: fixed;
+      bottom: 24px;
+      right: 24px;
+      width: 44px;
+      height: 44px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: var(--panel-solid);
+      border: var(--border);
+      color: var(--amber);
+      font-size: 18px;
+      cursor: pointer;
+      opacity: 0;
+      transform: translateY(12px);
+      transition: all 0.2s ease;
+      z-index: 10;
+    }
+    .to-top.visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+    .to-top:hover {
+      background: var(--amber);
+      color: var(--bg);
+    }
+
+    /* ─── RESPONSIVE ─── */
+    @media (max-width: 900px) {
+      .layout { grid-template-columns: 1fr; }
+      aside {
+        position: relative;
+        height: auto;
+        border-right: none;
+        border-bottom: var(--border);
+        padding: 24px;
+      }
+      main { padding: 32px 20px 60px; }
+      .hero { padding: 48px 24px 32px; }
+      .title { font-size: 32px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="stars"></div>
+
+  <section class="hero" id="top">
+    <div class="hero-inner">
+      <div class="eyebrow">Design System · v1.0</div>
+      <h1 class="title">Void<span>Yield</span><br/>Design Mocks</h1>
+      <p class="tagline">
+        A complete reference gallery of 28 screen mockups spanning exploration, harvesting,
+        logistics, factories, vehicles, HUD, and menu transitions. Built from the
+        specifications in <code>docs/specs/</code>.
+      </p>
+      <div class="hero-stats">
+        <div class="stat">
+          <div class="stat-val">28</div>
+          <div class="stat-lbl">Screen Mocks</div>
+        </div>
+        <div class="stat">
+          <div class="stat-val">8</div>
+          <div class="stat-lbl">Categories</div>
+        </div>
+        <div class="stat">
+          <div class="stat-val">960×540</div>
+          <div class="stat-lbl">Base Resolution</div>
+        </div>
+        <div class="stat">
+          <div class="stat-val">M0–M14</div>
+          <div class="stat-lbl">Milestones Covered</div>
+        </div>
+      </div>
+      <div class="hero-cta">
+        <a class="btn primary" href="voidyield_web_game_mockup.html">▶ Interactive Mockup</a>
+        <a class="btn teal" href="../">◀ Back to Game</a>
+        <a class="btn" href="https://github.com/grimatoma/voidyieldweb" target="_blank" rel="noopener">GitHub ↗</a>
+      </div>
+    </div>
+  </section>
+
+  <div class="layout">
+    <aside>
+      <div class="toc-title">Index</div>
+
+      <div class="toc-group">
+        <div class="toc-group-title">Exploration</div>
+        <ul class="toc-list">
+          <li><a href="#m01"><span class="num">01</span>Survey Flow</a></li>
+          <li><a href="#m08"><span class="num">08</span>Survey Quality Report</a></li>
+          <li><a href="#m10"><span class="num">10</span>Planet Comparison</a></li>
+          <li><a href="#m20"><span class="num">20</span>Galaxy Map</a></li>
+        </ul>
+      </div>
+
+      <div class="toc-group">
+        <div class="toc-group-title">Harvesting</div>
+        <ul class="toc-list">
+          <li><a href="#m02"><span class="num">02</span>Harvester Gas Loop</a></li>
+          <li><a href="#m03"><span class="num">03</span>Drone Swarm Overview</a></li>
+        </ul>
+      </div>
+
+      <div class="toc-group">
+        <div class="toc-group-title">Production</div>
+        <ul class="toc-list">
+          <li><a href="#m04"><span class="num">04</span>Crafting Quality</a></li>
+          <li><a href="#m05"><span class="num">05</span>Rocket Assembly</a></li>
+          <li><a href="#m26"><span class="num">26</span>Factory Floor</a></li>
+          <li><a href="#m27"><span class="num">27</span>Production Dashboard</a></li>
+        </ul>
+      </div>
+
+      <div class="toc-group">
+        <div class="toc-group-title">Logistics</div>
+        <ul class="toc-list">
+          <li><a href="#m09"><span class="num">09</span>Logistics Route</a></li>
+          <li><a href="#m15"><span class="num">15</span>Storage Depot</a></li>
+          <li><a href="#m21"><span class="num">21</span>Cargo Dock</a></li>
+          <li><a href="#m23"><span class="num">23</span>Relay Station Panel</a></li>
+        </ul>
+      </div>
+
+      <div class="toc-group">
+        <div class="toc-group-title">Vehicles</div>
+        <ul class="toc-list">
+          <li><a href="#m06"><span class="num">06</span>Vehicle Roster</a></li>
+          <li><a href="#m19"><span class="num">19</span>Ship Bay</a></li>
+        </ul>
+      </div>
+
+      <div class="toc-group">
+        <div class="toc-group-title">Worlds</div>
+        <ul class="toc-list">
+          <li><a href="#m07"><span class="num">07</span>Planet Stranding Loop</a></li>
+          <li><a href="#m22"><span class="num">22</span>Asteroid B World</a></li>
+        </ul>
+      </div>
+
+      <div class="toc-group">
+        <div class="toc-group-title">HUD & UI</div>
+        <ul class="toc-list">
+          <li><a href="#m11"><span class="num">11</span>HUD Desktop</a></li>
+          <li><a href="#m12"><span class="num">12</span>HUD Mobile</a></li>
+          <li><a href="#m13"><span class="num">13</span>Shop Panel</a></li>
+          <li><a href="#m14"><span class="num">14</span>Sell Terminal</a></li>
+          <li><a href="#m16"><span class="num">16</span>Interaction Prompts</a></li>
+        </ul>
+      </div>
+
+      <div class="toc-group">
+        <div class="toc-group-title">Menus & Flow</div>
+        <ul class="toc-list">
+          <li><a href="#m17"><span class="num">17</span>Pause Settings</a></li>
+          <li><a href="#m18"><span class="num">18</span>Main Menu</a></li>
+          <li><a href="#m24"><span class="num">24</span>Launch Transition</a></li>
+          <li><a href="#m25"><span class="num">25</span>Boot Splash</a></li>
+          <li><a href="#m28"><span class="num">28</span>Offline Event Log</a></li>
+        </ul>
+      </div>
+    </aside>
+
+    <main>
+      <!-- EXPLORATION -->
+      <section class="category" id="exploration">
+        <div class="category-header">
+          <div class="category-icon"></div>
+          <div class="category-name">Exploration</div>
+          <div class="category-count">4 screens</div>
+        </div>
+
+        <article class="mock" id="m01">
+          <div class="mock-header">
+            <div class="mock-num">01</div>
+            <div class="mock-title">Survey Flow</div>
+            <div class="mock-file"><a href="01_survey_flow.svg" target="_blank">01_survey_flow.svg ↗</a></div>
+          </div>
+          <div class="mock-frame"><img src="01_survey_flow.svg" alt="Survey Flow" loading="lazy" /></div>
+        </article>
+
+        <article class="mock" id="m08">
+          <div class="mock-header">
+            <div class="mock-num">08</div>
+            <div class="mock-title">Survey Quality Report</div>
+            <div class="mock-file"><a href="08_survey_quality_report.svg" target="_blank">08_survey_quality_report.svg ↗</a></div>
+          </div>
+          <div class="mock-frame"><img src="08_survey_quality_report.svg" alt="Survey Quality Report" loading="lazy" /></div>
+        </article>
+
+        <article class="mock" id="m10">
+          <div class="mock-header">
+            <div class="mock-num">10</div>
+            <div class="mock-title">Planet Comparison</div>
+            <div class="mock-file"><a href="10_planet_comparison.svg" target="_blank">10_planet_comparison.svg ↗</a></div>
+          </div>
+          <div class="mock-frame"><img src="10_planet_comparison.svg" alt="Planet Comparison" loading="lazy" /></div>
+        </article>
+
+        <article class="mock" id="m20">
+          <div class="mock-header">
+            <div class="mock-num">20</div>
+            <div class="mock-title">Galaxy Map</div>
+            <div class="mock-file"><a href="20_galaxy_map.svg" target="_blank">20_galaxy_map.svg ↗</a></div>
+          </div>
+          <div class="mock-frame"><img src="20_galaxy_map.svg" alt="Galaxy Map" loading="lazy" /></div>
+        </article>
+      </section>
+
+      <!-- HARVESTING -->
+      <section class="category" id="harvesting">
+        <div class="category-header">
+          <div class="category-icon"></div>
+          <div class="category-name">Harvesting</div>
+          <div class="category-count">2 screens</div>
+        </div>
+
+        <article class="mock" id="m02">
+          <div class="mock-header">
+            <div class="mock-num">02</div>
+            <div class="mock-title">Harvester Gas Loop</div>
+            <div class="mock-file"><a href="02_harvester_gas_loop.svg" target="_blank">02_harvester_gas_loop.svg ↗</a></div>
+          </div>
+          <div class="mock-frame"><img src="02_harvester_gas_loop.svg" alt="Harvester Gas Loop" loading="lazy" /></div>
+        </article>
+
+        <article class="mock" id="m03">
+          <div class="mock-header">
+            <div class="mock-num">03</div>
+            <div class="mock-title">Drone Swarm Overview</div>
+            <div class="mock-file"><a href="03_drone_swarm_overview.svg" target="_blank">03_drone_swarm_overview.svg ↗</a></div>
+          </div>
+          <div class="mock-frame"><img src="03_drone_swarm_overview.svg" alt="Drone Swarm Overview" loading="lazy" /></div>
+        </article>
+      </section>
+
+      <!-- PRODUCTION -->
+      <section class="category" id="production">
+        <div class="category-header">
+          <div class="category-icon"></div>
+          <div class="category-name">Production</div>
+          <div class="category-count">4 screens</div>
+        </div>
+
+        <article class="mock" id="m04">
+          <div class="mock-header">
+            <div class="mock-num">04</div>
+            <div class="mock-title">Crafting Quality Screen</div>
+            <div class="mock-file"><a href="04_crafting_quality_screen.svg" target="_blank">04_crafting_quality_screen.svg ↗</a></div>
+          </div>
+          <div class="mock-frame"><img src="04_crafting_quality_screen.svg" alt="Crafting Quality Screen" loading="lazy" /></div>
+        </article>
+
+        <article class="mock" id="m05">
+          <div class="mock-header">
+            <div class="mock-num">05</div>
+            <div class="mock-title">Rocket Assembly Sequence</div>
+            <div class="mock-file"><a href="05_rocket_assembly_sequence.svg" target="_blank">05_rocket_assembly_sequence.svg ↗</a></div>
+          </div>
+          <div class="mock-frame"><img src="05_rocket_assembly_sequence.svg" alt="Rocket Assembly Sequence" loading="lazy" /></div>
+        </article>
+
+        <article class="mock" id="m26">
+          <div class="mock-header">
+            <div class="mock-num">26</div>
+            <div class="mock-title">Factory Floor</div>
+            <div class="mock-file"><a href="26_factory_floor.svg" target="_blank">26_factory_floor.svg ↗</a></div>
+          </div>
+          <div class="mock-frame"><img src="26_factory_floor.svg" alt="Factory Floor" loading="lazy" /></div>
+        </article>
+
+        <article class="mock" id="m27">
+          <div class="mock-header">
+            <div class="mock-num">27</div>
+            <div class="mock-title">Production Dashboard</div>
+            <div class="mock-file"><a href="27_production_dashboard.svg" target="_blank">27_production_dashboard.svg ↗</a></div>
+          </div>
+          <div class="mock-frame"><img src="27_production_dashboard.svg" alt="Production Dashboard" loading="lazy" /></div>
+        </article>
+      </section>
+
+      <!-- LOGISTICS -->
+      <section class="category" id="logistics">
+        <div class="category-header">
+          <div class="category-icon"></div>
+          <div class="category-name">Logistics</div>
+          <div class="category-count">4 screens</div>
+        </div>
+
+        <article class="mock" id="m09">
+          <div class="mock-header">
+            <div class="mock-num">09</div>
+            <div class="mock-title">Logistics Route</div>
+            <div class="mock-file"><a href="09_logistics_route.svg" target="_blank">09_logistics_route.svg ↗</a></div>
+          </div>
+          <div class="mock-frame"><img src="09_logistics_route.svg" alt="Logistics Route" loading="lazy" /></div>
+        </article>
+
+        <article class="mock" id="m15">
+          <div class="mock-header">
+            <div class="mock-num">15</div>
+            <div class="mock-title">Storage Depot</div>
+            <div class="mock-file"><a href="15_storage_depot.svg" target="_blank">15_storage_depot.svg ↗</a></div>
+          </div>
+          <div class="mock-frame"><img src="15_storage_depot.svg" alt="Storage Depot" loading="lazy" /></div>
+        </article>
+
+        <article class="mock" id="m21">
+          <div class="mock-header">
+            <div class="mock-num">21</div>
+            <div class="mock-title">Cargo Dock</div>
+            <div class="mock-file"><a href="21_cargo_dock.svg" target="_blank">21_cargo_dock.svg ↗</a></div>
+          </div>
+          <div class="mock-frame"><img src="21_cargo_dock.svg" alt="Cargo Dock" loading="lazy" /></div>
+        </article>
+
+        <article class="mock" id="m23">
+          <div class="mock-header">
+            <div class="mock-num">23</div>
+            <div class="mock-title">Relay Station Panel</div>
+            <div class="mock-file"><a href="23_relay_station_panel.svg" target="_blank">23_relay_station_panel.svg ↗</a></div>
+          </div>
+          <div class="mock-frame"><img src="23_relay_station_panel.svg" alt="Relay Station Panel" loading="lazy" /></div>
+        </article>
+      </section>
+
+      <!-- VEHICLES -->
+      <section class="category" id="vehicles">
+        <div class="category-header">
+          <div class="category-icon"></div>
+          <div class="category-name">Vehicles</div>
+          <div class="category-count">2 screens</div>
+        </div>
+
+        <article class="mock" id="m06">
+          <div class="mock-header">
+            <div class="mock-num">06</div>
+            <div class="mock-title">Vehicle Roster</div>
+            <div class="mock-file"><a href="06_vehicle_roster.svg" target="_blank">06_vehicle_roster.svg ↗</a></div>
+          </div>
+          <div class="mock-frame"><img src="06_vehicle_roster.svg" alt="Vehicle Roster" loading="lazy" /></div>
+        </article>
+
+        <article class="mock" id="m19">
+          <div class="mock-header">
+            <div class="mock-num">19</div>
+            <div class="mock-title">Ship Bay</div>
+            <div class="mock-file"><a href="19_ship_bay.svg" target="_blank">19_ship_bay.svg ↗</a></div>
+          </div>
+          <div class="mock-frame"><img src="19_ship_bay.svg" alt="Ship Bay" loading="lazy" /></div>
+        </article>
+      </section>
+
+      <!-- WORLDS -->
+      <section class="category" id="worlds">
+        <div class="category-header">
+          <div class="category-icon"></div>
+          <div class="category-name">Worlds</div>
+          <div class="category-count">2 screens</div>
+        </div>
+
+        <article class="mock" id="m07">
+          <div class="mock-header">
+            <div class="mock-num">07</div>
+            <div class="mock-title">Planet Stranding Loop</div>
+            <div class="mock-file"><a href="07_planet_stranding_loop.svg" target="_blank">07_planet_stranding_loop.svg ↗</a></div>
+          </div>
+          <div class="mock-frame"><img src="07_planet_stranding_loop.svg" alt="Planet Stranding Loop" loading="lazy" /></div>
+        </article>
+
+        <article class="mock" id="m22">
+          <div class="mock-header">
+            <div class="mock-num">22</div>
+            <div class="mock-title">Asteroid B World</div>
+            <div class="mock-file"><a href="22_asteroid_b_world.svg" target="_blank">22_asteroid_b_world.svg ↗</a></div>
+          </div>
+          <div class="mock-frame"><img src="22_asteroid_b_world.svg" alt="Asteroid B World" loading="lazy" /></div>
+        </article>
+      </section>
+
+      <!-- HUD & UI -->
+      <section class="category" id="hud">
+        <div class="category-header">
+          <div class="category-icon"></div>
+          <div class="category-name">HUD &amp; UI</div>
+          <div class="category-count">5 screens</div>
+        </div>
+
+        <article class="mock" id="m11">
+          <div class="mock-header">
+            <div class="mock-num">11</div>
+            <div class="mock-title">HUD Desktop</div>
+            <div class="mock-file"><a href="11_hud_desktop.svg" target="_blank">11_hud_desktop.svg ↗</a></div>
+          </div>
+          <div class="mock-frame"><img src="11_hud_desktop.svg" alt="HUD Desktop" loading="lazy" /></div>
+        </article>
+
+        <article class="mock" id="m12">
+          <div class="mock-header">
+            <div class="mock-num">12</div>
+            <div class="mock-title">HUD Mobile</div>
+            <div class="mock-file"><a href="12_hud_mobile.svg" target="_blank">12_hud_mobile.svg ↗</a></div>
+          </div>
+          <div class="mock-frame"><img src="12_hud_mobile.svg" alt="HUD Mobile" loading="lazy" /></div>
+        </article>
+
+        <article class="mock" id="m13">
+          <div class="mock-header">
+            <div class="mock-num">13</div>
+            <div class="mock-title">Shop Panel</div>
+            <div class="mock-file"><a href="13_shop_panel.svg" target="_blank">13_shop_panel.svg ↗</a></div>
+          </div>
+          <div class="mock-frame"><img src="13_shop_panel.svg" alt="Shop Panel" loading="lazy" /></div>
+        </article>
+
+        <article class="mock" id="m14">
+          <div class="mock-header">
+            <div class="mock-num">14</div>
+            <div class="mock-title">Sell Terminal</div>
+            <div class="mock-file"><a href="14_sell_terminal.svg" target="_blank">14_sell_terminal.svg ↗</a></div>
+          </div>
+          <div class="mock-frame"><img src="14_sell_terminal.svg" alt="Sell Terminal" loading="lazy" /></div>
+        </article>
+
+        <article class="mock" id="m16">
+          <div class="mock-header">
+            <div class="mock-num">16</div>
+            <div class="mock-title">Interaction Prompts</div>
+            <div class="mock-file"><a href="16_interaction_prompts.svg" target="_blank">16_interaction_prompts.svg ↗</a></div>
+          </div>
+          <div class="mock-frame"><img src="16_interaction_prompts.svg" alt="Interaction Prompts" loading="lazy" /></div>
+        </article>
+      </section>
+
+      <!-- MENUS & FLOW -->
+      <section class="category" id="menus">
+        <div class="category-header">
+          <div class="category-icon"></div>
+          <div class="category-name">Menus &amp; Flow</div>
+          <div class="category-count">5 screens</div>
+        </div>
+
+        <article class="mock" id="m17">
+          <div class="mock-header">
+            <div class="mock-num">17</div>
+            <div class="mock-title">Pause Settings</div>
+            <div class="mock-file"><a href="17_pause_settings.svg" target="_blank">17_pause_settings.svg ↗</a></div>
+          </div>
+          <div class="mock-frame"><img src="17_pause_settings.svg" alt="Pause Settings" loading="lazy" /></div>
+        </article>
+
+        <article class="mock" id="m18">
+          <div class="mock-header">
+            <div class="mock-num">18</div>
+            <div class="mock-title">Main Menu</div>
+            <div class="mock-file"><a href="18_main_menu.svg" target="_blank">18_main_menu.svg ↗</a></div>
+          </div>
+          <div class="mock-frame"><img src="18_main_menu.svg" alt="Main Menu" loading="lazy" /></div>
+        </article>
+
+        <article class="mock" id="m24">
+          <div class="mock-header">
+            <div class="mock-num">24</div>
+            <div class="mock-title">Launch Transition</div>
+            <div class="mock-file"><a href="24_launch_transition.svg" target="_blank">24_launch_transition.svg ↗</a></div>
+          </div>
+          <div class="mock-frame"><img src="24_launch_transition.svg" alt="Launch Transition" loading="lazy" /></div>
+        </article>
+
+        <article class="mock" id="m25">
+          <div class="mock-header">
+            <div class="mock-num">25</div>
+            <div class="mock-title">Boot Splash</div>
+            <div class="mock-file"><a href="25_boot_splash.svg" target="_blank">25_boot_splash.svg ↗</a></div>
+          </div>
+          <div class="mock-frame"><img src="25_boot_splash.svg" alt="Boot Splash" loading="lazy" /></div>
+        </article>
+
+        <article class="mock" id="m28">
+          <div class="mock-header">
+            <div class="mock-num">28</div>
+            <div class="mock-title">Offline Event Log</div>
+            <div class="mock-file"><a href="28_offline_event_log.svg" target="_blank">28_offline_event_log.svg ↗</a></div>
+          </div>
+          <div class="mock-frame"><img src="28_offline_event_log.svg" alt="Offline Event Log" loading="lazy" /></div>
+        </article>
+      </section>
+    </main>
+  </div>
+
+  <footer>
+    VoidYield · Design Reference · <a href="../">Play the Game</a> · <a href="voidyield_web_game_mockup.html">Interactive Mockup</a>
+  </footer>
+
+  <a class="to-top" href="#top" aria-label="Back to top">▲</a>
+
+  <script>
+    const toTop = document.querySelector('.to-top');
+    window.addEventListener('scroll', () => {
+      if (window.scrollY > 600) toTop.classList.add('visible');
+      else toTop.classList.remove('visible');
+    }, { passive: true });
+  </script>
+</body>
+</html>

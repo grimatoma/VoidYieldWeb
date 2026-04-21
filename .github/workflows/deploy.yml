@@ -37,8 +37,7 @@ jobs:
       - name: Copy design mocks into dist
         run: |
           mkdir -p dist/mocks
-          cp design_mocks/* dist/mocks/
-          python3 scripts/gen_mocks_index.py
+          cp -r design_mocks/. dist/mocks/
 
       - uses: actions/configure-pages@v4
 
