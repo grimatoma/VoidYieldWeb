@@ -20,7 +20,7 @@ import { ProcessingPlant } from '@entities/ProcessingPlant';
 import { SolarPanel } from '@entities/SolarPanel';
 import { ProductionDashboard } from '../ui/ProductionDashboard';
 import { ProductionOverlay } from '../ui/ProductionOverlay';
-import { SCHEMATICS } from '@data/schematics';
+import { SCHEMATICS, FABRICATOR_SCHEMATICS } from '@data/schematics';
 import { TradeHub } from '@entities/TradeHub';
 import { ResearchLab } from '@entities/ResearchLab';
 import { HabitationModule } from '@entities/HabitationModule';
@@ -29,7 +29,7 @@ import { consumptionManager } from '@services/ConsumptionManager';
 import { zoneManager } from '@services/ZoneManager';
 import { FleetPanel } from '../ui/FleetPanel';
 import { CoverageOverlay } from '../ui/CoverageOverlay';
-import type { Fabricator } from '@entities/Fabricator';
+import { Fabricator } from '@entities/Fabricator';
 import { GalaxyMap } from '@ui/GalaxyMap';
 import { EventBus } from '@services/EventBus';
 import { LogisticsOverlay } from '@ui/LogisticsOverlay';
@@ -63,6 +63,7 @@ const SLOT = {
   PROCESSING:     { x: OUTPOST_CX,       y: OUTPOST_CY + 90  },
   HABITATION:     { x: OUTPOST_CX + 180, y: OUTPOST_CY + 90  },
   WATER_COND:     { x: OUTPOST_CX - 200, y: OUTPOST_CY + 200 },
+  FABRICATOR:     { x: OUTPOST_CX - 60,  y: OUTPOST_CY + 200 },
   SOLAR_A:        { x: OUTPOST_CX + 140, y: OUTPOST_CY + 200 },
   SOLAR_B:        { x: OUTPOST_CX + 200, y: OUTPOST_CY + 200 },
 };
@@ -346,6 +347,14 @@ export class PlanetA1Scene implements Scene {
     this.waterCondenser.link(this.storageDepot);
     this.worldContainer.addChild(this.waterCondenser.container);
 
+    // Fabricator — advanced two-input factory; wired to depot for I/O. Stalls
+    // until both inputs are present, but renders so players can see where
+    // ship-part crafting will live.
+    const fab = new Fabricator(SLOT.FABRICATOR.x, SLOT.FABRICATOR.y, FABRICATOR_SCHEMATICS.drill_head);
+    fab.link(this.storageDepot, this.storageDepot);
+    this.fabricators.push(fab);
+    this.worldContainer.addChild(fab.container);
+
     // Galaxy Map — HTML, owned by UILayer.
     this.galaxyMap = uiInit!.galaxyMap!;
     this.galaxyMap.onTravel((planetId) => {
@@ -415,6 +424,7 @@ export class PlanetA1Scene implements Scene {
       researchLab: this.researchLab,
       habitationModule: this.habitationModule,
       processingPlant: this.processingPlant,
+      fabricators: this.fabricators,
       launchpad: this.launchpad,
       worldContainer: this.worldContainer,
     };
@@ -572,6 +582,7 @@ export class PlanetA1Scene implements Scene {
     if (this.fleetPanel.visible) this.fleetPanel.update();
     this.trafficOverlay.update(fleetManager.getDrones());
     this.processingPlant.update(delta);
+    for (const fab of this.fabricators) fab.update(delta);
     this.researchLab.update(delta);
     consumptionManager.update(delta, this.storageDepot);
     this.waterCondenser.update(delta);
