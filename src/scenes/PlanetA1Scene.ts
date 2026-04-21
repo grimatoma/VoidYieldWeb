@@ -409,6 +409,7 @@ export class PlanetA1Scene implements Scene {
     interactionManager.register(this.habitationModule);
     interactionManager.register(this.processingPlant);
     interactionManager.register(this.launchpad);
+    for (const fab of this.fabricators) interactionManager.register(fab);
 
     const ui = (window as unknown as { __voidyield_uiLayer?: UILayer }).__voidyield_uiLayer;
     ui?.interactionPrompt?.setCamera(this.camera);
@@ -453,7 +454,8 @@ export class PlanetA1Scene implements Scene {
               || ui2?.droneBayPanel?.visible
               || ui2?.habitationPanel?.visible
               || ui2?.shipBayPanel?.visible
-              || ui2?.techTreePanel?.visible) {
+              || ui2?.techTreePanel?.visible
+              || ui2?.fabricatorPanel?.visible) {
             ui2.closeAllPanels();
             return;
           }
@@ -487,6 +489,12 @@ export class PlanetA1Scene implements Scene {
           }
           if (this.processingPlant.isNearby(px, py, 80)) {
             this.productionDashboard.toggle();
+            return;
+          }
+          const nearestFab = this.fabricators.find((f) => f.isNearby(px, py, 80));
+          if (nearestFab) {
+            ui2?.fabricatorPanel?.setFabricator(nearestFab);
+            ui2?.fabricatorPanel?.open();
             return;
           }
           if (this.researchLab.isNearby(px, py, 80)) {
@@ -627,6 +635,8 @@ export class PlanetA1Scene implements Scene {
     fleetManager.clear();
     zoneManager.reset();
     this.processingPlant.destroy();
+    for (const fab of this.fabricators) fab.destroy();
+    this.fabricators = [];
     for (const sp of this.solarPanels) sp.destroy();
     this.solarPanels = [];
     consumptionManager.reset();

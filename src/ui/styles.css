@@ -422,6 +422,55 @@
   border-top: 1px solid #2a355a;
 }
 
+/* Fabricator panel — status strip + active-recipe banner + recipe list */
+.fabricator-status {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: calc(6px * var(--hud-scale)) calc(10px * var(--hud-scale));
+  background: #0a1020;
+  border: 1px solid #2a355a;
+  font-size: calc(11px * var(--hud-scale));
+  letter-spacing: 0.08em;
+}
+.fabricator-status-label { color: var(--color-accent); }
+.fabricator-status-value { color: var(--color-primary); font-weight: bold; }
+
+.fabricator-active {
+  display: flex;
+  flex-direction: column;
+  gap: calc(2px * var(--hud-scale));
+  padding: calc(8px * var(--hud-scale)) calc(10px * var(--hud-scale));
+  background: rgba(212, 168, 67, 0.08);
+  border: 1px solid var(--color-primary);
+}
+.fabricator-active-label {
+  font-size: calc(9px * var(--hud-scale));
+  color: var(--color-accent);
+  letter-spacing: 0.1em;
+}
+.fabricator-active-name {
+  font-size: calc(13px * var(--hud-scale));
+  color: var(--color-primary);
+  font-weight: bold;
+  letter-spacing: 0.05em;
+}
+.fabricator-active-flow {
+  font-size: calc(10px * var(--hud-scale));
+  color: #a0a8c0;
+}
+
+.fabricator-row.is-active {
+  border-color: var(--color-primary);
+  background: rgba(212, 168, 67, 0.12);
+}
+.fabricator-row .trade-row-buy-btn[disabled] {
+  color: var(--color-primary);
+  border-color: var(--color-primary);
+  cursor: default;
+  opacity: 0.8;
+}
+
 /* Inventory Panel section headers */
 .inventory-section {
   margin-top: calc(8px * var(--hud-scale));
