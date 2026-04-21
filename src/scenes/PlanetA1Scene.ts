@@ -65,6 +65,7 @@ const SLOT = {
   HABITATION:     { x: OUTPOST_CX + 180, y: OUTPOST_CY + 90  },
   WATER_COND:     { x: OUTPOST_CX - 200, y: OUTPOST_CY + 200 },
   FABRICATOR:     { x: OUTPOST_CX - 60,  y: OUTPOST_CY + 200 },
+  PLATE_PRESS:    { x: OUTPOST_CX + 60,  y: OUTPOST_CY + 200 },
   SOLAR_A:        { x: OUTPOST_CX + 140, y: OUTPOST_CY + 200 },
   SOLAR_B:        { x: OUTPOST_CX + 200, y: OUTPOST_CY + 200 },
 };
@@ -91,6 +92,7 @@ export class PlanetA1Scene implements Scene {
   private droneBay!: DroneBay;
   private trafficOverlay!: TrafficOverlay;
   private processingPlant!: ProcessingPlant;
+  private platePressPlant!: ProcessingPlant;
   private solarPanels: SolarPanel[] = [];
   private productionDashboard!: ProductionDashboard;
   private tradeHub!: TradeHub;
@@ -334,10 +336,15 @@ export class PlanetA1Scene implements Scene {
     this.solarPanels = [sp1, sp2];
     for (const sp of this.solarPanels) this.worldContainer.addChild(sp.container);
 
-    // Ore Smelter — bottom-center slot
+    // Ore Smelter — bottom-center slot (Vorax → Steel Bars)
     this.processingPlant = new ProcessingPlant(SLOT.PROCESSING.x, SLOT.PROCESSING.y, SCHEMATICS.ore_smelter);
     this.processingPlant.link(this.storageDepot, this.storageDepot);
     this.worldContainer.addChild(this.processingPlant.container);
+
+    // Plate Press — row-3 center slot (Steel Bars → Steel Plates)
+    this.platePressPlant = new ProcessingPlant(SLOT.PLATE_PRESS.x, SLOT.PLATE_PRESS.y, SCHEMATICS.plate_press);
+    this.platePressPlant.link(this.storageDepot, this.storageDepot);
+    this.worldContainer.addChild(this.platePressPlant.container);
 
     // Production dashboard — HTML, owned by UILayer.
     this.productionDashboard = uiInit!.productionDashboard!;
@@ -426,6 +433,7 @@ export class PlanetA1Scene implements Scene {
     interactionManager.register(this.researchLab);
     interactionManager.register(this.habitationModule);
     interactionManager.register(this.processingPlant);
+    interactionManager.register(this.platePressPlant);
     interactionManager.register(this.launchpad);
     for (const fab of this.fabricators) interactionManager.register(fab);
 
@@ -443,6 +451,7 @@ export class PlanetA1Scene implements Scene {
       researchLab: this.researchLab,
       habitationModule: this.habitationModule,
       processingPlant: this.processingPlant,
+      platePressPlant: this.platePressPlant,
       fabricators: this.fabricators,
       launchpad: this.launchpad,
       worldContainer: this.worldContainer,
@@ -506,7 +515,7 @@ export class PlanetA1Scene implements Scene {
             ui2?.habitationPanel?.open();
             return;
           }
-          if (this.processingPlant.isNearby(px, py, 80)) {
+          if (this.processingPlant.isNearby(px, py, 80) || this.platePressPlant.isNearby(px, py, 80)) {
             this.productionDashboard.toggle();
             return;
           }
@@ -609,6 +618,7 @@ export class PlanetA1Scene implements Scene {
     if (this.fleetPanel.visible) this.fleetPanel.update();
     this.trafficOverlay.update(fleetManager.getDrones());
     this.processingPlant.update(delta);
+    this.platePressPlant.update(delta);
     for (const fab of this.fabricators) fab.update(delta);
     this.researchLab.update(delta);
     consumptionManager.update(delta, this.storageDepot);
@@ -622,11 +632,11 @@ export class PlanetA1Scene implements Scene {
     if (this._dashRefreshTimer >= 1.0) {
       this._dashRefreshTimer = 0;
       if (this.productionDashboard.visible) {
-        this.productionDashboard.refresh(this.storageDepot, [this.processingPlant], this.fabricators);
+        this.productionDashboard.refresh(this.storageDepot, [this.processingPlant, this.platePressPlant], this.fabricators);
       }
     }
     if (this.productionOverlay.visible) {
-      this.productionOverlay.render([this.processingPlant], this.fabricators);
+      this.productionOverlay.render([this.processingPlant, this.platePressPlant], this.fabricators);
     }
   }
 
@@ -654,6 +664,7 @@ export class PlanetA1Scene implements Scene {
     fleetManager.clear();
     zoneManager.reset();
     this.processingPlant.destroy();
+    this.platePressPlant.destroy();
     for (const fab of this.fabricators) fab.destroy();
     this.fabricators = [];
     for (const sp of this.solarPanels) sp.destroy();
