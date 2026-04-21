@@ -1,46 +1,105 @@
 === VoidYield Git Push Script === 
-Mon 04/20/2026 14:40:07.57 
+Mon 04/20/2026 18:31:44.69 
  
 [1] Removing stale lock files... 
 Done. 
  
 [2] Git status: 
 On branch main
-Your branch is up to date with 'origin/main'.
+Your branch is ahead of 'origin/main' by 2 commits.
+  (use "git push" to publish your local commits)
+
+Changes to be committed:
+  (use "git restore --staged <file>..." to unstage)
+	modified:   src/entities/DroneBay.ts
+	modified:   src/entities/TradeHub.ts
+	modified:   src/services/EventBus.ts
+	modified:   src/services/HarvesterManager.ts
+	modified:   src/services/MiningService.ts
+	modified:   src/services/SaveManager.ts
+	deleted:    src/services/TutorialManager.ts
+	deleted:    src/ui/TutorialOverlay.ts
+	modified:   src/ui/UILayer.ts
 
 Changes not staged for commit:
-  (use "git add <file>..." to update what will be committed)
+  (use "git add/rm <file>..." to update what will be committed)
   (use "git restore <file>..." to discard changes in working directory)
 	modified:   CLAUDE.md
+	deleted:    dist.old/assets/BufferResource-6V7oHfB3.js
+	deleted:    dist.old/assets/CanvasRenderer-TJNKpzog.js
+	deleted:    dist.old/assets/Filter-oyS615kX.js
+	deleted:    dist.old/assets/RenderTargetSystem-CXOeTp68.js
+	deleted:    dist.old/assets/WebGLRenderer-Bq6GoGwH.js
+	deleted:    dist.old/assets/WebGPURenderer-BRKUa74B.js
+	deleted:    dist.old/assets/browserAll-BmLOjzCi.js
+	deleted:    dist.old/assets/canvasUtils-b_xQQzFh.js
+	deleted:    dist.old/assets/index-7aMQs1S7.css
+	deleted:    dist.old/assets/index-Cxpc6clv.js
+	deleted:    dist.old/assets/webworkerAll-nsqm_c1l.js
+	modified:   dist.old/index.html
+	modified:   docs/ENGINE_AUDIT.md
 	modified:   docs/IMPLEMENTATION_ROADMAP.md
-	modified:   src/scenes/BootScene.ts
+	modified:   push_log.txt
+	modified:   src/entities/DroneBay.ts
+	modified:   src/entities/TradeHub.ts
+	modified:   src/services/ConsumptionManager.ts
+	modified:   src/services/EventBus.ts
+	modified:   src/services/HarvesterManager.ts
+	modified:   src/services/LogisticsManager.ts
+	modified:   src/services/MiningService.ts
+	modified:   src/services/SaveManager.ts
+	modified:   src/services/SectorManager.ts
+	modified:   src/services/StrandingManager.ts
+	modified:   src/services/TechTree.ts
+	modified:   src/ui/UILayer.ts
+	modified:   src/ui/styles.css
 
 Untracked files:
   (use "git add <file>..." to include in what will be committed)
-	fix-commit.ps1
-	push_log.txt
-	push_to_github.bat
+	dist-check/
+	dist-test/
+	dist.old/assets/BufferResource-B43GUzyK.js
+	dist.old/assets/CanvasRenderer-BpWg2ySo.js
+	dist.old/assets/Filter-luujcnJ7.js
+	dist.old/assets/RenderTargetSystem-DXmguFk-.js
+	dist.old/assets/WebGLRenderer-vq3a2nCc.js
+	dist.old/assets/WebGPURenderer-C_KV5Ai7.js
+	dist.old/assets/browserAll-DB64BIUr.js
+	dist.old/assets/canvasUtils-D0bnzCkj.js
+	dist.old/assets/index-DKDmYcRw.js
+	dist.old/assets/webworkerAll-aML4EBZN.js
+	src/services/TutorialManager.ts
+	src/ui/TutorialOverlay.ts
+	unlock_and_push.bat
 
-no changes added to commit (use "git add" and/or "git commit -a")
  
 [3] Staging BootScene.ts... 
-warning: LF will be replaced by CRLF in src/scenes/BootScene.ts.
-The file will have its original line endings in your working directory
 Exit code: 0 
  
 [4] Committing... 
-[main c152ae6] fix: BootScene navigates to planet scene after splash instead of idling
- 1 file changed, 4 insertions(+)
-Exit code: 0 
+fatal: cannot lock ref 'HEAD': Unable to create 'C:/Users/grima/Documents/VoidYieldWeb/.git/refs/heads/main.lock': File exists.
+
+Another git process seems to be running in this repository, e.g.
+an editor opened by 'git commit'. Please make sure all processes
+are terminated then try again. If it still fails, a git process
+may have crashed in this repository earlier:
+remove the file manually to continue.
+Exit code: 128 
  
 [5] Pushing to origin/main... 
-To https://github.com/grimatoma/VoidYieldWeb.git
-   43e4a5e..c152ae6  main -> main
+error: update_ref failed for ref 'refs/remotes/origin/main': cannot lock ref 'refs/remotes/origin/main': Unable to create 'C:/Users/grima/Documents/VoidYieldWeb/.git/refs/remotes/origin/main.lock': File exists.
+
+Another git process seems to be running in this repository, e.g.
+an editor opened by 'git commit'. Please make sure all processes
+are terminated then try again. If it still fails, a git process
+may have crashed in this repository earlier:
+remove the file manually to continue.
+Everything up-to-date
 Exit code: 0 
  
 [6] Final git log (last 3 commits): 
+03fa9f9 feat: tutorial system — 7-step HTML/CSS onboarding overlay
+ae394cb feat(arch): Phase 0 — HTML HUD foundation with signals
 c152ae6 fix: BootScene navigates to planet scene after splash instead of idling
-43e4a5e chore: update design mocks, reformat data JSON, trim CLAUDE.md
-ba9974f docs: disconnect from Godot — update CLAUDE.md and roadmap to TS-native
  
 === DONE === 

@@ -1,8 +1,6 @@
 import { gameState } from '@services/GameState';
 import { EventBus } from '@services/EventBus';
 import { strandingManager } from '@services/StrandingManager';
-import { consumptionManager } from '@services/ConsumptionManager';
-import { logisticsManager } from '@services/LogisticsManager';
 
 /** The 10 prestige bonus options per spec 09 */
 export type SectorBonus =
@@ -73,7 +71,7 @@ export class SectorManager {
     return this._sectorBonuses.includes(bonus);
   }
 
-  /** Get numeric effect of a bonus (e.g. trade_connections → 0.1) */
+  /** Get numeric effect of a bonus (e.g. trade_connections -> 0.1) */
   getBonusMultiplier(bonus: SectorBonus): number {
     if (!this.hasSectorBonus(bonus)) return 0;
     const multipliers: Record<SectorBonus, number> = {
@@ -122,25 +120,19 @@ export class SectorManager {
       this._sectorBonuses.push(selectedBonus);
     }
 
-    // Bonus: research_heritage → start with 100 RP
+    // Bonus: research_heritage -> start with 100 RP
     const startRP = this.hasSectorBonus('research_heritage') ? 100 : 0;
-    // Bonus: fuel_surplus → start with 50 RF
+    // Bonus: fuel_surplus -> start with 50 RF
     const startFuel = this.hasSectorBonus('fuel_surplus') ? 50 : 100;
 
     // Reset game state per spec 15
     gameState.setCredits(200);
     gameState.setResearchPoints(startRP);
     // Note: tech unlocks are NOT reset per spec 15 "What Persists"
-    // Population resets
-    consumptionManager.resetPopulation();
-    // Logistics routes clear
-    logisticsManager.clearRoutes();
-    // Stranding resets to home
-    strandingManager.reset();
-    if (startFuel !== 100) {
-      // Override stranding fuel if fuel_surplus bonus
-      (strandingManager as unknown as { _rocketFuel: number })._rocketFuel = startFuel;
-    }
+
+    // Broadcast the prestige reset so each service can clean itself up.
+    // ConsumptionManager, LogisticsManager, and StrandingManager all listen for this.
+    EventBus.emit('prestige:reset', selectedBonus, startFuel);
 
     // Increment sector number
     gameState.setSectorNumber(gameState.sectorNumber + 1);
@@ -171,7 +163,7 @@ export class SectorManager {
     this._isSectorComplete = false;
     this._warpGateBuilt = false;
     this._galacticHubBuilt = false;
-    // NOTE: _sectorBonuses intentionally NOT reset — they persist across sectors
+    // NOTE: _sectorBonuses intentionally NOT reset -- they persist across sectors
   }
 }
 

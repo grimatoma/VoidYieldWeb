@@ -53,6 +53,9 @@ export class ConsumptionManager {
   private _luxurySatisfiedTimer = new Map<ColonyTier, number>();
   private _dayTimer = 0;
   private _advancementTimer = 0;
+  // Separate per-resource pcts for pioneer, used in the needs:changed event
+  private _pioneerGasPct = 1.0;
+  private _pioneerWaterPct = 1.0;
 
   constructor() {
     // Initialize with 4 Pioneers
@@ -67,6 +70,11 @@ export class ConsumptionManager {
       this._tierLuxuryNeedsPct.set(tier, 1.0);
       this._luxurySatisfiedTimer.set(tier, 0);
     }
+
+    // Reset population on prestige so SectorManager needn't call us directly
+    EventBus.on('prestige:reset', () => {
+      this.resetPopulation();
+    });
   }
 
   /** Called by HabitationModule on construction */
@@ -125,8 +133,8 @@ export class ConsumptionManager {
 
   get housingCapacity(): number { return this._housingCapacity; }
 
-  get compressedGasPct(): number { return this._tierBasicNeedsPct.get('pioneer') ?? 1.0; }
-  get waterPct(): number { return this._tierBasicNeedsPct.get('pioneer') ?? 1.0; }
+  get compressedGasPct(): number { return this._pioneerGasPct; }
+  get waterPct(): number { return this._pioneerWaterPct; }
 
   /**
    * Productivity multiplier based on weighted average of all tiers' basic need satisfaction.
@@ -189,6 +197,11 @@ export class ConsumptionManager {
         const consumed = depot.pull(oreType as OreType, Math.min(totalNeeded, available));
         const pct = totalNeeded > 0 ? consumed / totalNeeded : 1.0;
         satisfactionPct = Math.min(satisfactionPct, pct);
+        // Track pioneer gas and water separately for the needs:changed event
+        if (tier === 'pioneer') {
+          if (oreType === 'compressed_gas') this._pioneerGasPct = pct;
+          if (oreType === 'water') this._pioneerWaterPct = pct;
+        }
       }
 
       this._tierBasicNeedsPct.set(tier, satisfactionPct);
@@ -215,9 +228,7 @@ export class ConsumptionManager {
       this._tierLuxuryNeedsPct.set(tier, luxuryPct);
     }
 
-    const pioneerGasPct = this._tierBasicNeedsPct.get('pioneer') ?? 1.0;
-    const pioneerWaterPct = this._tierBasicNeedsPct.get('pioneer') ?? 1.0;
-    EventBus.emit('needs:changed', pioneerGasPct, pioneerWaterPct);
+    EventBus.emit('needs:changed', this._pioneerGasPct, this._pioneerWaterPct);
   }
 
   private _checkAdvancements(): void {
@@ -274,10 +285,25 @@ export class ConsumptionManager {
       this._tierLuxuryNeedsPct.set(tier, 1.0);
       this._luxurySatisfiedTimer.set(tier, 0);
     }
+    this._pioneerGasPct = 1.0;
+    this._pioneerWaterPct = 1.0;
+    EventBus.emit('population:changed', this.getTotalPopulation(), this._housingCapacity);
+  }
 
-    this._housingCapacity = 0;
-    this._dayTimer = 0;
-    this._advancementTimer = 0;
+  serialize(): { population: Record<string, number> } {
+    const population: Record<string, number> = {};
+    for (const [tier, count] of this._tierPopulation.entries()) {
+      population[tier] = count;
+    }
+    return { population };
+  }
+
+  deserialize(data: { population: Record<string, number> }): void {
+    if (!data?.population) return;
+    for (const [tier, count] of Object.entries(data.population)) {
+      this._tierPopulation.set(tier as ColonyTier, count);
+    }
+    EventBus.emit('population:changed', this.getTotalPopulation(), this._housingCapacity);
   }
 }
 

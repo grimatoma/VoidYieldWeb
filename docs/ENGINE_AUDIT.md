@@ -270,4 +270,102 @@ A 10-second delta on a 3-second route will deliver it once. But a delivery that 
 ```typescript
 if (t > 0 && t % r.tripTimeSec === 0) {
 ```
-`t = step * STEP_SIZE = step * 30`. This is only exact when `tripTimeSec` is a multiple of 30. The default is 180 (fine — 6 steps). But a ro
+`t = step * STEP_SIZE = step * 30`. This is only exact when `tripTimeSec` is a multiple of 30. The default is 180 (fine — 6 steps). But a route with `tripTimeSec = 45` satisfies `45 % 45 === 0` at `t=45`, then `t=90` (`90 % 45 === 0`) — but `t=75` is skipped because `75 % 45 = 30 ≠ 0`. Non-standard trip times produce incorrect delivery counts. Fix: track `elapsedSec` per route in the simulation, not global time modulo.
+
+🔴 **Offline sell prices duplicated and will drift (`OfflineSimulator.ts:65–69`)**  
+Covered in §5. The `SELL_PRICES` dict is a separate copy that will diverge from live prices. This makes offline credit totals wrong any time game balance changes.
+
+🟡 **Stall counter increments per-batch, not per-harvester (`OfflineSimulator.ts:50–57`)**  
+```typescript
+if (t > 3600 && step % 120 === 0) {
+  stalledHarvesters++;
+  ...
+}
+```
+This block runs once per 120-step window for every harvester in the array — regardless of whether that specific harvester actually stalled. With 5 harvesters and 4 hours offline, it reports `5 * 4 = 20` stalls instead of tracking which harvesters are actually full. Track per-harvester state.
+
+🟡 **`ConsumptionManager` not simulated offline**  
+Colony needs freeze while the player is away. Population tiers, productivity, and advancement timers don't advance. A player who was at 95% luxury satisfaction returns to find they've made no progress. Document this as a known gap and consider whether a simplified colony tick (just need-satisfaction against the last-saved stockpile) is worth adding.
+
+---
+
+## 9. Drone Mining Loop — Determinism
+
+**Verdict: Deterministic within a session. Cross-session state is lost entirely (save gap, not a logic bug).**
+
+Within a live session, `ZoneManager.update()` scans every 3 seconds, finds harvesters needing fuel or emptying, and dispatches idle refinery drones. The task queue executes via delta accumulation — no randomness.
+
+On reload: `FleetManager.clear()` is called on scene exit. Drone circuits are not restored (no `serialize()`). A player who leaves with 4 drones mid-circuit returns to idle drones. This is the save completeness issue documented in §4, not a correctness problem with the running simulation.
+
+🟡 **ZoneManager can double-dispatch drones under `advanceTime()` (`ZoneManager.ts:37–39`)**  
+```typescript
+this._scanTimer += delta;
+if (this._scanTimer < 3.0) return;
+this._scanTimer = 0;
+this._dispatched.clear();
+```
+`advanceTime()` calls the scene updater in 1-second chunks. Five consecutive 1-second calls will fire the ZoneManager scan five times (at t=3, 4, 5 etc.) if `_scanTimer` accumulates across calls. The `_dispatched.clear()` only prevents double-dispatch within a single scan, not across back-to-back scans where the 3-second boundary is crossed multiple times. This can cause a drone to receive two circuits in the same E2E test that uses `advanceTime(10)`. Fix: clamp `_scanTimer` correctly via `this._scanTimer -= 3.0` (not `= 0`) so over-accumulated time carries forward.
+
+---
+
+## Summary Table
+
+| # | Issue | Severity | Location |
+|---|-------|----------|----------|
+| 1 | Autosave drops all entity state — only GameState fields persist | 🔴 | `BootScene.ts:48–51` |
+| 2 | Schema version mismatch silently destroys saves; no migration path | 🔴 | `SaveManager.ts:83–85` |
+| 3 | `SectorManager.applyPrestigeAndReset()` directly calls 4 other services | 🔴 | `SectorManager.ts:119–154` |
+| 4 | Private field mutation via `as unknown as` cast | 🔴 | `SectorManager.ts:142` |
+| 5 | `HarvesterManager` / `DepositMap` import and mutate PixiJS scene graph | 🔴 | `HarvesterManager.ts:2,9,14` · `DepositMap.ts:2,12,18` |
+| 6 | Service update order is undocumented, scene-local, unenforced | 🔴 | `main.ts:56–59` |
+| 7 | Offline trip-completion check uses modulo — fails for non-30s-multiple trip times | 🔴 | `OfflineSimulator.ts:63` |
+| 8 | Offline sell prices duplicated; will drift from live prices | 🔴 | `OfflineSimulator.ts:65–69` |
+| 9 | `game:saved` event overloaded as both notification and trigger | 🟡 | `TechTree.ts:53` · `SaveManager.ts:72` |
+| 10 | `GameState.applyFromSave()` bypasses guarded setters, no events emitted | 🟡 | `GameState.ts:121–133` |
+| 11 | Progression gate logic in GameState instead of SectorManager | 🟡 | `GameState.ts:99–103` |
+| 12 | `_countPlanetsVisited()` uses rocket fuel as proxy for Planet B visit | 🟡 | `SectorManager.ts:97` |
+| 13 | `_planetDepots` at module scope breaks test isolation | 🟡 | `LogisticsManager.ts:6` |
+| 14 | `_cargoLoaded` stored as `any` cast on typed `TradeRoute` | 🟡 | `LogisticsManager.ts:92` |
+| 15 | `ConsumptionManager.update()` requires depot argument every frame | 🟡 | `ConsumptionManager.ts:153` |
+| 16 | Balance constants scattered in service files; rebuilds required to tune | 🟡 | Multiple |
+| 17 | `CARGO_SHIP_SPECS` data table inside a service file | 🟡 | `LogisticsManager.ts:8–13` |
+| 18 | Large deltaMS skips ConsumptionManager day ticks | 🟡 | `ConsumptionManager.ts:157–162` |
+| 19 | Large deltaMS can skip cargo ship deliveries | 🟡 | `LogisticsManager.ts:115–120` |
+| 20 | Offline stall counter increments per-batch, not per-harvester | 🟡 | `OfflineSimulator.ts:50–57` |
+| 21 | `ZoneManager._scanTimer = 0` can cause double-dispatch under `advanceTime()` | 🟡 | `ZoneManager.ts:39` |
+| 22 | Offline sim omits ConsumptionManager — documented nowhere | 🟡 | `OfflineSimulator.ts` |
+| 23 | `as any` cast for optional SaveData fields in applyFromSave | 🟡 | `GameState.ts:129–132` |
+| 24 | `pioneerWaterPct` reads same map key as `pioneerGasPct` (copy-paste bug) | 🟢 | `ConsumptionManager.ts:219` |
+| 25 | `PowerManager` emits no event on power state change | 🟢 | `PowerManager.ts` |
+| 26 | `addCredits(-n)` anti-pattern for spending; no `spendCredits()` method | 🟢 | `TechTree.ts:46` |
+| 27 | `data/` root directory has unreferenced legacy JSON files | 🟢 | `data/*.json` |
+
+---
+
+## Recommended Pre-Rewrite Fixes (ordered by impact/risk ratio)
+
+These are the changes that make the visual rewrite substantially safer. Everything else can wait.
+
+**1. Fix the autosave state assembly (`BootScene.ts:48–51`) — 2 hours**  
+Wire `sectorManager.serialize()`, `strandingManager.serialize()`, and `logisticsManager.getRoutes()` into the `getState` callback. Test a save-reload cycle before touching anything visual.
+
+**2. Add save migration (`SaveManager.ts`) — 3 hours**  
+Add a `MIGRATIONS` table. Bump `FORMAT_VERSION` to 2. Write a v1→v2 migration that fills missing fields with defaults. Future schema changes get a migration entry, not a save wipe.
+
+**3. Fix `StrandingManager` encapsulation (`SectorManager.ts:142`) — 30 min**  
+Add `StrandingManager.setFuel(n: number)`. Remove both `as unknown` casts. Zero risk.
+
+**4. Fix the `game:saved` event naming (`TechTree.ts:53`) — 30 min**  
+Rename the TechTree emit to `'save:requested'`. Add it to `GameEvents`. Any autosave listener on `'game:saved'` that was reacting to TechTree's signal should be re-wired to `'save:requested'`.
+
+**5. Decouple `HarvesterManager` and `DepositMap` from PixiJS — half day**  
+Move `worldContainer.addChild/removeChild` calls into the scene layer. Services track state; scenes track visuals. Required before the renderer swap.
+
+**6. Fix offline sim trip modulo bug (`OfflineSimulator.ts:63`) — 1 hour**  
+Track elapsed seconds per route in the simulation loop. Remove the global `t % tripTimeSec` check.
+
+**7. Unify sell prices — 1 hour**  
+Remove `SELL_PRICES` from `OfflineSimulator.ts`. Import from the canonical data source.
+
+**8. Add deltaMS clamping at top of game loop — 15 min**  
+`const safeDelta = Math.min(delta, 0.1)` prevents tick-skipping after browser stalls. Apply across the loop.

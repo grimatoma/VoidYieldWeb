@@ -51,4 +51,28 @@ Design docs live in `docs/` — read `docs/GAME_DESIGN.md` first, then the relev
 
 - **Save data:** `localStorage` key `voidyield_savegame` via `SaveManager` — format mirrors spec 15
 - **Settings:** `localStorage` key `voidyield_settings` via `SettingsManager`
-- **Input:** all 20 bindings in `InputManager` per spec 16 — never add new keys without checking for 
+- **Input:** all 20 bindings in `InputManager` per spec 16 — never add new keys without checking for conflicts
+- **Fullscreen:** F11 toggle via `document.requestFullscreen()` in `main.ts`
+- **Art palette:** amber `#D4A843`, dark navy `#0D1B3E`, teal accents `#00B8D4`
+- **Industrial Site slots:** always enforce slot limits from spec 05 before placing buildings
+- **EventBus pattern:** use `EventBus.emit('event:name', payload)` and `EventBus.on('event:name', handler)` — never direct callbacks between services
+- **Depot registration:** each planet scene calls `logisticsManager.registerPlanet('planet_x', depot)` in `enter()` and `logisticsManager.unregisterPlanet('planet_x')` in `exit()`
+
+## Testing
+
+- **Unit tests:** `tests/unit/` — Vitest, `jsdom` environment. Run: `npm test` (208 tests, 34 files)
+- **E2E tests:** `tests/e2e/` — Playwright. Run: `npm run test:e2e` (96 tests; requires dev server on :3000 via `npx vite --port 3000`)
+- **Debug API:** `window.__voidyield__` provides `setCredits`, `setRP`, `setPlanetStock`, `unlockTech`, `unlockAllTech`, `setStranded`, `advanceTime`, `resetAll`, and `services` object for direct service access
+- **Helpers:** `tests/e2e/helpers/gameSetup.ts` — `waitForGame(page)` and `waitForPlanet(page, id)` for scene-aware setup
+- **Presets:** `tests/e2e/helpers/presets.ts` — `Preset.freshStart`, `Preset.midGame`, `Preset.lateGame`, `applyStockedDepot`, `applyLogisticsReady`, `applyFullTechTree`, etc.
+
+## Adding new systems
+
+1. Check the relevant spec in `docs/specs/` first
+2. Check `docs/specs/16_input_map.md` before adding any key binding
+3. Create the service/entity in the right folder
+4. Export a singleton at the bottom of the file (e.g., `export const myService = new MyService()`)
+5. Wire events via `EventBus` rather than direct callbacks where possible
+6. Add `serialize()` / `deserialize()` methods if the system has persistent state (see `SaveManager` pattern)
+7. Register the new service in `window.__voidyield__.services` in `src/debug/VoidYieldDebugAPI.ts`
+8. Add a unit test in `tests/unit/` and E2E coverage in `tests/e2e/cuj/`
