@@ -1,6 +1,7 @@
 import { Container, Sprite } from 'pixi.js';
 import type { InputManager } from '@services/InputManager';
 import { assetManager } from '@services/AssetManager';
+import { obstacleManager } from '@services/ObstacleManager';
 
 export interface WorldBounds { width: number; height: number; }
 
@@ -11,6 +12,8 @@ export class Player {
   x: number;
   y: number;
   readonly speed = 200;
+  /** Footprint radius used for wall collision; matches the sprite's ~20px base. */
+  readonly collisionRadius = 10;
   facing: PlayerFacing = 'se';
   private sprite: Sprite;
   private _walkClock = 0; // seconds accumulated while moving; drives bounce
@@ -37,8 +40,25 @@ export class Player {
     if (input.isHeld('player_move_left'))  dx -= this.speed * delta;
     if (input.isHeld('player_move_right')) dx += this.speed * delta;
 
-    this.x = Math.max(0, Math.min(bounds.width,  this.x + dx));
-    this.y = Math.max(0, Math.min(bounds.height, this.y + dy));
+    // Axis-separated, substepped movement so the player slides along walls
+    // rather than sticking when pushing diagonally into a corner, and can't
+    // tunnel through thin walls when dt spikes. Each axis is rejected
+    // independently if it would put the collision circle inside a wall.
+    const dist = Math.sqrt(dx * dx + dy * dy);
+    const maxStep = 6; // stays below the outpost wall thickness (14px)
+    const steps = Math.max(1, Math.ceil(dist / maxStep));
+    const stepDx = dx / steps;
+    const stepDy = dy / steps;
+    for (let i = 0; i < steps; i++) {
+      const nextX = Math.max(0, Math.min(bounds.width, this.x + stepDx));
+      if (!obstacleManager.isBlocked(nextX, this.y, this.collisionRadius)) {
+        this.x = nextX;
+      }
+      const nextY = Math.max(0, Math.min(bounds.height, this.y + stepDy));
+      if (!obstacleManager.isBlocked(this.x, nextY, this.collisionRadius)) {
+        this.y = nextY;
+      }
+    }
 
     this.container.x = this.x;
     this.container.y = this.y;
