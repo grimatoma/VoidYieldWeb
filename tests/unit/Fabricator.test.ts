@@ -79,4 +79,30 @@ describe('Fabricator', () => {
     const fab = new Fabricator(0, 0, FABRICATOR_SCHEMATICS.drill_head);
     expect(() => fab.destroy()).not.toThrow();
   });
+
+  it('setSchematic swaps the active recipe and resets state', () => {
+    const fab = new Fabricator(0, 0, FABRICATOR_SCHEMATICS.drill_head);
+    expect(fab.schematic.schematicId).toBe('drill_head');
+    fab.setSchematic(FABRICATOR_SCHEMATICS.hull);
+    expect(fab.schematic.schematicId).toBe('hull');
+    expect(fab.state).toBe('IDLE');
+  });
+
+  it('setSchematic is a no-op when switching to the same recipe', () => {
+    const fab = new Fabricator(0, 0, FABRICATOR_SCHEMATICS.drill_head);
+    fab.state = 'RUNNING';
+    fab.setSchematic(FABRICATOR_SCHEMATICS.drill_head);
+    expect(fab.state).toBe('RUNNING');
+  });
+
+  it('isNearby returns true within range, false outside', () => {
+    const fab = new Fabricator(100, 100, FABRICATOR_SCHEMATICS.drill_head);
+    expect(fab.isNearby(120, 120, 50)).toBe(true);
+    expect(fab.isNearby(400, 400, 50)).toBe(false);
+  });
+
+  it('getInteractionPrompt returns OPEN FABRICATOR', () => {
+    const fab = new Fabricator(0, 0, FABRICATOR_SCHEMATICS.drill_head);
+    expect(fab.getInteractionPrompt()).toEqual({ verb: 'OPEN', target: 'FABRICATOR' });
+  });
 });

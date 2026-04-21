@@ -9,6 +9,7 @@ import type { Fabricator } from '@entities/Fabricator';
 const RESOURCE_LABELS: Partial<Record<OreType, string>> = {
   vorax:         'Vorax Ore',
   steel_bars:    'Steel Bars',
+  steel_plates:  'Steel Plates',
   krysite:       'Krysite',
   alloy_rods:    'Alloy Rods',
   gas:           'Gas',
@@ -16,7 +17,7 @@ const RESOURCE_LABELS: Partial<Record<OreType, string>> = {
   water:         'Water',
 };
 
-const TRACKED_ORDER: OreType[] = ['vorax', 'steel_bars', 'krysite', 'alloy_rods', 'gas', 'compressed_gas', 'water'];
+const TRACKED_ORDER: OreType[] = ['vorax', 'steel_bars', 'steel_plates', 'krysite', 'alloy_rods', 'gas', 'compressed_gas', 'water'];
 
 export class ProductionDashboard {
   private _root: HTMLElement;

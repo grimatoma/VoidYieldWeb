@@ -1,37 +1,7 @@
 import { Container, Graphics, Sprite, Text, TextStyle } from 'pixi.js';
 import type { QualityLot, OreType } from '@data/types';
 import { assetManager } from '@services/AssetManager';
-
-const SELL_PRICES: Record<OreType, number> = {
-  vorax: 1,
-  krysite: 5,
-  gas: 0,
-  steel_bars: 5,
-  compressed_gas: 1,
-  water: 1,
-  alloy_rods: 15,
-  rocket_fuel: 2,
-  shards: 3,
-  aethite: 8,
-  void_cores: 60,
-  processed_rations: 3,
-  bio_resin: 4,
-  processed_resin: 6,
-  power_cells: 10,
-  bio_circuit_boards: 15,
-  dark_gas: 1,
-  void_touched_ore: 5,
-  resonance_shards: 15,
-  ferrovoid: 12,
-  warp_components: 50,
-  crystal_lattice: 25,
-  drill_head: 35,
-  hull: 400,
-  engine: 600,
-  fuel_tank: 300,
-  avionics: 500,
-  landing_gear: 250,
-};
+import { SELL_PRICES } from '@services/MarketplaceService';
 
 export class StorageDepot {
   readonly container: Container;

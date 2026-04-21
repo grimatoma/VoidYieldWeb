@@ -34,6 +34,12 @@ jobs:
         env:
           VITE_BASE_URL: /VoidYieldWeb/
 
+      - name: Copy design mocks into dist
+        run: |
+          mkdir -p dist/mocks
+          cp design_mocks/* dist/mocks/
+          python3 scripts/gen_mocks_index.py
+
       - uses: actions/configure-pages@v4
 
       - uses: actions/upload-pages-artifact@v3

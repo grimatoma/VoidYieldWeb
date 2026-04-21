@@ -1,4 +1,4 @@
-import { describe, it, expect, vi } from 'vitest';
+import { describe, it, expect, vi, afterEach } from 'vitest';
 
 // Mock pixi.js to avoid WebGL init in jsdom
 vi.mock('pixi.js', () => {
@@ -23,6 +23,7 @@ vi.mock('pixi.js', () => {
 });
 
 import { Player } from '@entities/Player';
+import { obstacleManager } from '@services/ObstacleManager';
 import type { InputManager } from '@services/InputManager';
 
 const bounds = { width: 2800, height: 2000 };
@@ -106,5 +107,47 @@ describe('Player', () => {
     player.update(0.1, noInput, bounds);
     // The animation state is private; behaviourally we just verify the flag is honored.
     expect(player.mining).toBe(true);
+  });
+
+  describe('wall collision', () => {
+    afterEach(() => {
+      obstacleManager.clear();
+    });
+
+    it('is blocked from walking into a wall', () => {
+      obstacleManager.addWall({ x: 200, y: 0, w: 20, h: 400 });
+      const player = new Player(150, 200);
+      const input = makeInput('player_move_right');
+      // Large dt so the attempted move definitely reaches the wall.
+      player.update(1, input, bounds);
+      // Player sits at the wall's left edge minus its collision radius.
+      expect(player.x).toBeLessThanOrEqual(200 - player.collisionRadius);
+      expect(player.x).toBeGreaterThan(150);
+    });
+
+    it('slides along a wall when pushing diagonally into it', () => {
+      // Vertical wall along x=200. Player to the left, pushing right + down.
+      obstacleManager.addWall({ x: 200, y: 0, w: 20, h: 400 });
+      const player = new Player(180, 200);
+      const input: InputManager = {
+        isHeld: vi.fn((a: string) => a === 'player_move_right' || a === 'player_move_down'),
+      } as unknown as InputManager;
+      player.update(0.1, input, bounds);
+      // X is blocked by the wall — stays near starting x or wall edge.
+      expect(player.x).toBeLessThanOrEqual(200 - player.collisionRadius);
+      // Y still advances freely (sliding).
+      expect(player.y).toBeGreaterThan(200);
+    });
+
+    it('can pass through a gap in a wall (the gate)', () => {
+      // Two wall segments with a gap between y=180 and y=220.
+      obstacleManager.addWall({ x: 200, y: 0, w: 20, h: 180 });
+      obstacleManager.addWall({ x: 200, y: 220, w: 20, h: 180 });
+      const player = new Player(150, 200);
+      const input = makeInput('player_move_right');
+      player.update(1, input, bounds);
+      // Player should pass cleanly through the gap.
+      expect(player.x).toBeGreaterThan(220);
+    });
   });
 });

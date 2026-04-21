@@ -1,15 +1,20 @@
 /**
- * Shop terminal panel — matches design_mocks/13_shop_panel.svg. Three tabs:
+ * Shop terminal panel — matches design_mocks/13_shop_panel.svg. Tabs:
  *   DRONES   — redirect to the Drone Bay (drone purchases live there now)
  *   UPGRADES — TradeHub catalog (Crystal Lattice, Alloy Rods, Steel Plates)
+ *   MARKET   — MarketplaceService buy/sell per resource, backed by the depot
  *   BUILD    — placeholder list of unlockable buildings
  */
 import { effect } from '@preact/signals-core';
 import { credits } from '@store/gameStore';
+import { EventBus } from '@services/EventBus';
 import { TRADE_CATALOG } from '@entities/TradeHub';
 import type { TradeHub } from '@entities/TradeHub';
+import type { StorageDepot } from '@entities/StorageDepot';
+import { marketplaceService } from '@services/MarketplaceService';
+import type { OreType } from '@data/types';
 
-type Tab = 'drones' | 'upgrades' | 'build';
+type Tab = 'drones' | 'upgrades' | 'market' | 'build';
 
 const BUILD_CATALOG: Array<{ label: string; desc: string; cost: string }> = [
   { label: 'SOLAR PANEL',       desc: 'Power node, low output',            cost: '150 CR' },
@@ -21,8 +26,9 @@ export class ShopPanel {
   private _root: HTMLElement;
   private _cleanups: Array<() => void> = [];
   private _tradeHub: TradeHub | null = null;
+  private _depot: StorageDepot | null = null;
   private _visible = false;
-  private _tab: Tab = 'upgrades';
+  private _tab: Tab = 'market';
   private _onKeydown: (e: KeyboardEvent) => void;
 
   constructor() {
@@ -41,6 +47,7 @@ export class ShopPanel {
 
   get visible(): boolean { return this._visible; }
   setTradeHub(hub: TradeHub): void { this._tradeHub = hub; }
+  setDepot(depot: StorageDepot): void { this._depot = depot; }
 
   private _build(): HTMLElement {
     const panel = document.createElement('div');
@@ -49,7 +56,7 @@ export class ShopPanel {
     panel.innerHTML = `
       <div class="trade-panel-head">
         <h2>SHOP TERMINAL</h2>
-        <button class="trade-panel-close" aria-label="close">\u2715</button>
+        <button class="trade-panel-close" aria-label="close">✕</button>
       </div>
       <div class="trade-panel-credits">
         <span>CR</span>
@@ -57,7 +64,8 @@ export class ShopPanel {
       </div>
       <div class="trade-panel-tabs">
         <button class="trade-panel-tab" data-tab="drones">DRONES</button>
-        <button class="trade-panel-tab is-active" data-tab="upgrades">UPGRADES</button>
+        <button class="trade-panel-tab" data-tab="upgrades">UPGRADES</button>
+        <button class="trade-panel-tab is-active" data-tab="market">MARKET</button>
         <button class="trade-panel-tab" data-tab="build">BUILD</button>
       </div>
       <div class="trade-panel-list shop-list"></div>
@@ -118,6 +126,10 @@ export class ShopPanel {
       }
       return;
     }
+    if (this._tab === 'market') {
+      this._renderMarket(list);
+      return;
+    }
     // build tab — placeholder
     for (const item of BUILD_CATALOG) {
       const row = document.createElement('div');
@@ -135,6 +147,63 @@ export class ShopPanel {
     }
   }
 
+  private _renderMarket(list: HTMLElement): void {
+    if (!this._depot) {
+      const note = document.createElement('div');
+      note.className = 'storage-empty';
+      note.textContent = 'No storage depot connected. Build one to trade resources.';
+      list.appendChild(note);
+      return;
+    }
+    const stockpile = this._depot.getStockpile();
+    for (const listing of marketplaceService.getListings()) {
+      const ore = listing.oreType as OreType;
+      const pool = stockpile.get(ore) ?? 0;
+      const canBuy1 = marketplaceService.canBuy(ore, 1);
+      const canBuy10 = marketplaceService.canBuy(ore, 10);
+      const canSell1 = marketplaceService.canSell(this._depot, ore, 1);
+      const canSellAll = pool > 0;
+      const row = document.createElement('div');
+      row.className = 'trade-row market-row';
+      row.innerHTML = `
+        <div class="trade-row-main">
+          <div class="trade-row-name">${listing.displayName}</div>
+          <div class="trade-row-desc">buy ${listing.buyPrice} CR · sell ${listing.sellPrice} CR</div>
+          <div class="trade-row-stock">pool ${pool}</div>
+        </div>
+        <div class="trade-row-buy market-actions">
+          <div class="market-btn-group">
+            <button class="trade-row-buy-btn" data-action="buy" data-qty="1" ${canBuy1 ? '' : 'disabled'}>BUY 1</button>
+            <button class="trade-row-buy-btn" data-action="buy" data-qty="10" ${canBuy10 ? '' : 'disabled'}>BUY 10</button>
+          </div>
+          <div class="market-btn-group">
+            <button class="trade-row-buy-btn market-sell-btn" data-action="sell" data-qty="1" ${canSell1 ? '' : 'disabled'}>SELL 1</button>
+            <button class="trade-row-buy-btn market-sell-btn" data-action="sell-all" ${canSellAll ? '' : 'disabled'}>SELL ALL</button>
+          </div>
+        </div>
+      `;
+      row.querySelectorAll<HTMLButtonElement>('.trade-row-buy-btn').forEach(btn => {
+        btn.addEventListener('click', () => this._handleMarketAction(btn, ore, pool));
+      });
+      list.appendChild(row);
+    }
+  }
+
+  private _handleMarketAction(btn: HTMLButtonElement, ore: OreType, pool: number): void {
+    if (!this._depot) return;
+    const action = btn.dataset.action;
+    if (action === 'buy') {
+      const qty = Number(btn.dataset.qty ?? '1');
+      marketplaceService.buy(this._depot, ore, qty);
+    } else if (action === 'sell') {
+      const qty = Number(btn.dataset.qty ?? '1');
+      marketplaceService.sell(this._depot, ore, qty);
+    } else if (action === 'sell-all') {
+      marketplaceService.sell(this._depot, ore, pool);
+    }
+    this._renderList();
+  }
+
   mount(parent: HTMLElement): void {
     parent.appendChild(this._root);
     const crEl = this._root.querySelector<HTMLElement>('.trade-panel-cr-value')!;
@@ -142,6 +211,13 @@ export class ShopPanel {
       crEl.textContent = Math.floor(credits.value).toLocaleString();
       if (this._visible) this._renderList();
     }));
+    const refreshIfOpen = () => { if (this._visible) this._renderList(); };
+    EventBus.on('marketplace:buy', refreshIfOpen);
+    EventBus.on('marketplace:sell', refreshIfOpen);
+    this._cleanups.push(
+      () => EventBus.off('marketplace:buy', refreshIfOpen),
+      () => EventBus.off('marketplace:sell', refreshIfOpen),
+    );
   }
 
   open(): void {

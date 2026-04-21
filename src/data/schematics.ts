@@ -227,6 +227,21 @@ export const SCHEMATICS: Record<string, Schematic> = {
       HR: 0.3,
     },
   },
+  plate_press: {
+    schematicId: 'plate_press',
+    name: 'Plate Press',
+    inputType: 'steel_bars',
+    inputQty: 1,
+    outputType: 'steel_plates',
+    outputQty: 1,
+    batchPerMin: 8,
+    powerDraw: 3,
+    attributeWeights: {
+      SR: 0.5,
+      MA: 0.3,
+      HR: 0.2,
+    },
+  },
   gas_compressor: {
     schematicId: 'gas_compressor',
     name: 'Gas Compressor',

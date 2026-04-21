@@ -41,6 +41,7 @@ import { inventory } from '@services/Inventory';
 import { planetResources, outpostId } from '@store/gameStore';
 import { Launchpad } from '@entities/Launchpad';
 import { surveyService } from '@services/SurveyService';
+import { obstacleManager } from '@services/ObstacleManager';
 
 const WORLD_WIDTH = 2800;
 const WORLD_HEIGHT = 2000;
@@ -64,6 +65,7 @@ const SLOT = {
   HABITATION:     { x: OUTPOST_CX + 180, y: OUTPOST_CY + 90  },
   WATER_COND:     { x: OUTPOST_CX - 200, y: OUTPOST_CY + 200 },
   FABRICATOR:     { x: OUTPOST_CX - 60,  y: OUTPOST_CY + 200 },
+  PLATE_PRESS:    { x: OUTPOST_CX + 60,  y: OUTPOST_CY + 200 },
   SOLAR_A:        { x: OUTPOST_CX + 140, y: OUTPOST_CY + 200 },
   SOLAR_B:        { x: OUTPOST_CX + 200, y: OUTPOST_CY + 200 },
 };
@@ -90,6 +92,7 @@ export class PlanetA1Scene implements Scene {
   private droneBay!: DroneBay;
   private trafficOverlay!: TrafficOverlay;
   private processingPlant!: ProcessingPlant;
+  private platePressPlant!: ProcessingPlant;
   private solarPanels: SolarPanel[] = [];
   private productionDashboard!: ProductionDashboard;
   private tradeHub!: TradeHub;
@@ -161,6 +164,23 @@ export class PlanetA1Scene implements Scene {
     walls.rect(gateR - 4, bottom - OUTPOST_WALL_THICK - 8, 8, OUTPOST_WALL_THICK + 8).fill(trimColor);
 
     this.worldContainer.addChild(walls);
+
+    // Register wall colliders — five rectangles matching the drawn walls (the
+    // south wall is split around the gate gap, which stays passable). Plus a
+    // small set of navigation waypoints so drones can path around the outside
+    // of the compound to reach the gate.
+    obstacleManager.clear();
+    obstacleManager.addWall({ x: left,                         y: top,                              w: right - left,              h: OUTPOST_WALL_THICK });
+    obstacleManager.addWall({ x: left,                         y: top,                              w: OUTPOST_WALL_THICK,        h: bottom - top });
+    obstacleManager.addWall({ x: right - OUTPOST_WALL_THICK,   y: top,                              w: OUTPOST_WALL_THICK,        h: bottom - top });
+    obstacleManager.addWall({ x: left,                         y: bottom - OUTPOST_WALL_THICK,      w: gateL - left,              h: OUTPOST_WALL_THICK });
+    obstacleManager.addWall({ x: gateR,                        y: bottom - OUTPOST_WALL_THICK,      w: right - gateR,             h: OUTPOST_WALL_THICK });
+    const navOffset = 30;
+    obstacleManager.addWaypoint({ x: OUTPOST_CX,         y: bottom + navOffset });       // gate approach (outside)
+    obstacleManager.addWaypoint({ x: left  - navOffset,  y: bottom + navOffset });       // SW outer corner
+    obstacleManager.addWaypoint({ x: right + navOffset,  y: bottom + navOffset });       // SE outer corner
+    obstacleManager.addWaypoint({ x: left  - navOffset,  y: top    - navOffset });       // NW outer corner
+    obstacleManager.addWaypoint({ x: right + navOffset,  y: top    - navOffset });       // NE outer corner
 
     // Outpost sign above the top wall — Pixi Text, amber, centered.
     const signStyle = new TextStyle({
@@ -316,10 +336,15 @@ export class PlanetA1Scene implements Scene {
     this.solarPanels = [sp1, sp2];
     for (const sp of this.solarPanels) this.worldContainer.addChild(sp.container);
 
-    // Ore Smelter — bottom-center slot
+    // Ore Smelter — bottom-center slot (Vorax → Steel Bars)
     this.processingPlant = new ProcessingPlant(SLOT.PROCESSING.x, SLOT.PROCESSING.y, SCHEMATICS.ore_smelter);
     this.processingPlant.link(this.storageDepot, this.storageDepot);
     this.worldContainer.addChild(this.processingPlant.container);
+
+    // Plate Press — row-3 center slot (Steel Bars → Steel Plates)
+    this.platePressPlant = new ProcessingPlant(SLOT.PLATE_PRESS.x, SLOT.PLATE_PRESS.y, SCHEMATICS.plate_press);
+    this.platePressPlant.link(this.storageDepot, this.storageDepot);
+    this.worldContainer.addChild(this.platePressPlant.container);
 
     // Production dashboard — HTML, owned by UILayer.
     this.productionDashboard = uiInit!.productionDashboard!;
@@ -408,7 +433,9 @@ export class PlanetA1Scene implements Scene {
     interactionManager.register(this.researchLab);
     interactionManager.register(this.habitationModule);
     interactionManager.register(this.processingPlant);
+    interactionManager.register(this.platePressPlant);
     interactionManager.register(this.launchpad);
+    for (const fab of this.fabricators) interactionManager.register(fab);
 
     const ui = (window as unknown as { __voidyield_uiLayer?: UILayer }).__voidyield_uiLayer;
     ui?.interactionPrompt?.setCamera(this.camera);
@@ -424,6 +451,7 @@ export class PlanetA1Scene implements Scene {
       researchLab: this.researchLab,
       habitationModule: this.habitationModule,
       processingPlant: this.processingPlant,
+      platePressPlant: this.platePressPlant,
       fabricators: this.fabricators,
       launchpad: this.launchpad,
       worldContainer: this.worldContainer,
@@ -453,7 +481,8 @@ export class PlanetA1Scene implements Scene {
               || ui2?.droneBayPanel?.visible
               || ui2?.habitationPanel?.visible
               || ui2?.shipBayPanel?.visible
-              || ui2?.techTreePanel?.visible) {
+              || ui2?.techTreePanel?.visible
+              || ui2?.fabricatorPanel?.visible) {
             ui2.closeAllPanels();
             return;
           }
@@ -467,6 +496,7 @@ export class PlanetA1Scene implements Scene {
           }
           if (this.tradeHub.isNearby(px, py, 80)) {
             ui2?.shopPanel?.setTradeHub(this.tradeHub);
+            ui2?.shopPanel?.setDepot(this.storageDepot);
             ui2?.shopPanel?.open();
             return;
           }
@@ -485,8 +515,14 @@ export class PlanetA1Scene implements Scene {
             ui2?.habitationPanel?.open();
             return;
           }
-          if (this.processingPlant.isNearby(px, py, 80)) {
+          if (this.processingPlant.isNearby(px, py, 80) || this.platePressPlant.isNearby(px, py, 80)) {
             this.productionDashboard.toggle();
+            return;
+          }
+          const nearestFab = this.fabricators.find((f) => f.isNearby(px, py, 80));
+          if (nearestFab) {
+            ui2?.fabricatorPanel?.setFabricator(nearestFab);
+            ui2?.fabricatorPanel?.open();
             return;
           }
           if (this.researchLab.isNearby(px, py, 80)) {
@@ -582,6 +618,7 @@ export class PlanetA1Scene implements Scene {
     if (this.fleetPanel.visible) this.fleetPanel.update();
     this.trafficOverlay.update(fleetManager.getDrones());
     this.processingPlant.update(delta);
+    this.platePressPlant.update(delta);
     for (const fab of this.fabricators) fab.update(delta);
     this.researchLab.update(delta);
     consumptionManager.update(delta, this.storageDepot);
@@ -595,11 +632,11 @@ export class PlanetA1Scene implements Scene {
     if (this._dashRefreshTimer >= 1.0) {
       this._dashRefreshTimer = 0;
       if (this.productionDashboard.visible) {
-        this.productionDashboard.refresh(this.storageDepot, [this.processingPlant], this.fabricators);
+        this.productionDashboard.refresh(this.storageDepot, [this.processingPlant, this.platePressPlant], this.fabricators);
       }
     }
     if (this.productionOverlay.visible) {
-      this.productionOverlay.render([this.processingPlant], this.fabricators);
+      this.productionOverlay.render([this.processingPlant, this.platePressPlant], this.fabricators);
     }
   }
 
@@ -627,10 +664,14 @@ export class PlanetA1Scene implements Scene {
     fleetManager.clear();
     zoneManager.reset();
     this.processingPlant.destroy();
+    this.platePressPlant.destroy();
+    for (const fab of this.fabricators) fab.destroy();
+    this.fabricators = [];
     for (const sp of this.solarPanels) sp.destroy();
     this.solarPanels = [];
     consumptionManager.reset();
     logisticsManager.unregisterPlanet('planet_a1');
+    obstacleManager.clear();
     this.app.stage.removeChildren();
     this.sites = [];
   }
