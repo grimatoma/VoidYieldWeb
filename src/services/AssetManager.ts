@@ -2,6 +2,7 @@ import { Assets, Texture } from 'pixi.js';
 
 export type AssetKey =
   | 'player_ne' | 'player_nw' | 'player_se' | 'player_sw'
+  | 'player_sheet'
   | 'building_drone_bay' | 'building_storage_depot' | 'building_sell_terminal'
   | 'building_shop_terminal' | 'building_launch_pad' | 'building_spaceship'
   | 'ore_vorax' | 'ore_krysite' | 'ore_aethite' | 'ore_voidstone' | 'ore_shards'
@@ -16,6 +17,7 @@ const ASSET_URLS: Record<AssetKey, string> = {
   player_nw: 'sprites/player/player_nw.png',
   player_se: 'sprites/player/player_se.png',
   player_sw: 'sprites/player/player_sw.png',
+  player_sheet: 'sprites/player/player_sheet.png',
 
   building_drone_bay:      'sprites/buildings/drone_bay.png',
   building_storage_depot:  'sprites/buildings/storage_depot.png',
