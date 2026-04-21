@@ -115,6 +115,7 @@ export class PlanetA2Scene implements Scene {
 
     // 12. Visit A2 on entry
     gameState.visitA2();
+    gameState.setCurrentPlanet('planet_a2');
 
     // 13. Input handling
     this.unsubInteract = inputManager.onAction((action, pressed) => {

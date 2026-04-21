@@ -6,7 +6,7 @@ import { credits as creditsSignal, currentPlanet as currentPlanetSignal } from '
 export class GameState {
   private _credits: number = 200;
   private _researchPoints: number = 0;
-  private _currentPlanet: string = 'a1';
+  private _currentPlanet: string = 'planet_a1';
   private _phaseFlags: Record<string, number> = { a1: 0, planet_b: 0, planet_c: 0, a3: 0 };
   private _sectorNumber: number = 1;
   private _sectorBonuses: string[] = [];

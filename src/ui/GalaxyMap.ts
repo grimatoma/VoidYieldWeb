@@ -59,7 +59,7 @@ export class GalaxyMap {
         return;
       }
       if (t.classList.contains('galaxy-travel-btn')) {
-        const id = t.getAttribute('data-planet-id');
+        const id = t.getAttribute('data-planet');
         if (id && this._onTravel) {
           this._onTravel(id);
           this.setVisible(false);
@@ -101,7 +101,7 @@ export class GalaxyMap {
       const colorClass = node.current ? 'is-current' : !node.unlocked ? 'is-locked' : '';
       const color = node.current ? '#D4A843' : !node.unlocked ? '#333355' : pos.color;
       const travelBtn = (!node.current && node.unlocked && this._onTravel)
-        ? `<button class="galaxy-travel-btn" data-planet-id="${node.id}">TRAVEL</button>`
+        ? `<button class="galaxy-travel-btn" data-planet="${node.id}">TRAVEL</button>`
         : '';
       return `
         <div class="galaxy-planet ${colorClass}" style="left:${pos.x}%;top:${pos.y}%">

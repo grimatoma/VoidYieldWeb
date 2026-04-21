@@ -8,7 +8,7 @@ import { PlanetCScene } from '@scenes/PlanetCScene';
 import { PlanetA3Scene } from '@scenes/PlanetA3Scene';
 import { inputManager } from '@services/InputManager';
 import { EventBus } from '@services/EventBus';
-import { voidyieldDebugAPI, injectSceneUpdater } from './debug/VoidYieldDebugAPI';
+import { voidyieldDebugAPI, injectSceneUpdater, injectSceneIdGetter } from './debug/VoidYieldDebugAPI';
 import { UILayer } from '@ui/UILayer';
 import { assetManager } from '@services/AssetManager';
 import '@ui/styles.css';
@@ -84,6 +84,7 @@ async function main(): Promise<void> {
   // Mount debug API in dev/test builds for E2E testing
   if ((import.meta as { env?: { DEV?: boolean } }).env?.DEV) {
     injectSceneUpdater((dt) => sceneManager.update(dt));
+    injectSceneIdGetter(() => sceneManager.currentId);
     window.__voidyield__ = voidyieldDebugAPI;
     console.info('[VoidYield] Debug API mounted at window.__voidyield__');
   }

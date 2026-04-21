@@ -30,24 +30,40 @@ export async function waitForGame(page: Page) {
 
 /**
  * Boot the game AND travel to the specified planet scene.
- * Waits until the planet's depot is registered with LogisticsManager.
+ * Waits until the scene is fully entered before returning.
  *
- * Use this instead of `waitForGame` when a test needs to manipulate depot stock.
+ * Does NOT fire a redundant travel if the boot sequence already navigated
+ * to this planet — avoids a race condition where double-entry tears down
+ * the scene's input handlers mid-test.
  */
 export async function waitForPlanet(page: Page, planetId: string = 'planet_a1') {
   const g = await waitForGame(page);
 
-  // Trigger scene travel
-  await page.evaluate((id) => {
-    window.__voidyield__.services.EventBus.emit('scene:travel', id);
-  }, planetId);
-
-  // Wait until the depot is registered (getDepot returns non-null)
+  // The boot sequence fires scene:travel after an 800ms splash. By the time
+  // __voidyield__ is mounted the travel event was emitted but the scene may
+  // still be entering. Wait for the boot navigation to land (≤5 s) before
+  // deciding whether we need to fire our own travel.
   await page.waitForFunction(
-    (id) => {
-      const depot = window.__voidyield__.services.logisticsManager.getDepot(id);
-      return depot !== undefined;
+    () => {
+      const id = window.__voidyield__.currentSceneId();
+      return id !== null && id !== 'boot';
     },
+    { timeout: 5000 }
+  ).catch(() => { /* if boot nav doesn't complete just proceed */ });
+
+  const currentScene = await page.evaluate(
+    () => window.__voidyield__.currentSceneId()
+  );
+
+  if (currentScene !== planetId) {
+    await page.evaluate((id) => {
+      window.__voidyield__.services.EventBus.emit('scene:travel', id);
+    }, planetId);
+  }
+
+  // Wait until the target scene is fully entered
+  await page.waitForFunction(
+    (id) => window.__voidyield__.currentSceneId() === id,
     planetId,
     { timeout: GAME_READY_TIMEOUT }
   );
@@ -96,13 +112,13 @@ function buildHelper(page: Page) {
     async getProductivityMultiplier()                       { return ev<number>('getProductivityMultiplier'); },
 
     // ── Scene travel ───────────────────────────────────────────
-    /** Travel to a planet and wait for its depot to be ready. */
+    /** Travel to a planet and wait for the scene to be fully entered. */
     async travelTo(planetId: string): Promise<void> {
       await page.evaluate((id) => {
         window.__voidyield__.services.EventBus.emit('scene:travel', id);
       }, planetId);
       await page.waitForFunction(
-        (id) => window.__voidyield__.services.logisticsManager.getDepot(id) !== undefined,
+        (id) => window.__voidyield__.currentSceneId() === id,
         planetId,
         { timeout: GAME_READY_TIMEOUT }
       );

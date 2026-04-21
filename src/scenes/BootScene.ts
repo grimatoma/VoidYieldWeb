@@ -94,7 +94,7 @@ export class BootScene implements Scene {
 
     // Brief splash pause then navigate to saved planet
     await new Promise<void>(resolve => setTimeout(resolve, 800));
-    EventBus.emit('scene:travel', `planet_${gameState.currentPlanet}`);
+    EventBus.emit('scene:travel', gameState.currentPlanet);
   }
 
   update(_delta: number): void {}

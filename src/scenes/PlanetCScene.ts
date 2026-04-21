@@ -133,6 +133,7 @@ export class PlanetCScene implements Scene {
     // 15. Mining service wiring
     miningService.setDepot(this.storageDepot);
     logisticsManager.registerPlanet('planet_c', this.storageDepot);
+    gameState.setCurrentPlanet('planet_c');
     this.unsubInteract = inputManager.onAction((action, pressed) => {
       if (action === 'pause_menu' && pressed) {
         const ui = (window as unknown as { __voidyield_uiLayer?: UILayer }).__voidyield_uiLayer;

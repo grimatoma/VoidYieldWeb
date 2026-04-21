@@ -14,6 +14,7 @@ import { GasCollector } from '@entities/GasCollector';
 import { fleetManager } from '@services/FleetManager';
 import { strandingManager } from '@services/StrandingManager';
 import { logisticsManager } from '@services/LogisticsManager';
+import { gameState } from '@services/GameState';
 import { GalaxyMap } from '@ui/GalaxyMap';
 import { EventBus } from '@services/EventBus';
 import type { UILayer } from '@ui/UILayer';
@@ -135,6 +136,7 @@ export class PlanetBScene implements Scene {
     // 13. Mining service wiring + logistics registration
     miningService.setDepot(this.storageDepot);
     logisticsManager.registerPlanet('planet_b', this.storageDepot);
+    gameState.setCurrentPlanet('planet_b');
     this.unsubInteract = inputManager.onAction((action, pressed) => {
       if (action === 'pause_menu' && pressed) {
         const ui = (window as unknown as { __voidyield_uiLayer?: UILayer }).__voidyield_uiLayer;

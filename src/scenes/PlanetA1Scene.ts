@@ -34,6 +34,7 @@ import { GalaxyMap } from '@ui/GalaxyMap';
 import { EventBus } from '@services/EventBus';
 import { LogisticsOverlay } from '@ui/LogisticsOverlay';
 import { logisticsManager } from '@services/LogisticsManager';
+import { gameState } from '@services/GameState';
 import { interactionManager } from '@services/InteractionManager';
 import type { UILayer } from '@ui/UILayer';
 import { inventory } from '@services/Inventory';
@@ -284,6 +285,7 @@ export class PlanetA1Scene implements Scene {
 
     // Register this planet's depot with logistics manager
     logisticsManager.registerPlanet('planet_a1', this.storageDepot);
+    gameState.setCurrentPlanet('planet_a1');
 
     // Example route for demo (A1→B, steel_bars)
     logisticsManager.addRoute({

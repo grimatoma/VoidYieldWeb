@@ -57,7 +57,7 @@ export function defaultSaveData(): SaveData {
     format_version: FORMAT_VERSION,
     last_save_timestamp: Math.floor(Date.now() / 1000),
     sector_number: 1,
-    current_planet: 'a1',
+    current_planet: 'planet_a1',
     phase_flags: { a1: 0, planet_b: 0, planet_c: 0, a3: 0 },
     credits: 200,
     research_points: 0,

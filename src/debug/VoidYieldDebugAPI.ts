@@ -49,6 +49,8 @@ export interface VoidYieldDebugAPI {
   resetAll(): void;
   /** Suppress the tutorial overlay immediately (for tests) */
   skipTutorial(): void;
+  /** Returns the current scene ID (e.g. 'planet_a1', 'boot') or null */
+  currentSceneId(): string | null;
 
   // ── Preset loader ─────────────────────────────────────────────
   loadPreset(name: GamePreset): void;
@@ -81,6 +83,12 @@ export type GamePreset =
 let _sceneUpdateFn: ((dt: number) => void) | null = null;
 export function injectSceneUpdater(fn: (dt: number) => void): void {
   _sceneUpdateFn = fn;
+}
+
+// Current scene ID getter — injected by main.ts at boot
+let _sceneIdGetter: (() => string | null) | null = null;
+export function injectSceneIdGetter(fn: () => string | null): void {
+  _sceneIdGetter = fn;
 }
 
 function createDebugAPI(): VoidYieldDebugAPI {
@@ -182,6 +190,8 @@ function createDebugAPI(): VoidYieldDebugAPI {
       tutorialManager.skip();
       EventBus.emit('tutorial:completed');
     },
+
+    currentSceneId() { return _sceneIdGetter ? _sceneIdGetter() : null; },
 
     // ── Presets ───────────────────────────────────────────────
     loadPreset(name) {

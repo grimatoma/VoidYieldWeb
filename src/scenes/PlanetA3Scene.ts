@@ -15,6 +15,7 @@ import { fleetManager } from '@services/FleetManager';
 import { GalaxyMap } from '@ui/GalaxyMap';
 import { EventBus } from '@services/EventBus';
 import { logisticsManager } from '@services/LogisticsManager';
+import { gameState } from '@services/GameState';
 import { WarpGate } from '@entities/WarpGate';
 import { GalacticHub } from '@entities/GalacticHub';
 import type { UILayer } from '@ui/UILayer';
@@ -139,6 +140,7 @@ export class PlanetA3Scene implements Scene {
     // 16. Mining service wiring
     miningService.setDepot(this.storageDepot);
     logisticsManager.registerPlanet('planet_a3', this.storageDepot);
+    gameState.setCurrentPlanet('planet_a3');
     this.unsubInteract = inputManager.onAction((action, pressed) => {
       if (action === 'pause_menu' && pressed) {
         const ui = (window as unknown as { __voidyield_uiLayer?: UILayer }).__voidyield_uiLayer;
