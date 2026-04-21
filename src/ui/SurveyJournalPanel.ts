@@ -16,6 +16,7 @@ export class SurveyJournalPanel {
       if (!this._visible) return;
       if (e.code === 'Escape' || e.code === 'KeyJ') {
         e.preventDefault();
+        e.stopImmediatePropagation();
         this.close();
       }
     };

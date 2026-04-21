@@ -20,6 +20,7 @@ export class InventoryPanel {
       if (!this._visible) return;
       if (e.code === 'Escape' || e.code === 'KeyI') {
         e.preventDefault();
+        e.stopImmediatePropagation();
         this.close();
       }
     };
