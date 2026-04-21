@@ -9,6 +9,7 @@ export interface Schematic {
   outputQty: number;
   batchPerMin: number;
   powerDraw: number;
+  attributeWeights?: Record<string, number>;
 }
 
 export interface FabricatorSchematic {
@@ -35,7 +36,7 @@ export const FABRICATOR_SCHEMATICS: Record<string, FabricatorSchematic> = {
     inputQtyA: 2,
     inputTypeB: 'alloy_rods',
     inputQtyB: 1,
-    outputType: 'steel_bars',  // placeholder - in full game would be a new 'drill_head' OreType
+    outputType: 'drill_head',
     outputQty: 1,
     batchPerHr: 3,
     powerDraw: 8,
@@ -72,6 +73,10 @@ export const FABRICATOR_SCHEMATICS: Record<string, FabricatorSchematic> = {
     outputQty: 1,
     batchPerHr: 3,
     powerDraw: 8,
+    attributeWeights: {
+      OQ: { slot: 'A', weight: 0.5 },
+      PE: { slot: 'B', weight: 0.5 },
+    },
   },
 };
 
@@ -131,6 +136,11 @@ export const SCHEMATICS: Record<string, Schematic> = {
     outputQty: 1,
     batchPerMin: 12,
     powerDraw: 3,
+    attributeWeights: {
+      OQ: 0.4,
+      MA: 0.3,
+      HR: 0.3,
+    },
   },
   gas_compressor: {
     schematicId: 'gas_compressor',
@@ -141,6 +151,11 @@ export const SCHEMATICS: Record<string, Schematic> = {
     outputQty: 1,
     batchPerMin: 10,
     powerDraw: 3,
+    attributeWeights: {
+      OQ: 0.4,
+      PE: 0.4,
+      UT: 0.2,
+    },
   },
   alloy_refinery: {
     schematicId: 'alloy_refinery',
@@ -151,6 +166,11 @@ export const SCHEMATICS: Record<string, Schematic> = {
     outputQty: 1,
     batchPerMin: 6,
     powerDraw: 3,
+    attributeWeights: {
+      OQ: 0.3,
+      MA: 0.4,
+      HR: 0.3,
+    },
   },
   fuel_synthesizer: {
     schematicId: 'fuel_synthesizer',
@@ -161,6 +181,11 @@ export const SCHEMATICS: Record<string, Schematic> = {
     outputQty: 1,
     batchPerMin: 4,
     powerDraw: 3,
+    attributeWeights: {
+      OQ: 0.4,
+      PE: 0.5,
+      UT: 0.1,
+    },
   },
   bio_extractor: {
     schematicId: 'bio_extractor',
@@ -171,6 +196,11 @@ export const SCHEMATICS: Record<string, Schematic> = {
     outputQty: 1,
     batchPerMin: 5,
     powerDraw: 3,
+    attributeWeights: {
+      OQ: 0.3,
+      PE: 0.4,
+      CD: 0.3,
+    },
   },
   ration_synthesizer: {
     schematicId: 'ration_synthesizer',
@@ -181,5 +211,10 @@ export const SCHEMATICS: Record<string, Schematic> = {
     outputQty: 1,
     batchPerMin: 8,
     powerDraw: 3,
+    attributeWeights: {
+      OQ: 0.5,
+      PE: 0.3,
+      UT: 0.2,
+    },
   },
 };

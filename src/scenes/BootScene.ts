@@ -1,4 +1,4 @@
-import { Application, Graphics, Text, TextStyle } from 'pixi.js';
+import { Application, Container, Graphics, Text, TextStyle } from 'pixi.js';
 import type { Scene } from './SceneManager';
 import { saveManager, defaultSaveData } from '@services/SaveManager';
 import { gameState } from '@services/GameState';
@@ -10,13 +10,18 @@ import { tutorialManager } from '@services/TutorialManager';
 
 export class BootScene implements Scene {
   readonly id = 'boot';
+  private _splash: Container | null = null;
+  private _splashTexts: Text[] = [];
 
   async enter(app: Application): Promise<void> {
-    // Navy background per spec 13 (#0D1B3E)
+    // Splash visuals wrapped in a container so exit() can dispose them in one call.
+    this._splash = new Container();
+    app.stage.addChild(this._splash);
+
     const bg = new Graphics();
     bg.rect(0, 0, app.screen.width, app.screen.height);
     bg.fill(0x0D1B3E);
-    app.stage.addChild(bg);
+    this._splash.addChild(bg);
 
     const style = new TextStyle({
       fontFamily: 'monospace',
@@ -29,14 +34,17 @@ export class BootScene implements Scene {
     title.anchor.set(0.5);
     title.x = app.screen.width / 2;
     title.y = app.screen.height / 2 - 40;
-    app.stage.addChild(title);
+    this._splash.addChild(title);
 
     const subStyle = new TextStyle({ fontFamily: 'monospace', fontSize: 13, fill: '#4A90D9' });
-    const sub = new Text({ text: 'Loading…', style: subStyle });
+    const sub = new Text({ text: 'Loading...', style: subStyle });
     sub.anchor.set(0.5);
     sub.x = app.screen.width / 2;
     sub.y = app.screen.height / 2 + 10;
-    app.stage.addChild(sub);
+    this._splash.addChild(sub);
+    // Track Text children explicitly so we can destroy them even if the
+    // Container.destroy({ children: true }) path ever misses them.
+    this._splashTexts.push(title, sub);
 
     // Restore or init save state
     const saved = saveManager.loadGame();
@@ -57,6 +65,7 @@ export class BootScene implements Scene {
       gameState.applyFromSave(defaultSaveData());
     }
 
+    if (!this._splash) return; // scene already exited
     sub.text = saved ? 'Save loaded.' : 'New game.';
 
     // Build the state snapshot for autosave
@@ -92,5 +101,16 @@ export class BootScene implements Scene {
 
   exit(): void {
     saveManager.stopAutosave();
+    // Destroy Text children explicitly before destroying the container.
+    // (Prevents zombie glyph rendering if Container.destroy's cascade misses.)
+    for (const t of this._splashTexts) {
+      try { t.destroy({ children: true }); } catch {}
+    }
+    this._splashTexts = [];
+    if (this._splash) {
+      try { this._splash.removeFromParent(); } catch {}
+      try { this._splash.destroy({ children: true }); } catch {}
+      this._splash = null;
+    }
   }
 }

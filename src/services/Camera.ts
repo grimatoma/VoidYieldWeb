@@ -6,7 +6,14 @@ export class Camera {
   private worldHeight: number;
   private screenWidth: number;
   private screenHeight: number;
+  /**
+   * Zoom scales the worldContainer uniformly. Default is derived from viewport
+   * so a 1920x1080 monitor shows the world at ~2x the 960x540 reference size
+   * that the legacy sprites were authored for.
+   */
   zoom = 1.0;
+  minZoom = 1.0;
+  maxZoom = 4.0;
   private lastTarget = { x: 0, y: 0 };
   private isPanning = false;
   private panStart = { sx: 0, sy: 0, ox: 0, oy: 0 };
@@ -30,8 +37,13 @@ export class Camera {
     this.screenWidth = screenWidth;
     this.screenHeight = screenHeight;
 
+    // Derive a reasonable starting zoom for the viewport. Legacy sprites were
+    // authored at 960x540; modern monitors are 2–4x that width, so we scale up.
+    const derived = Math.max(1.8, Math.min(3.5, screenWidth / 960));
+    this.zoom = derived;
+
     this._onWheel = (e: WheelEvent) => {
-      this.zoom = Math.max(0.5, Math.min(3.0, this.zoom + (e.deltaY < 0 ? 0.1 : -0.1)));
+      this.zoom = Math.max(this.minZoom, Math.min(this.maxZoom, this.zoom + (e.deltaY < 0 ? 0.15 : -0.15)));
       this._applyTransform();
     };
 
@@ -68,6 +80,14 @@ export class Camera {
   follow(target: { x: number; y: number }): void {
     this.lastTarget = target;
     this._applyTransform();
+  }
+
+  /** Project a world-space point to a screen-space (CSS pixel) point. */
+  worldToScreen(x: number, y: number): { x: number; y: number } {
+    return {
+      x: this.worldContainer.x + x * this.zoom,
+      y: this.worldContainer.y + y * this.zoom,
+    };
   }
 
   private _applyTransform(): void {

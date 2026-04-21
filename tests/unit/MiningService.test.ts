@@ -12,7 +12,7 @@ vi.mock('@services/GameState', () => ({
 vi.mock('@services/Inventory', () => ({
   inventory: {
     isFull: false,
-    add: vi.fn().mockReturnValue(3),
+    add: vi.fn().mockReturnValue(1),
     drain: vi.fn().mockReturnValue([{ oreType: 'vorax', quantity: 3, attributes: {} }]),
   },
 }));
@@ -20,7 +20,16 @@ vi.mock('@services/Inventory', () => ({
 import { MiningService } from '@services/MiningService';
 import { depositMap } from '@services/DepositMap';
 import { gameState } from '@services/GameState';
-import { inventory as _inventory } from '@services/Inventory';
+
+function makeDeposit() {
+  return {
+    data: { isExhausted: false, oreType: 'vorax' as const, x: 100, y: 100, depositId: 'd1', concentrationPeak: 70, yieldRemaining: 100, sizeClass: 'large' as const },
+    mine: vi.fn().mockReturnValue({ oreType: 'vorax', quantity: 1, attributes: {} }),
+    container: {},
+    serialize: vi.fn(),
+    holdProgress: 0,
+  };
+}
 
 describe('MiningService', () => {
   let svc: MiningService;
@@ -35,17 +44,13 @@ describe('MiningService', () => {
     expect(svc.onInteract(100, 100)).toBeNull();
   });
 
-  it('mines a deposit and adds to inventory', () => {
-    const mockDeposit = {
-      data: { isExhausted: false, oreType: 'vorax' as const, x: 100, y: 100, depositId: 'd1', concentrationPeak: 70, yieldRemaining: 100, sizeClass: 'large' as const },
-      mine: vi.fn().mockReturnValue({ oreType: 'vorax', quantity: 3, attributes: {} }),
-      container: {},
-      serialize: vi.fn(),
-    };
+  it('starts hold-mining when E is pressed near a deposit', () => {
+    const mockDeposit = makeDeposit();
     vi.mocked(depositMap.getNearestDeposit).mockReturnValue(mockDeposit as never);
-    const result = svc.onInteract(100, 100);
-    expect(mockDeposit.mine).toHaveBeenCalledWith(3);
-    expect(result).toContain('vorax');
+    svc.onInteract(100, 100); // begin hold
+    // Tick forward through one full hold cycle (1.5s).
+    svc.update(1.6, { x: 100, y: 100 });
+    expect(mockDeposit.mine).toHaveBeenCalledWith(1);
   });
 
   it('sells inventory when interacting with depot', () => {
@@ -62,15 +67,13 @@ describe('MiningService', () => {
     expect(result).toContain('15 CR');
   });
 
-  it('mining is blocked during cooldown', () => {
-    const mockDeposit = {
-      data: { isExhausted: false, oreType: 'vorax' as const, x: 0, y: 0, depositId: 'd1', concentrationPeak: 70, yieldRemaining: 100, sizeClass: 'large' as const },
-      mine: vi.fn().mockReturnValue({ oreType: 'vorax', quantity: 3, attributes: {} }),
-      container: {}, serialize: vi.fn(),
-    };
+  it('stops hold-mining when E is released', () => {
+    const mockDeposit = makeDeposit();
     vi.mocked(depositMap.getNearestDeposit).mockReturnValue(mockDeposit as never);
-    svc.onInteract(0, 0); // first mine — sets cooldown
-    const result = svc.onInteract(0, 0); // immediate retry
-    expect(result).toBeNull();
+    svc.onInteract(100, 100); // begin hold
+    svc.update(0.5, { x: 100, y: 100 }); // partial progress
+    svc.onInteractReleased();
+    svc.update(2.0, { x: 100, y: 100 }); // after release — should not mine
+    expect(mockDeposit.mine).not.toHaveBeenCalled();
   });
 });

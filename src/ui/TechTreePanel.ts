@@ -1,147 +1,145 @@
-import { Container, Graphics, Text, TextStyle } from 'pixi.js';
-import { TECH_NODES } from '@data/tech_tree_nodes';
+/**
+ * TechTreePanel — HTML/CSS tech tree modal.
+ *
+ * Replaces the old PixiJS-canvas implementation so it layers cleanly above
+ * the canvas HUD (no more hiding behind HTML panels) and scales with the
+ * rest of the UI via `--hud-scale`.
+ *
+ * Public surface (preserved for scene callsites):
+ *   - new TechTreePanel()
+ *   - .toggle()
+ *   - .visible
+ *   - .mount(parent)
+ *   - .destroy()
+ */
+import { TECH_NODES, type TechNode } from '@data/tech_tree_nodes';
 import { techTree } from '@services/TechTree';
 
+const BRANCH_META: Record<1 | 2 | 3, { title: string; color: string }> = {
+  1: { title: 'EXTRACTION',         color: '#FF8C42' },
+  2: { title: 'PROCESSING & CRAFT', color: '#00B8D4' },
+  3: { title: 'EXPANSION',          color: '#4CAF50' },
+};
+
 export class TechTreePanel {
-  readonly container: Container;
+  private _root: HTMLElement;
+  private _body: HTMLElement;
   private _visible = false;
-  private _columnScrollY = [0, 0, 0]; // scroll offset for each branch
-  private _nodeContainers: Container[] = [];
+  private _mounted = false;
+  private _onBackdropClick: (e: MouseEvent) => void;
 
   constructor() {
-    this.container = new Container();
-    this.container.visible = false;
-    this.container.x = 50;
-    this.container.y = 30;
-    this._build();
+    this._root = document.createElement('div');
+    this._root.className = 'tech-panel-root';
+    this._root.style.display = 'none';
+    this._root.innerHTML = `
+      <div class="tech-panel-backdrop"></div>
+      <div class="tech-panel">
+        <div class="tech-panel-head">
+          <h2>[ TECH TREE ]</h2>
+          <div class="tech-panel-head-hint">[J] or click outside to close  |  click node to unlock</div>
+          <button class="tech-panel-close" aria-label="Close">✕</button>
+        </div>
+        <div class="tech-panel-body"></div>
+        <div class="tech-panel-foot">
+          <span class="tech-key tech-key-unlocked">AMBER</span> unlocked
+          <span class="tech-key tech-key-available">TEAL</span> available
+          <span class="tech-key tech-key-locked">GREY</span> locked
+        </div>
+      </div>
+    `;
+    this._body = this._root.querySelector<HTMLElement>('.tech-panel-body')!;
+
+    this._onBackdropClick = (e: MouseEvent) => {
+      const target = e.target as HTMLElement;
+      if (target.classList.contains('tech-panel-backdrop')
+          || target.classList.contains('tech-panel-close')) {
+        this._close();
+      }
+    };
+    this._root.addEventListener('click', this._onBackdropClick);
   }
 
-  private _build(): void {
-    // Background
-    const bg = new Graphics();
-    bg.rect(0, 0, 860, 480).fill({ color: 0x060E1A, alpha: 0.96 });
-    bg.rect(0, 0, 860, 480).stroke({ width: 1, color: 0xD4A843 });
-    this.container.addChild(bg);
-
-    // Title
-    const titleStyle = new TextStyle({ fontFamily: 'monospace', fontSize: 13, fill: '#D4A843' });
-    const title = new Text({ text: '[ TECH TREE ]', style: titleStyle });
-    title.x = 8;
-    title.y = 8;
-    this.container.addChild(title);
-
-    const hintStyle = new TextStyle({ fontFamily: 'monospace', fontSize: 9, fill: '#556677' });
-    const hint = new Text({ text: '[J] close  |  click node to unlock', style: hintStyle });
-    hint.x = 200;
-    hint.y = 12;
-    this.container.addChild(hint);
-
-    // Branch column headers
-    const headers = ['EXTRACTION', 'PROCESSING & CRAFT', 'EXPANSION'];
-    const branchColors = ['#FF8C42', '#00B8D4', '#4CAF50'];
-    for (let b = 0; b < 3; b++) {
-      const hStyle = new TextStyle({ fontFamily: 'monospace', fontSize: 10, fill: branchColors[b] });
-      const h = new Text({ text: headers[b], style: hStyle });
-      h.x = 14 + b * 285;
-      h.y = 30;
-      this.container.addChild(h);
-
-      // Column divider
-      if (b > 0) {
-        const div = new Graphics();
-        div.rect(8 + b * 285, 28, 1, 440).fill({ color: 0x223344, alpha: 0.6 });
-        this.container.addChild(div);
-      }
-    }
-
-    // Info text at bottom
-    const infoStyle = new TextStyle({ fontFamily: 'monospace', fontSize: 9, fill: '#556677' });
-    const info = new Text({
-      text: 'RP: shows cost  |  amber = unlocked  |  teal = available  |  grey = locked',
-      style: infoStyle,
-    });
-    info.x = 8;
-    info.y = 464;
-    this.container.addChild(info);
-  }
-
-  /** Rebuild node display — call when opening or after unlock. */
-  refresh(): void {
-    // Remove old node containers
-    for (const nc of this._nodeContainers) this.container.removeChild(nc);
-    this._nodeContainers = [];
-
-    const branches = [1, 2, 3] as const;
-    for (const branch of branches) {
-      const nodes = TECH_NODES.filter((n) => n.branch === branch);
-      const colX = 14 + (branch - 1) * 285;
-      const nc = new Container();
-      nc.x = colX;
-      nc.y = 46 + this._columnScrollY[branch - 1];
-
-      let rowY = 0;
-      for (const node of nodes) {
-        const unlocked = techTree.isUnlocked(node.nodeId);
-        const canUnlock = techTree.canUnlock(node.nodeId);
-
-        const bgColor = unlocked ? 0x3a2800 : 0x0d1b2e;
-        const borderColor = unlocked ? 0xd4a843 : canUnlock ? 0x00b8d4 : 0x2a3a4a;
-        const textColor = unlocked ? '#D4A843' : canUnlock ? '#FFFFFF' : '#445566';
-
-        const g = new Graphics();
-        g.rect(0, rowY, 260, 34).fill(bgColor);
-        g.rect(0, rowY, 260, 34).stroke({ width: 1, color: borderColor });
-
-        if (canUnlock && !unlocked) {
-          g.eventMode = 'static';
-          g.cursor = 'pointer';
-          const nodeId = node.nodeId;
-          g.on('pointerdown', () => {
-            techTree.unlock(nodeId);
-            this.refresh();
-          });
-        }
-        nc.addChild(g);
-
-        // Node name
-        const nameStyle = new TextStyle({ fontFamily: 'monospace', fontSize: 9, fill: textColor });
-        const nameText = new Text({ text: node.name.slice(0, 28), style: nameStyle });
-        nameText.x = 4;
-        nameText.y = rowY + 4;
-        nameText.eventMode = 'none';
-        nc.addChild(nameText);
-
-        // Cost label
-        const costParts = [];
-        if (node.rpCost > 0) costParts.push(`${node.rpCost}RP`);
-        if (node.crCost > 0) costParts.push(`${node.crCost}CR`);
-        const costStr = costParts.join(' + ') || 'FREE';
-        const costStyle = new TextStyle({
-          fontFamily: 'monospace',
-          fontSize: 8,
-          fill: unlocked ? '#888844' : '#556677',
-        });
-        const costText = new Text({ text: costStr, style: costStyle });
-        costText.x = 4;
-        costText.y = rowY + 18;
-        costText.eventMode = 'none';
-        nc.addChild(costText);
-
-        rowY += 38;
-      }
-
-      this.container.addChild(nc);
-      this._nodeContainers.push(nc);
-    }
+  mount(parent: HTMLElement): void {
+    if (this._mounted) return;
+    parent.appendChild(this._root);
+    this._mounted = true;
   }
 
   toggle(): void {
-    this._visible = !this._visible;
-    this.container.visible = this._visible;
-    if (this._visible) this.refresh();
+    if (this._visible) this._close();
+    else this._open();
   }
 
-  get visible(): boolean {
-    return this._visible;
+  private _open(): void {
+    this._visible = true;
+    this._root.style.display = 'block';
+    this.refresh();
   }
+
+  private _close(): void {
+    this._visible = false;
+    this._root.style.display = 'none';
+  }
+
+  get visible(): boolean { return this._visible; }
+
+  /** Re-render the three branch columns with current unlock state. */
+  refresh(): void {
+    const branches: Array<1 | 2 | 3> = [1, 2, 3];
+    this._body.innerHTML = branches.map((b) => {
+      const meta = BRANCH_META[b];
+      const nodes = TECH_NODES.filter((n) => n.branch === b);
+      const nodesHtml = nodes.map((n) => this._nodeHtml(n)).join('');
+      return `
+        <div class="tech-col" style="--branch-color: ${meta.color}">
+          <div class="tech-col-head">${meta.title}</div>
+          <div class="tech-col-list">${nodesHtml}</div>
+        </div>
+      `;
+    }).join('');
+
+    // Wire click handlers on available nodes.
+    this._body.querySelectorAll<HTMLElement>('.tech-node[data-available="1"]').forEach((el) => {
+      const id = el.getAttribute('data-node-id');
+      if (!id) return;
+      el.addEventListener('click', () => {
+        techTree.unlock(id);
+        this.refresh();
+      });
+    });
+  }
+
+  private _nodeHtml(node: TechNode): string {
+    const unlocked = techTree.isUnlocked(node.nodeId);
+    const canUnlock = techTree.canUnlock(node.nodeId);
+    const state = unlocked ? 'unlocked' : canUnlock ? 'available' : 'locked';
+
+    const costParts: string[] = [];
+    if (node.rpCost > 0) costParts.push(`${node.rpCost} RP`);
+    if (node.crCost > 0) costParts.push(`${node.crCost} CR`);
+    const cost = costParts.join(' · ') || 'FREE';
+    const desc = node.description ?? '';
+
+    return `
+      <div class="tech-node tech-node--${state}"
+           data-node-id="${node.nodeId}"
+           data-available="${canUnlock && !unlocked ? '1' : '0'}">
+        <div class="tech-node-name">${escapeHtml(node.name)}</div>
+        <div class="tech-node-desc">${escapeHtml(desc)}</div>
+        <div class="tech-node-cost">${unlocked ? 'UNLOCKED' : cost}</div>
+      </div>
+    `;
+  }
+
+  destroy(): void {
+    this._root.removeEventListener('click', this._onBackdropClick);
+    this._root.remove();
+  }
+}
+
+function escapeHtml(s: string): string {
+  return s.replace(/[&<>"']/g, (c) => ({
+    '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;',
+  }[c] as string));
 }

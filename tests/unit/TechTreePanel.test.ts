@@ -1,31 +1,5 @@
-import { describe, it, expect, vi } from 'vitest';
-
-vi.mock('pixi.js', () => {
-  const make = () => ({
-    circle: vi.fn().mockReturnThis(),
-    fill: vi.fn().mockReturnThis(),
-    stroke: vi.fn().mockReturnThis(),
-    rect: vi.fn().mockReturnThis(),
-    moveTo: vi.fn().mockReturnThis(),
-    lineTo: vi.fn().mockReturnThis(),
-    clear: vi.fn().mockReturnThis(),
-    addChild: vi.fn(),
-    removeChild: vi.fn(),
-    on: vi.fn().mockReturnThis(),
-    x: 0,
-    y: 0,
-    visible: true,
-    eventMode: 'static',
-    cursor: 'pointer',
-  });
-  return {
-    Graphics: vi.fn().mockImplementation(make),
-    Container: vi.fn().mockImplementation(make),
-    Text: vi.fn().mockImplementation(make),
-    TextStyle: vi.fn(),
-    Application: vi.fn(),
-  };
-});
+// @vitest-environment jsdom
+import { describe, it, expect, vi, beforeEach } from 'vitest';
 
 vi.mock('@data/tech_tree_nodes', () => ({
   TECH_NODES: [
@@ -88,22 +62,38 @@ vi.mock('@services/GameState', () => ({
 
 import { TechTreePanel } from '@ui/TechTreePanel';
 
-describe('TechTreePanel', () => {
+describe('TechTreePanel (HTML)', () => {
+  beforeEach(() => {
+    document.body.innerHTML = '';
+  });
+
   it('starts hidden', () => {
     const panel = new TechTreePanel();
+    panel.mount(document.body);
     expect(panel.visible).toBe(false);
+    expect(document.querySelector<HTMLElement>('.tech-panel-root')!.style.display).toBe('none');
   });
 
   it('toggle shows panel', () => {
     const panel = new TechTreePanel();
+    panel.mount(document.body);
     panel.toggle();
     expect(panel.visible).toBe(true);
+    expect(document.querySelector<HTMLElement>('.tech-panel-root')!.style.display).toBe('block');
   });
 
   it('toggle twice hides panel', () => {
     const panel = new TechTreePanel();
+    panel.mount(document.body);
     panel.toggle();
     panel.toggle();
     expect(panel.visible).toBe(false);
+  });
+
+  it('renders a node per tech definition when opened', () => {
+    const panel = new TechTreePanel();
+    panel.mount(document.body);
+    panel.toggle();
+    expect(document.querySelectorAll('.tech-node').length).toBe(3);
   });
 });

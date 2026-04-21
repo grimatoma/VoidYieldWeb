@@ -13,7 +13,19 @@ export default defineConfig({
   projects: [
     {
       name: 'chromium',
+      testIgnore: ['**/visual/**'],
       use: { ...devices['Desktop Chrome'] },
+    },
+    {
+      name: 'visual',
+      testMatch: '**/visual/**/*.spec.ts',
+      use: {
+        ...devices['Desktop Chrome'],
+        viewport: { width: 1280, height: 720 },
+        deviceScaleFactor: 1,
+      },
+      // Goldens stored alongside the spec file
+      snapshotDir: 'tests/e2e/visual/__snapshots__',
     },
   ],
   webServer: {

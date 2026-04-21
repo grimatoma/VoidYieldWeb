@@ -10,6 +10,7 @@ import { inputManager } from '@services/InputManager';
 import { EventBus } from '@services/EventBus';
 import { voidyieldDebugAPI, injectSceneUpdater } from './debug/VoidYieldDebugAPI';
 import { UILayer } from '@ui/UILayer';
+import { assetManager } from '@services/AssetManager';
 import '@ui/styles.css';
 
 async function main(): Promise<void> {
@@ -27,9 +28,15 @@ async function main(): Promise<void> {
   if (!container) throw new Error('Missing #game-container');
   container.appendChild(app.canvas);
 
+  // Load sprite atlas before any scene enters. Scene constructors pull
+  // textures synchronously from AssetManager, so they must be cached first.
+  await assetManager.load();
+
   // Mount HTML UI layer above the PixiJS canvas
   const uiLayer = new UILayer();
   uiLayer.init();
+  // Expose so scenes can set camera / toggle overlays
+  (window as unknown as { __voidyield_uiLayer?: UILayer }).__voidyield_uiLayer = uiLayer;
 
   inputManager.mount();
 
@@ -51,6 +58,13 @@ async function main(): Promise<void> {
         document.exitFullscreen().catch(() => {});
         EventBus.emit('fullscreen:toggled', false);
       }
+    }
+  });
+
+  // Tab key — cycle panels (close all open panels)
+  inputManager.onAction((action) => {
+    if (action === 'cycle_panels') {
+      (window as unknown as { __voidyield_uiLayer?: UILayer }).__voidyield_uiLayer?.cyclePanels();
     }
   });
 

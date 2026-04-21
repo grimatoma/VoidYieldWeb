@@ -1,6 +1,7 @@
-import { Container, Graphics, Text, TextStyle } from 'pixi.js';
+import { Container, Graphics, Sprite, Text, TextStyle } from 'pixi.js';
 import type { RocketComponentData, RocketComponentType } from '@data/types';
 import type { StorageDepot } from './StorageDepot';
+import { assetManager } from '@services/AssetManager';
 
 export type LaunchpadState = 'BUILDING' | 'READY' | 'LAUNCHING' | 'LAUNCHED';
 
@@ -17,6 +18,7 @@ export class Launchpad {
 
   private body!: Graphics;
   private rocketGraphic!: Graphics;
+  private _rocketSprite: Sprite | null = null;
   private statusText!: Text;
   onLaunchReady?: () => void;  // callback when all ready
 
@@ -27,16 +29,36 @@ export class Launchpad {
     this.container.x = worldX;
     this.container.y = worldY;
 
-    // Visual: large 64×80 rect with amber border (3 slots wide)
+    // Pad base: launch_pad sprite if available, else amber rect fallback.
     this.body = new Graphics();
-    this.body.rect(-32, -40, 64, 80).fill(0x1A2A1A);
-    this.body.rect(-32, -40, 64, 80).stroke({ width: 2, color: 0xD4A843 });
-    this.container.addChild(this.body);
+    if (assetManager.has('building_launch_pad')) {
+      const s = new Sprite(assetManager.texture('building_launch_pad'));
+      s.anchor.set(0.5);
+      s.width = 72;
+      s.height = 72;
+      this.container.addChild(s);
+    } else {
+      this.body.rect(-32, -40, 64, 80).fill(0x1A2A1A);
+      this.body.rect(-32, -40, 64, 80).stroke({ width: 2, color: 0xD4A843 });
+      this.container.addChild(this.body);
+    }
 
-    // Rocket ghost silhouette (triangle = rocket tip, rect = body)
+    // Rocket sprite rides on the pad; alpha ramps with assembly progress.
     this.rocketGraphic = new Graphics();
-    this._drawRocket();
-    this.container.addChild(this.rocketGraphic);
+    this._rocketSprite = assetManager.has('building_spaceship')
+      ? new Sprite(assetManager.texture('building_spaceship'))
+      : null;
+    if (this._rocketSprite) {
+      this._rocketSprite.anchor.set(0.5, 1);
+      this._rocketSprite.width = 40;
+      this._rocketSprite.height = 64;
+      this._rocketSprite.y = 8;
+      this._rocketSprite.alpha = 0.2;
+      this.container.addChild(this._rocketSprite);
+    } else {
+      this._drawRocket();
+      this.container.addChild(this.rocketGraphic);
+    }
 
     // Status label
     const style = new TextStyle({ fontFamily: 'monospace', fontSize: 8, fill: '#D4A843' });
@@ -61,7 +83,11 @@ export class Launchpad {
   private _updateStatus(): void {
     const installed = this.components.size;
     this.statusText.text = `LPAD\n${installed}/5`;
-    this._drawRocket();
+    if (this._rocketSprite) {
+      this._rocketSprite.alpha = 0.2 + (installed / 5) * 0.75;
+    } else {
+      this._drawRocket();
+    }
 
     // Check launch ready
     if (installed === 5 && this._fuelUnits >= Launchpad.FUEL_REQUIRED && this.state === 'BUILDING') {
@@ -103,8 +129,9 @@ export class Launchpad {
     if (!this.isLaunchReady) return false;
     this.state = 'LAUNCHING';
     this._fuelUnits -= Launchpad.FUEL_REQUIRED;
-    // Clear rocket graphic (it has "launched")
+    // Clear rocket visual (it has "launched")
     this.rocketGraphic.clear();
+    if (this._rocketSprite) this._rocketSprite.visible = false;
     this.statusText.text = 'LPAD\nLNCD';
     this.state = 'LAUNCHED';
     return true;
@@ -114,5 +141,9 @@ export class Launchpad {
     const dx = px - this.x;
     const dy = py - this.y;
     return dx * dx + dy * dy <= radius * radius;
+  }
+
+  getInteractionPrompt(): { verb: string; target: string } | null {
+    return { verb: 'OPEN', target: 'SHIPYARD' };
   }
 }

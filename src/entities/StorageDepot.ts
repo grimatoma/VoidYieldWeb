@@ -1,5 +1,6 @@
-import { Container, Graphics, Text, TextStyle } from 'pixi.js';
+import { Container, Graphics, Sprite, Text, TextStyle } from 'pixi.js';
 import type { QualityLot, OreType } from '@data/types';
+import { assetManager } from '@services/AssetManager';
 
 const SELL_PRICES: Record<OreType, number> = {
   vorax: 1,
@@ -23,6 +24,8 @@ const SELL_PRICES: Record<OreType, number> = {
   resonance_shards: 15,
   ferrovoid: 12,
   warp_components: 50,
+  crystal_lattice: 25,
+  drill_head: 35,
 };
 
 export class StorageDepot {
@@ -39,16 +42,24 @@ export class StorageDepot {
     this.container.x = worldX;
     this.container.y = worldY;
 
-    // Visual: dark rect 48x48 with amber border
-    const body = new Graphics();
-    body.rect(-24, -24, 48, 48).fill(0x1A2A4A);
-    body.rect(-24, -24, 48, 48).stroke({ width: 2, color: 0xD4A843 });
-    this.container.addChild(body);
+    // Sprite: legacy storage_depot texture, fall back to amber rect if missing.
+    if (assetManager.has('building_storage_depot')) {
+      const s = new Sprite(assetManager.texture('building_storage_depot'));
+      s.anchor.set(0.5);
+      s.width = 64;
+      s.height = 64;
+      this.container.addChild(s);
+    } else {
+      const body = new Graphics();
+      body.rect(-24, -24, 48, 48).fill(0x1A2A4A);
+      body.rect(-24, -24, 48, 48).stroke({ width: 2, color: 0xD4A843 });
+      this.container.addChild(body);
+    }
 
-    // "S" label
     const style = new TextStyle({ fontFamily: 'monospace', fontSize: 10, fill: '#D4A843' });
-    this.label = new Text({ text: 'S', style });
+    this.label = new Text({ text: 'STORAGE', style });
     this.label.anchor.set(0.5);
+    this.label.y = 40;
     this.container.addChild(this.label);
   }
 
@@ -98,5 +109,10 @@ export class StorageDepot {
     const dx = px - this.x;
     const dy = py - this.y;
     return dx * dx + dy * dy <= radius * radius;
+  }
+
+  getInteractionPrompt(): { verb: string; target: string } | null {
+    // Always offer deposit; on-interact logic handles "nothing to sell".
+    return { verb: 'DEPOSIT', target: 'STORAGE' };
   }
 }

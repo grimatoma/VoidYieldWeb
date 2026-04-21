@@ -1,4 +1,6 @@
-export type OreType = 'vorax' | 'krysite' | 'gas' | 'steel_bars' | 'compressed_gas' | 'water' | 'alloy_rods' | 'rocket_fuel' | 'shards' | 'aethite' | 'void_cores' | 'processed_rations' | 'bio_resin' | 'processed_resin' | 'power_cells' | 'bio_circuit_boards' | 'dark_gas' | 'void_touched_ore' | 'resonance_shards' | 'ferrovoid' | 'warp_components';
+export type OreType = 'vorax' | 'krysite' | 'gas' | 'steel_bars' | 'compressed_gas' | 'water' | 'alloy_rods' | 'rocket_fuel' | 'shards' | 'aethite' | 'void_cores' | 'processed_rations' | 'bio_resin' | 'processed_resin' | 'power_cells' | 'bio_circuit_boards' | 'dark_gas' | 'void_touched_ore' | 'resonance_shards' | 'ferrovoid' | 'warp_components' | 'crystal_lattice' | 'drill_head';
+
+export type HarvesterTier = 'personal' | 'medium' | 'heavy' | 'elite';
 
 export type ColonyTier = 'pioneer' | 'colonist' | 'technician' | 'engineer' | 'director';
 
@@ -63,9 +65,9 @@ export interface WaypointData {
   analysisComplete: boolean;
 }
 
-export type DroneTaskType = 'MINE' | 'CARRY' | 'IDLE';
+export type DroneTaskType = 'MINE' | 'CARRY' | 'IDLE' | 'FUEL' | 'EMPTY' | 'REPAIR' | 'HARVEST_FLORA';
 export type DroneState = 'IDLE' | 'MOVING_TO_TARGET' | 'EXECUTING';
-export type DroneType = 'scout' | 'heavy' | 'refinery' | 'survey' | 'builder' | 'cargo';
+export type DroneType = 'scout' | 'heavy' | 'refinery' | 'survey' | 'builder' | 'cargo' | 'repair';
 
 export interface DroneTask {
   type: DroneTaskType;

@@ -12,7 +12,14 @@ vi.mock('pixi.js', () => {
     x: 0, y: 0,
     addChild: vi.fn(),
   }));
-  return { Graphics, Container };
+  const Sprite = vi.fn(() => ({
+    anchor: { set: vi.fn() },
+    width: 0, height: 0, x: 0, y: 0, alpha: 1, visible: true,
+    texture: null,
+  }));
+  const Texture = { WHITE: { source: { scaleMode: 'nearest' } } };
+  const Assets = { load: vi.fn().mockResolvedValue({}) };
+  return { Graphics, Container, Sprite, Texture, Assets };
 });
 
 import { Player } from '@entities/Player';

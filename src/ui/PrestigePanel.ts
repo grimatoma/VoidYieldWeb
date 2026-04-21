@@ -1,5 +1,3 @@
-import { Container, Graphics, Text, TextStyle } from 'pixi.js';
-import type { Application } from 'pixi.js';
 import { EventBus } from '@services/EventBus';
 import { gameState } from '@services/GameState';
 import { sectorManager } from '@services/SectorManager';
@@ -13,129 +11,69 @@ const ALL_BONUSES: SectorBonus[] = [
 ];
 
 export class PrestigePanel {
-  private container: Container;
-  private app: Application;
+  private _root!: HTMLElement;
   private _visible = false;
-  private _selected: SectorBonus | null = null;
 
-  constructor(app: Application) {
-    this.app = app;
-    this.container = new Container();
-    this.container.visible = false;
-    app.stage.addChild(this.container);
-
+  mount(parent: HTMLElement): void {
+    this._root = document.createElement('div');
+    this._root.className = 'prestige-panel-root';
+    this._root.style.display = 'none';
+    parent.appendChild(this._root);
     EventBus.on('prestige:initiate', () => this.show());
   }
 
   show(): void {
     this._visible = true;
-    this._selected = null;
-    this.container.visible = true;
-    this.container.removeChildren();
-    this._build();
+    this._root.style.display = 'flex';
+    this._render();
   }
 
   hide(): void {
     this._visible = false;
-    this.container.visible = false;
+    this._root.style.display = 'none';
   }
 
-  private _build(): void {
-    const W = this.app.screen.width;
-    const H = this.app.screen.height;
+  private _render(): void {
+    const cardsHtml = ALL_BONUSES.map(bonus => {
+      const owned = sectorManager.hasSectorBonus(bonus);
+      const name = bonus.replace(/_/g, ' ').toUpperCase();
+      const desc = SECTOR_BONUS_DESCRIPTIONS[bonus] ?? '';
+      return `
+        <button class="prestige-card ${owned ? 'prestige-card--owned' : ''}" data-bonus="${bonus}">
+          <div class="prestige-card-name">${name}</div>
+          <div class="prestige-card-desc">${desc}</div>
+          ${owned ? '<div class="prestige-card-owned">✓ OWNED</div>' : ''}
+        </button>
+      `;
+    }).join('');
 
-    // Background
-    const bg = new Graphics();
-    bg.rect(0, 0, W, H).fill({ color: 0x000000, alpha: 0.95 });
-    this.container.addChild(bg);
+    this._root.innerHTML = `
+      <div class="prestige-modal">
+        <h1 class="prestige-title">SELECT SECTOR BONUS</h1>
+        <p class="prestige-sub">Sector ${gameState.sectorNumber} complete. Choose your next sector bonus.</p>
+        <div class="prestige-grid">${cardsHtml}</div>
+        <button class="prestige-back-btn" id="prestige-back-btn">BACK</button>
+      </div>
+    `;
 
-    // Title
-    const titleStyle = new TextStyle({ fontFamily: 'monospace', fontSize: 24, fill: '#D4A843' });
-    const title = new Text({ text: 'SELECT SECTOR BONUS', style: titleStyle });
-    title.anchor.set(0.5, 0);
-    title.x = W / 2;
-    title.y = 40;
-    this.container.addChild(title);
-
-    const subStyle = new TextStyle({ fontFamily: 'monospace', fontSize: 12, fill: '#888888' });
-    const subText = new Text({ text: `Sector ${gameState.sectorNumber} complete. Choose your next sector bonus.`, style: subStyle });
-    subText.anchor.set(0.5, 0);
-    subText.x = W / 2;
-    subText.y = 80;
-    this.container.addChild(subText);
-
-    // Bonus option rows — 5 columns × 2 rows
-    const startX = W / 2 - 450;
-    const startY = 130;
-    const colW = 180;
-    const rowH = 80;
-
-    ALL_BONUSES.forEach((bonus, i) => {
-      const col = i % 5;
-      const row = Math.floor(i / 5);
-      const bx = startX + col * (colW + 10);
-      const by = startY + row * (rowH + 10);
-
-      const alreadyOwned = sectorManager.hasSectorBonus(bonus);
-
-      const card = new Graphics();
-      card.rect(0, 0, colW, rowH).fill(alreadyOwned ? 0x1A2A10 : 0x0D1B3E);
-      card.rect(0, 0, colW, rowH).stroke({ width: 2, color: alreadyOwned ? 0x44AA44 : 0x444466 });
-      card.x = bx;
-      card.y = by;
-      card.interactive = true;
-      card.cursor = 'pointer';
-      this.container.addChild(card);
-
-      const bonusNameStyle = new TextStyle({ fontFamily: 'monospace', fontSize: 11, fill: alreadyOwned ? '#44FF44' : '#D4A843', wordWrap: true, wordWrapWidth: colW - 10 });
-      const bonusName = new Text({ text: bonus.replace(/_/g, ' ').toUpperCase(), style: bonusNameStyle });
-      bonusName.x = bx + 5;
-      bonusName.y = by + 5;
-      this.container.addChild(bonusName);
-
-      const descStyle = new TextStyle({ fontFamily: 'monospace', fontSize: 9, fill: '#AAAAAA', wordWrap: true, wordWrapWidth: colW - 10 });
-      const desc = new Text({ text: SECTOR_BONUS_DESCRIPTIONS[bonus], style: descStyle });
-      desc.x = bx + 5;
-      desc.y = by + 30;
-      this.container.addChild(desc);
-
-      card.on('pointerdown', () => {
-        this._selected = bonus;
-        this._confirmSelection();
+    this._root.querySelectorAll<HTMLButtonElement>('.prestige-card').forEach(card => {
+      card.addEventListener('click', () => {
+        const bonus = card.dataset.bonus as SectorBonus;
+        sectorManager.applyPrestigeAndReset(bonus);
+        this.hide();
+        EventBus.emit('scene:travel', 'planet_a1');
       });
     });
 
-    // Back button
-    const backBtn = new Graphics();
-    backBtn.rect(W / 2 - 60, H - 80, 120, 40).fill(0x1A1A1A);
-    backBtn.rect(W / 2 - 60, H - 80, 120, 40).stroke({ width: 2, color: 0x666666 });
-    backBtn.interactive = true;
-    backBtn.cursor = 'pointer';
-    backBtn.on('pointerdown', () => {
+    this._root.querySelector('#prestige-back-btn')!.addEventListener('click', () => {
       this.hide();
-      EventBus.emit('prestige:initiate');  // re-show sector complete
+      EventBus.emit('prestige:initiate');
     });
-    this.container.addChild(backBtn);
-
-    const backStyle = new TextStyle({ fontFamily: 'monospace', fontSize: 14, fill: '#888888' });
-    const backLabel = new Text({ text: 'BACK', style: backStyle });
-    backLabel.anchor.set(0.5);
-    backLabel.x = W / 2;
-    backLabel.y = H - 60;
-    this.container.addChild(backLabel);
-  }
-
-  private _confirmSelection(): void {
-    if (!this._selected) return;
-    sectorManager.applyPrestigeAndReset(this._selected);
-    this.hide();
-    // Trigger scene travel back to A1 for new sector
-    EventBus.emit('scene:travel', 'planet_a1');
   }
 
   get visible(): boolean { return this._visible; }
 
   destroy(): void {
-    this.container.parent?.removeChild(this.container);
+    this._root?.remove();
   }
 }

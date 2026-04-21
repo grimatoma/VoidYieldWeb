@@ -95,4 +95,14 @@ export class ProcessingPlant {
   destroy(): void {
     powerManager.unregisterConsumer(this.schematic.powerDraw);
   }
+
+  isNearby(px: number, py: number, radius = 50): boolean {
+    const dx = px - this.x;
+    const dy = py - this.y;
+    return dx * dx + dy * dy <= radius * radius;
+  }
+
+  getInteractionPrompt(): { verb: string; target: string } | null {
+    return { verb: 'OPEN', target: 'PRODUCTION' };
+  }
 }

@@ -17,6 +17,7 @@ import { EventBus } from '@services/EventBus';
 import { logisticsManager } from '@services/LogisticsManager';
 import { WarpGate } from '@entities/WarpGate';
 import { GalacticHub } from '@entities/GalacticHub';
+import type { UILayer } from '@ui/UILayer';
 
 const WORLD_WIDTH = 4000;
 const WORLD_HEIGHT = 3000;
@@ -121,8 +122,9 @@ export class PlanetA3Scene implements Scene {
     this.voidNexusLabel.position.set(10, 50);
     app.stage.addChild(this.voidNexusLabel);
 
-    // 15. Galaxy Map
-    this.galaxyMap = new GalaxyMap();
+    // 15. Galaxy Map — HTML, owned by UILayer.
+    const uiA3 = (window as unknown as { __voidyield_uiLayer?: { galaxyMap: GalaxyMap | null } }).__voidyield_uiLayer;
+    this.galaxyMap = uiA3!.galaxyMap!;
     this.galaxyMap.onTravel((planetId) => {
       EventBus.emit('scene:travel', planetId);
     });
@@ -133,12 +135,15 @@ export class PlanetA3Scene implements Scene {
       { id: 'planet_c',  label: 'Planet C',  x: 0, y: 0, unlocked: true, current: false },
       { id: 'planet_a3', label: 'A3 (Void Nexus)', x: 0, y: 0, unlocked: true, current: true },
     ]);
-    app.stage.addChild(this.galaxyMap.container);
 
     // 16. Mining service wiring
     miningService.setDepot(this.storageDepot);
     logisticsManager.registerPlanet('planet_a3', this.storageDepot);
     this.unsubInteract = inputManager.onAction((action, pressed) => {
+      if (action === 'pause_menu' && pressed) {
+        const ui = (window as unknown as { __voidyield_uiLayer?: UILayer }).__voidyield_uiLayer;
+        ui?.closeAllPanels();
+      }
       if (action === 'interact' && pressed) {
         const harvesterResult = harvesterManager.onInteract(this.player.x, this.player.y);
         if (harvesterResult === null) {
@@ -151,6 +156,15 @@ export class PlanetA3Scene implements Scene {
       if (action === 'galaxy_map' && pressed) {
         this.galaxyMap.toggle();
       }
+      if (action === 'inventory' && pressed) {
+        const ui = (window as unknown as { __voidyield_uiLayer?: UILayer }).__voidyield_uiLayer;
+        if (ui?.inventoryPanel?.visible) {
+          ui.closeAllPanels();
+        } else {
+          ui?.inventoryPanel?.setDepot(this.storageDepot);
+          ui?.inventoryPanel?.open();
+        }
+      }
     });
   }
 
@@ -158,7 +172,7 @@ export class PlanetA3Scene implements Scene {
     this.player.update(delta, inputManager, { width: WORLD_WIDTH, height: WORLD_HEIGHT });
     this.camera.follow({ x: this.player.x, y: this.player.y });
     this.minimap.update({ x: this.player.x, y: this.player.y });
-    miningService.update(delta);
+    miningService.update(delta, { x: this.player.x, y: this.player.y });
     harvesterManager.update(delta);
     fleetManager.update(delta);
   }

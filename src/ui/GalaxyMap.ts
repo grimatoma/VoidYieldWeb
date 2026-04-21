@@ -1,5 +1,7 @@
-import { Container, Graphics, Text, TextStyle } from 'pixi.js';
-
+/**
+ * GalaxyMap — HTML/CSS galaxy map modal with planet nodes and travel buttons.
+ * Scales with --hud-scale.
+ */
 export interface PlanetNode {
   id: string;
   label: string;
@@ -9,194 +11,132 @@ export interface PlanetNode {
   current: boolean;
 }
 
+const PLANET_POS: Record<string, { x: number; y: number; color: string }> = {
+  planet_a1: { x: 25, y: 65, color: '#00B8D4' },
+  planet_a2: { x: 45, y: 38, color: '#00B8D4' },
+  planet_b:  { x: 62, y: 58, color: '#00B8D4' },
+  planet_c:  { x: 78, y: 78, color: '#E91E63' },
+  planet_a3: { x: 90, y: 30, color: '#00B8D4' },
+};
+
+const ROUTES: Array<[string, string, string]> = [
+  ['planet_a1', 'planet_a2', '#334477'],
+  ['planet_a2', 'planet_b',  '#334477'],
+  ['planet_b',  'planet_a3', '#00B8D4'],
+];
+
 export class GalaxyMap {
-  readonly container: Container;
-  private _bg!: Graphics;
+  private _root: HTMLElement;
+  private _mapEl: HTMLElement;
   private _visible = false;
+  private _mounted = false;
   private _planetNodes: PlanetNode[] = [];
   private _onTravel?: (planetId: string) => void;
+  private _onClick: (e: MouseEvent) => void;
 
   constructor() {
-    this.container = new Container();
-    this.container.visible = false;
+    this._root = document.createElement('div');
+    this._root.className = 'galaxy-panel-root';
+    this._root.style.display = 'none';
+    this._root.innerHTML = `
+      <div class="galaxy-panel-backdrop"></div>
+      <div class="galaxy-panel">
+        <div class="galaxy-panel-head">
+          <span class="galaxy-panel-title">[ GALAXY MAP ]</span>
+          <span class="galaxy-panel-hint">[G] or click outside to close</span>
+          <button class="galaxy-panel-close" aria-label="Close">✕</button>
+        </div>
+        <div class="galaxy-panel-map"></div>
+      </div>
+    `;
+    this._mapEl = this._root.querySelector<HTMLElement>('.galaxy-panel-map')!;
 
-    // Full-screen dimmed background
-    this._bg = new Graphics();
-    this._bg.rect(0, 0, 9999, 9999).fill({ color: 0x000000, alpha: 0.6 });
-    this.container.addChild(this._bg);
-
-    // Panel background (420×260, centered at 270, 140 for 960x540 screen)
-    const panel = new Graphics();
-    panel.rect(270, 140, 420, 260).fill({ color: 0x0D1B3E, alpha: 0.97 });
-    panel.rect(270, 140, 420, 260).stroke({ width: 1, color: 0xD4A843 });
-    this.container.addChild(panel);
-
-    // Title
-    const titleStyle = new TextStyle({ fontFamily: 'monospace', fontSize: 12, fill: '#D4A843' });
-    const title = new Text({ text: '[ GALAXY MAP ]', style: titleStyle });
-    title.x = 278;
-    title.y = 148;
-    this.container.addChild(title);
-
-    // Close hint
-    const hintStyle = new TextStyle({ fontFamily: 'monospace', fontSize: 9, fill: '#556677' });
-    const hint = new Text({ text: '[G] to close', style: hintStyle });
-    hint.x = 610;
-    hint.y = 151;
-    this.container.addChild(hint);
+    this._onClick = (e) => {
+      const t = e.target as HTMLElement;
+      if (t.classList.contains('galaxy-panel-backdrop')
+          || t.classList.contains('galaxy-panel-close')) {
+        this.setVisible(false);
+        return;
+      }
+      if (t.classList.contains('galaxy-travel-btn')) {
+        const id = t.getAttribute('data-planet-id');
+        if (id && this._onTravel) {
+          this._onTravel(id);
+          this.setVisible(false);
+        }
+      }
+    };
+    this._root.addEventListener('click', this._onClick);
   }
 
-  /** Set travel callback — called when player clicks Travel on a planet. */
-  onTravel(cb: (planetId: string) => void): void {
-    this._onTravel = cb;
+  mount(parent: HTMLElement): void {
+    if (this._mounted) return;
+    parent.appendChild(this._root);
+    this._mounted = true;
   }
 
-  /** Update the planet nodes shown in the map. */
+  onTravel(cb: (planetId: string) => void): void { this._onTravel = cb; }
+
   setPlanets(nodes: PlanetNode[]): void {
     this._planetNodes = nodes;
-    this._rebuildPlanetVisuals();
+    this._rebuild();
   }
 
-  private _rebuildPlanetVisuals(): void {
-    // Remove old planet visuals (children after index 3 are planet nodes)
-    while (this.container.children.length > 3) {
-      this.container.removeChildAt(3);
-    }
+  private _rebuild(): void {
+    const starDots = [[15,20],[25,10],[38,18],[52,12],[68,24],[82,15],[30,85],[50,92],[72,86],[88,90]]
+      .map(([x, y]) => `<div class="galaxy-star" style="left:${x}%;top:${y}%"></div>`).join('');
 
-    // Draw a simple star field background in the panel
-    const stars = new Graphics();
-    // A few static star dots
-    const starPositions = [
-      [310, 180],
-      [380, 165],
-      [450, 175],
-      [520, 160],
-      [600, 185],
-      [660, 170],
-      [350, 230],
-      [480, 225],
-      [560, 240],
-      [640, 210],
-    ];
-    for (const [sx, sy] of starPositions) {
-      stars.circle(sx, sy as number, 1).fill(0xFFFFFF);
-    }
-    this.container.addChild(stars);
+    const lines = ROUTES.map(([fromId, toId, color]) => {
+      const a = this._planetNodes.find(n => n.id === fromId);
+      const b = this._planetNodes.find(n => n.id === toId);
+      if (!a?.unlocked || !b?.unlocked) return '';
+      const p1 = PLANET_POS[fromId];
+      const p2 = PLANET_POS[toId];
+      if (!p1 || !p2) return '';
+      return `<line x1="${p1.x}" y1="${p1.y}" x2="${p2.x}" y2="${p2.y}" stroke="${color}" stroke-width="0.3" stroke-opacity="0.6"/>`;
+    }).join('');
 
-    // Planet positions on the map (in panel space)
-    const planetMapPositions: Record<string, { x: number; y: number }> = {
-      planet_a1: { x: 360, y: 270 },
-      planet_a2: { x: 480, y: 200 },
-      planet_b: { x: 580, y: 250 },
-      planet_c: { x: 640, y: 330 },
-      planet_a3: { x: 720, y: 200 },
-    };
+    const planets = this._planetNodes.map((node) => {
+      const pos = PLANET_POS[node.id] ?? { x: 50, y: 50, color: '#00B8D4' };
+      const colorClass = node.current ? 'is-current' : !node.unlocked ? 'is-locked' : '';
+      const color = node.current ? '#D4A843' : !node.unlocked ? '#333355' : pos.color;
+      const travelBtn = (!node.current && node.unlocked && this._onTravel)
+        ? `<button class="galaxy-travel-btn" data-planet-id="${node.id}">TRAVEL</button>`
+        : '';
+      return `
+        <div class="galaxy-planet ${colorClass}" style="left:${pos.x}%;top:${pos.y}%">
+          <div class="galaxy-planet-dot" style="background:${color}"></div>
+          <div class="galaxy-planet-label">${escapeHtml(node.label)}${node.current ? '<br>[HERE]' : ''}</div>
+          ${travelBtn}
+        </div>
+      `;
+    }).join('');
 
-    for (const node of this._planetNodes) {
-      const pos = planetMapPositions[node.id] ?? { x: 480, y: 270 };
-      const g = new Graphics();
-
-      // Planet circle — use void-touched pink for planet_c, deep teal for planet_a3
-      let color: number;
-      if (node.current) {
-        color = 0xD4A843;
-      } else if (!node.unlocked) {
-        color = 0x333355;
-      } else if (node.id === 'planet_c') {
-        color = 0xE91E63; // pink-red for void-touched
-      } else if (node.id === 'planet_a3') {
-        color = 0x00B8D4; // deep teal for Void Nexus
-      } else {
-        color = 0x00B8D4;
-      }
-      g.circle(pos.x, pos.y, node.current ? 14 : 10).fill(color);
-      if (node.current) {
-        g.circle(pos.x, pos.y, 14).stroke({ width: 2, color: 0xFFFFFF, alpha: 0.5 });
-      }
-      this.container.addChild(g);
-
-      // Label
-      const labelStyle = new TextStyle({
-        fontFamily: 'monospace',
-        fontSize: 9,
-        fill: node.current ? '#D4A843' : '#AAAAAA',
-      });
-      const label = new Text({ text: node.label + (node.current ? '\n[HERE]' : ''), style: labelStyle });
-      label.anchor.set(0.5, 0);
-      label.x = pos.x;
-      label.y = pos.y + 16;
-      this.container.addChild(label);
-
-      // Travel button for non-current unlocked planets
-      if (!node.current && node.unlocked && this._onTravel) {
-        const btnG = new Graphics();
-        btnG.rect(pos.x - 24, pos.y + 36, 48, 16).fill(0x1A3A1A);
-        btnG.rect(pos.x - 24, pos.y + 36, 48, 16).stroke({ width: 1, color: 0x4CAF50 });
-        btnG.eventMode = 'static';
-        btnG.cursor = 'pointer';
-        const planetId = node.id;
-        btnG.on('pointerdown', () => {
-          this._onTravel?.(planetId);
-          this.setVisible(false);
-        });
-        this.container.addChild(btnG);
-
-        const btnStyle = new TextStyle({ fontFamily: 'monospace', fontSize: 8, fill: '#4CAF50' });
-        const btnText = new Text({ text: 'TRAVEL', style: btnStyle });
-        btnText.anchor.set(0.5);
-        btnText.x = pos.x;
-        btnText.y = pos.y + 44;
-        btnText.eventMode = 'none';
-        this.container.addChild(btnText);
-      }
-    }
-
-    // Route lines
-    const a1 = this._planetNodes.find((n) => n.id === 'planet_a1');
-    const a2 = this._planetNodes.find((n) => n.id === 'planet_a2');
-    const b = this._planetNodes.find((n) => n.id === 'planet_b');
-    const a3 = this._planetNodes.find((n) => n.id === 'planet_a3');
-
-    const lineG = new Graphics();
-
-    // A1 → A2 if both unlocked
-    if (a1?.unlocked && a2?.unlocked) {
-      lineG.moveTo(360, 270).lineTo(480, 200);
-      lineG.stroke({ width: 1, color: 0x334477, alpha: 0.6 });
-    }
-
-    // A2 → B if both unlocked
-    if (a2?.unlocked && b?.unlocked) {
-      lineG.moveTo(480, 200).lineTo(580, 250);
-      lineG.stroke({ width: 1, color: 0x334477, alpha: 0.6 });
-    }
-
-    // A1 → B if both unlocked and A2 not in the mix
-    if (a1?.unlocked && b?.unlocked && (!a2?.unlocked)) {
-      lineG.moveTo(360, 270).lineTo(580, 250);
-      lineG.stroke({ width: 1, color: 0x334477, alpha: 0.6 });
-    }
-
-    // B → A3 (Void Nexus route) if both unlocked
-    if (b?.unlocked && a3?.unlocked) {
-      lineG.moveTo(580, 250).lineTo(720, 200);
-      lineG.stroke({ width: 1, color: 0x00B8D4, alpha: 0.6 });
-    }
-
-    // Insert before planet circles (after stars)
-    this.container.addChildAt(lineG, 4);
+    this._mapEl.innerHTML = `
+      ${starDots}
+      <svg class="galaxy-lines" viewBox="0 0 100 100" preserveAspectRatio="none">${lines}</svg>
+      ${planets}
+    `;
   }
 
   setVisible(v: boolean): void {
     this._visible = v;
-    this.container.visible = v;
+    this._root.style.display = v ? 'block' : 'none';
+    if (v) this._rebuild();
   }
 
-  toggle(): void {
-    this.setVisible(!this._visible);
-  }
+  toggle(): void { this.setVisible(!this._visible); }
 
-  get visible(): boolean {
-    return this._visible;
+  get visible(): boolean { return this._visible; }
+
+  destroy(): void {
+    this._root.removeEventListener('click', this._onClick);
+    this._root.remove();
   }
+}
+
+function escapeHtml(s: string): string {
+  return s.replace(/[&<>"']/g, (c) => ({
+    '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;',
+  }[c] as string));
 }

@@ -27,6 +27,12 @@ export class SceneManager {
   async switchTo(id: string): Promise<void> {
     if (this.current) {
       this.current.exit();
+      // Destroy any remaining stage children so no zombie text/sprites leak
+      // into the next scene. removeChildren alone detaches but doesn't destroy.
+      const remaining = [...this.app.stage.children];
+      for (const c of remaining) {
+        try { c.destroy({ children: true }); } catch {}
+      }
       this.app.stage.removeChildren();
     }
     const factory = this.registry.get(id);

@@ -31,6 +31,11 @@ export type GameEvents = {
   'ore:sold': [credits: number];
   'shop:purchase': [itemId: string];
   'drone:purchased': [droneType: string];
+  'interaction:target': [target: import('./InteractionManager').InteractionTarget | null];
+  'debug:overlay_toggled': [visible: boolean];
+  'survey:scan_complete': [stage: string, depositId: string, concentration: number];
+  'survey:waypoint_placed': [depositId: string, x: number, y: number];
+  'survey:mode_changed': [active: boolean];
 };
 
 class TypedEventBus extends EventEmitter<GameEvents> {}

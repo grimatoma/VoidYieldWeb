@@ -1,0 +1,1189 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=1280">
+<title>VoidYield — Game Mockup</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg:        #080A0D;
+    --navy:      #0D1B3E;
+    --amber:     #D4A843;
+    --amber-dim: rgba(212,168,67,0.3);
+    --teal:      #4ECDC4;
+    --teal-dim:  rgba(78,205,196,0.15);
+    --panel:     rgba(13,27,62,0.85);
+    --text:      #C8D8E8;
+    --text-dim:  rgba(200,216,232,0.55);
+    --border:    1px solid rgba(212,168,67,0.3);
+  }
+
+  html, body {
+    width: 1280px;
+    height: 720px;
+    overflow: hidden;
+    background: var(--bg);
+    font-family: 'Space Mono', 'Courier New', monospace;
+    font-size: 11px;
+    color: var(--text);
+  }
+
+  /* ─── LAYOUT SHELL ─────────────────────────────────────────── */
+  #shell {
+    display: grid;
+    width: 1280px;
+    height: 720px;
+    grid-template-columns: 180px 1fr 160px;
+    grid-template-rows: 32px 1fr 80px;
+    grid-template-areas:
+      "topbar topbar topbar"
+      "left   canvas right"
+      "bottom bottom bottom";
+  }
+
+  /* ─── TOP BAR ─────────────────────────────────────────────── */
+  #topbar {
+    grid-area: topbar;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 12px;
+    background: rgba(8,10,13,0.97);
+    border-bottom: var(--border);
+    z-index: 10;
+  }
+
+  .logo {
+    font-weight: 700;
+    font-size: 13px;
+    color: var(--amber);
+    letter-spacing: 0.12em;
+  }
+  .logo span { color: var(--teal); }
+
+  .planet-nav {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .planet-dot {
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    background: rgba(212,168,67,0.25);
+    border: 1px solid var(--amber-dim);
+    cursor: pointer;
+  }
+  .planet-dot.active {
+    background: var(--amber);
+    box-shadow: 0 0 6px var(--amber);
+  }
+  .planet-dot-label {
+    font-size: 9px;
+    color: var(--text-dim);
+    margin-left: -6px;
+    margin-top: 10px;
+  }
+  .planet-nav-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1px;
+  }
+
+  .topbar-right {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    font-size: 11px;
+  }
+  .stat-item {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    color: var(--text);
+  }
+  .stat-item .icon { color: var(--amber); font-size: 12px; }
+  .stat-item .val  { color: var(--amber); font-weight: 700; }
+  .stat-sep { color: var(--amber-dim); }
+
+  .save-btn, .settings-btn {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    padding: 2px 7px;
+    border: var(--border);
+    background: transparent;
+    color: var(--text-dim);
+    font-family: inherit;
+    font-size: 10px;
+    cursor: pointer;
+    letter-spacing: 0.05em;
+  }
+  .save-btn .dot { color: #4CAF50; font-size: 10px; }
+
+  /* ─── LEFT SIDEBAR ─────────────────────────────────────────── */
+  #left {
+    grid-area: left;
+    background: var(--panel);
+    border-right: var(--border);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+
+  .panel-header {
+    padding: 7px 10px 5px;
+    font-size: 9px;
+    font-weight: 700;
+    color: var(--amber);
+    letter-spacing: 0.15em;
+    border-bottom: var(--border);
+    text-transform: uppercase;
+  }
+
+  .planet-name-block {
+    padding: 8px 10px 6px;
+    border-bottom: var(--border);
+  }
+  .planet-name-block .label {
+    font-size: 9px;
+    color: var(--text-dim);
+    letter-spacing: 0.1em;
+    margin-bottom: 2px;
+  }
+  .planet-name-block .name {
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--amber);
+    letter-spacing: 0.08em;
+  }
+  .planet-name-block .sub {
+    font-size: 9px;
+    color: var(--teal);
+    margin-top: 2px;
+  }
+
+  /* minimap */
+  .minimap-wrap {
+    padding: 8px 10px;
+    border-bottom: var(--border);
+  }
+  .minimap-label {
+    font-size: 9px;
+    color: var(--text-dim);
+    letter-spacing: 0.1em;
+    margin-bottom: 5px;
+  }
+  #minimap {
+    width: 160px;
+    height: 120px;
+    background: rgba(8,10,13,0.8);
+    border: 1px solid rgba(78,205,196,0.2);
+    position: relative;
+    overflow: hidden;
+  }
+  .mm-grid {
+    position: absolute;
+    inset: 0;
+    background-image:
+      linear-gradient(rgba(78,205,196,0.05) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(78,205,196,0.05) 1px, transparent 1px);
+    background-size: 16px 16px;
+  }
+  .mm-dot {
+    position: absolute;
+    border-radius: 50%;
+  }
+  .mm-ore  { width:5px; height:5px; background:var(--amber); box-shadow:0 0 4px var(--amber); }
+  .mm-harv { width:5px; height:5px; background:var(--teal);  box-shadow:0 0 4px var(--teal); border-radius:1px; }
+  .mm-player { width:5px; height:5px; background:#fff; box-shadow:0 0 5px #fff; clip-path: polygon(50% 0%,100% 100%,50% 75%,0% 100%); border-radius:0; }
+
+  /* resources */
+  .resources-section {
+    padding: 8px 10px;
+    flex: 1;
+    overflow: hidden;
+  }
+  .res-row {
+    margin-bottom: 9px;
+  }
+  .res-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 3px;
+  }
+  .res-name { font-size: 9px; color: var(--text-dim); letter-spacing: 0.05em; }
+  .res-val  { font-size: 9px; color: var(--text); }
+  .res-bar-bg {
+    height: 4px;
+    background: rgba(255,255,255,0.08);
+    border: 1px solid rgba(255,255,255,0.1);
+    overflow: hidden;
+  }
+  .res-bar-fill {
+    height: 100%;
+  }
+  .bar-amber { background: linear-gradient(90deg, #8B6914, var(--amber)); }
+  .bar-steel { background: linear-gradient(90deg, #334, #8899AA); }
+  .bar-energy{ background: linear-gradient(90deg, #004444, var(--teal)); }
+
+  /* sector info */
+  .sector-info {
+    padding: 6px 10px;
+    border-top: var(--border);
+    background: rgba(0,0,0,0.2);
+  }
+  .sector-info .label { font-size: 9px; color: var(--text-dim); margin-bottom: 3px; }
+  .sector-progress-bg {
+    height: 3px;
+    background: rgba(255,255,255,0.08);
+    margin-bottom: 4px;
+  }
+  .sector-progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, #1a3a2a, #4ECDC4);
+    width: 62%;
+  }
+  .sector-info .pct { font-size: 9px; color: var(--teal); }
+
+  /* ─── CANVAS AREA ─────────────────────────────────────────── */
+  #canvas-area {
+    grid-area: canvas;
+    position: relative;
+    overflow: hidden;
+    background: #080A0D;
+  }
+
+  /* Star field */
+  #starfield {
+    position: absolute;
+    inset: 0;
+    overflow: hidden;
+  }
+  .star {
+    position: absolute;
+    background: white;
+    border-radius: 50%;
+  }
+
+  /* Nebula gradient overlay */
+  .nebula {
+    position: absolute;
+    inset: 0;
+    background:
+      radial-gradient(ellipse 400px 200px at 70% 30%, rgba(13,27,62,0.6) 0%, transparent 70%),
+      radial-gradient(ellipse 300px 300px at 20% 70%, rgba(6,15,35,0.5) 0%, transparent 70%),
+      radial-gradient(ellipse 500px 150px at 50% 50%, rgba(78,205,196,0.03) 0%, transparent 80%);
+    pointer-events: none;
+  }
+
+  /* Zone coverage circles */
+  .coverage-circle {
+    position: absolute;
+    border-radius: 50%;
+    border: 1px dashed rgba(78,205,196,0.35);
+    background: radial-gradient(circle, rgba(78,205,196,0.04) 0%, transparent 70%);
+    pointer-events: none;
+  }
+
+  /* Ore deposit nodes */
+  .ore-node {
+    position: absolute;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    cursor: pointer;
+  }
+  .ore-hex {
+    position: relative;
+    width: 44px;
+    height: 50px;
+  }
+  .ore-hex svg { position: absolute; inset: 0; }
+  .ore-label {
+    font-size: 8px;
+    color: var(--amber);
+    letter-spacing: 0.08em;
+    margin-top: 3px;
+    text-align: center;
+    white-space: nowrap;
+  }
+  .ore-qty {
+    font-size: 8px;
+    color: var(--text-dim);
+    text-align: center;
+  }
+
+  /* Harvester buildings */
+  .harvester {
+    position: absolute;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+  .harv-body {
+    width: 38px;
+    height: 34px;
+    position: relative;
+  }
+  .harv-label {
+    font-size: 8px;
+    color: var(--teal);
+    letter-spacing: 0.06em;
+    margin-top: 3px;
+  }
+  .harv-status {
+    font-size: 8px;
+    color: rgba(78,205,196,0.6);
+  }
+
+  /* Drone icons */
+  .drone {
+    position: absolute;
+    display: flex;
+    align-items: center;
+    gap: 0px;
+  }
+  .drone-trail {
+    height: 1px;
+    background: linear-gradient(90deg, transparent, rgba(78,205,196,0.5));
+  }
+  .drone-icon {
+    width: 0;
+    height: 0;
+    border-left: 5px solid transparent;
+    border-right: 5px solid transparent;
+    border-bottom: 10px solid var(--teal);
+    filter: drop-shadow(0 0 4px var(--teal));
+  }
+
+  /* Player ship */
+  .player-ship {
+    position: absolute;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+  .ship-icon svg { filter: drop-shadow(0 0 6px rgba(255,255,255,0.7)); }
+  .ship-marker {
+    width: 6px; height: 6px;
+    background: white;
+    border-radius: 50%;
+    box-shadow: 0 0 8px white, 0 0 16px rgba(255,255,255,0.3);
+  }
+  .ship-label {
+    font-size: 8px;
+    color: rgba(255,255,255,0.6);
+    margin-top: 3px;
+    white-space: nowrap;
+  }
+
+  /* Scan pulse ring */
+  .scan-ring {
+    position: absolute;
+    border-radius: 50%;
+    border: 1px solid rgba(78,205,196,0.2);
+    animation: pulse 3s infinite ease-out;
+  }
+  @keyframes pulse {
+    0%   { opacity: 0.8; transform: scale(0.6); }
+    100% { opacity: 0;   transform: scale(1.4); }
+  }
+
+  /* Grid overlay on canvas */
+  .canvas-grid {
+    position: absolute;
+    inset: 0;
+    background-image:
+      linear-gradient(rgba(78,205,196,0.025) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(78,205,196,0.025) 1px, transparent 1px);
+    background-size: 60px 60px;
+    pointer-events: none;
+  }
+
+  /* Coordinates display */
+  .coords-display {
+    position: absolute;
+    bottom: 8px;
+    left: 8px;
+    font-size: 9px;
+    color: rgba(78,205,196,0.4);
+    letter-spacing: 0.05em;
+  }
+
+  /* Sector label */
+  .sector-label {
+    position: absolute;
+    top: 10px;
+    right: 12px;
+    font-size: 9px;
+    color: rgba(212,168,67,0.4);
+    letter-spacing: 0.12em;
+  }
+
+  /* ─── RIGHT SIDEBAR ─────────────────────────────────────────── */
+  #right {
+    grid-area: right;
+    background: var(--panel);
+    border-left: var(--border);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+
+  /* Fleet panel */
+  .fleet-section {
+    padding: 8px 10px;
+    border-bottom: var(--border);
+    flex: 1;
+  }
+  .fleet-header {
+    font-size: 9px;
+    font-weight: 700;
+    color: var(--amber);
+    letter-spacing: 0.15em;
+    margin-bottom: 8px;
+  }
+  .drone-row {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin-bottom: 7px;
+  }
+  .drone-status-dot {
+    width: 6px; height: 6px;
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+  .dot-active   { background: var(--teal); box-shadow: 0 0 5px var(--teal); }
+  .dot-idle     { background: var(--amber); box-shadow: 0 0 4px var(--amber); }
+  .dot-inactive { background: rgba(255,255,255,0.15); }
+  .drone-info { flex: 1; }
+  .drone-name { font-size: 9px; color: var(--text); }
+  .drone-detail { font-size: 8px; color: var(--text-dim); margin-top: 1px; }
+  .drone-count {
+    font-size: 10px;
+    font-weight: 700;
+    color: var(--text-dim);
+    min-width: 20px;
+    text-align: right;
+  }
+  .drone-count.active-count { color: var(--teal); }
+
+  /* Tech / Logistics buttons */
+  .sidebar-btn {
+    margin: 0 8px 8px;
+    padding: 7px 10px;
+    background: rgba(0,0,0,0.3);
+    border: var(--border);
+    color: var(--text);
+    font-family: inherit;
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    text-transform: uppercase;
+  }
+  .sidebar-btn .btn-icon { font-size: 12px; }
+  .sidebar-btn.amber-glow {
+    border-color: var(--amber);
+    color: var(--amber);
+    box-shadow: inset 0 0 12px rgba(212,168,67,0.08), 0 0 8px rgba(212,168,67,0.2);
+  }
+  .sidebar-btn.teal-glow {
+    border-color: rgba(78,205,196,0.5);
+    color: var(--teal);
+  }
+  .glow-pip {
+    width: 6px; height: 6px;
+    border-radius: 50%;
+    background: var(--amber);
+    box-shadow: 0 0 6px var(--amber);
+  }
+
+  /* Mission / alert box */
+  .mission-box {
+    margin: 0 8px 8px;
+    padding: 7px 8px;
+    background: rgba(0,0,0,0.25);
+    border: 1px solid rgba(78,205,196,0.25);
+  }
+  .mission-label { font-size: 8px; color: var(--teal); letter-spacing: 0.1em; margin-bottom: 4px; }
+  .mission-text  { font-size: 9px; color: var(--text-dim); line-height: 1.4; }
+
+  /* ─── BOTTOM HUD ─────────────────────────────────────────────── */
+  #bottom {
+    grid-area: bottom;
+    background: rgba(8,10,13,0.97);
+    border-top: var(--border);
+    display: flex;
+    align-items: stretch;
+    gap: 0;
+  }
+
+  /* Storage section */
+  .storage-section {
+    padding: 8px 12px;
+    border-right: var(--border);
+    min-width: 240px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+  }
+  .storage-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 4px;
+  }
+  .storage-label {
+    font-size: 9px;
+    color: var(--text-dim);
+    letter-spacing: 0.1em;
+  }
+  .storage-val {
+    font-size: 9px;
+    color: var(--amber);
+    font-weight: 700;
+  }
+  .storage-bar-bg {
+    height: 8px;
+    background: rgba(255,255,255,0.06);
+    border: 1px solid rgba(212,168,67,0.2);
+    overflow: hidden;
+    margin-bottom: 3px;
+  }
+  .storage-bar-fill {
+    height: 100%;
+    background: linear-gradient(90deg, #5a3a00, var(--amber));
+    width: 70.6%;
+    position: relative;
+  }
+  .storage-bar-fill::after {
+    content: '';
+    position: absolute;
+    right: 0; top: 0; bottom: 0;
+    width: 2px;
+    background: #fff;
+    opacity: 0.6;
+  }
+  .storage-type {
+    font-size: 9px;
+    color: var(--text-dim);
+    letter-spacing: 0.08em;
+  }
+
+  /* Action slots */
+  .action-slots {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 0 12px;
+    border-right: var(--border);
+  }
+  .action-btn {
+    padding: 6px 10px;
+    background: rgba(13,27,62,0.7);
+    border: var(--border);
+    color: var(--text-dim);
+    font-family: inherit;
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    cursor: pointer;
+    transition: all 0.15s;
+    text-transform: uppercase;
+    position: relative;
+  }
+  .action-btn.active {
+    border-color: var(--teal);
+    color: var(--teal);
+    background: rgba(78,205,196,0.08);
+    box-shadow: 0 0 6px rgba(78,205,196,0.2);
+  }
+  .action-btn.active::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 1px;
+    background: var(--teal);
+  }
+  .key-hint {
+    display: block;
+    font-size: 7px;
+    color: rgba(255,255,255,0.2);
+    margin-top: 2px;
+    text-align: center;
+    font-weight: 400;
+  }
+
+  /* Event log */
+  .event-log {
+    flex: 1;
+    padding: 0 12px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    overflow: hidden;
+    border-right: var(--border);
+  }
+  .event-log-label {
+    font-size: 8px;
+    color: var(--text-dim);
+    letter-spacing: 0.1em;
+    margin-bottom: 4px;
+  }
+  .event-ticker {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    overflow: hidden;
+  }
+  .event-entry {
+    font-size: 9px;
+    display: flex;
+    gap: 6px;
+    align-items: baseline;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .event-icon { font-size: 10px; flex-shrink: 0; }
+  .event-text { color: var(--text-dim); overflow: hidden; text-overflow: ellipsis; }
+  .event-text .hl { color: var(--amber); }
+  .event-text .hl-teal { color: var(--teal); }
+  .event-time { color: rgba(255,255,255,0.2); font-size: 8px; flex-shrink: 0; }
+
+  /* System status */
+  .sys-status {
+    padding: 0 12px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: 5px;
+    min-width: 100px;
+  }
+  .sys-row {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 9px;
+  }
+  .sys-dot {
+    width: 5px; height: 5px;
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+  .sys-ok   { background: #4CAF50; }
+  .sys-warn { background: var(--amber); }
+  .sys-label { color: var(--text-dim); }
+</style>
+</head>
+<body>
+
+<div id="shell">
+
+  <!-- ── TOP BAR ─────────────────────────────────────────────── -->
+  <div id="topbar">
+    <div class="logo"><span>◆</span> VOIDYIELD</div>
+
+    <div class="planet-nav">
+      <div class="planet-nav-item">
+        <div class="planet-dot active"></div>
+        <div class="planet-dot-label">A-1</div>
+      </div>
+      <div class="planet-nav-item">
+        <div class="planet-dot"></div>
+        <div class="planet-dot-label">A-2</div>
+      </div>
+      <div class="planet-nav-item">
+        <div class="planet-dot"></div>
+        <div class="planet-dot-label">A-3</div>
+      </div>
+      <div class="planet-nav-item">
+        <div class="planet-dot"></div>
+        <div class="planet-dot-label">B</div>
+      </div>
+      <div class="planet-nav-item">
+        <div class="planet-dot"></div>
+        <div class="planet-dot-label">C</div>
+      </div>
+    </div>
+
+    <div class="topbar-right">
+      <div class="stat-item">
+        <span class="icon">◈</span>
+        <span>CREDITS</span>
+        <span class="val">4,820</span>
+      </div>
+      <div class="stat-sep">|</div>
+      <div class="stat-item">
+        <span class="icon">⬡</span>
+        <span>RP</span>
+        <span class="val">340</span>
+      </div>
+      <div class="stat-sep">|</div>
+      <button class="save-btn"><span class="dot">●</span> SAVE</button>
+      <button class="settings-btn">⚙ SETTINGS</button>
+    </div>
+  </div>
+
+  <!-- ── LEFT SIDEBAR ─────────────────────────────────────────── -->
+  <div id="left">
+    <div class="planet-name-block">
+      <div class="label">CURRENT LOCATION</div>
+      <div class="name">ASTEROID A-1</div>
+      <div class="sub">▶ SECTOR 1 · ZONE ALPHA</div>
+    </div>
+
+    <div class="minimap-wrap">
+      <div class="minimap-label">MINIMAP</div>
+      <div id="minimap">
+        <div class="mm-grid"></div>
+        <!-- Ore deposits -->
+        <div class="mm-dot mm-ore"  style="left:28px;  top:22px;"></div>
+        <div class="mm-dot mm-ore"  style="left:95px;  top:35px;"></div>
+        <div class="mm-dot mm-ore"  style="left:60px;  top:75px;"></div>
+        <div class="mm-dot mm-ore"  style="left:130px; top:55px;"></div>
+        <div class="mm-dot mm-ore"  style="left:112px; top:88px;"></div>
+        <div class="mm-dot mm-ore"  style="left:42px;  top:95px;"></div>
+        <!-- Harvesters -->
+        <div class="mm-dot mm-harv" style="left:55px;  top:45px;"></div>
+        <div class="mm-dot mm-harv" style="left:105px; top:70px;"></div>
+        <!-- Player -->
+        <div class="mm-dot mm-player" style="left:78px; top:58px;"></div>
+      </div>
+    </div>
+
+    <div class="resources-section">
+      <div class="panel-header" style="padding:0 0 5px; border-bottom:var(--border); margin-bottom:8px;">RESOURCES</div>
+
+      <div class="res-row">
+        <div class="res-header">
+          <span class="res-name">IRON ORE</span>
+          <span class="res-val">847t</span>
+        </div>
+        <div class="res-bar-bg"><div class="res-bar-fill bar-amber" style="width:70.6%"></div></div>
+      </div>
+
+      <div class="res-row">
+        <div class="res-header">
+          <span class="res-name">REFINED STEEL</span>
+          <span class="res-val">124t</span>
+        </div>
+        <div class="res-bar-bg"><div class="res-bar-fill bar-steel" style="width:41%"></div></div>
+      </div>
+
+      <div class="res-row">
+        <div class="res-header">
+          <span class="res-name">ENERGY CELLS</span>
+          <span class="res-val">63u</span>
+        </div>
+        <div class="res-bar-bg"><div class="res-bar-fill bar-energy" style="width:52%"></div></div>
+      </div>
+
+      <div class="res-row">
+        <div class="res-header">
+          <span class="res-name">SILICATE</span>
+          <span class="res-val">290t</span>
+        </div>
+        <div class="res-bar-bg"><div class="res-bar-fill bar-amber" style="width:24%"></div></div>
+      </div>
+
+      <div class="res-row">
+        <div class="res-header">
+          <span class="res-name">RARE EARTH</span>
+          <span class="res-val">18t</span>
+        </div>
+        <div class="res-bar-bg"><div class="res-bar-fill bar-steel" style="width:15%; background:linear-gradient(90deg,#220022,#9944AA)"></div></div>
+      </div>
+    </div>
+
+    <div class="sector-info">
+      <div class="label">SECTOR PROGRESS</div>
+      <div class="sector-progress-bg"><div class="sector-progress-fill"></div></div>
+      <div class="pct">62% · EST. 4h 30m REMAINING</div>
+    </div>
+  </div>
+
+  <!-- ── MAIN CANVAS ─────────────────────────────────────────── -->
+  <div id="canvas-area">
+    <!-- Stars -->
+    <div id="starfield"></div>
+    <div class="nebula"></div>
+    <div class="canvas-grid"></div>
+
+    <!-- Zone coverage circles -->
+    <div class="coverage-circle" style="width:200px;height:200px;left:195px;top:90px;transform:translate(-50%,-50%);"></div>
+    <div class="coverage-circle" style="width:200px;height:200px;left:525px;top:240px;transform:translate(-50%,-50%);"></div>
+
+    <!-- ORE DEPOSIT 1: top-left area -->
+    <div class="ore-node" style="left:108px;top:48px;">
+      <div class="ore-hex">
+        <svg viewBox="0 0 44 50" width="44" height="50">
+          <polygon points="22,2 40,12 40,38 22,48 4,38 4,12"
+            fill="rgba(212,168,67,0.12)"
+            stroke="#D4A843"
+            stroke-width="1.5"/>
+          <polygon points="22,8 36,16 36,34 22,42 8,34 8,16"
+            fill="rgba(212,168,67,0.07)"
+            stroke="rgba(212,168,67,0.4)"
+            stroke-width="0.5"/>
+          <text x="22" y="28" text-anchor="middle"
+            font-family="monospace" font-size="13" font-weight="bold"
+            fill="#D4A843" opacity="0.9">Fe</text>
+          <!-- glow spots -->
+          <circle cx="14" cy="20" r="2" fill="rgba(212,168,67,0.6)"/>
+          <circle cx="30" cy="33" r="1.5" fill="rgba(212,168,67,0.4)"/>
+        </svg>
+      </div>
+      <div class="ore-label">IRON VEIN α</div>
+      <div class="ore-qty">2,400t · RICH</div>
+    </div>
+
+    <!-- ORE DEPOSIT 2: top-right area -->
+    <div class="ore-node" style="left:475px;top:28px;">
+      <div class="ore-hex">
+        <svg viewBox="0 0 44 50" width="44" height="50">
+          <polygon points="22,2 40,12 40,38 22,48 4,38 4,12"
+            fill="rgba(212,168,67,0.10)"
+            stroke="rgba(212,168,67,0.8)"
+            stroke-width="1.5"/>
+          <polygon points="22,8 36,16 36,34 22,42 8,34 8,16"
+            fill="rgba(212,168,67,0.05)"
+            stroke="rgba(212,168,67,0.3)"
+            stroke-width="0.5"/>
+          <text x="22" y="28" text-anchor="middle"
+            font-family="monospace" font-size="11" font-weight="bold"
+            fill="#D4A843" opacity="0.85">Si</text>
+          <circle cx="30" cy="18" r="2" fill="rgba(212,168,67,0.5)"/>
+          <circle cx="16" cy="32" r="1.5" fill="rgba(212,168,67,0.35)"/>
+        </svg>
+      </div>
+      <div class="ore-label">SILICATE β</div>
+      <div class="ore-qty">1,850t · MEDIUM</div>
+    </div>
+
+    <!-- ORE DEPOSIT 3: mid-right -->
+    <div class="ore-node" style="left:595px;top:195px;">
+      <div class="ore-hex">
+        <svg viewBox="0 0 44 50" width="44" height="50">
+          <polygon points="22,2 40,12 40,38 22,48 4,38 4,12"
+            fill="rgba(153,68,170,0.15)"
+            stroke="rgba(180,80,200,0.7)"
+            stroke-width="1.5"/>
+          <polygon points="22,8 36,16 36,34 22,42 8,34 8,16"
+            fill="rgba(153,68,170,0.05)"
+            stroke="rgba(153,68,170,0.3)"
+            stroke-width="0.5"/>
+          <text x="22" y="28" text-anchor="middle"
+            font-family="monospace" font-size="10" font-weight="bold"
+            fill="#CC66EE" opacity="0.9">Re</text>
+          <circle cx="28" cy="15" r="1.5" fill="rgba(200,100,240,0.7)"/>
+          <circle cx="15" cy="35" r="1.5" fill="rgba(200,100,240,0.5)"/>
+        </svg>
+      </div>
+      <div class="ore-label" style="color:#CC66EE;">RARE EARTH γ</div>
+      <div class="ore-qty">320t · SPARSE</div>
+    </div>
+
+    <!-- ORE DEPOSIT 4: lower-left -->
+    <div class="ore-node" style="left:85px;top:248px;">
+      <div class="ore-hex">
+        <svg viewBox="0 0 44 50" width="44" height="50">
+          <polygon points="22,2 40,12 40,38 22,48 4,38 4,12"
+            fill="rgba(212,168,67,0.08)"
+            stroke="rgba(212,168,67,0.5)"
+            stroke-width="1.5"/>
+          <polygon points="22,8 36,16 36,34 22,42 8,34 8,16"
+            fill="rgba(212,168,67,0.04)"
+            stroke="rgba(212,168,67,0.2)"
+            stroke-width="0.5"/>
+          <text x="22" y="28" text-anchor="middle"
+            font-family="monospace" font-size="11" font-weight="bold"
+            fill="rgba(212,168,67,0.7)" opacity="0.8">Fe</text>
+        </svg>
+      </div>
+      <div class="ore-label" style="color:rgba(212,168,67,0.5);">IRON VEIN δ</div>
+      <div class="ore-qty" style="color:rgba(255,255,255,0.3);">640t · LOW</div>
+    </div>
+
+    <!-- HARVESTER 1 -->
+    <div class="harvester" style="left:175px;top:94px;">
+      <div class="harv-body">
+        <svg viewBox="0 0 38 34" width="38" height="34">
+          <!-- base platform -->
+          <rect x="4" y="20" width="30" height="10" fill="rgba(13,27,62,0.9)" stroke="#4ECDC4" stroke-width="1"/>
+          <!-- main tower -->
+          <rect x="12" y="8" width="14" height="14" fill="rgba(13,27,62,0.9)" stroke="#4ECDC4" stroke-width="1"/>
+          <!-- antenna -->
+          <line x1="19" y1="8" x2="19" y2="2" stroke="rgba(78,205,196,0.7)" stroke-width="1"/>
+          <circle cx="19" cy="2" r="1.5" fill="#4ECDC4" opacity="0.8"/>
+          <!-- side struts -->
+          <line x1="8" y1="20" x2="4" y2="28" stroke="rgba(78,205,196,0.5)" stroke-width="0.8"/>
+          <line x1="30" y1="20" x2="34" y2="28" stroke="rgba(78,205,196,0.5)" stroke-width="0.8"/>
+          <!-- teal accent light -->
+          <circle cx="26" cy="14" r="2" fill="#4ECDC4" opacity="0.9"/>
+          <circle cx="26" cy="14" r="4" fill="rgba(78,205,196,0.2)"/>
+          <!-- intake arm -->
+          <line x1="12" y1="15" x2="2" y2="18" stroke="rgba(78,205,196,0.6)" stroke-width="1"/>
+          <rect x="0" y="16" width="4" height="4" fill="rgba(78,205,196,0.3)" stroke="#4ECDC4" stroke-width="0.5"/>
+        </svg>
+      </div>
+      <div class="harv-label">HARVESTER-01</div>
+      <div class="harv-status">▶ MINING · 12t/min</div>
+    </div>
+
+    <!-- HARVESTER 2 -->
+    <div class="harvester" style="left:505px;top:222px;">
+      <div class="harv-body">
+        <svg viewBox="0 0 38 34" width="38" height="34">
+          <rect x="4" y="20" width="30" height="10" fill="rgba(13,27,62,0.9)" stroke="#4ECDC4" stroke-width="1"/>
+          <rect x="10" y="8" width="16" height="14" fill="rgba(13,27,62,0.9)" stroke="#4ECDC4" stroke-width="1"/>
+          <line x1="18" y1="8" x2="18" y2="2" stroke="rgba(78,205,196,0.7)" stroke-width="1"/>
+          <circle cx="18" cy="2" r="1.5" fill="#4ECDC4" opacity="0.8"/>
+          <line x1="8" y1="20" x2="4" y2="28" stroke="rgba(78,205,196,0.5)" stroke-width="0.8"/>
+          <line x1="30" y1="20" x2="34" y2="28" stroke="rgba(78,205,196,0.5)" stroke-width="0.8"/>
+          <circle cx="24" cy="14" r="2" fill="#D4A843" opacity="0.9"/>
+          <circle cx="24" cy="14" r="4" fill="rgba(212,168,67,0.2)"/>
+          <line x1="26" y1="15" x2="36" y2="12" stroke="rgba(212,168,67,0.5)" stroke-width="1"/>
+          <rect x="34" y="10" width="4" height="4" fill="rgba(212,168,67,0.25)" stroke="#D4A843" stroke-width="0.5"/>
+        </svg>
+      </div>
+      <div class="harv-label" style="color:#D4A843;">HARVESTER-02</div>
+      <div class="harv-status" style="color:rgba(212,168,67,0.6);">⚠ LOW FUEL · 4t/min</div>
+    </div>
+
+    <!-- DRONE 1: flying from ore-1 toward harvester-1 -->
+    <div class="drone" style="left:155px;top:100px;transform:rotate(-20deg);">
+      <div class="drone-trail" style="width:28px;"></div>
+      <div class="drone-icon"></div>
+    </div>
+
+    <!-- DRONE 2: flying from harvester-1 toward bottom -->
+    <div class="drone" style="left:230px;top:140px;transform:rotate(35deg);">
+      <div class="drone-trail" style="width:22px;"></div>
+      <div class="drone-icon"></div>
+    </div>
+
+    <!-- DRONE 3: flying across mid-canvas -->
+    <div class="drone" style="left:360px;top:170px;transform:rotate(10deg);">
+      <div class="drone-trail" style="width:34px;"></div>
+      <div class="drone-icon" style="border-bottom-color:rgba(212,168,67,0.9);filter:drop-shadow(0 0 4px #D4A843);"></div>
+    </div>
+
+    <!-- Player ship -->
+    <div class="player-ship" style="left:330px;top:158px;">
+      <svg width="16" height="18" viewBox="0 0 16 18">
+        <polygon points="8,0 15,16 8,12 1,16" fill="rgba(255,255,255,0.9)" stroke="rgba(255,255,255,0.5)" stroke-width="0.5"/>
+        <polygon points="8,12 5,16 8,14 11,16" fill="rgba(78,205,196,0.7)"/>
+        <!-- engine glow -->
+        <ellipse cx="8" cy="16" rx="3" ry="2" fill="rgba(78,205,196,0.4)"/>
+      </svg>
+      <div class="ship-label">PLAYER</div>
+    </div>
+
+    <!-- Scan pulse rings around player -->
+    <div class="scan-ring" style="width:50px;height:50px;left:305px;top:133px;animation-delay:0s;"></div>
+    <div class="scan-ring" style="width:50px;height:50px;left:305px;top:133px;animation-delay:1s;"></div>
+    <div class="scan-ring" style="width:50px;height:50px;left:305px;top:133px;animation-delay:2s;"></div>
+
+    <!-- Connection lines between drones/harvesters (faint) -->
+    <svg style="position:absolute;inset:0;width:100%;height:100%;pointer-events:none;" overflow="visible">
+      <!-- Harvester 1 to Ore Node 1 -->
+      <line x1="194" y1="111" x2="130" y2="73" stroke="rgba(78,205,196,0.12)" stroke-width="1" stroke-dasharray="4,6"/>
+      <!-- Harvester 2 to Ore Node 2 -->
+      <line x1="524" y1="239" x2="497" y2="53" stroke="rgba(212,168,67,0.10)" stroke-width="1" stroke-dasharray="4,6"/>
+      <!-- Player to Harvester 1 -->
+      <line x1="338" y1="167" x2="194" y2="128" stroke="rgba(255,255,255,0.05)" stroke-width="1" stroke-dasharray="2,8"/>
+    </svg>
+
+    <!-- Corner decorations -->
+    <div style="position:absolute;top:0;left:0;width:20px;height:20px;border-top:1px solid rgba(78,205,196,0.4);border-left:1px solid rgba(78,205,196,0.4);"></div>
+    <div style="position:absolute;top:0;right:0;width:20px;height:20px;border-top:1px solid rgba(78,205,196,0.4);border-right:1px solid rgba(78,205,196,0.4);"></div>
+    <div style="position:absolute;bottom:0;left:0;width:20px;height:20px;border-bottom:1px solid rgba(78,205,196,0.4);border-left:1px solid rgba(78,205,196,0.4);"></div>
+    <div style="position:absolute;bottom:0;right:0;width:20px;height:20px;border-bottom:1px solid rgba(78,205,196,0.4);border-right:1px solid rgba(78,205,196,0.4);"></div>
+
+    <div class="coords-display">X: 247 · Y: 183 · ALT: 0</div>
+    <div class="sector-label">SECTOR 1 · ZONE ALPHA · DAY 12</div>
+  </div>
+
+  <!-- ── RIGHT SIDEBAR ─────────────────────────────────────────── -->
+  <div id="right">
+    <div class="panel-header">FLEET STATUS</div>
+
+    <div class="fleet-section">
+      <div class="fleet-header">DRONE ROSTER</div>
+
+      <div class="drone-row">
+        <div class="drone-status-dot dot-active"></div>
+        <div class="drone-info">
+          <div class="drone-name">SCOUT</div>
+          <div class="drone-detail">Surveying A-1</div>
+        </div>
+        <div class="drone-count active-count">×2</div>
+      </div>
+
+      <div class="drone-row">
+        <div class="drone-status-dot dot-idle"></div>
+        <div class="drone-info">
+          <div class="drone-name">REFINERY</div>
+          <div class="drone-detail">Idle at H-01</div>
+        </div>
+        <div class="drone-count" style="color:var(--amber)">×1</div>
+      </div>
+
+      <div class="drone-row">
+        <div class="drone-status-dot dot-inactive"></div>
+        <div class="drone-info">
+          <div class="drone-name">HEAVY</div>
+          <div class="drone-detail">Not deployed</div>
+        </div>
+        <div class="drone-count">×0</div>
+      </div>
+
+      <div class="drone-row" style="margin-top:6px;padding-top:6px;border-top:1px solid rgba(212,168,67,0.15);">
+        <div class="drone-status-dot dot-active"></div>
+        <div class="drone-info">
+          <div class="drone-name">TRANSPORT</div>
+          <div class="drone-detail">Route active</div>
+        </div>
+        <div class="drone-count active-count">×1</div>
+      </div>
+
+      <!-- Power gauge -->
+      <div style="margin-top:10px;padding-top:8px;border-top:1px solid rgba(212,168,67,0.15);">
+        <div style="font-size:9px;color:var(--text-dim);letter-spacing:0.1em;margin-bottom:4px;">POWER BALANCE</div>
+        <div style="display:flex;align-items:center;gap:5px;">
+          <div style="flex:1;height:4px;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.08);">
+            <div style="height:100%;width:73%;background:linear-gradient(90deg,#003344,var(--teal));"></div>
+          </div>
+          <div style="font-size:9px;color:var(--teal);white-space:nowrap;">+18 MW</div>
+        </div>
+        <div style="font-size:8px;color:var(--text-dim);margin-top:2px;">73/100 capacity</div>
+      </div>
+    </div>
+
+    <button class="sidebar-btn amber-glow">
+      <span>TECH TREE</span>
+      <div class="glow-pip"></div>
+    </button>
+
+    <button class="sidebar-btn teal-glow">
+      <span>LOGISTICS</span>
+      <span class="btn-icon">→</span>
+    </button>
+
+    <div class="mission-box">
+      <div class="mission-label">ACTIVE OBJECTIVE</div>
+      <div class="mission-text">Mine 1,200t iron ore to unlock Refinery Mk.II</div>
+    </div>
+  </div>
+
+  <!-- ── BOTTOM HUD ─────────────────────────────────────────────── -->
+  <div id="bottom">
+
+    <!-- Storage bar -->
+    <div class="storage-section">
+      <div class="storage-header">
+        <span class="storage-label">PRIMARY STORAGE</span>
+        <span class="storage-val">847 / 1,200t</span>
+      </div>
+      <div class="storage-bar-bg">
+        <div class="storage-bar-fill"></div>
+      </div>
+      <div class="storage-type">⬛ IRON ORE · DEPOT-01</div>
+    </div>
+
+    <!-- Action slots -->
+    <div class="action-slots">
+      <button class="action-btn">
+        SURVEY
+        <span class="key-hint">[Q]</span>
+      </button>
+      <button class="action-btn active">
+        BUILD
+        <span class="key-hint">[E]</span>
+      </button>
+      <button class="action-btn">
+        SCAN
+        <span class="key-hint">[R]</span>
+      </button>
+      <button class="action-btn">
+        MAP
+        <span class="key-hint">[M]</span>
+      </button>
+    </div>
+
+    <!-- Event log -->
+    <div class="event-log">
+      <div class="event-log-label">EVENT LOG</div>
+      <div class="event-ticker">
+        <div class="event-entry">
+          <span class="event-icon" style="color:var(--teal)">▸</span>
+          <span class="event-text">Scout Drone collected <span class="hl">12t Iron Ore</span></span>
+          <span class="event-time">3s ago</span>
+        </div>
+        <div class="event-entry">
+          <span class="event-icon" style="color:var(--amber)">⚠</span>
+          <span class="event-text"><span class="hl">Harvester-02</span> fuel low — <span class="hl-teal">18% remaining</span></span>
+          <span class="event-time">41s ago</span>
+        </div>
+        <div class="event-entry">
+          <span class="event-icon" style="color:rgba(200,216,232,0.4)">▸</span>
+          <span class="event-text">Transport route <span class="hl-teal">H-01→DEPOT</span> completed · +47t</span>
+          <span class="event-time">1m ago</span>
+        </div>
+        <div class="event-entry">
+          <span class="event-icon" style="color:rgba(200,216,232,0.4)">▸</span>
+          <span class="event-text">Rare Earth deposit scanned — <span class="hl" style="color:#CC66EE">320t available</span></span>
+          <span class="event-time">3m ago</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- System status -->
+    <div class="sys-status">
+      <div class="sys-row">
+        <div class="sys-dot sys-ok"></div>
+        <span class="sys-label">SHIELDS OK</span>
+      </div>
+      <div class="sys-row">
+        <div class="sys-dot sys-warn"></div>
+        <span class="sys-label">FUEL LOW</span>
+      </div>
+      <div class="sys-row">
+        <div class="sys-dot sys-ok"></div>
+        <span class="sys-label">COMMS OK</span>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+// Generate star field
+(function() {
+  const sf = document.getElementById('starfield');
+  const count = 180;
+  for (let i = 0; i < count; i++) {
+    const s = document.createElement('div');
+    s.className = 'star';
+    const size = Math.random() < 0.85 ? 1 : Math.random() < 0.7 ? 1.5 : 2;
+    const x = Math.random() * 940; // canvas width ~940px
+    const y = Math.random() * 608; // canvas height
+    const opacity = Math.random() * 0.6 + 0.1;
+    s.style.cssText = `width:${size}px;height:${size}px;left:${x}px;top:${y}px;opacity:${opacity}`;
+    sf.appendChild(s);
+  }
+})();
+</script>
+</body>
+</html>

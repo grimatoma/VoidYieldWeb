@@ -43,4 +43,8 @@ export class ResearchLab {
     const dy = py - this.y;
     return dx * dx + dy * dy <= radius * radius;
   }
+
+  getInteractionPrompt(): { verb: string; target: string } | null {
+    return { verb: 'OPEN', target: 'RESEARCH' };
+  }
 }

@@ -1,5 +1,6 @@
-import { Container, Graphics } from 'pixi.js';
+import { Container, Graphics, Sprite } from 'pixi.js';
 import type { DroneType, DroneState, DroneTask, QualityLot } from '@data/types';
+import { droneSpriteSheet, dirFromVelocity, type Dir8 } from '@services/DroneSpriteSheet';
 
 const DRONE_COLORS: Record<DroneType, number> = {
   scout: 0x2196F3,
@@ -8,6 +9,7 @@ const DRONE_COLORS: Record<DroneType, number> = {
   survey: 0x00BCD4,
   builder: 0xFDD835,
   cargo: 0x8E24AA,
+  repair: 0xEF5350,
 };
 
 let _idCounter = 0;
@@ -28,7 +30,11 @@ export class DroneBase {
   private _execTimer = 0;
   readonly trailPoints: Array<{ x: number; y: number }> = [];
 
-  private _gfx: Graphics;
+  private _sprite: Sprite | null = null;
+  private _tint: Graphics | null = null;
+  private _fallback: Graphics | null = null;
+  private _facing: Dir8 = 's';
+  private _animClock = 0;
 
   constructor(droneType: DroneType, x: number, y: number, speed: number, carryCapacity: number) {
     this.id = `drone-${_idCounter++}`;
@@ -39,11 +45,30 @@ export class DroneBase {
     this.carryCapacity = carryCapacity;
 
     this.container = new Container();
-    this._gfx = new Graphics();
-    this._gfx.circle(0, 0, 5).fill(DRONE_COLORS[droneType]);
-    this.container.addChild(this._gfx);
     this.container.x = x;
     this.container.y = y;
+
+    droneSpriteSheet.ensureLoaded();
+    if (droneSpriteSheet.isLoaded) {
+      // Colored disc behind the sprite so drone-type is readable at a glance
+      // (per the color-by-type spec in 04_drone_swarm.md).
+      this._tint = new Graphics();
+      this._tint.circle(0, 0, 14).fill({ color: DRONE_COLORS[droneType], alpha: 0.45 });
+      this._tint.circle(0, 0, 14).stroke({ color: DRONE_COLORS[droneType], width: 1.5 });
+      this.container.addChild(this._tint);
+
+      this._sprite = new Sprite(droneSpriteSheet.frame('s', 0) ?? undefined);
+      this._sprite.anchor.set(0.5);
+      this._sprite.width = 32;
+      this._sprite.height = 32;
+      this.container.addChild(this._sprite);
+    } else {
+      // Fallback: small colored circle (older render, kept for tests without
+      // the spritesheet loaded).
+      this._fallback = new Graphics();
+      this._fallback.circle(0, 0, 5).fill(DRONE_COLORS[droneType]);
+      this.container.addChild(this._fallback);
+    }
   }
 
   pushTask(task: DroneTask): boolean {
@@ -77,6 +102,7 @@ export class DroneBase {
     if (!task || task.type === 'IDLE') {
       this.state = 'IDLE';
       if (task?.type === 'IDLE') this._popTask();
+      this._advanceAnim(delta, false, 0, 0);
       return;
     }
 
@@ -91,6 +117,7 @@ export class DroneBase {
       if (dist < 8) {
         this.state = 'EXECUTING';
         this._execTimer = task.executeDurationSec;
+        this._advanceAnim(delta, false, dx, dy);
       } else {
         const step = this.speed * delta;
         const ratio = Math.min(step / dist, 1);
@@ -98,17 +125,33 @@ export class DroneBase {
         this.y += dy * ratio;
         this.container.x = this.x;
         this.container.y = this.y;
+        this._advanceAnim(delta, true, dx, dy);
       }
     }
 
     if (this.state === 'EXECUTING') {
       this._execTimer -= delta;
+      this._advanceAnim(delta, false, 0, 0);
       if (this._execTimer <= 0) {
         task.onExecute?.();
         this._popTask();
         this.state = 'IDLE';
       }
     }
+  }
+
+  /** Update facing texture + frame. `moving` drives frame cycle; when false, holds frame 0. */
+  private _advanceAnim(delta: number, moving: boolean, dx: number, dy: number): void {
+    if (!this._sprite) return;
+    if (moving) {
+      this._facing = dirFromVelocity(dx, dy);
+      this._animClock += delta;
+    } else {
+      this._animClock = 0;
+    }
+    const frameIdx = moving ? Math.floor(this._animClock * 10) : 0;
+    const tex = droneSpriteSheet.frame(this._facing, frameIdx);
+    if (tex) this._sprite.texture = tex;
   }
 
   private _popTask(): void {

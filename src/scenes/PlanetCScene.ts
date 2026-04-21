@@ -16,6 +16,7 @@ import { GalaxyMap } from '@ui/GalaxyMap';
 import { gameState } from '@services/GameState';
 import { EventBus } from '@services/EventBus';
 import { logisticsManager } from '@services/LogisticsManager';
+import type { UILayer } from '@ui/UILayer';
 
 const WORLD_WIDTH = 4000;
 const WORLD_HEIGHT = 3000;
@@ -112,8 +113,9 @@ export class PlanetCScene implements Scene {
     this.banner.position.set(10, 50);
     app.stage.addChild(this.banner);
 
-    // 13. Galaxy Map
-    this.galaxyMap = new GalaxyMap();
+    // 13. Galaxy Map — HTML, owned by UILayer.
+    const uiC = (window as unknown as { __voidyield_uiLayer?: { galaxyMap: GalaxyMap | null } }).__voidyield_uiLayer;
+    this.galaxyMap = uiC!.galaxyMap!;
     this.galaxyMap.onTravel((planetId) => {
       EventBus.emit('scene:travel', planetId);
     });
@@ -122,8 +124,8 @@ export class PlanetCScene implements Scene {
       { id: 'planet_a2', label: 'A2 Asteroid', x: 0, y: 0, unlocked: true, current: false },
       { id: 'planet_b',  label: 'Planet B',  x: 0, y: 0, unlocked: true, current: false },
       { id: 'planet_c',  label: 'Planet C',  x: 0, y: 0, unlocked: true, current: true },
+      { id: 'planet_a3', label: 'A3 (Void Nexus)', x: 0, y: 0, unlocked: true, current: false },
     ]);
-    app.stage.addChild(this.galaxyMap.container);
 
     // 14. Mark Planet C as visited
     gameState.visitPlanetC();
@@ -132,6 +134,10 @@ export class PlanetCScene implements Scene {
     miningService.setDepot(this.storageDepot);
     logisticsManager.registerPlanet('planet_c', this.storageDepot);
     this.unsubInteract = inputManager.onAction((action, pressed) => {
+      if (action === 'pause_menu' && pressed) {
+        const ui = (window as unknown as { __voidyield_uiLayer?: UILayer }).__voidyield_uiLayer;
+        ui?.closeAllPanels();
+      }
       if (action === 'interact' && pressed) {
         const harvesterResult = harvesterManager.onInteract(this.player.x, this.player.y);
         if (harvesterResult === null) {
@@ -144,6 +150,15 @@ export class PlanetCScene implements Scene {
       if (action === 'galaxy_map' && pressed) {
         this.galaxyMap.toggle();
       }
+      if (action === 'inventory' && pressed) {
+        const ui = (window as unknown as { __voidyield_uiLayer?: UILayer }).__voidyield_uiLayer;
+        if (ui?.inventoryPanel?.visible) {
+          ui.closeAllPanels();
+        } else {
+          ui?.inventoryPanel?.setDepot(this.storageDepot);
+          ui?.inventoryPanel?.open();
+        }
+      }
     });
   }
 
@@ -151,7 +166,7 @@ export class PlanetCScene implements Scene {
     this.player.update(delta, inputManager, { width: WORLD_WIDTH, height: WORLD_HEIGHT });
     this.camera.follow({ x: this.player.x, y: this.player.y });
     this.minimap.update({ x: this.player.x, y: this.player.y });
-    miningService.update(delta);
+    miningService.update(delta, { x: this.player.x, y: this.player.y });
     harvesterManager.update(delta);
     fleetManager.update(delta);
   }

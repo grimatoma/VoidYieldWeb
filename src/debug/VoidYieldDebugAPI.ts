@@ -5,13 +5,16 @@
  */
 import type { OreType, ColonyTier } from '@data/types';
 import { gameState } from '@services/GameState';
+import { surveyService } from '@services/SurveyService';
 import { inventory } from '@services/Inventory';
 import { consumptionManager } from '@services/ConsumptionManager';
 import { logisticsManager } from '@services/LogisticsManager';
 import { techTree } from '@services/TechTree';
 import { strandingManager } from '@services/StrandingManager';
 import { saveManager } from '@services/SaveManager';
+import { settingsManager } from '@services/SettingsManager';
 import { EventBus } from '@services/EventBus';
+import { tutorialManager } from '@services/TutorialManager';
 
 export interface VoidYieldDebugAPI {
   // ── State setters ─────────────────────────────────────────────
@@ -44,6 +47,8 @@ export interface VoidYieldDebugAPI {
   advanceTime(seconds: number): void;
   /** Reset all services to initial state */
   resetAll(): void;
+  /** Suppress the tutorial overlay immediately (for tests) */
+  skipTutorial(): void;
 
   // ── Preset loader ─────────────────────────────────────────────
   loadPreset(name: GamePreset): void;
@@ -57,7 +62,9 @@ export interface VoidYieldDebugAPI {
     techTree: typeof techTree;
     strandingManager: typeof strandingManager;
     saveManager: typeof saveManager;
+    settingsManager: typeof settingsManager;
     EventBus: typeof EventBus;
+    surveyService: typeof surveyService;
   };
 }
 
@@ -171,6 +178,11 @@ function createDebugAPI(): VoidYieldDebugAPI {
       EventBus.emit('rp:changed', 0);
     },
 
+    skipTutorial() {
+      tutorialManager.skip();
+      EventBus.emit('tutorial:completed');
+    },
+
     // ── Presets ───────────────────────────────────────────────
     loadPreset(name) {
       switch (name) {
@@ -233,7 +245,9 @@ function createDebugAPI(): VoidYieldDebugAPI {
       techTree,
       strandingManager,
       saveManager,
+      settingsManager,
       EventBus,
+      surveyService,
     },
   };
 }

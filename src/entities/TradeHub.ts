@@ -1,6 +1,7 @@
-import { Container, Graphics, Text, TextStyle } from 'pixi.js';
+import { Container, Graphics, Sprite, Text, TextStyle } from 'pixi.js';
 import { gameState } from '@services/GameState';
 import { EventBus } from '@services/EventBus';
+import { assetManager } from '@services/AssetManager';
 
 export interface CatalogItem {
   itemId: string;
@@ -29,13 +30,22 @@ export class TradeHub {
     this.container.x = x;
     this.container.y = y;
 
-    const gfx = new Graphics();
-    gfx.rect(-20, -20, 40, 40).fill(0x1A1A3A).stroke({ width: 2, color: 0xD4A843 });
-    this.container.addChild(gfx);
+    if (assetManager.has('building_shop_terminal')) {
+      const s = new Sprite(assetManager.texture('building_shop_terminal'));
+      s.anchor.set(0.5);
+      s.width = 56;
+      s.height = 56;
+      this.container.addChild(s);
+    } else {
+      const gfx = new Graphics();
+      gfx.rect(-20, -20, 40, 40).fill(0x1A1A3A).stroke({ width: 2, color: 0xD4A843 });
+      this.container.addChild(gfx);
+    }
 
-    const style = new TextStyle({ fontFamily: 'monospace', fontSize: 8, fill: '#D4A843' });
-    const label = new Text({ text: 'TRADE\n HUB', style });
+    const style = new TextStyle({ fontFamily: 'monospace', fontSize: 9, fill: '#D4A843' });
+    const label = new Text({ text: 'SHOP', style });
     label.anchor.set(0.5);
+    label.y = 36;
     this.container.addChild(label);
   }
 
@@ -68,5 +78,9 @@ export class TradeHub {
     const dx = px - this.x;
     const dy = py - this.y;
     return dx * dx + dy * dy <= radius * radius;
+  }
+
+  getInteractionPrompt(): { verb: string; target: string } | null {
+    return { verb: 'OPEN', target: 'SHOP' };
   }
 }

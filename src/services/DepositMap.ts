@@ -23,6 +23,11 @@ export class DepositMap {
     return this.deposits.get(id);
   }
 
+  /** Enumerate all loaded deposits (used by InteractionManager registration). */
+  getAll(): readonly Deposit[] {
+    return Array.from(this.deposits.values());
+  }
+
   /** Returns the nearest non-exhausted deposit within `radius` px of (x, y), or null. */
   getNearestDeposit(x: number, y: number, radius: number): Deposit | null {
     let nearest: Deposit | null = null;

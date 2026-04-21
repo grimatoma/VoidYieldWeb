@@ -1,5 +1,6 @@
-import { Container, Graphics } from 'pixi.js';
+import { Container, Graphics, Sprite } from 'pixi.js';
 import type { DepositData, QualityLot, OreType } from '@data/types';
+import { assetManager, type AssetKey } from '@services/AssetManager';
 
 const ORE_COLORS: Record<OreType, number> = {
   vorax: 0xFF8C42,
@@ -23,39 +24,113 @@ const ORE_COLORS: Record<OreType, number> = {
   resonance_shards: 0xE91E63,
   ferrovoid: 0x4E342E,
   warp_components: 0x00BCD4,
+  crystal_lattice: 0x64B5F6,
+  drill_head: 0xB0BEC5,
 };
+
+/** Map ore type to the sprite key where legacy assets exist; otherwise null -> color circle fallback. */
+const ORE_SPRITE_KEYS: Partial<Record<OreType, AssetKey>> = {
+  vorax: 'ore_vorax',
+  krysite: 'ore_krysite',
+  aethite: 'ore_aethite',
+  shards: 'ore_shards',
+  // voidstone sprite exists but there's no ore type id 'voidstone' yet
+};
+
+/** Deposit state — mirrors legacy ore_node.gd FULL / CRACKED / DEPLETED. */
+export type DepositState = 'FULL' | 'CRACKED' | 'DEPLETED';
 
 export class Deposit {
   readonly container: Container;
   readonly data: DepositData;
-  private circle: Graphics;
+  private sprite: Sprite | null = null;
+  private fallback: Graphics | null = null;
+  private _initialYield: number;
+  holdProgress = 0; // 0..1 — live hold-to-mine progress, set by MiningService
 
   constructor(data: DepositData) {
     this.data = { ...data };
+    this._initialYield = data.yieldRemaining;
     this.container = new Container();
     this.container.x = data.x;
     this.container.y = data.y;
-    this.circle = new Graphics();
-    this._redraw();
-    this.container.addChild(this.circle);
+    this._buildVisual();
+    this._applyState();
   }
 
-  /** Extract up to `amount` units. Returns a QualityLot (empty attributes for M2). */
+  get x(): number { return this.data.x; }
+  get y(): number { return this.data.y; }
+
+  isNearby(px: number, py: number, radius = 40): boolean {
+    const dx = this.data.x - px;
+    const dy = this.data.y - py;
+    return dx * dx + dy * dy <= radius * radius;
+  }
+
+  getInteractionPrompt(): { verb: string; target: string; progress?: number } | null {
+    if (this.data.isExhausted) return null;
+    return {
+      verb: 'MINE',
+      target: this.data.oreType.toUpperCase().replace(/_/g, ' '),
+      progress: this.holdProgress,
+    };
+  }
+
+  get state(): DepositState {
+    if (this.data.isExhausted) return 'DEPLETED';
+    if (this.data.yieldRemaining / Math.max(1, this._initialYield) <= 0.4) return 'CRACKED';
+    return 'FULL';
+  }
+
   mine(amount: number): QualityLot {
     const actual = Math.min(amount, this.data.yieldRemaining);
     this.data.yieldRemaining -= actual;
     if (this.data.yieldRemaining <= 0) {
       this.data.isExhausted = true;
-      this._redraw(); // grey out
     }
+    this._applyState();
     return { oreType: this.data.oreType, quantity: actual, attributes: this.data.qualityAttributes ?? {} };
   }
 
-  private _redraw(): void {
-    this.circle.clear();
-    const color = this.data.isExhausted ? 0x555555 : ORE_COLORS[this.data.oreType];
-    this.circle.circle(0, 0, 12);
-    this.circle.fill(color);
+  private _buildVisual(): void {
+    const spriteKey = ORE_SPRITE_KEYS[this.data.oreType];
+    if (spriteKey && assetManager.has(spriteKey)) {
+      this.sprite = new Sprite(assetManager.texture(spriteKey));
+      this.sprite.anchor.set(0.5);
+      this.sprite.width = 32;
+      this.sprite.height = 32;
+      this.container.addChild(this.sprite);
+    } else {
+      this.fallback = new Graphics();
+      this.fallback.circle(0, 0, 12);
+      this.fallback.fill(ORE_COLORS[this.data.oreType]);
+      this.container.addChild(this.fallback);
+    }
+  }
+
+  private _applyState(): void {
+    // Tint mirrors legacy ore_node.gd: white (full), ~C8A078 (cracked), 555555 (depleted)
+    let tint = 0xFFFFFF;
+    let alpha = 1.0;
+    switch (this.state) {
+      case 'CRACKED': tint = 0xC8A078; break;
+      case 'DEPLETED': tint = 0x555555; alpha = 0.55; break;
+      default: tint = 0xFFFFFF;
+    }
+    if (this.sprite) {
+      this.sprite.tint = tint;
+      this.sprite.alpha = alpha;
+    } else if (this.fallback) {
+      this.fallback.clear();
+      const color = this.data.isExhausted
+        ? 0x555555
+        : this.state === 'CRACKED'
+          ? 0xC8A078
+          : ORE_COLORS[this.data.oreType];
+      this.fallback.circle(0, 0, 12);
+      this.fallback.fill(color);
+      this.fallback.alpha = alpha;
+    }
   }
 
   serialize(): DepositData {

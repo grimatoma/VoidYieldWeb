@@ -3,6 +3,9 @@ import { resolve } from 'path';
 
 export default defineConfig({
   base: process.env.VITE_BASE_URL ?? '/',
+  // Serve `assets/` as a static public directory.
+  // Files are reachable at root-relative URLs: assets/sprites/foo.png -> /sprites/foo.png
+  publicDir: resolve(__dirname, 'assets'),
   resolve: {
     alias: {
       '@services': resolve(__dirname, 'src/services'),

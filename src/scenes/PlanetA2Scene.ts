@@ -9,6 +9,7 @@ import { MinimapOverlay } from '../ui/MinimapOverlay';
 import { GalaxyMap } from '@ui/GalaxyMap';
 import { gameState } from '@services/GameState';
 import { EventBus } from '@services/EventBus';
+import type { UILayer } from '@ui/UILayer';
 
 const WORLD_WIDTH = 600;
 const WORLD_HEIGHT = 400;
@@ -98,8 +99,9 @@ export class PlanetA2Scene implements Scene {
     bannerText.y = 10;
     app.stage.addChild(bannerText);
 
-    // 11. Galaxy Map
-    this.galaxyMap = new GalaxyMap();
+    // 11. Galaxy Map — HTML, owned by UILayer.
+    const uiA2 = (window as unknown as { __voidyield_uiLayer?: { galaxyMap: GalaxyMap | null } }).__voidyield_uiLayer;
+    this.galaxyMap = uiA2!.galaxyMap!;
     this.galaxyMap.onTravel((planetId) => {
       EventBus.emit('scene:travel', planetId);
     });
@@ -107,14 +109,19 @@ export class PlanetA2Scene implements Scene {
       { id: 'planet_a1', label: 'Planet A1', x: 0, y: 0, unlocked: true, current: false },
       { id: 'planet_a2', label: 'A2 Asteroid', x: 0, y: 0, unlocked: true, current: true },
       { id: 'planet_b', label: 'Planet B', x: 0, y: 0, unlocked: true, current: false },
+      { id: 'planet_c', label: 'Planet C', x: 0, y: 0, unlocked: true, current: false },
+      { id: 'planet_a3', label: 'A3 (Void Nexus)', x: 0, y: 0, unlocked: true, current: false },
     ]);
-    app.stage.addChild(this.galaxyMap.container);
 
     // 12. Visit A2 on entry
     gameState.visitA2();
 
     // 13. Input handling
     this.unsubInteract = inputManager.onAction((action, pressed) => {
+      if (action === 'pause_menu' && pressed) {
+        const ui = (window as unknown as { __voidyield_uiLayer?: UILayer }).__voidyield_uiLayer;
+        ui?.closeAllPanels();
+      }
       if (action === 'interact' && pressed) {
         this._handleInteract();
       }

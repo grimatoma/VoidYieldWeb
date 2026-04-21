@@ -14,6 +14,9 @@ import { GasCollector } from '@entities/GasCollector';
 import { fleetManager } from '@services/FleetManager';
 import { strandingManager } from '@services/StrandingManager';
 import { logisticsManager } from '@services/LogisticsManager';
+import { GalaxyMap } from '@ui/GalaxyMap';
+import { EventBus } from '@services/EventBus';
+import type { UILayer } from '@ui/UILayer';
 
 const WORLD_WIDTH = 3200;
 const WORLD_HEIGHT = 2400;
@@ -47,6 +50,7 @@ export class PlanetBScene implements Scene {
   private unsubInteract?: () => void;
   private gasCollector!: GasCollector;
   private strandingBanner!: Text;
+  private galaxyMap!: GalaxyMap;
 
   async enter(app: Application): Promise<void> {
     this.app = app;
@@ -114,10 +118,28 @@ export class PlanetBScene implements Scene {
     this.strandingBanner.position.set(10, 50);
     app.stage.addChild(this.strandingBanner);
 
+    // 12. Galaxy Map — HTML, owned by UILayer.
+    const uiB = (window as unknown as { __voidyield_uiLayer?: { galaxyMap: GalaxyMap | null } }).__voidyield_uiLayer;
+    this.galaxyMap = uiB!.galaxyMap!;
+    this.galaxyMap.onTravel((planetId) => {
+      EventBus.emit('scene:travel', planetId);
+    });
+    this.galaxyMap.setPlanets([
+      { id: 'planet_a1', label: 'Planet A1', x: 0, y: 0, unlocked: true, current: false },
+      { id: 'planet_a2', label: 'A2 Asteroid', x: 0, y: 0, unlocked: true, current: false },
+      { id: 'planet_b',  label: 'Planet B',  x: 0, y: 0, unlocked: true, current: true },
+      { id: 'planet_c',  label: 'Planet C',  x: 0, y: 0, unlocked: true, current: false },
+      { id: 'planet_a3', label: 'A3 (Void Nexus)', x: 0, y: 0, unlocked: true, current: false },
+    ]);
+
     // 13. Mining service wiring + logistics registration
     miningService.setDepot(this.storageDepot);
     logisticsManager.registerPlanet('planet_b', this.storageDepot);
     this.unsubInteract = inputManager.onAction((action, pressed) => {
+      if (action === 'pause_menu' && pressed) {
+        const ui = (window as unknown as { __voidyield_uiLayer?: UILayer }).__voidyield_uiLayer;
+        ui?.closeAllPanels();
+      }
       if (action === 'interact' && pressed) {
         const harvesterResult = harvesterManager.onInteract(this.player.x, this.player.y);
         if (harvesterResult === null) {
@@ -127,6 +149,18 @@ export class PlanetBScene implements Scene {
       if (action === 'fleet_dispatch' && pressed) {
         fleetManager.fleetDispatch();
       }
+      if (action === 'galaxy_map' && pressed) {
+        this.galaxyMap.toggle();
+      }
+      if (action === 'inventory' && pressed) {
+        const ui = (window as unknown as { __voidyield_uiLayer?: UILayer }).__voidyield_uiLayer;
+        if (ui?.inventoryPanel?.visible) {
+          ui.closeAllPanels();
+        } else {
+          ui?.inventoryPanel?.setDepot(this.storageDepot);
+          ui?.inventoryPanel?.open();
+        }
+      }
     });
   }
 
@@ -134,7 +168,7 @@ export class PlanetBScene implements Scene {
     this.player.update(delta, inputManager, { width: WORLD_WIDTH, height: WORLD_HEIGHT });
     this.camera.follow({ x: this.player.x, y: this.player.y });
     this.minimap.update({ x: this.player.x, y: this.player.y });
-    miningService.update(delta);
+    miningService.update(delta, { x: this.player.x, y: this.player.y });
     harvesterManager.update(delta);
     fleetManager.update(delta);
 
