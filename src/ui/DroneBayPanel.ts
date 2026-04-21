@@ -51,6 +51,7 @@ export class DroneBayPanel {
       if (!this._visible) return;
       if (e.code === 'Escape' || e.code === 'KeyE') {
         e.preventDefault();
+        e.stopImmediatePropagation();
         this.close();
       }
     };
