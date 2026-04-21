@@ -26,6 +26,11 @@ const ORE_COLORS: Record<OreType, number> = {
   warp_components: 0x00BCD4,
   crystal_lattice: 0x64B5F6,
   drill_head: 0xB0BEC5,
+  hull: 0x90A4AE,
+  engine: 0xFF5722,
+  fuel_tank: 0x607D8B,
+  avionics: 0x00ACC1,
+  landing_gear: 0x795548,
 };
 
 /** Map ore type to the sprite key where legacy assets exist; otherwise null -> color circle fallback. */

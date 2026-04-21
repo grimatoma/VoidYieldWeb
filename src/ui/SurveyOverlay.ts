@@ -35,6 +35,11 @@ const ORE_HEX: Record<OreType, string> = {
   warp_components:   '#00BCD4',
   crystal_lattice:   '#64B5F6',
   drill_head:        '#B0BEC5',
+  hull:              '#90A4AE',
+  engine:            '#FF5722',
+  fuel_tank:         '#607D8B',
+  avionics:          '#00ACC1',
+  landing_gear:      '#795548',
 };
 
 const STAGE_LABEL: Record<ScanStage, string> = {
