@@ -404,20 +404,20 @@ export class PlanetA1Scene implements Scene {
     const ui = (window as unknown as { __voidyield_uiLayer?: UILayer }).__voidyield_uiLayer;
     ui?.interactionPrompt?.setCamera(this.camera);
 
-    // Dev-only: expose the scene for panel/entity inspection from the console.
-    if ((import.meta as { env?: { DEV?: boolean } }).env?.DEV) {
-      (window as unknown as { __voidyield_scene?: unknown }).__voidyield_scene = {
-        player: this.player,
-        droneBay: this.droneBay,
-        storageDepot: this.storageDepot,
-        tradeHub: this.tradeHub,
-        researchLab: this.researchLab,
-        habitationModule: this.habitationModule,
-        processingPlant: this.processingPlant,
-        launchpad: this.launchpad,
-        worldContainer: this.worldContainer,
-      };
-    }
+    // Expose the scene so the debug panel and console can reach entities
+    // (e.g. Fill Ship / Launch Ship). No longer DEV-gated since the debug
+    // panel is now a menu feature available in every build.
+    (window as unknown as { __voidyield_scene?: unknown }).__voidyield_scene = {
+      player: this.player,
+      droneBay: this.droneBay,
+      storageDepot: this.storageDepot,
+      tradeHub: this.tradeHub,
+      researchLab: this.researchLab,
+      habitationModule: this.habitationModule,
+      processingPlant: this.processingPlant,
+      launchpad: this.launchpad,
+      worldContainer: this.worldContainer,
+    };
 
     // [M] key — place survey waypoint at nearest deposit (raw keydown, not in InputManager).
     this._surveyKeyM = (e: KeyboardEvent) => {
