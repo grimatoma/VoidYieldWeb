@@ -33,9 +33,10 @@ export class ProcessingPlant {
     body.rect(-20, -20, 40, 40).stroke({ width: 2, color: 0x00B8D4 });
     this.container.addChild(body);
 
-    // Plant label
-    const style = new TextStyle({ fontFamily: 'monospace', fontSize: 9, fill: '#00B8D4' });
-    this.label = new Text({ text: 'P', style });
+    // Plant label — show abbreviated recipe name
+    const style = new TextStyle({ fontFamily: 'monospace', fontSize: 7, fill: '#00B8D4' });
+    const abbrev = schematic.name.length > 6 ? schematic.name.slice(0, 6) : schematic.name;
+    this.label = new Text({ text: abbrev.toUpperCase(), style });
     this.label.anchor.set(0.5);
     this.container.addChild(this.label);
 

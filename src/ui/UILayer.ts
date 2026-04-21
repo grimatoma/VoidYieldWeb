@@ -16,6 +16,7 @@ import { HabitationPanel } from './HabitationPanel';
 import { ShipBayPanel } from './ShipBayPanel';
 import { TechTreePanel } from './TechTreePanel';
 import { FleetPanel } from './FleetPanel';
+import { FabricatorPanel } from './FabricatorPanel';
 import { ProductionDashboard } from './ProductionDashboard';
 import { LogisticsOverlay } from './LogisticsOverlay';
 import { GalaxyMap } from './GalaxyMap';
@@ -47,6 +48,7 @@ export class UILayer {
   private _shipBayPanel: ShipBayPanel | null = null;
   private _techTreePanel: TechTreePanel | null = null;
   private _fleetPanel: FleetPanel | null = null;
+  private _fabricatorPanel: FabricatorPanel | null = null;
   private _productionDashboard: ProductionDashboard | null = null;
   private _logisticsOverlay: LogisticsOverlay | null = null;
   private _galaxyMap: GalaxyMap | null = null;
@@ -141,6 +143,9 @@ export class UILayer {
     this._fleetPanel = new FleetPanel();
     this._fleetPanel.mount(this._root);
 
+    this._fabricatorPanel = new FabricatorPanel();
+    this._fabricatorPanel.mount(this._root);
+
     this._productionDashboard = new ProductionDashboard();
     this._productionDashboard.mount(this._root);
 
@@ -203,6 +208,7 @@ export class UILayer {
   get shipBayPanel(): ShipBayPanel | null { return this._shipBayPanel; }
   get techTreePanel(): TechTreePanel | null { return this._techTreePanel; }
   get fleetPanel(): FleetPanel | null { return this._fleetPanel; }
+  get fabricatorPanel(): FabricatorPanel | null { return this._fabricatorPanel; }
   get productionDashboard(): ProductionDashboard | null { return this._productionDashboard; }
   get logisticsOverlay(): LogisticsOverlay | null { return this._logisticsOverlay; }
   get galaxyMap(): GalaxyMap | null { return this._galaxyMap; }
@@ -220,6 +226,7 @@ export class UILayer {
     this._habitationPanel?.close();
     this._shipBayPanel?.close();
     this._inventoryPanel?.close();
+    this._fabricatorPanel?.close();
     if (this._techTreePanel?.visible) this._techTreePanel.toggle();
     if (this._fleetPanel?.visible) this._fleetPanel.toggle();
     if (this._productionDashboard?.visible) this._productionDashboard.toggle();
@@ -256,6 +263,8 @@ export class UILayer {
     this._techTreePanel = null;
     this._fleetPanel?.destroy();
     this._fleetPanel = null;
+    this._fabricatorPanel?.destroy();
+    this._fabricatorPanel = null;
     this._productionDashboard?.destroy();
     this._productionDashboard = null;
     this._logisticsOverlay?.destroy();

@@ -1,6 +1,7 @@
 import { Container, Graphics, Sprite } from 'pixi.js';
 import type { DroneType, DroneState, DroneTask, QualityLot } from '@data/types';
 import { droneSpriteSheet, dirFromVelocity, type Dir8 } from '@services/DroneSpriteSheet';
+import { obstacleManager, type Vec2 } from '@services/ObstacleManager';
 
 const DRONE_COLORS: Record<DroneType, number> = {
   scout: 0x2196F3,
@@ -28,6 +29,12 @@ export class DroneBase {
 
   private _tasks: DroneTask[] = [];
   private _execTimer = 0;
+  /** Cached hop sequence for the current task when routed around walls. The
+   * final entry is the task's actual target. Cleared whenever the task
+   * changes. */
+  private _pathHops: Vec2[] | null = null;
+  private _pathTaskTargetX = 0;
+  private _pathTaskTargetY = 0;
   readonly trailPoints: Array<{ x: number; y: number }> = [];
 
   private _sprite: Sprite | null = null;
@@ -83,6 +90,7 @@ export class DroneBase {
 
   clearTasks(): void {
     this._tasks = [];
+    this._pathHops = null;
     this.state = 'IDLE';
   }
 
@@ -111,12 +119,32 @@ export class DroneBase {
     }
 
     if (this.state === 'MOVING_TO_TARGET') {
-      const dx = task.targetX - this.x;
-      const dy = task.targetY - this.y;
+      // Compute / refresh the routed hop list. If the task changed under us
+      // (different cached target), re-plan.
+      if (
+        this._pathHops === null
+        || this._pathTaskTargetX !== task.targetX
+        || this._pathTaskTargetY !== task.targetY
+      ) {
+        this._pathHops = obstacleManager.findPath(this.x, this.y, task.targetX, task.targetY);
+        this._pathTaskTargetX = task.targetX;
+        this._pathTaskTargetY = task.targetY;
+      }
+
+      const hop = this._pathHops[0] ?? { x: task.targetX, y: task.targetY };
+      const dx = hop.x - this.x;
+      const dy = hop.y - this.y;
       const dist = Math.sqrt(dx * dx + dy * dy);
+
       if (dist < 8) {
-        this.state = 'EXECUTING';
-        this._execTimer = task.executeDurationSec;
+        // Reached this hop. If it was an intermediate waypoint, advance to
+        // the next; if it was the final target, begin EXECUTING.
+        this._pathHops.shift();
+        if (this._pathHops.length === 0) {
+          this.state = 'EXECUTING';
+          this._execTimer = task.executeDurationSec;
+          this._pathHops = null;
+        }
         this._advanceAnim(delta, false, dx, dy);
       } else {
         const step = this.speed * delta;
@@ -161,5 +189,6 @@ export class DroneBase {
     } else {
       this._tasks.shift();
     }
+    this._pathHops = null;
   }
 }

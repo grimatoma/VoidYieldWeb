@@ -1,5 +1,5 @@
 // @vitest-environment jsdom
-import { describe, it, expect, beforeEach, vi } from 'vitest';
+import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { TouchMenuOverlay } from '@ui/TouchMenuOverlay';
 import { inputManager } from '@services/InputManager';
 
@@ -13,6 +13,10 @@ describe('TouchMenuOverlay', () => {
     document.body.appendChild(parent);
     menu = new TouchMenuOverlay();
     menu.mount(parent);
+  });
+
+  afterEach(() => {
+    menu.destroy();
   });
 
   it('mounts a toggle button and hidden panel', () => {
@@ -40,7 +44,7 @@ describe('TouchMenuOverlay', () => {
       'fleet_panel', 'production_dashboard', 'logistics_overlay',
       'production_overlay', 'coverage_overlay', 'survey_tool_toggle',
       'zone_paint', 'retool_factory', 'interact', 'fleet_dispatch',
-      'pause_menu', 'cycle_panels', 'fullscreen_toggle',
+      'menu_toggle', 'pause_menu', 'cycle_panels', 'fullscreen_toggle',
     ];
     const actions = Array.from(parent.querySelectorAll<HTMLButtonElement>('.touch-menu-item'))
       .map(b => b.getAttribute('data-action'));
@@ -76,6 +80,20 @@ describe('TouchMenuOverlay', () => {
     expect(menu.visible).toBe(true);
 
     document.body.click();
+    expect(menu.visible).toBe(false);
+  });
+
+  it('toggles when the menu_toggle action fires (M key)', () => {
+    expect(menu.visible).toBe(false);
+    inputManager.dispatch('menu_toggle');
+    expect(menu.visible).toBe(true);
+    inputManager.dispatch('menu_toggle');
+    expect(menu.visible).toBe(false);
+  });
+
+  it('stops toggling after destroy', () => {
+    menu.destroy();
+    inputManager.dispatch('menu_toggle');
     expect(menu.visible).toBe(false);
   });
 });
