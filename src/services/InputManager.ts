@@ -105,6 +105,20 @@ export class InputManager {
     return this.bindings;
   }
 
+  /**
+   * Dispatch an action programmatically as a tap (press + release) without a
+   * real key event. Used by on-screen touch / mouse menu buttons so they go
+   * through the same listener pipeline as the keyboard bindings.
+   */
+  dispatch(action: InputAction): void {
+    this.held.add(action);
+    this.justPressed.add(action);
+    this.listeners.forEach(l => l(action, true));
+    this.held.delete(action);
+    this.justReleased.add(action);
+    this.listeners.forEach(l => l(action, false));
+  }
+
   /** Remap a key. Validates no conflict per spec 16. Returns false on conflict. */
   remap(code: string, action: InputAction): boolean {
     const conflict = this.bindings[code];

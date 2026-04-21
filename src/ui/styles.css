@@ -2072,3 +2072,140 @@
   background: var(--color-danger);
   color: #fff;
 }
+
+/* ── Touch Menu ───────────────────────────────────────────────
+   Always-visible on-screen menu for opening any panel / overlay
+   without a keyboard. Sits bottom-right, above all game UI. */
+.touch-menu {
+  position: absolute;
+  right: calc(8px * var(--hud-scale));
+  bottom: calc(8px * var(--hud-scale));
+  z-index: 35;
+  font-family: var(--font-mono);
+  pointer-events: none;
+}
+
+.touch-menu-toggle {
+  display: flex;
+  align-items: center;
+  gap: calc(6px * var(--hud-scale));
+  min-width: calc(44px * var(--hud-scale));
+  min-height: calc(44px * var(--hud-scale));
+  padding: calc(6px * var(--hud-scale)) calc(12px * var(--hud-scale));
+  background: rgba(13, 27, 62, 0.92);
+  border: 1px solid var(--color-primary);
+  color: var(--color-primary);
+  font-family: inherit;
+  font-size: calc(12px * var(--hud-scale));
+  letter-spacing: 0.1em;
+  cursor: pointer;
+  pointer-events: auto;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+  transition: background 120ms, color 120ms;
+}
+
+.touch-menu-toggle:hover,
+.touch-menu-toggle--open {
+  background: var(--color-primary);
+  color: var(--color-bg);
+}
+
+.touch-menu-icon {
+  font-size: calc(18px * var(--hud-scale));
+  line-height: 1;
+  font-weight: bold;
+}
+
+.touch-menu-toggle-label {
+  font-weight: bold;
+}
+
+.touch-menu-panel {
+  position: absolute;
+  right: 0;
+  bottom: calc(100% + 6px * var(--hud-scale));
+  min-width: calc(220px * var(--hud-scale));
+  max-width: calc(320px * var(--hud-scale));
+  max-height: calc(70vh);
+  overflow-y: auto;
+  background: rgba(13, 27, 62, 0.96);
+  border: 1px solid var(--color-primary);
+  padding: calc(8px * var(--hud-scale));
+  pointer-events: auto;
+  box-shadow: 0 0 18px rgba(0, 0, 0, 0.6);
+}
+
+.touch-menu-section-title {
+  color: var(--color-accent);
+  font-size: calc(10px * var(--hud-scale));
+  letter-spacing: 0.16em;
+  padding: calc(4px * var(--hud-scale)) 0 calc(4px * var(--hud-scale));
+  border-bottom: 1px solid rgba(0, 184, 212, 0.25);
+  margin-bottom: calc(4px * var(--hud-scale));
+}
+
+.touch-menu-section-title:not(:first-child) {
+  margin-top: calc(8px * var(--hud-scale));
+}
+
+.touch-menu-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: calc(4px * var(--hud-scale));
+}
+
+.touch-menu-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: calc(6px * var(--hud-scale));
+  min-height: calc(36px * var(--hud-scale));
+  padding: calc(6px * var(--hud-scale)) calc(8px * var(--hud-scale));
+  background: #0f1f2a;
+  border: 1px solid #224455;
+  color: var(--color-accent);
+  font-family: inherit;
+  font-size: calc(11px * var(--hud-scale));
+  letter-spacing: 0.04em;
+  cursor: pointer;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+  transition: background 120ms, color 120ms, border-color 120ms;
+}
+
+.touch-menu-item:hover,
+.touch-menu-item:active {
+  background: var(--color-accent);
+  color: var(--color-bg);
+  border-color: var(--color-accent);
+}
+
+.touch-menu-item-label {
+  text-align: left;
+}
+
+.touch-menu-item-key {
+  color: var(--color-primary);
+  background: rgba(212, 168, 67, 0.12);
+  border: 1px solid rgba(212, 168, 67, 0.45);
+  padding: calc(1px * var(--hud-scale)) calc(6px * var(--hud-scale));
+  font-size: calc(10px * var(--hud-scale));
+  font-weight: bold;
+  min-width: calc(20px * var(--hud-scale));
+  text-align: center;
+}
+
+.touch-menu-item:hover .touch-menu-item-key,
+.touch-menu-item:active .touch-menu-item-key {
+  color: var(--color-bg);
+  background: rgba(13, 27, 62, 0.35);
+  border-color: var(--color-bg);
+}
+
+@media (max-width: 640px) {
+  .touch-menu-panel {
+    min-width: calc(100vw - 24px);
+    right: calc(-1 * 8px * var(--hud-scale));
+  }
+}
