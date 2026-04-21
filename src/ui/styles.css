@@ -557,7 +557,14 @@
 
 .shipbay-row--filled { border-color: #7cb87c; }
 
-.shipbay-launch {
+.shipbay-actions {
+  display: flex;
+  gap: calc(8px * var(--hud-scale));
+}
+.shipbay-actions > button { flex: 1; }
+
+.shipbay-launch,
+.shipbay-load-fuel {
   font-family: inherit;
   font-size: calc(15px * var(--hud-scale));
   letter-spacing: 0.12em;
@@ -569,8 +576,14 @@
   font-weight: bold;
   transition: background 120ms;
 }
+.shipbay-load-fuel {
+  background: transparent;
+  color: var(--color-primary);
+}
 .shipbay-launch:hover:not(:disabled) { background: #f0c866; }
-.shipbay-launch:disabled {
+.shipbay-load-fuel:hover:not(:disabled) { background: rgba(212, 168, 67, 0.15); }
+.shipbay-launch:disabled,
+.shipbay-load-fuel:disabled {
   background: #1f2233;
   color: #5a6a90;
   border-color: #2a355a;

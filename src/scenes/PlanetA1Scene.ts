@@ -460,6 +460,7 @@ export class PlanetA1Scene implements Scene {
           }
           if (this.launchpad.isNearby(px, py, 80)) {
             ui2?.shipBayPanel?.setPad(this.launchpad);
+            ui2?.shipBayPanel?.setDepot(this.storageDepot);
             ui2?.shipBayPanel?.open();
             return;
           }

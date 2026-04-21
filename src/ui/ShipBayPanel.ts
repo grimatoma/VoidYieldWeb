@@ -7,7 +7,8 @@
 import { effect } from '@preact/signals-core';
 import { credits } from '@store/gameStore';
 import { EventBus } from '@services/EventBus';
-import type { Launchpad } from '@entities/Launchpad';
+import { Launchpad } from '@entities/Launchpad';
+import type { StorageDepot } from '@entities/StorageDepot';
 import type { RocketComponentType } from '@data/types';
 
 const COMPONENTS: Array<{ id: RocketComponentType; label: string; costCr: number }> = [
@@ -22,6 +23,7 @@ export class ShipBayPanel {
   private _root: HTMLElement;
   private _cleanups: Array<() => void> = [];
   private _pad: Launchpad | null = null;
+  private _depot: StorageDepot | null = null;
   private _visible = false;
   private _onKeydown: (e: KeyboardEvent) => void;
 
@@ -40,6 +42,7 @@ export class ShipBayPanel {
 
   get visible(): boolean { return this._visible; }
   setPad(pad: Launchpad): void { this._pad = pad; }
+  setDepot(depot: StorageDepot): void { this._depot = depot; }
 
   private _build(): HTMLElement {
     const panel = document.createElement('div');
@@ -63,19 +66,33 @@ export class ShipBayPanel {
       </div>
       <div class="shipbay-status"></div>
       <div class="trade-panel-list shipbay-list"></div>
-      <button class="shipbay-launch" disabled>LAUNCH</button>
+      <div class="shipbay-actions">
+        <button class="shipbay-load-fuel" disabled>LOAD FUEL</button>
+        <button class="shipbay-launch" disabled>LAUNCH</button>
+      </div>
       <div class="trade-panel-hint">[E] or [ESC] to close</div>
     `;
     panel.querySelector<HTMLButtonElement>('.trade-panel-close')!
       .addEventListener('click', () => this.close());
     panel.querySelector<HTMLButtonElement>('.shipbay-launch')!
       .addEventListener('click', () => this._attemptLaunch());
+    panel.querySelector<HTMLButtonElement>('.shipbay-load-fuel')!
+      .addEventListener('click', () => this._loadFuel());
     return panel;
   }
 
   private _attemptLaunch(): void {
     if (!this._pad) return;
     if (this._pad.launch()) {
+      EventBus.emit('inventory:changed');
+      this._render();
+    }
+  }
+
+  private _loadFuel(): void {
+    if (!this._pad || !this._depot) return;
+    const pulled = this._pad.loadFuel(this._depot);
+    if (pulled > 0) {
       EventBus.emit('inventory:changed');
       this._render();
     }
@@ -122,6 +139,16 @@ export class ShipBayPanel {
     const btn = this._root.querySelector<HTMLButtonElement>('.shipbay-launch')!;
     btn.disabled = !launchReady;
     btn.textContent = launchReady ? 'LAUNCH' : 'NOT READY';
+
+    // Load Fuel button — enabled when depot has rocket_fuel and tank has room.
+    const loadBtn = this._root.querySelector<HTMLButtonElement>('.shipbay-load-fuel')!;
+    const depotFuel = this._depot?.getStockpile().get('rocket_fuel') ?? 0;
+    const tankRoom = Launchpad.FUEL_CAP - fuel;
+    const canLoad = !!this._depot && depotFuel > 0 && tankRoom > 0;
+    loadBtn.disabled = !canLoad;
+    loadBtn.textContent = canLoad
+      ? `LOAD FUEL (${Math.min(depotFuel, tankRoom)} RF)`
+      : depotFuel === 0 ? 'NO FUEL IN DEPOT' : 'TANK FULL';
   }
 
   mount(parent: HTMLElement): void {

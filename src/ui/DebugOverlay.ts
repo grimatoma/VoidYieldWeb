@@ -51,6 +51,7 @@ export class DebugOverlay {
         <button data-act="reset">Reset All</button>
         <button data-act="advance60">Advance 60s</button>
         <button data-act="advance300">Advance 5m</button>
+        <button data-act="fill-ship">Fill Ship</button>
         <button data-act="launch">Launch Ship</button>
       </div>
       <div class="debug-ui-scale">
@@ -124,20 +125,34 @@ export class DebugOverlay {
     this._flash('resources → 50%');
   }
 
-  private _launchShip(): void {
+  private _getLaunchpad(): Launchpad | null {
     const scene = (window as unknown as { __voidyield_scene?: { launchpad?: Launchpad } }).__voidyield_scene;
-    const pad = scene?.launchpad;
+    return scene?.launchpad ?? null;
+  }
+
+  private _fillShip(): void {
+    const pad = this._getLaunchpad();
     if (!pad) { this._flash('no launchpad on this scene'); return; }
     const types: RocketComponentType[] = ['hull', 'engine', 'fuel_tank', 'avionics', 'landing_gear'];
     for (const t of types) {
       pad.installComponent({ componentType: t, name: t.toUpperCase(), carrySlots: 1, attributes: {} });
     }
-    (pad as unknown as { _fuelUnits: number })._fuelUnits = 100;
+    pad.fillFuel(100);
+    EventBus.emit('inventory:changed');
+    this._flash(`ship ready — ${pad.componentsInstalled}/5, ${pad.fuelUnits} RF`);
+  }
+
+  private _launchShip(): void {
+    const pad = this._getLaunchpad();
+    if (!pad) { this._flash('no launchpad on this scene'); return; }
     if (pad.launch()) {
       EventBus.emit('inventory:changed');
       this._flash('ship launched');
     } else {
-      this._flash('launch failed');
+      const need: string[] = [];
+      if (pad.componentsInstalled < 5) need.push(`${5 - pad.componentsInstalled} components`);
+      if (pad.fuelUnits < 100) need.push(`${100 - pad.fuelUnits} RF`);
+      this._flash(`launch failed — need ${need.join(', ') || 'ready state'}`);
     }
   }
 
@@ -162,6 +177,7 @@ export class DebugOverlay {
         case 'reset':  api.resetAll(); this._flash('reset'); break;
         case 'advance60':  api.advanceTime(60);  this._flash('advanced 60s'); break;
         case 'advance300': api.advanceTime(300); this._flash('advanced 300s'); break;
+        case 'fill-ship':  this._fillShip(); break;
         case 'launch':     this._launchShip(); break;
         case 'half-res':   this._halfResources(); break;
         case 'ui-scale-reset': this._setUserScale(1.0); break;
