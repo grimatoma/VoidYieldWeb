@@ -21,7 +21,8 @@ export type InputAction =
   | 'pause_menu'
   | 'fullscreen_toggle'
   | 'camera_zoom_in'
-  | 'camera_zoom_out';
+  | 'camera_zoom_out'
+  | 'debug_toggle';
 
 type KeyMap = Record<string, InputAction>;
 
@@ -50,6 +51,7 @@ const DEFAULT_BINDINGS: KeyMap = {
   Tab: 'cycle_panels',
   Escape: 'pause_menu',
   F11: 'fullscreen_toggle',
+  Backquote: 'debug_toggle',
 };
 
 export class InputManager {
@@ -133,7 +135,7 @@ export class InputManager {
     if (e.repeat) return;
     const action = this.bindings[e.code];
     if (!action) return;
-    if (action === 'fullscreen_toggle' || action === 'cycle_panels') e.preventDefault();
+    if (action === 'fullscreen_toggle' || action === 'cycle_panels' || action === 'debug_toggle') e.preventDefault();
     this.held.add(action);
     this.justPressed.add(action);
     this.listeners.forEach(l => l(action, true));

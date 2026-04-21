@@ -46,6 +46,7 @@ Before adding any new key binding to any spec file, check this document. If the 
 | [I] | Inventory / Stockpile panel | Inventory | 14_ui_systems §9 |
 | [Tab] | Cycle through currently open panels | — | 14_ui_systems |
 | [F11] | Toggle fullscreen | — | System |
+| [`] / [~] | Toggle Debug Panel (on by default) | Debug Overlay | System |
 
 ---
 
@@ -125,6 +126,7 @@ Controller bindings should be remappable in Settings → Controls.
 | Tab | Cycle open panels |
 | ESC | Pause / Close panel |
 | F11 | Toggle fullscreen |
+| ` / ~ | Toggle Debug Panel (on by default) |
 | Mouse Left | Interact / Select |
 | Mouse Right | Context menu / Cancel |
 | Mouse Scroll | Camera zoom |
@@ -158,6 +160,7 @@ pause_menu
 fullscreen_toggle
 camera_zoom_in, camera_zoom_out
 camera_pan
+debug_toggle
 ```
 
 ### Remapping
