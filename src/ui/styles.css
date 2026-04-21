@@ -468,6 +468,23 @@
 }
 .trade-row-buy-btn:disabled:hover { background: transparent; }
 
+/* Market tab — per-resource buy + sell controls */
+.market-actions {
+  gap: calc(6px * var(--hud-scale));
+}
+.market-btn-group {
+  display: flex;
+  gap: calc(4px * var(--hud-scale));
+}
+.market-sell-btn {
+  border-color: var(--color-primary);
+  color: var(--color-primary);
+}
+.market-sell-btn:hover {
+  background: var(--color-primary);
+  color: #0a0e1c;
+}
+
 /* Drone Bay — fleet summary */
 .dronebay-fleet {
   display: flex;

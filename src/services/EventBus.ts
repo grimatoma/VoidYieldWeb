@@ -31,6 +31,8 @@ export type GameEvents = {
   'ore:collected': [oreType: string, qty: number];
   'ore:sold': [credits: number];
   'shop:purchase': [itemId: string];
+  'marketplace:buy': [payload: { ore: string; qty: number; cost: number }];
+  'marketplace:sell': [payload: { ore: string; qty: number; revenue: number }];
   'drone:purchased': [droneType: string];
   'interaction:target': [target: import('./InteractionManager').InteractionTarget | null];
   'debug:overlay_toggled': [visible: boolean];
