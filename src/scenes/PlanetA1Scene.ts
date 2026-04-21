@@ -20,7 +20,7 @@ import { ProcessingPlant } from '@entities/ProcessingPlant';
 import { SolarPanel } from '@entities/SolarPanel';
 import { ProductionDashboard } from '../ui/ProductionDashboard';
 import { ProductionOverlay } from '../ui/ProductionOverlay';
-import { SCHEMATICS } from '@data/schematics';
+import { SCHEMATICS, FABRICATOR_SCHEMATICS } from '@data/schematics';
 import { TradeHub } from '@entities/TradeHub';
 import { ResearchLab } from '@entities/ResearchLab';
 import { HabitationModule } from '@entities/HabitationModule';
@@ -29,7 +29,7 @@ import { consumptionManager } from '@services/ConsumptionManager';
 import { zoneManager } from '@services/ZoneManager';
 import { FleetPanel } from '../ui/FleetPanel';
 import { CoverageOverlay } from '../ui/CoverageOverlay';
-import type { Fabricator } from '@entities/Fabricator';
+import { Fabricator } from '@entities/Fabricator';
 import { GalaxyMap } from '@ui/GalaxyMap';
 import { EventBus } from '@services/EventBus';
 import { LogisticsOverlay } from '@ui/LogisticsOverlay';
@@ -63,6 +63,7 @@ const SLOT = {
   PROCESSING:     { x: OUTPOST_CX,       y: OUTPOST_CY + 90  },
   HABITATION:     { x: OUTPOST_CX + 180, y: OUTPOST_CY + 90  },
   WATER_COND:     { x: OUTPOST_CX - 200, y: OUTPOST_CY + 200 },
+  FABRICATOR:     { x: OUTPOST_CX - 60,  y: OUTPOST_CY + 200 },
   SOLAR_A:        { x: OUTPOST_CX + 140, y: OUTPOST_CY + 200 },
   SOLAR_B:        { x: OUTPOST_CX + 200, y: OUTPOST_CY + 200 },
 };
@@ -346,6 +347,14 @@ export class PlanetA1Scene implements Scene {
     this.waterCondenser.link(this.storageDepot);
     this.worldContainer.addChild(this.waterCondenser.container);
 
+    // Fabricator — advanced two-input factory; wired to depot for I/O. Stalls
+    // until both inputs are present, but renders so players can see where
+    // ship-part crafting will live.
+    const fab = new Fabricator(SLOT.FABRICATOR.x, SLOT.FABRICATOR.y, FABRICATOR_SCHEMATICS.drill_head);
+    fab.link(this.storageDepot, this.storageDepot);
+    this.fabricators.push(fab);
+    this.worldContainer.addChild(fab.container);
+
     // Galaxy Map — HTML, owned by UILayer.
     this.galaxyMap = uiInit!.galaxyMap!;
     this.galaxyMap.onTravel((planetId) => {
@@ -404,20 +413,21 @@ export class PlanetA1Scene implements Scene {
     const ui = (window as unknown as { __voidyield_uiLayer?: UILayer }).__voidyield_uiLayer;
     ui?.interactionPrompt?.setCamera(this.camera);
 
-    // Dev-only: expose the scene for panel/entity inspection from the console.
-    if ((import.meta as { env?: { DEV?: boolean } }).env?.DEV) {
-      (window as unknown as { __voidyield_scene?: unknown }).__voidyield_scene = {
-        player: this.player,
-        droneBay: this.droneBay,
-        storageDepot: this.storageDepot,
-        tradeHub: this.tradeHub,
-        researchLab: this.researchLab,
-        habitationModule: this.habitationModule,
-        processingPlant: this.processingPlant,
-        launchpad: this.launchpad,
-        worldContainer: this.worldContainer,
-      };
-    }
+    // Expose the scene so the debug panel and console can reach entities
+    // (e.g. Fill Ship / Launch Ship). No longer DEV-gated since the debug
+    // panel is now a menu feature available in every build.
+    (window as unknown as { __voidyield_scene?: unknown }).__voidyield_scene = {
+      player: this.player,
+      droneBay: this.droneBay,
+      storageDepot: this.storageDepot,
+      tradeHub: this.tradeHub,
+      researchLab: this.researchLab,
+      habitationModule: this.habitationModule,
+      processingPlant: this.processingPlant,
+      fabricators: this.fabricators,
+      launchpad: this.launchpad,
+      worldContainer: this.worldContainer,
+    };
 
     // [M] key — place survey waypoint at nearest deposit (raw keydown, not in InputManager).
     this._surveyKeyM = (e: KeyboardEvent) => {
@@ -572,6 +582,7 @@ export class PlanetA1Scene implements Scene {
     if (this.fleetPanel.visible) this.fleetPanel.update();
     this.trafficOverlay.update(fleetManager.getDrones());
     this.processingPlant.update(delta);
+    for (const fab of this.fabricators) fab.update(delta);
     this.researchLab.update(delta);
     consumptionManager.update(delta, this.storageDepot);
     this.waterCondenser.update(delta);

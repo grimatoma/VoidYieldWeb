@@ -7,6 +7,7 @@
 import { effect } from '@preact/signals-core';
 import { credits } from '@store/gameStore';
 import { EventBus } from '@services/EventBus';
+import { gameState } from '@services/GameState';
 import { Launchpad } from '@entities/Launchpad';
 import type { StorageDepot } from '@entities/StorageDepot';
 import type { RocketComponentType } from '@data/types';
@@ -51,7 +52,7 @@ export class ShipBayPanel {
     panel.innerHTML = `
       <div class="trade-panel-head">
         <h2>SHIP BAY</h2>
-        <button class="trade-panel-close" aria-label="close">\u2715</button>
+        <button class="trade-panel-close" aria-label="close">✕</button>
       </div>
       <div class="trade-panel-credits">
         <span>CR</span>
@@ -89,6 +90,21 @@ export class ShipBayPanel {
     }
   }
 
+  private _buyComponent(comp: typeof COMPONENTS[number]): void {
+    if (!this._pad) return;
+    if (this._pad.getInstalledComponents().has(comp.id)) return;
+    if (gameState.credits < comp.costCr) return;
+    gameState.addCredits(-comp.costCr);
+    this._pad.installComponent({
+      componentType: comp.id,
+      name: comp.label,
+      carrySlots: 1,
+      attributes: {},
+    });
+    EventBus.emit('inventory:changed');
+    this._render();
+  }
+
   private _loadFuel(): void {
     if (!this._pad || !this._depot) return;
     const pulled = this._pad.loadFuel(this._depot);
@@ -107,17 +123,21 @@ export class ShipBayPanel {
     for (const comp of COMPONENTS) {
       const has = installed.has(comp.id);
       if (has) filled++;
+      const affordable = credits.value >= comp.costCr;
       const row = document.createElement('div');
       row.className = 'trade-row shipbay-row' + (has ? ' shipbay-row--filled' : '');
       row.innerHTML = `
         <div class="trade-row-main">
           <div class="trade-row-name">${comp.label}</div>
-          <div class="trade-row-desc">${has ? 'installed' : `${comp.costCr} CR \u2014 requires fabricator`}</div>
+          <div class="trade-row-desc">${has ? 'installed' : `${comp.costCr} CR`}</div>
         </div>
         <div class="trade-row-buy">
-          <div class="shipbay-row-badge ${has ? 'badge-ok' : 'badge-empty'}">${has ? 'OK' : '\u2014'}</div>
+          <div class="shipbay-row-badge ${has ? 'badge-ok' : 'badge-empty'}">${has ? 'OK' : '—'}</div>
+          ${has ? '' : `<button class="trade-row-buy-btn" ${affordable ? '' : 'disabled'}>BUY</button>`}
         </div>
       `;
+      const buyBtn = row.querySelector<HTMLButtonElement>('.trade-row-buy-btn');
+      if (buyBtn) buyBtn.addEventListener('click', () => this._buyComponent(comp));
       list.appendChild(row);
     }
 
@@ -134,7 +154,7 @@ export class ShipBayPanel {
     statusEl.className = 'shipbay-status ' + (launchReady ? 'shipbay-status--ready' : '');
     statusEl.textContent = launchReady
       ? 'READY TO LAUNCH'
-      : `ASSEMBLY ${assembly}%  \u2022  ${filled}/5 COMPONENTS`;
+      : `ASSEMBLY ${assembly}%  •  ${filled}/5 COMPONENTS`;
 
     const btn = this._root.querySelector<HTMLButtonElement>('.shipbay-launch')!;
     btn.disabled = !launchReady;
@@ -156,6 +176,7 @@ export class ShipBayPanel {
     const crEl = this._root.querySelector<HTMLElement>('.trade-panel-cr-value')!;
     this._cleanups.push(effect(() => {
       crEl.textContent = Math.floor(credits.value).toLocaleString();
+      if (this._visible) this._render();
     }));
   }
 

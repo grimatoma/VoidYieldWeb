@@ -8,18 +8,17 @@ import type { RocketComponentType } from '@data/types';
 
 /**
  * On-screen debug panel — wraps the window.__voidyield__ API as clickable
- * buttons. Toggled with backtick (`) or via the MENU → SYSTEM → Debug Panel
- * entry. Visible by default so the tools are immediately discoverable.
+ * buttons. Always mounted (no longer gated behind DEV). Hidden by default;
+ * toggle via backtick (`) or MENU → SYSTEM → Debug Panel.
  */
 export class DebugOverlay {
   private _root: HTMLElement;
-  private _visible = true;
+  private _visible = false;
   private _statusEl: HTMLElement;
   private _unsubscribeAction: () => void;
 
   constructor() {
     this._root = this._build();
-    this._root.style.display = 'block';
     this._statusEl = this._root.querySelector<HTMLElement>('.debug-status')!;
     this._unsubscribeAction = inputManager.onAction((action, pressed) => {
       if (action === 'debug_toggle' && pressed) this.toggle();
@@ -30,6 +29,7 @@ export class DebugOverlay {
     const el = document.createElement('div');
     el.id = 'debug-overlay';
     el.className = 'debug-overlay';
+    el.style.display = 'none';
     el.innerHTML = `
       <div class="debug-header">
         <span>DEBUG [~]</span>
