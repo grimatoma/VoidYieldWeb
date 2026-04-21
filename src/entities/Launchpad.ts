@@ -2,6 +2,7 @@ import { Container, Graphics, Sprite, Text, TextStyle } from 'pixi.js';
 import type { RocketComponentData, RocketComponentType } from '@data/types';
 import type { StorageDepot } from './StorageDepot';
 import { assetManager } from '@services/AssetManager';
+import { strandingManager } from '@services/StrandingManager';
 
 export type LaunchpadState = 'BUILDING' | 'READY' | 'LAUNCHING' | 'LAUNCHED';
 
@@ -110,8 +111,18 @@ export class Launchpad {
     if (needed <= 0) return 0;
     const pulled = depot.pull('rocket_fuel', needed);
     this._fuelUnits += pulled;
+    if (pulled > 0) strandingManager.addFuel(pulled);
     this._updateStatus();
     return pulled;
+  }
+
+  /** Directly fill the tank — intended for debug / tests only. */
+  fillFuel(units: number = Launchpad.FUEL_REQUIRED): void {
+    const clamped = Math.max(0, Math.min(units, Launchpad.FUEL_CAP));
+    const delta = clamped - this._fuelUnits;
+    this._fuelUnits = clamped;
+    if (delta > 0) strandingManager.addFuel(delta);
+    this._updateStatus();
   }
 
   getInstalledComponents(): Map<RocketComponentType, RocketComponentData> {
@@ -129,6 +140,7 @@ export class Launchpad {
     if (!this.isLaunchReady) return false;
     this.state = 'LAUNCHING';
     this._fuelUnits -= Launchpad.FUEL_REQUIRED;
+    strandingManager.consumeFuelForLaunch(Launchpad.FUEL_REQUIRED);
     // Clear rocket visual (it has "launched")
     this.rocketGraphic.clear();
     if (this._rocketSprite) this._rocketSprite.visible = false;
