@@ -16,6 +16,7 @@ const ORE_HEX: Record<OreType, string> = {
   krysite:           '#00B8D4',
   gas:               '#A8E063',
   steel_bars:        '#D4A843',
+  steel_plates:      '#B0B8C4',
   compressed_gas:    '#90CAF9',
   water:             '#29B6F6',
   alloy_rods:        '#FFD700',

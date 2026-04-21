@@ -1,11 +1,23 @@
 import { Container, Sprite } from 'pixi.js';
 import type { InputManager } from '@services/InputManager';
 import { assetManager } from '@services/AssetManager';
+import { playerSpriteSheet, type PlayerAnimState } from '@services/PlayerSpriteSheet';
+import { miningService } from '@services/MiningService';
 import { obstacleManager } from '@services/ObstacleManager';
 
 export interface WorldBounds { width: number; height: number; }
 
 export type PlayerFacing = 'ne' | 'nw' | 'se' | 'sw';
+
+/**
+ * Frame-per-second for each animation loop. Mining strikes feel best at a
+ * slightly slower cadence so the wind-up and follow-through read clearly.
+ */
+const FPS_BY_STATE: Record<PlayerAnimState, number> = {
+  idle: 3,
+  walk: 10,
+  mine: 6,
+};
 
 export class Player {
   readonly container: Container;
@@ -15,20 +27,36 @@ export class Player {
   /** Footprint radius used for wall collision; matches the sprite's ~20px base. */
   readonly collisionRadius = 10;
   facing: PlayerFacing = 'se';
+
+  /**
+   * Drives the mining animation. Scenes set this true while the E key is held
+   * near a deposit so the sprite swings a pickaxe. Cleared each frame and
+   * re-set by the scene's interact loop.
+   */
+  mining = false;
+
   private sprite: Sprite;
-  private _walkClock = 0; // seconds accumulated while moving; drives bounce
+  private _animState: PlayerAnimState = 'idle';
+  private _animClock = 0;     // seconds since this animation started
+  private _frameIdx = 0;
 
   constructor(startX = 100, startY = 100) {
     this.x = startX;
     this.y = startY;
     this.container = new Container();
     this.sprite = new Sprite(assetManager.texture('player_se'));
-    this.sprite.anchor.set(0.5, 0.8);
+    // Anchor toward the feet so the world position corresponds to the ground
+    // contact point (y=46 on a 48-tall frame ≈ 0.9 anchor).
+    this.sprite.anchor.set(0.5, 0.9);
     this.sprite.width = 36;
     this.sprite.height = 52;
     this.container.addChild(this.sprite);
     this.container.x = startX;
     this.container.y = startY;
+
+    // Try to upgrade to the sliced sheet texture now; if assets aren't loaded
+    // yet, the per-frame update() will pick it up once available.
+    this._applyFrameTexture();
   }
 
   update(delta: number, input: InputManager, bounds: WorldBounds): void {
@@ -65,26 +93,49 @@ export class Player {
 
     const moving = dx !== 0 || dy !== 0;
     if (moving) {
-      this._walkClock += delta;
       const goingUp = dy < 0;
       const goingRight = dx > 0;
-      const next: PlayerFacing = goingUp
+      this.facing = goingUp
         ? (goingRight ? 'ne' : 'nw')
         : (goingRight ? 'se' : 'sw');
-      if (next !== this.facing) {
-        this.facing = next;
-        this.sprite.texture = assetManager.texture(`player_${next}`);
-      }
-      // Bounce: ~4 hz sine modulates vertical offset by a few pixels.
-      const bounce = Math.sin(this._walkClock * Math.PI * 8) * 2;
-      this.sprite.y = bounce;
-      // Sway: slight horizontal lean alternating with steps.
-      this.sprite.rotation = Math.sin(this._walkClock * Math.PI * 8) * 0.04;
-    } else {
-      // Dampen back to rest when idle.
-      this._walkClock = 0;
-      this.sprite.y = 0;
-      this.sprite.rotation = 0;
     }
+
+    // Animation state priority: mining > walking > idle. Scenes can force the
+    // mining pose by setting player.mining, but we also poll miningService so
+    // the correct state shows up automatically while hold-to-mine is active.
+    const isMining = this.mining || miningService.isMining;
+    const nextState: PlayerAnimState = isMining
+      ? 'mine'
+      : moving
+        ? 'walk'
+        : 'idle';
+
+    if (nextState !== this._animState) {
+      this._animState = nextState;
+      this._animClock = 0;
+      this._frameIdx = 0;
+    } else {
+      this._animClock += delta;
+      const fps = FPS_BY_STATE[this._animState];
+      this._frameIdx = Math.floor(this._animClock * fps);
+    }
+
+    this._applyFrameTexture();
+  }
+
+  /** Resolve the current (dir, state, frameIdx) to a texture on the sprite. */
+  private _applyFrameTexture(): void {
+    const tex = playerSpriteSheet.frame(this.facing, this._animState, this._frameIdx);
+    if (tex) {
+      this.sprite.texture = tex;
+    } else {
+      // Fallback to the static per-direction texture when the sheet is unavailable
+      // (e.g. in unit tests where assets aren't loaded).
+      this.sprite.texture = assetManager.texture(`player_${this.facing}`);
+    }
+    // All procedural bounce/sway is now baked into the sheet; keep the sprite
+    // flat so world position matches the frame's ground anchor.
+    this.sprite.y = 0;
+    this.sprite.rotation = 0;
   }
 }

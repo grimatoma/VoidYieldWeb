@@ -16,6 +16,11 @@ export class MiningService {
 
   setDepot(depot: StorageDepot): void { this.depot = depot; }
 
+  /** True while the player is actively mining a valid deposit this frame. */
+  get isMining(): boolean {
+    return this._holdActive && this._holdTarget !== null && !this._holdTarget.data.isExhausted;
+  }
+
   /** Player position supplied each frame. While E is held & near a deposit, accumulate progress. */
   update(delta: number, playerPos?: { x: number; y: number }): void {
     if (!this._holdActive || !playerPos) {

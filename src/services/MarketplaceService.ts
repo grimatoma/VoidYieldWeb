@@ -16,6 +16,7 @@ export const SELL_PRICES: Record<OreType, number> = {
   krysite: 5,
   gas: 0,
   steel_bars: 5,
+  steel_plates: 10,
   compressed_gas: 1,
   water: 1,
   alloy_rods: 15,
