@@ -1,8 +1,8 @@
 /**
  * Slices the player sprite sheet into per-direction animation frame banks.
  *
- * Sheet layout (448 x 192, nearest-neighbor):
- *   Rows map to facing direction: 0=SE, 1=SW, 2=NE, 3=NW
+ * Sheet layout (448 x 288, nearest-neighbor):
+ *   Rows map to facing direction: 0=SE, 1=SW, 2=NE, 3=NW, 4=E, 5=W
  *   Cols map to animation frames:
  *     0..3   idle (4-frame breathing loop)
  *     4..9   walk (6-frame step cycle)
@@ -25,6 +25,8 @@ const ROW_BY_DIR: Record<PlayerFacing, number> = {
   sw: 1,
   ne: 2,
   nw: 3,
+  e: 4,
+  w: 5,
 };
 
 const RANGE_BY_STATE: Record<PlayerAnimState, { start: number; count: number }> = {

@@ -1,8 +1,8 @@
 """
-Generate the player sprite sheet for VoidYield (v2).
+Generate the player sprite sheet for VoidYield (v3).
 
-Layout (448 x 192):
-  4 rows (directions): SE, SW, NE, NW
+Layout (448 x 288):
+  6 rows (directions): SE, SW, NE, NW, E, W
   14 cols (animations):
     0-3   idle  (4 frames: breathing)
     4-9   walk  (6 frames: step cycle)
@@ -11,6 +11,11 @@ Layout (448 x 192):
 Each frame is 32 x 48 pixels, pixel-art style, nearest-neighbor friendly.
 The character is a space miner in a navy suit with amber trim, teal visor,
 and a mag-boots stance. Back views show a backpack with a glowing vent.
+
+Rows 0-3 are 3/4 isometric diagonal views. Rows 4-5 are pure side profiles
+used when the player is moving (or last moved) purely horizontally. Row 5
+(W) is produced by horizontally mirroring row 4 (E) so the two always stay
+visually consistent.
 """
 from PIL import Image
 
@@ -44,10 +49,10 @@ SHADOW    = (0, 0, 0, 100)
 
 # ─── Frame dimensions ───────────────────────────────────────────────────────
 FW, FH = 32, 48
-COLS, ROWS = 14, 4
+COLS, ROWS = 14, 6
 SHEET_W, SHEET_H = FW * COLS, FH * ROWS
 
-ROW_SE, ROW_SW, ROW_NE, ROW_NW = 0, 1, 2, 3
+ROW_SE, ROW_SW, ROW_NE, ROW_NW, ROW_E, ROW_W = 0, 1, 2, 3, 4, 5
 IDLE_RANGE  = range(0, 4)
 WALK_RANGE  = range(4, 10)
 MINE_RANGE  = range(10, 14)
@@ -442,10 +447,301 @@ def draw_pickaxe_with_arm(img, shoulder, angle_key, direction_lr):
     put(img, tx, ty + 1, METAL_SHD)
 
 
+# ─── Side profile (pure E/W view) ───────────────────────────────────────────
+# East-facing ("right") is drawn natively; W is produced by horizontal mirror
+# in build_sheet() so the two rows always stay in sync.
+
+
+def draw_side_head(img, bob):
+    """Helmet drawn in profile, visor on the east (right) side."""
+    y0, y1 = 3 + bob, 15 + bob
+    x0, x1 = 12, 19
+    # Helmet body
+    rect(img, x0, y0, x1, y1, HELMET)
+    hline(img, x0 + 1, x1 - 1, y0, HELMET_HI)
+    # Rear panel (left = back of head)
+    rect(img, x0, y0 + 1, x0 + 1, y1 - 1, HELMET_RM)
+    put(img, x0 + 1, y0 + 4, HELMET_HI)
+    put(img, x0 + 1, y0 + 7, HELMET_HI)
+    # Bottom rim
+    hline(img, x0, x1, y1, HELMET_RM)
+    # Hard outline
+    hline(img, x0, x1, y0 - 1, OUTLINE)
+    hline(img, x0, x1, y1 + 1, OUTLINE)
+    vline(img, x0 - 1, y0, y1, OUTLINE)
+    vline(img, x1 + 1, y0, y1, OUTLINE)
+    # Neck
+    rect(img, 14, y1 + 1, 17, y1 + 1, SUIT_SHD)
+    hline(img, 14, 17, y1 + 2, OUTLINE)
+    # Antenna
+    put(img, 14, y0 - 2, OUTLINE)
+    put(img, 14, y0 - 3, AMBER)
+    put(img, 14, y0 - 4, AMBER_HI)
+    # Visor on the east face
+    vx0, vx1 = x1 - 3, x1
+    vy0, vy1 = y0 + 3, y1 - 2
+    rect(img, vx0, vy0, vx1, vy1, VISOR)
+    # Visor outline
+    outline_rect(img, vx0 - 1, vy0 - 1, vx1 + 1, vy1 + 1, HELMET_RM)
+    # Face peek (in profile, shifted toward the visor)
+    rect(img, vx0, vy0 + 1, vx0 + 1, vy1 - 1, SKIN)
+    put(img, vx0, vy1 - 1, SKIN_SHD)
+    # Eye
+    put(img, vx0, vy0 + 2, OUTLINE)
+    # Visor highlights
+    hline(img, vx0, vx0 + 1, vy0, VISOR_HI)
+    put(img, vx1, vy0 + 1, VISOR_HI)
+    # Shadow band
+    put(img, vx1, vy1, VISOR_SHD)
+    put(img, vx1 - 1, vy1, VISOR_SHD)
+
+
+def draw_side_torso(img, bob):
+    """Torso profile, backpack on the west (rear), chest pack on the east."""
+    y0, y1 = 17 + bob, 29 + bob
+    x0, x1 = 13, 19
+    rect(img, x0, y0, x1, y1, SUIT)
+    # Front highlight (east side)
+    vline(img, x1 - 1, y0 + 1, y1 - 1, SUIT_HI)
+    # Back shadow (west side)
+    vline(img, x0 + 1, y0 + 1, y1 - 1, SUIT_SHD)
+    # Outline
+    outline_rect(img, x0, y0, x1, y1, OUTLINE)
+    # Amber pauldron band
+    hline(img, x0 + 1, x1 - 1, y0 + 1, AMBER)
+    hline(img, x0 + 1, x1 - 1, y0 + 2, AMBER_SHD)
+    # Chest pack (east side, visible front)
+    cx0, cy0 = x1 - 2, y0 + 4
+    cx1, cy1 = x1 - 1, y0 + 7
+    rect(img, cx0, cy0, cx1, cy1, SUIT_SHD)
+    outline_rect(img, cx0 - 1, cy0 - 1, cx1 + 1, cy1 + 1, HELMET_RM)
+    put(img, cx0, cy0 + 1, VISOR)
+    put(img, cx1, cy0 + 2, AMBER)
+    # Belt
+    put(img, (x0 + x1) // 2, y1 - 1, AMBER_HI)
+    put(img, (x0 + x1) // 2 + 1, y1 - 1, AMBER_SHD)
+    # Backpack on the west side (extends outward slightly)
+    px0, py0 = x0 - 2, y0 + 2
+    px1, py1 = x0 - 1, y1 - 2
+    rect(img, px0, py0, px1, py1, PACK)
+    vline(img, px0, py0, py1, PACK_HI)
+    outline_rect(img, px0 - 1, py0 - 1, px1 + 1, py1 + 1, OUTLINE)
+    # Backpack glowing vent
+    put(img, px0 - 1, py1, PACK_GLOW)
+    put(img, px0, py1 + 1, PACK_GLOW)
+
+
+def draw_side_arm(img, bob, swing):
+    """
+    East-facing arm hanging at the side of the body.
+    swing: -1 = swing back, 0 = straight, +1 = swing forward
+    Draws a single visible arm (the near-camera arm).
+    """
+    # Base anchor at the shoulder — front of torso
+    sx0, sx1 = 15, 16
+    y0 = 18 + bob
+    # Swing shifts the glove horizontally within the frame.
+    glove_dx = swing
+    y1 = 26 + bob
+    # Upper arm (straight down)
+    rect(img, sx0, y0, sx1, y1 - 2, SUIT_SHD)
+    vline(img, sx1, y0, y1 - 2, SUIT)
+    outline_rect(img, sx0 - 1, y0 - 1, sx1 + 1, y1 - 1, OUTLINE)
+    # Forearm + glove biased by swing
+    gx0, gx1 = sx0 + glove_dx, sx1 + glove_dx
+    rect(img, gx0, y1 - 1, gx1, y1, SUIT_SHD)
+    rect(img, gx0, y1 + 1, gx1, y1 + 2, BOOT)
+    hline(img, gx0, gx1, y1 + 1, BOOT_HI)
+    outline_rect(img, gx0 - 1, y1 - 1, gx1 + 1, y1 + 3, OUTLINE)
+
+
+def draw_side_legs(img, bob, step):
+    """
+    East-facing legs in profile.
+    step: -1 = rear leg lifted (back foot up), 0 = both planted,
+          +1 = front leg lifted (forward foot up)
+    """
+    hip_y = 30 + bob
+    base_foot_y = 45 + bob
+
+    # Rear leg (west) and front leg (east)
+    if step == +1:
+        # Front leg forward & lifted, rear planted with slight stretch back
+        rear_x = (13, 14)
+        front_x = (17, 18)
+        rear_lift = 0
+        front_lift = 2
+    elif step == -1:
+        # Rear leg lifted & passing forward, front planted
+        rear_x = (14, 15)
+        front_x = (17, 18)
+        rear_lift = 2
+        front_lift = 0
+    else:
+        # Planted together, slight separation
+        rear_x = (14, 15)
+        front_x = (17, 18)
+        rear_lift = 0
+        front_lift = 0
+
+    # Draw rear leg first so front leg overlaps on top
+    draw_leg(img, rear_x[0], rear_x[1], hip_y, base_foot_y, rear_lift)
+    draw_leg(img, front_x[0], front_x[1], hip_y, base_foot_y, front_lift)
+    # Hip belt line covers both
+    rect(img, rear_x[0], hip_y - 1, front_x[1], hip_y - 1, BOOT)
+
+
+def draw_side_pickaxe_with_arm(img, bob, angle_key):
+    """
+    Side-profile pickaxe swing. The shoulder anchor sits near the top-front
+    of the torso; the tool arcs across the body's eastern side so the swing
+    reads clearly in profile.
+    """
+    shoulder = (16, 19 + bob)
+    sx, sy = shoulder
+
+    if angle_key == 0:
+        # Wind-up: tool held overhead, leaning slightly back
+        hand = (sx - 1, sy - 5)
+        elbow = (sx, sy - 3)
+        tip = (sx - 3, sy - 12)
+        head_cells_rel = [(-1, 1), (-2, 1), (0, -1), (1, 0), (1, 1)]
+    elif angle_key == 1:
+        # Mid-swing coming forward: arm diagonally up-east
+        hand = (sx + 4, sy - 2)
+        elbow = (sx + 2, sy - 2)
+        tip = (sx + 8, sy - 7)
+        head_cells_rel = [(1, -1), (1, 0), (0, 1), (-1, 1)]
+    elif angle_key == 2:
+        # Strike: arm extended east, tool horizontal biting into the wall
+        hand = (sx + 5, sy + 2)
+        elbow = (sx + 3, sy + 1)
+        tip = (sx + 9, sy + 2)
+        head_cells_rel = [(1, 0), (1, 1), (1, -1), (0, 1)]
+    else:
+        # Follow-through: tool dragged low
+        hand = (sx + 4, sy + 5)
+        elbow = (sx + 3, sy + 3)
+        tip = (sx + 7, sy + 9)
+        head_cells_rel = [(1, 1), (1, 0), (0, 2), (-1, 2)]
+
+    # Tool arm (shoulder → elbow → hand)
+    arm_path = _line_points(sx, sy, elbow[0], elbow[1]) + \
+               _line_points(elbow[0], elbow[1], hand[0], hand[1])
+    for (x, y) in arm_path:
+        for (dx, dy) in [(-1, -1), (0, -1), (1, -1), (-1, 0), (1, 0),
+                         (-1, 1), (0, 1), (1, 1)]:
+            xx, yy = x + dx, y + dy
+            if 0 <= xx < FW and 0 <= yy < FH:
+                if img.getpixel((xx, yy))[3] < 255:
+                    put(img, xx, yy, OUTLINE)
+    for (x, y) in arm_path:
+        put(img, x, y, SUIT_SHD)
+    for i, (x, y) in enumerate(arm_path):
+        if i % 2 == 0:
+            put(img, x, y, SUIT)
+
+    # Glove
+    hx, hy = hand
+    rect(img, hx - 1, hy - 1, hx + 1, hy + 1, BOOT)
+    put(img, hx, hy, BOOT_HI)
+    outline_rect(img, hx - 2, hy - 2, hx + 2, hy + 2, OUTLINE)
+
+    # Handle
+    handle_pts = _line_points(hx, hy, tip[0], tip[1])
+    for (x, y) in handle_pts:
+        for (dx, dy) in [(-1, 0), (1, 0), (0, -1), (0, 1)]:
+            xx, yy = x + dx, y + dy
+            if 0 <= xx < FW and 0 <= yy < FH and img.getpixel((xx, yy))[3] < 255:
+                put(img, xx, yy, OUTLINE)
+    for (x, y) in handle_pts:
+        put(img, x, y, HANDLE)
+    for i, (x, y) in enumerate(handle_pts):
+        if i % 2 == 0:
+            put(img, x, y, HANDLE_HI)
+
+    # Pickaxe head
+    tx, ty = tip
+    head_cells = {(tx + dx, ty + dy) for (dx, dy) in head_cells_rel}
+    head_cells.add((tx, ty))
+    for (x, y) in head_cells:
+        for (dx, dy) in [(-1, 0), (1, 0), (0, -1), (0, 1)]:
+            if (x + dx, y + dy) not in head_cells:
+                put(img, x + dx, y + dy, OUTLINE)
+    for (x, y) in head_cells:
+        put(img, x, y, METAL)
+    put(img, tx + 1, ty, METAL_HI)
+    put(img, tx, ty + 1, METAL_SHD)
+
+
+def compose_side_frame(col):
+    """East-facing profile frame for column `col`."""
+    img = Image.new('RGBA', (FW, FH), (0, 0, 0, 0))
+    ground_shadow(img, 16, 46, rx=7, ry=2)
+
+    if col in IDLE_RANGE:
+        i = col
+        bob = [0, -1, 0, 0][i]
+        swing = [0, 0, -1, 0][i]
+        draw_side_legs(img, bob, 0)
+        draw_side_torso(img, bob)
+        draw_side_arm(img, bob, swing)
+        draw_side_head(img, bob)
+        return img
+
+    if col in WALK_RANGE:
+        i = col - 4
+        # 6-frame side walk cycle:
+        #   0: plant (rear just caught up)         1: lift rear (about to pass)
+        #   2: mid   (rear passing forward)        3: plant (front caught up)
+        #   4: lift front (next pass)              5: mid   (returning)
+        bob_table  = [0, -2, -1, 0, -2, -1]
+        step_table = [0, -1, -1, 0, +1, +1]
+        arm_table  = [0, +1, +1, 0, -1, -1]  # arm swings opposite to leg lift
+        bob = bob_table[i]
+        step = step_table[i]
+        swing = arm_table[i]
+        draw_side_legs(img, bob, step)
+        draw_side_torso(img, bob)
+        draw_side_arm(img, bob, swing)
+        draw_side_head(img, bob)
+        return img
+
+    if col in MINE_RANGE:
+        i = col - 10
+        bob = [-1, 0, 1, 0][i]
+        # Mining: legs planted wide, no stride; rear arm braced along body
+        draw_side_legs(img, bob, 0)
+        draw_side_torso(img, bob)
+        # Braced rear arm (lightly tucked, no swing)
+        # Draw a short shadow arm on the west side so both arms read.
+        y0 = 18 + bob
+        rect(img, 13, y0, 14, 26 + bob, SUIT_SHD)
+        outline_rect(img, 12, y0 - 1, 15, 27 + bob, OUTLINE)
+        rect(img, 13, 27 + bob, 14, 28 + bob, BOOT)
+        draw_side_head(img, bob)
+        draw_side_pickaxe_with_arm(img, bob, i)
+        # Impact sparks on strike
+        if i == 2:
+            put(img, 26, 22 + bob, METAL_HI)
+            put(img, 27, 23 + bob, AMBER_HI)
+            put(img, 27, 21 + bob, VISOR_HI)
+            put(img, 28, 22 + bob, AMBER)
+            put(img, 28, 24 + bob, AMBER_SHD)
+        return img
+
+    return img
+
+
 # ─── Frame composer ─────────────────────────────────────────────────────────
 
 def compose_frame(row, col):
     img = Image.new('RGBA', (FW, FH), (0, 0, 0, 0))
+
+    if row == ROW_E or row == ROW_W:
+        # Side-profile rows share the east-facing build; the west row is a
+        # horizontal flip applied in build_sheet() so E and W stay in sync.
+        return compose_side_frame(col)
 
     if row == ROW_SE:
         facing, lr = 'S', 'E'
@@ -526,7 +822,11 @@ def build_sheet():
     sheet = Image.new('RGBA', (SHEET_W, SHEET_H), (0, 0, 0, 0))
     for row in range(ROWS):
         for col in range(COLS):
-            frame = compose_frame(row, col)
+            if row == ROW_W:
+                # West row: horizontally-flipped copy of the east row.
+                frame = compose_frame(ROW_E, col).transpose(Image.FLIP_LEFT_RIGHT)
+            else:
+                frame = compose_frame(row, col)
             sheet.paste(frame, (col * FW, row * FH), frame)
     return sheet
 
