@@ -12,13 +12,16 @@ export class TutorialOverlay {
 
     const onStepChanged = (step: number) => this._update(step);
     const onCompleted = () => this._hide();
+    const onSkipped = () => this._hide();
 
     EventBus.on('tutorial:step_changed', onStepChanged);
     EventBus.on('tutorial:completed', onCompleted);
+    EventBus.on('tutorial:skipped', onSkipped);
 
     this._cleanups.push(
       () => EventBus.off('tutorial:step_changed', onStepChanged),
       () => EventBus.off('tutorial:completed', onCompleted),
+      () => EventBus.off('tutorial:skipped', onSkipped),
     );
 
     // Render current step if already active
