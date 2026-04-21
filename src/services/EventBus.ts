@@ -25,6 +25,7 @@ export type GameEvents = {
   'fleet:count_changed': [count: number];
   'tutorial:step_changed': [step: number];
   'tutorial:completed': [];
+  'tutorial:skipped': [];
   'deposit:surveyed': [];
   'harvester:built': [];
   'ore:collected': [oreType: string, qty: number];
