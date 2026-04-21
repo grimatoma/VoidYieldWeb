@@ -69,4 +69,17 @@ describe('InputManager', () => {
     fireKey('KeyW', 'keydown');
     expect(im.isHeld('player_move_up')).toBe(false);
   });
+
+  it('dispatch() fires listeners as a press+release tap', () => {
+    const cb = vi.fn();
+    im.onAction(cb);
+    im.dispatch('galaxy_map');
+    expect(cb).toHaveBeenNthCalledWith(1, 'galaxy_map', true);
+    expect(cb).toHaveBeenNthCalledWith(2, 'galaxy_map', false);
+    // After the synthetic tap, the action should not appear held.
+    expect(im.isHeld('galaxy_map')).toBe(false);
+    // Both pressed and released sets record the tap until flush.
+    expect(im.wasJustPressed('galaxy_map')).toBe(true);
+    expect(im.wasJustReleased('galaxy_map')).toBe(true);
+  });
 });
