@@ -44,7 +44,7 @@ describe('InputManager', () => {
     expect(cb).toHaveBeenCalledWith('production_dashboard', false);
   });
 
-  it('all 20 primary bindings resolve correctly', () => {
+  it('all primary bindings resolve correctly', () => {
     const expectedPairs: Array<[string, string]> = [
       ['KeyW', 'player_move_up'], ['KeyS', 'player_move_down'],
       ['KeyA', 'player_move_left'], ['KeyD', 'player_move_right'],
@@ -54,8 +54,9 @@ describe('InputManager', () => {
       ['KeyG', 'galaxy_map'], ['KeyL', 'logistics_overlay'],
       ['KeyP', 'production_dashboard'], ['KeyO', 'production_overlay'],
       ['KeyB', 'coverage_overlay'], ['KeyI', 'inventory'],
-      ['KeyJ', 'journal'], ['Tab', 'cycle_panels'],
-      ['Escape', 'pause_menu'], ['F11', 'fullscreen_toggle'],
+      ['KeyJ', 'journal'], ['KeyM', 'menu_toggle'],
+      ['Tab', 'cycle_panels'], ['Escape', 'pause_menu'],
+      ['F11', 'fullscreen_toggle'],
     ];
     for (const [code, action] of expectedPairs) {
       fireKey(code, 'keydown');

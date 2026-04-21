@@ -1,4 +1,4 @@
-/** All 20 action bindings from spec 16 (16_input_map.md). */
+/** All action bindings from spec 16 (16_input_map.md). */
 export type InputAction =
   | 'player_move_up'
   | 'player_move_down'
@@ -19,6 +19,7 @@ export type InputAction =
   | 'journal'
   | 'cycle_panels'
   | 'pause_menu'
+  | 'menu_toggle'
   | 'fullscreen_toggle'
   | 'camera_zoom_in'
   | 'camera_zoom_out'
@@ -48,6 +49,7 @@ const DEFAULT_BINDINGS: KeyMap = {
   KeyB: 'coverage_overlay',
   KeyI: 'inventory',
   KeyJ: 'journal',
+  KeyM: 'menu_toggle',
   Tab: 'cycle_panels',
   Escape: 'pause_menu',
   F11: 'fullscreen_toggle',
