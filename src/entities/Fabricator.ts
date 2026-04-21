@@ -11,7 +11,7 @@ export class Fabricator {
   readonly x: number;
   readonly y: number;
   readonly container: Container;
-  readonly schematic: FabricatorSchematic;
+  schematic: FabricatorSchematic;
   state: FabricatorState = 'IDLE';
 
   private inputDepot: StorageDepot | null = null;
@@ -46,6 +46,28 @@ export class Fabricator {
   link(inputDepot: StorageDepot, outputDepot: StorageDepot): void {
     this.inputDepot = inputDepot;
     this.outputDepot = outputDepot;
+  }
+
+  /** Switch the active recipe. Resets the batch timer; keeps power draw
+   * accounting consistent by unregistering the old draw and registering the
+   * new one. */
+  setSchematic(schematic: FabricatorSchematic): void {
+    if (schematic.schematicId === this.schematic.schematicId) return;
+    powerManager.unregisterConsumer(this.schematic.powerDraw);
+    powerManager.registerConsumer(schematic.powerDraw);
+    this.schematic = schematic;
+    this.batchTimer = 0;
+    this.state = 'IDLE';
+  }
+
+  isNearby(px: number, py: number, radius = 50): boolean {
+    const dx = px - this.x;
+    const dy = py - this.y;
+    return dx * dx + dy * dy <= radius * radius;
+  }
+
+  getInteractionPrompt(): { verb: string; target: string } | null {
+    return { verb: 'OPEN', target: 'FABRICATOR' };
   }
 
   update(delta: number): void {
