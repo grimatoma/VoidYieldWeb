@@ -1,5 +1,6 @@
 import { voidyieldDebugAPI } from '../debug/VoidYieldDebugAPI';
 import { EventBus } from '@services/EventBus';
+import { inputManager } from '@services/InputManager';
 import type { UILayer } from './UILayer';
 import { planetResources, credits as creditsSignal } from '@store/gameStore';
 import type { Launchpad } from '@entities/Launchpad';
@@ -7,31 +8,28 @@ import type { RocketComponentType } from '@data/types';
 
 /**
  * On-screen debug panel — wraps the window.__voidyield__ API as clickable
- * buttons. Toggled with backtick (`); hidden by default. Dev builds only.
+ * buttons. Toggled with backtick (`) or via the MENU → SYSTEM → Debug Panel
+ * entry. Visible by default so the tools are immediately discoverable.
  */
 export class DebugOverlay {
   private _root: HTMLElement;
-  private _visible = false;
+  private _visible = true;
   private _statusEl: HTMLElement;
-  private _keydown: (e: KeyboardEvent) => void;
+  private _unsubscribeAction: () => void;
 
   constructor() {
     this._root = this._build();
+    this._root.style.display = 'block';
     this._statusEl = this._root.querySelector<HTMLElement>('.debug-status')!;
-    this._keydown = (e: KeyboardEvent) => {
-      if (e.code === 'Backquote') {
-        e.preventDefault();
-        this.toggle();
-      }
-    };
-    window.addEventListener('keydown', this._keydown);
+    this._unsubscribeAction = inputManager.onAction((action, pressed) => {
+      if (action === 'debug_toggle' && pressed) this.toggle();
+    });
   }
 
   private _build(): HTMLElement {
     const el = document.createElement('div');
     el.id = 'debug-overlay';
     el.className = 'debug-overlay';
-    el.style.display = 'none';
     el.innerHTML = `
       <div class="debug-header">
         <span>DEBUG [~]</span>
@@ -211,7 +209,7 @@ export class DebugOverlay {
   mount(parent: HTMLElement): void { parent.appendChild(this._root); }
 
   destroy(): void {
-    window.removeEventListener('keydown', this._keydown);
+    this._unsubscribeAction();
     this._root.remove();
   }
 }

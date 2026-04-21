@@ -174,19 +174,18 @@ export class UILayer {
     this._touchMenu = new TouchMenuOverlay();
     this._touchMenu.mount(this._root);
 
-    // Dev-only debug overlay (press backtick to toggle, or click the HUD chip)
-    if ((import.meta as { env?: { DEV?: boolean } }).env?.DEV) {
-      this._debugOverlay = new DebugOverlay();
-      this._debugOverlay.mount(this._root);
+    // Debug overlay — always mounted and visible by default; toggle via
+    // backtick key or the MENU → SYSTEM → Debug Panel entry.
+    this._debugOverlay = new DebugOverlay();
+    this._debugOverlay.mount(this._root);
 
-      // Small always-visible button near the top-right so the overlay is
-      // discoverable even without knowing the backtick shortcut.
-      const btn = document.createElement('button');
-      btn.id = 'debug-hud-btn';
-      btn.textContent = 'DEBUG [~]';
-      btn.addEventListener('click', () => this._debugOverlay?.toggle());
-      this._root.appendChild(btn);
-    }
+    // Small always-visible button near the top-right so the overlay is
+    // discoverable even without knowing the backtick shortcut.
+    const btn = document.createElement('button');
+    btn.id = 'debug-hud-btn';
+    btn.textContent = 'DEBUG [~]';
+    btn.addEventListener('click', () => this._debugOverlay?.toggle());
+    this._root.appendChild(btn);
 
     if (tutorialManager.shouldShow()) {
       this._tutorial = new TutorialOverlay();

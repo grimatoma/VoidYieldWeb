@@ -47,6 +47,7 @@ const SECTIONS: MenuSection[] = [
       { action: 'pause_menu',        label: 'Pause / Close', key: 'Esc' },
       { action: 'cycle_panels',      label: 'Close All',     key: 'Tab' },
       { action: 'fullscreen_toggle', label: 'Fullscreen',    key: 'F11' },
+      { action: 'debug_toggle',      label: 'Debug Panel',   key: '~'   },
     ],
   },
 ];
