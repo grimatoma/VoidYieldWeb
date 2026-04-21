@@ -487,6 +487,7 @@ export class PlanetA1Scene implements Scene {
           }
           if (this.tradeHub.isNearby(px, py, 80)) {
             ui2?.shopPanel?.setTradeHub(this.tradeHub);
+            ui2?.shopPanel?.setDepot(this.storageDepot);
             ui2?.shopPanel?.open();
             return;
           }
