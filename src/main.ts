@@ -30,7 +30,7 @@ async function main(): Promise<void> {
 
   // Load sprite atlas before any scene enters. Scene constructors pull
   // textures synchronously from AssetManager, so they must be cached first.
-  await assetManager.load();
+  await assetManager.load((import.meta as unknown as { env: { BASE_URL: string } }).env.BASE_URL);
 
   // Mount HTML UI layer above the PixiJS canvas
   const uiLayer = new UILayer();
@@ -81,13 +81,11 @@ async function main(): Promise<void> {
 
   await sceneManager.switchTo('boot');
 
-  // Mount debug API in dev/test builds for E2E testing
-  if ((import.meta as { env?: { DEV?: boolean } }).env?.DEV) {
-    injectSceneUpdater((dt) => sceneManager.update(dt));
-    injectSceneIdGetter(() => sceneManager.currentId);
-    window.__voidyield__ = voidyieldDebugAPI;
-    console.info('[VoidYield] Debug API mounted at window.__voidyield__');
-  }
+  // Mount debug API in all builds (dev, test, and production)
+  injectSceneUpdater((dt) => sceneManager.update(dt));
+  injectSceneIdGetter(() => sceneManager.currentId);
+  window.__voidyield__ = voidyieldDebugAPI;
+  console.info('[VoidYield] Debug API mounted at window.__voidyield__');
 }
 
 main().catch(console.error);
