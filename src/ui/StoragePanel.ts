@@ -19,6 +19,7 @@ const SELL_PRICES: Record<OreType, number> = {
   bio_circuit_boards: 15, dark_gas: 1, void_touched_ore: 5,
   resonance_shards: 15, ferrovoid: 12, warp_components: 50,
   crystal_lattice: 25, drill_head: 35,
+  hull: 400, engine: 600, fuel_tank: 300, avionics: 500, landing_gear: 250,
 };
 
 export class StoragePanel {

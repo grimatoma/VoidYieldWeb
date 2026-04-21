@@ -26,6 +26,11 @@ const SELL_PRICES: Record<OreType, number> = {
   warp_components: 50,
   crystal_lattice: 25,
   drill_head: 35,
+  hull: 400,
+  engine: 600,
+  fuel_tank: 300,
+  avionics: 500,
+  landing_gear: 250,
 };
 
 export class StorageDepot {
