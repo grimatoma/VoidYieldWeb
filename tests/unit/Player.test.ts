@@ -100,6 +100,35 @@ describe('Player', () => {
     expect(player.facing).toBe('sw');
   });
 
+  it('faces pure east when moving only right', () => {
+    const player = new Player(500, 500);
+    const right = makeInput('player_move_right');
+    player.update(0.1, right, bounds);
+    expect(player.facing).toBe('e');
+  });
+
+  it('faces pure west when moving only left', () => {
+    const player = new Player(500, 500);
+    const left = makeInput('player_move_left');
+    player.update(0.1, left, bounds);
+    expect(player.facing).toBe('w');
+  });
+
+  it('pure vertical movement keeps the current east/west hemisphere', () => {
+    const player = new Player(500, 500);
+    // Start facing east
+    player.update(0.1, makeInput('player_move_right'), bounds);
+    expect(player.facing).toBe('e');
+    // Now press up alone — should pivot to 'ne' (preserves east bias)
+    player.update(0.1, makeInput('player_move_up'), bounds);
+    expect(player.facing).toBe('ne');
+    // Switch to facing west, then press down alone — should become 'sw'
+    player.update(0.1, makeInput('player_move_left'), bounds);
+    expect(player.facing).toBe('w');
+    player.update(0.1, makeInput('player_move_down'), bounds);
+    expect(player.facing).toBe('sw');
+  });
+
   it('mining flag forces mining animation even while idle', () => {
     const player = new Player(500, 500);
     player.mining = true;

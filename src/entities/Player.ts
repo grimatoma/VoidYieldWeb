@@ -7,7 +7,7 @@ import { obstacleManager } from '@services/ObstacleManager';
 
 export interface WorldBounds { width: number; height: number; }
 
-export type PlayerFacing = 'ne' | 'nw' | 'se' | 'sw';
+export type PlayerFacing = 'ne' | 'nw' | 'se' | 'sw' | 'e' | 'w';
 
 /**
  * Frame-per-second for each animation loop. Mining strikes feel best at a
@@ -93,11 +93,25 @@ export class Player {
 
     const moving = dx !== 0 || dy !== 0;
     if (moving) {
-      const goingUp = dy < 0;
-      const goingRight = dx > 0;
-      this.facing = goingUp
-        ? (goingRight ? 'ne' : 'nw')
-        : (goingRight ? 'se' : 'sw');
+      // Facing rules:
+      //   • Both axes active (diagonal input) → NE/NW/SE/SW isometric view.
+      //   • Pure horizontal → E/W side profile.
+      //   • Pure vertical → keep the current hemisphere's diagonal so the
+      //     sprite doesn't snap sideways (default east if we have no prior).
+      if (dx !== 0 && dy !== 0) {
+        this.facing = dy < 0
+          ? (dx > 0 ? 'ne' : 'nw')
+          : (dx > 0 ? 'se' : 'sw');
+      } else if (dx !== 0) {
+        this.facing = dx > 0 ? 'e' : 'w';
+      } else {
+        // dy !== 0, dx === 0: preserve the east/west bias of the current
+        // facing so pressing W alone from 'ne' keeps you facing 'ne'.
+        const onEast = this.facing === 'e' || this.facing === 'ne' || this.facing === 'se';
+        this.facing = dy < 0
+          ? (onEast ? 'ne' : 'nw')
+          : (onEast ? 'se' : 'sw');
+      }
     }
 
     // Animation state priority: mining > walking > idle. Scenes can force the
@@ -129,9 +143,13 @@ export class Player {
     if (tex) {
       this.sprite.texture = tex;
     } else {
-      // Fallback to the static per-direction texture when the sheet is unavailable
-      // (e.g. in unit tests where assets aren't loaded).
-      this.sprite.texture = assetManager.texture(`player_${this.facing}`);
+      // Fallback to a static per-direction PNG when the sheet is unavailable
+      // (e.g. in unit tests where assets aren't loaded). Pure E/W have no
+      // dedicated legacy asset, so collapse them onto the nearest diagonal.
+      const fallbackDir = this.facing === 'e' ? 'se'
+        : this.facing === 'w' ? 'sw'
+        : this.facing;
+      this.sprite.texture = assetManager.texture(`player_${fallbackDir}`);
     }
     // All procedural bounce/sway is now baked into the sheet; keep the sprite
     // flat so world position matches the frame's ground anchor.
