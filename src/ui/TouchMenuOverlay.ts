@@ -44,6 +44,7 @@ const SECTIONS: MenuSection[] = [
   {
     title: 'SYSTEM',
     entries: [
+      { action: 'menu_toggle',       label: 'Toggle Menu',   key: 'M'   },
       { action: 'pause_menu',        label: 'Pause / Close', key: 'Esc' },
       { action: 'cycle_panels',      label: 'Close All',     key: 'Tab' },
       { action: 'fullscreen_toggle', label: 'Fullscreen',    key: 'F11' },
@@ -65,6 +66,7 @@ export class TouchMenuOverlay {
   private _panel: HTMLElement;
   private _visible = false;
   private _onDocClick: (e: MouseEvent) => void;
+  private _unsubInput: () => void;
 
   constructor() {
     this._root = document.createElement('div');
@@ -95,6 +97,14 @@ export class TouchMenuOverlay {
     this._onDocClick = () => {
       if (this._visible) this._setOpen(false);
     };
+
+    this._unsubInput = inputManager.onAction((action, pressed) => {
+      if (action === 'menu_toggle' && pressed) this._toggle();
+    });
+  }
+
+  toggle(): void {
+    this._toggle();
   }
 
   private _buildPanel(): void {
@@ -153,6 +163,7 @@ export class TouchMenuOverlay {
 
   destroy(): void {
     document.removeEventListener('click', this._onDocClick);
+    this._unsubInput();
     this._root.remove();
   }
 }

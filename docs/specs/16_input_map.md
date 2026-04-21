@@ -38,6 +38,7 @@ Before adding any new key binding to any spec file, check this document. If the 
 | Key | Action | Panel Name | Spec Reference |
 |---|---|---|---|
 | [ESC] | Pause menu / close open panel | Pause Menu | 14_ui_systems §9 |
+| [M] | Toggle on-screen Menu overlay (same entries as the MENU button) | Touch Menu Overlay | 14_ui_systems |
 | [P] | Production Dashboard | Production Dashboard | 14_ui_systems §6 |
 | [J] | Survey Journal / Deposit log | Survey Journal | 14_ui_systems §9 |
 | [T] | Fleet / Drone Traffic Overlay | Fleet Command / Traffic Overlay | 04_drone_swarm §7, 14_ui_systems §3 |
@@ -124,6 +125,7 @@ Controller bindings should be remappable in Settings → Controls.
 | I | Inventory / Stockpile |
 | J | Journal / Survey log |
 | Tab | Cycle open panels |
+| M | Toggle on-screen Menu overlay |
 | ESC | Pause / Close panel |
 | F11 | Toggle fullscreen |
 | ` / ~ | Toggle Debug Panel (on by default) |
@@ -157,6 +159,7 @@ inventory
 journal
 cycle_panels
 pause_menu
+menu_toggle
 fullscreen_toggle
 camera_zoom_in, camera_zoom_out
 camera_pan
