@@ -27,6 +27,7 @@ vi.mock('@services/GameState', () => ({
 
 import { DroneBase } from '@entities/DroneBase';
 import { ScoutDrone } from '@entities/ScoutDrone';
+import { obstacleManager } from '@services/ObstacleManager';
 
 describe('DroneBase', () => {
   it('starts IDLE', () => {
@@ -90,5 +91,33 @@ describe('DroneBase', () => {
     expect(ScoutDrone.COST).toBe(25);
     expect(drone.x).toBe(10);
     expect(drone.y).toBe(20);
+  });
+
+  describe('wall-aware pathing', () => {
+    it('routes around a wall via the registered gate waypoint', () => {
+      obstacleManager.clear();
+      // Vertical wall at x=100, with a gap-less span between source and target.
+      obstacleManager.addWall({ x: 100, y: -50, w: 10, h: 200 });
+      // Waypoint at y=-60 (above the wall) so the drone can detour over it.
+      obstacleManager.addWaypoint({ x: 105, y: -60 });
+
+      const drone = new DroneBase('scout', 0, 0, 200, 3);
+      drone.pushTask({ type: 'CARRY', targetX: 200, targetY: 0, executeDurationSec: 0 });
+
+      // Step the drone for a few seconds — it must reach the target without
+      // passing through the wall (no x-position with 100<x<110 allowed at y∈[-50,150]).
+      for (let i = 0; i < 200; i++) {
+        drone.update(0.1);
+        if (drone.state === 'IDLE' && drone.getTasks().length === 0) break;
+        const insideWall =
+          drone.x > 100 && drone.x < 110 && drone.y >= -50 && drone.y <= 150;
+        expect(insideWall).toBe(false);
+      }
+
+      expect(drone.x).toBeCloseTo(200, 0);
+      expect(drone.y).toBeCloseTo(0, 0);
+
+      obstacleManager.clear();
+    });
   });
 });

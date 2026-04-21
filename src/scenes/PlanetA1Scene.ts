@@ -41,6 +41,7 @@ import { inventory } from '@services/Inventory';
 import { planetResources, outpostId } from '@store/gameStore';
 import { Launchpad } from '@entities/Launchpad';
 import { surveyService } from '@services/SurveyService';
+import { obstacleManager } from '@services/ObstacleManager';
 
 const WORLD_WIDTH = 2800;
 const WORLD_HEIGHT = 2000;
@@ -161,6 +162,23 @@ export class PlanetA1Scene implements Scene {
     walls.rect(gateR - 4, bottom - OUTPOST_WALL_THICK - 8, 8, OUTPOST_WALL_THICK + 8).fill(trimColor);
 
     this.worldContainer.addChild(walls);
+
+    // Register wall colliders — five rectangles matching the drawn walls (the
+    // south wall is split around the gate gap, which stays passable). Plus a
+    // small set of navigation waypoints so drones can path around the outside
+    // of the compound to reach the gate.
+    obstacleManager.clear();
+    obstacleManager.addWall({ x: left,                         y: top,                              w: right - left,              h: OUTPOST_WALL_THICK });
+    obstacleManager.addWall({ x: left,                         y: top,                              w: OUTPOST_WALL_THICK,        h: bottom - top });
+    obstacleManager.addWall({ x: right - OUTPOST_WALL_THICK,   y: top,                              w: OUTPOST_WALL_THICK,        h: bottom - top });
+    obstacleManager.addWall({ x: left,                         y: bottom - OUTPOST_WALL_THICK,      w: gateL - left,              h: OUTPOST_WALL_THICK });
+    obstacleManager.addWall({ x: gateR,                        y: bottom - OUTPOST_WALL_THICK,      w: right - gateR,             h: OUTPOST_WALL_THICK });
+    const navOffset = 30;
+    obstacleManager.addWaypoint({ x: OUTPOST_CX,         y: bottom + navOffset });       // gate approach (outside)
+    obstacleManager.addWaypoint({ x: left  - navOffset,  y: bottom + navOffset });       // SW outer corner
+    obstacleManager.addWaypoint({ x: right + navOffset,  y: bottom + navOffset });       // SE outer corner
+    obstacleManager.addWaypoint({ x: left  - navOffset,  y: top    - navOffset });       // NW outer corner
+    obstacleManager.addWaypoint({ x: right + navOffset,  y: top    - navOffset });       // NE outer corner
 
     // Outpost sign above the top wall — Pixi Text, amber, centered.
     const signStyle = new TextStyle({
@@ -641,6 +659,7 @@ export class PlanetA1Scene implements Scene {
     this.solarPanels = [];
     consumptionManager.reset();
     logisticsManager.unregisterPlanet('planet_a1');
+    obstacleManager.clear();
     this.app.stage.removeChildren();
     this.sites = [];
   }
