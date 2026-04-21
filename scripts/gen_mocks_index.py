@@ -20,13 +20,13 @@ html = """<!DOCTYPE html>
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>VoidYield — Design Mocks</title>
   <style>
-    body { font-family: monospace; background: #0D1B3E; color: #D4A843;
-           max-width: 760px; margin: 40px auto; padding: 0 20px; }
-    h1   { color: #00B8D4; margin-bottom: 0.25em; }
-    p    { margin-top: 0; color: #aaa; font-size: 0.85em; }
-    ul   { line-height: 2; padding-left: 1.2em; }
-    a    { color: #D4A843; text-decoration: none; }
-    a:hover { color: #00B8D4; text-decoration: underline; }
+    body {{ font-family: monospace; background: #0D1B3E; color: #D4A843;
+           max-width: 760px; margin: 40px auto; padding: 0 20px; }}
+    h1   {{ color: #00B8D4; margin-bottom: 0.25em; }}
+    p    {{ margin-top: 0; color: #aaa; font-size: 0.85em; }}
+    ul   {{ line-height: 2; padding-left: 1.2em; }}
+    a    {{ color: #D4A843; text-decoration: none; }}
+    a:hover {{ color: #00B8D4; text-decoration: underline; }}
   </style>
 </head>
 <body>
