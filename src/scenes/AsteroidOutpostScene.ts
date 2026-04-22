@@ -159,6 +159,11 @@ export class AsteroidOutpostScene implements Scene {
     _activeSaveGetter = () => this.serializeOutpost();
     _activeStorageGetter = () => this._storage;
 
+    // Default starting resources — overridden if save data exists
+    this._storage?.setStock('iron_ore', 100);
+    this._storage?.setStock('iron_bar', 100);
+    this._storage?.setStock('water', 100);
+
     // Try to load and deserialize saved outpost state
     const saved = saveManager.loadGame();
     if (saved?.outpost) {

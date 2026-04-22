@@ -10,7 +10,7 @@ export class MiningService {
   private _furnace: Furnace | null = null;
   private _hasSurveyed = false;
   /** Seconds per unit mined while E is held. Matches legacy hold-to-mine feel. */
-  private static readonly HOLD_PER_UNIT = 1.5;
+  private static readonly HOLD_PER_UNIT = 0.5;
   private _holdTarget: Deposit | null = null;
   private _holdElapsed = 0;
   private _holdActive = false;

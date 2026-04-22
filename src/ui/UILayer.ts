@@ -6,7 +6,6 @@
  * migration phases (M1+) will add panels here.
  */
 import { HUD } from './HUD';
-import { TutorialOverlay } from './TutorialOverlay';
 import { InteractionPrompt } from './InteractionPrompt';
 import { DebugOverlay } from './DebugOverlay';
 import { ShopPanel } from './ShopPanel';
@@ -20,7 +19,6 @@ import { FabricatorPanel } from './FabricatorPanel';
 import { ProductionDashboard } from './ProductionDashboard';
 import { LogisticsOverlay } from './LogisticsOverlay';
 import { GalaxyMap } from './GalaxyMap';
-import { InventoryPanel } from './InventoryPanel';
 import { SurveyOverlay } from './SurveyOverlay';
 import { SurveyJournalPanel } from './SurveyJournalPanel';
 import { PopulationHUD } from './PopulationHUD';
@@ -29,8 +27,6 @@ import { PrestigePanel } from './PrestigePanel';
 import { OfflineDispatchPanel } from './OfflineDispatchPanel';
 import { TouchMenuOverlay } from './TouchMenuOverlay';
 import { TouchInteractButton } from './TouchInteractButton';
-import { tutorialManager } from '@services/TutorialManager';
-
 const UI_SCALE_STORAGE_KEY = 'voidyield_ui_scale';
 const UI_SCALE_MIN = 0.6;
 const UI_SCALE_MAX = 1.6;
@@ -39,7 +35,6 @@ const UI_SCALE_DEFAULT = 1.0;
 export class UILayer {
   private _root: HTMLElement;
   private _hud: HUD | null = null;
-  private _tutorial: TutorialOverlay | null = null;
   private _interactionPrompt: InteractionPrompt | null = null;
   private _debugOverlay: DebugOverlay | null = null;
   private _shopPanel: ShopPanel | null = null;
@@ -53,7 +48,6 @@ export class UILayer {
   private _productionDashboard: ProductionDashboard | null = null;
   private _logisticsOverlay: LogisticsOverlay | null = null;
   private _galaxyMap: GalaxyMap | null = null;
-  private _inventoryPanel: InventoryPanel | null = null;
   private _surveyOverlay: SurveyOverlay | null = null;
   private _surveyJournal: SurveyJournalPanel | null = null;
   private _populationHUD: PopulationHUD | null = null;
@@ -157,9 +151,6 @@ export class UILayer {
     this._galaxyMap = new GalaxyMap();
     this._galaxyMap.mount(this._root);
 
-    this._inventoryPanel = new InventoryPanel();
-    this._inventoryPanel.mount(this._root);
-
     this._surveyOverlay = new SurveyOverlay();
     this._surveyOverlay.mount(this._root);
 
@@ -197,10 +188,6 @@ export class UILayer {
     btn.addEventListener('click', () => this._debugOverlay?.toggle());
     this._root.appendChild(btn);
 
-    if (tutorialManager.shouldShow()) {
-      this._tutorial = new TutorialOverlay();
-      this._tutorial.mount(this._root);
-    }
   }
 
   get interactionPrompt(): InteractionPrompt | null {
@@ -217,7 +204,7 @@ export class UILayer {
   get productionDashboard(): ProductionDashboard | null { return this._productionDashboard; }
   get logisticsOverlay(): LogisticsOverlay | null { return this._logisticsOverlay; }
   get galaxyMap(): GalaxyMap | null { return this._galaxyMap; }
-  get inventoryPanel(): InventoryPanel | null { return this._inventoryPanel; }
+  get inventoryPanel(): null { return null; }
   get surveyOverlay(): SurveyOverlay | null { return this._surveyOverlay; }
   get surveyJournal(): SurveyJournalPanel | null { return this._surveyJournal; }
   get offlineDispatch(): OfflineDispatchPanel | null { return this._offlineDispatch; }
@@ -231,7 +218,6 @@ export class UILayer {
     this._droneBayPanel?.close();
     this._habitationPanel?.close();
     this._shipBayPanel?.close();
-    this._inventoryPanel?.close();
     this._fabricatorPanel?.close();
     if (this._techTreePanel?.visible) this._techTreePanel.toggle();
     if (this._fleetPanel?.visible) this._fleetPanel.toggle();
@@ -249,8 +235,6 @@ export class UILayer {
     window.removeEventListener('resize', this._onResize);
     this._hud?.destroy();
     this._hud = null;
-    this._tutorial?.destroy();
-    this._tutorial = null;
     this._interactionPrompt?.destroy();
     this._interactionPrompt = null;
     this._debugOverlay?.destroy();
@@ -277,8 +261,6 @@ export class UILayer {
     this._logisticsOverlay = null;
     this._galaxyMap?.destroy();
     this._galaxyMap = null;
-    this._inventoryPanel?.destroy();
-    this._inventoryPanel = null;
     this._surveyOverlay?.destroy();
     this._surveyOverlay = null;
     this._surveyJournal?.destroy();
