@@ -1,6 +1,7 @@
 import type { DroneDepot } from '@entities/DroneDepot';
 import type { DroneSlotConfig } from '@services/OutpostDispatcher';
-import type { OreType } from '@data/types';
+import type { OreType, DroneType } from '@data/types';
+import type { Container } from 'pixi.js';
 
 const ROLE_OPTIONS: Array<{ value: DroneSlotConfig['role']; label: string }> = [
   { value: 'miner',    label: 'MINER' },
@@ -18,13 +19,20 @@ const ORE_OPTIONS: Array<{ value: OreType | 'any'; label: string }> = [
  * Opened when the player interacts with a built DroneDepot.
  * Follows the OutpostHud/FurnaceOverlay HTML overlay pattern.
  */
+const DEPOT_DRONE_SHOP: Array<{ type: DroneType; label: string; desc: string; cost: number }> = [
+  { type: 'scout', label: 'MINING DRONE', desc: '60 px/s · 3 ore · 3s mine', cost: 25 },
+  { type: 'heavy', label: 'HEAVY MINER',  desc: '40 px/s · 10 ore · 2s mine', cost: 150 },
+];
+
 export class DroneDepotOverlay {
   private _depot: DroneDepot;
+  private _getWorldContainer: () => Container;
   private _root: HTMLElement | null = null;
   private _open = false;
 
-  constructor(depot: DroneDepot) {
+  constructor(depot: DroneDepot, getWorldContainer: () => Container) {
     this._depot = depot;
+    this._getWorldContainer = getWorldContainer;
   }
 
   mount(): void {
@@ -118,6 +126,28 @@ export class DroneDepotOverlay {
     }
 
     html += `
+      <div style="border-top:1px solid #2A3A5A;margin-top:10px;padding-top:10px;">
+        <div style="font-size:13px;font-weight:bold;margin-bottom:8px;color:#00B8D4;">BUILD DRONES</div>
+    `;
+
+    for (const spec of DEPOT_DRONE_SHOP) {
+      html += `
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;padding:5px;border:1px solid #2A3A5A;">
+          <div>
+            <div style="font-size:12px;">${spec.label}</div>
+            <div style="font-size:10px;opacity:0.6;">${spec.desc}</div>
+          </div>
+          <div style="display:flex;align-items:center;gap:6px;">
+            <span style="font-size:11px;">${spec.cost} CR</span>
+            <button id="dd-buy-${spec.type}" style="font-family:monospace;font-size:11px;padding:3px 8px;border:1px solid #00B8D4;background:transparent;color:#00B8D4;cursor:pointer;">BUILD</button>
+          </div>
+        </div>
+      `;
+    }
+
+    html += `</div>`;
+
+    html += `
       <div style="text-align:center;margin-top:6px;">
         <button id="dd-close-btn" style="font-family:monospace;font-size:11px;padding:4px 14px;border:1px solid #D4A843;background:transparent;color:#D4A843;cursor:pointer;">CLOSE</button>
       </div>
@@ -125,7 +155,16 @@ export class DroneDepotOverlay {
 
     this._root.innerHTML = html;
 
-    // Wire event listeners after rendering
+    // Wire drone build buttons
+    for (const spec of DEPOT_DRONE_SHOP) {
+      const buyBtn = this._root.querySelector<HTMLButtonElement>(`#dd-buy-${spec.type}`);
+      buyBtn?.addEventListener('click', () => {
+        const drone = this._depot.purchaseDrone(spec.type, this._getWorldContainer());
+        if (drone) this._render();
+      });
+    }
+
+    // Wire slot event listeners after rendering
     for (const slot of slots) {
       const roleSelect = this._root.querySelector<HTMLSelectElement>(`#dd-role-${slot.slotId}`);
       const oreSelect  = this._root.querySelector<HTMLSelectElement>(`#dd-ore-${slot.slotId}`);

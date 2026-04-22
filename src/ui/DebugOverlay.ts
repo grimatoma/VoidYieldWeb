@@ -97,13 +97,20 @@ export class DebugOverlay {
 
   private _fillOutpost(): void {
     const api = voidyieldDebugAPI;
+    // Fill storage stockpile (raw ores for furnace + bars for market)
     api.outpost.setStorageStock('iron_ore', 100);
     api.outpost.setStorageStock('copper_ore', 100);
     api.outpost.setStorageStock('water', 100);
     api.outpost.setStorageStock('iron_bar', 100);
     api.outpost.setStorageStock('copper_bar', 100);
+    // Also fill player inventory so ore rows appear in the HUD
+    api.services.inventory.restore([
+      { oreType: 'iron_ore',    quantity: 100, attributes: {} },
+      { oreType: 'copper_ore',  quantity: 100, attributes: {} },
+      { oreType: 'water',       quantity: 100, attributes: {} },
+    ]);
     api.setCredits(api.getCredits() + 5000);
-    this._flash('storage ×100 + 5000 CR');
+    this._flash('storage + inventory ×100 + 5000 CR');
   }
 
   private _handle(act: string): void {
