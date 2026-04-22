@@ -155,9 +155,11 @@ export class AsteroidOutpostScene implements Scene {
 
     gameState.setCurrentPlanet('outpost');
 
-    // Register save getter and storage accessor
+    // Register save getter, storage accessor, and debug hooks
     _activeSaveGetter = () => this.serializeOutpost();
     _activeStorageGetter = () => this._storage;
+    _forceBuildFn = (type) => this._doForceBuild(type);
+    _setFurnaceRecipeFn = (recipe) => this._furnace?.setRecipe(recipe as any);
 
     // Default starting resources — overridden if save data exists
     this._storage?.setStock('iron_ore', 100);
@@ -394,6 +396,23 @@ export class AsteroidOutpostScene implements Scene {
     this._stage?.removeChild(this._ghostBuilding.container);
     this._ghostBuilding = null;
     this._ghostBuildingType = null;
+  }
+
+  /** Debug/test: place a building in the first available grid cell, no cost deducted. */
+  private _doForceBuild(buildingType: 'marketplace' | 'drone_depot'): void {
+    const footprint = BUILD_FOOTPRINTS[buildingType] ?? { rows: 1, cols: 1 };
+    for (let r = 0; r < 5; r++) {
+      for (let c = 0; c <= 5 - footprint.cols; c++) {
+        if (buildGrid.canPlace(r, c, footprint)) {
+          const buildingId = `${buildingType}_${Date.now()}`;
+          buildGrid.place({ buildingId, buildingType, row: r, col: c, footprint });
+          this._spawnBuilding(buildingType, buildingId, r, c, footprint);
+          this._buildMenuOverlay?.refresh();
+          return;
+        }
+      }
+    }
+    console.warn(`[_doForceBuild] No available grid space for ${buildingType}`);
   }
 
   private _spawnBuilding(
@@ -634,9 +653,11 @@ export class AsteroidOutpostScene implements Scene {
   }
 
   exit(): void {
-    // Clear save getter and storage accessor
+    // Clear save getter, storage accessor, and debug hooks
     _activeSaveGetter = null;
     _activeStorageGetter = null;
+    _forceBuildFn = null;
+    _setFurnaceRecipeFn = null;
 
     // Unregister outpost RTG and destroy furnace to release power consumers.
     powerManager.unregisterGenerator(OUTPOST_REACTOR_POWER);
@@ -698,6 +719,8 @@ const BuildGrid = { ROWS: 5, COLS: 5 };
 
 let _activeSaveGetter: (() => NonNullable<SaveData['outpost']>) | null = null;
 let _activeStorageGetter: (() => StorageDepot | null) | null = null;
+let _forceBuildFn: ((buildingType: 'marketplace' | 'drone_depot') => void) | null = null;
+let _setFurnaceRecipeFn: ((recipe: string) => void) | null = null;
 
 export function getOutpostSaveData(): SaveData['outpost'] {
   return _activeSaveGetter?.();
@@ -705,4 +728,22 @@ export function getOutpostSaveData(): SaveData['outpost'] {
 
 export function getActiveStorage(): StorageDepot | null {
   return _activeStorageGetter?.() ?? null;
+}
+
+/** Debug helper: force-place a building in the outpost without cost deduction. */
+export function forceBuildInOutpost(buildingType: 'marketplace' | 'drone_depot'): void {
+  if (!_forceBuildFn) {
+    console.warn('[forceBuildInOutpost] No active outpost scene');
+    return;
+  }
+  _forceBuildFn(buildingType);
+}
+
+/** Debug helper: set the furnace recipe by name ('off' | 'iron' | 'copper'). */
+export function setOutpostFurnaceRecipe(recipe: string): void {
+  if (!_setFurnaceRecipeFn) {
+    console.warn('[setOutpostFurnaceRecipe] No active outpost scene');
+    return;
+  }
+  _setFurnaceRecipeFn(recipe);
 }
