@@ -146,9 +146,9 @@ export class FurnaceOverlay {
 
     // Recipe description line.
     if (recipe === 'iron') {
-      this._recipeDesc.textContent = '2 iron ore → 1 iron bar · 6s per batch';
+      this._recipeDesc.textContent = '2 iron ore → 1 iron bar · 1s per batch';
     } else if (recipe === 'copper') {
-      this._recipeDesc.textContent = '2 copper ore → 1 copper bar · 8s per batch';
+      this._recipeDesc.textContent = '2 copper ore → 1 copper bar · 1s per batch';
     } else {
       this._recipeDesc.textContent = 'No recipe selected';
     }

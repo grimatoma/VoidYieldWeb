@@ -74,7 +74,6 @@ export class HUD {
           </div>
         </div>
       `).join('')}
-      <div class="hud-inventory-footer">INVENTORY <span id="hud-inv-count">00/10</span></div>
     `;
     hud.appendChild(rail);
 

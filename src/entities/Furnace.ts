@@ -12,8 +12,8 @@ export const FURNACE_RECIPES: Record<
   Exclude<FurnaceRecipe, 'off'>,
   { input: OreType; output: OreType; inputQty: number; outputQty: number; batchSec: number }
 > = {
-  iron:   { input: 'iron_ore',   output: 'iron_bar',   inputQty: 2, outputQty: 1, batchSec: 6 },
-  copper: { input: 'copper_ore', output: 'copper_bar', inputQty: 2, outputQty: 1, batchSec: 8 },
+  iron:   { input: 'iron_ore',   output: 'iron_bar',   inputQty: 2, outputQty: 1, batchSec: 1 },
+  copper: { input: 'copper_ore', output: 'copper_bar', inputQty: 2, outputQty: 1, batchSec: 1 },
 };
 
 /** Schematics keyed by recipe name for ProcessingPlant construction. */
