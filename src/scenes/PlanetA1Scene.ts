@@ -44,13 +44,13 @@ import { surveyService } from '@services/SurveyService';
 import { obstacleManager } from '@services/ObstacleManager';
 import { handleWorldTap } from '@services/TapToMove';
 
-const WORLD_WIDTH = 2800;
-const WORLD_HEIGHT = 2000;
+const WORLD_WIDTH = 4800;
+const WORLD_HEIGHT = 3600;
 
 // Outpost compound — a walled square in the middle of the planet surface.
 // Buildings live inside; deposits and harvesters live outside the walls.
-const OUTPOST_CX = 1400;
-const OUTPOST_CY = 1000;
+const OUTPOST_CX = 2400;
+const OUTPOST_CY = 1800;
 const OUTPOST_HALF_W = 320;
 const OUTPOST_HALF_H = 270;
 const OUTPOST_WALL_THICK = 14;
