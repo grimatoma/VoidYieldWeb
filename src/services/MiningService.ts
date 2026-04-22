@@ -3,9 +3,11 @@ import { inventory } from './Inventory';
 import { EventBus } from './EventBus';
 import type { StorageDepot } from '@entities/StorageDepot';
 import type { Deposit } from '@entities/Deposit';
+import type { Furnace } from '@entities/Furnace';
 
 export class MiningService {
   private depot: StorageDepot | null = null;
+  private _furnace: Furnace | null = null;
   private _hasSurveyed = false;
   /** Seconds per unit mined while E is held. Matches legacy hold-to-mine feel. */
   private static readonly HOLD_PER_UNIT = 1.5;
@@ -14,6 +16,8 @@ export class MiningService {
   private _holdActive = false;
 
   setDepot(depot: StorageDepot): void { this.depot = depot; }
+
+  setFurnace(furnace: Furnace | null): void { this._furnace = furnace; }
 
   /** True while the player is actively mining a valid deposit this frame. */
   get isMining(): boolean {
@@ -69,6 +73,15 @@ export class MiningService {
       const lots = inventory.drain();
       this.depot.deposit(lots);
       return lots.length > 0 ? 'Deposited' : 'Nothing to deposit';
+    }
+
+    if (this._furnace?.isNearby(px, py, 40)) {
+      const inserted = this._furnace.insertFromInventory();
+      if (inserted > 0) {
+        EventBus.emit('inventory:changed');
+        return `Inserted ${inserted} ore`;
+      }
+      return 'No matching ore to insert';
     }
 
     const deposit = depositMap.getNearestDeposit(px, py, 28);

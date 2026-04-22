@@ -80,5 +80,17 @@ export class PlacedBuilding {
     void world; // gridToWorld used for single-cell default, container handles footprint centering
   }
 
+  /** Create a semi-transparent ghost for placement preview. */
+  static createGhost(buildingType: string, footprint: GridFootprint): PlacedBuilding {
+    const ghost = new PlacedBuilding('__ghost__', buildingType, 0, 0, footprint);
+    ghost.container.alpha = 0.5;
+    return ghost;
+  }
+
+  /** Tint green when placement is valid, red when invalid/out-of-bounds. */
+  setGhostValid(valid: boolean): void {
+    this.container.tint = valid ? 0x00FF88 : 0xFF4444;
+  }
+
   destroy(): void { this.container.destroy({ children: true }); }
 }
