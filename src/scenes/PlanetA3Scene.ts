@@ -18,6 +18,7 @@ import { gameState } from '@services/GameState';
 import { WarpGate } from '@entities/WarpGate';
 import { GalacticHub } from '@entities/GalacticHub';
 import type { UILayer } from '@ui/UILayer';
+import { handleWorldTap } from '@services/TapToMove';
 
 const WORLD_WIDTH = 4000;
 const WORLD_HEIGHT = 3000;
@@ -104,7 +105,7 @@ export class PlanetA3Scene implements Scene {
       app.screen.height,
     );
     this.camera.mount(app.canvas);
-    this.camera.onTap((wx, wy) => this.player.setMoveTarget(wx, wy));
+    this.camera.onTap((wx, wy) => handleWorldTap(this.player, wx, wy));
 
     // 13. VOID NEXUS label at top
     this.voidNexusLabel = new Text({

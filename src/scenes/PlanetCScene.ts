@@ -16,6 +16,7 @@ import { gameState } from '@services/GameState';
 import { EventBus } from '@services/EventBus';
 import { logisticsManager } from '@services/LogisticsManager';
 import type { UILayer } from '@ui/UILayer';
+import { handleWorldTap } from '@services/TapToMove';
 
 const WORLD_WIDTH = 4000;
 const WORLD_HEIGHT = 3000;
@@ -94,7 +95,7 @@ export class PlanetCScene implements Scene {
       app.screen.height,
     );
     this.camera.mount(app.canvas);
-    this.camera.onTap((wx, wy) => this.player.setMoveTarget(wx, wy));
+    this.camera.onTap((wx, wy) => handleWorldTap(this.player, wx, wy));
 
     // 11. Banner: "SHATTERED RING — Void-Touched Ore quality is unpredictable"
     this.banner = new Text({
