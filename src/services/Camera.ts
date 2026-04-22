@@ -86,13 +86,14 @@ export class Camera {
     this._onMouseDown = (e: MouseEvent) => {
       if (e.button === 0) {
         // Left click: track it as a potential tap
+        const { sx, sy } = this._mouseToCanvasCoords(e);
         this._leftClick = {
-          startSx: e.screenX,
-          startSy: e.screenY,
+          startSx: sx,
+          startSy: sy,
           startTime: Date.now(),
           moved: false,
-          lastSx: e.screenX,
-          lastSy: e.screenY,
+          lastSx: sx,
+          lastSy: sy,
         };
         return;
       }
@@ -108,10 +109,11 @@ export class Camera {
 
     this._onMouseMove = (e: MouseEvent) => {
       if (this._leftClick) {
-        this._leftClick.lastSx = e.screenX;
-        this._leftClick.lastSy = e.screenY;
-        const dx = e.screenX - this._leftClick.startSx;
-        const dy = e.screenY - this._leftClick.startSy;
+        const { sx, sy } = this._mouseToCanvasCoords(e);
+        this._leftClick.lastSx = sx;
+        this._leftClick.lastSy = sy;
+        const dx = sx - this._leftClick.startSx;
+        const dy = sy - this._leftClick.startSy;
         if (Math.hypot(dx, dy) > TAP_MOVE_THRESHOLD_PX) this._leftClick.moved = true;
       }
       if (!this.isPanning) return;
@@ -242,6 +244,13 @@ export class Camera {
     if (!this._canvas) return { sx: t.clientX, sy: t.clientY };
     const rect = this._canvas.getBoundingClientRect();
     return { sx: t.clientX - rect.left, sy: t.clientY - rect.top };
+  }
+
+  /** Resolve a MouseEvent to canvas-local CSS pixels (matches `screenToWorld`). */
+  private _mouseToCanvasCoords(e: MouseEvent): { sx: number; sy: number } {
+    if (!this._canvas) return { sx: e.clientX, sy: e.clientY };
+    const rect = this._canvas.getBoundingClientRect();
+    return { sx: e.clientX - rect.left, sy: e.clientY - rect.top };
   }
 
   private _findTouch(list: TouchList, id: number): Touch | null {
