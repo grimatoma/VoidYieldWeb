@@ -1,6 +1,6 @@
 /**
  * BuildPromptOverlay — shows a hint near the grid when the player is nearby
- * and the build menu is closed. Prompts the player to press N to open the build menu.
+ * and the build menu is closed. Prompts the player to press E to open the build menu.
  */
 export class BuildPromptOverlay {
   private _el: HTMLElement | null = null;
@@ -28,7 +28,7 @@ export class BuildPromptOverlay {
       'display:none',
     ].join(';');
 
-    this._el.textContent = 'Press N to open Build Menu';
+    this._el.textContent = 'Press E to open Build Menu';
 
     parent.appendChild(this._el);
   }

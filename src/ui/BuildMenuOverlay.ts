@@ -34,7 +34,7 @@ const BUILDABLE: BuildingDef[] = [
 ];
 
 /**
- * BuildMenuOverlay — HTML overlay panel opened/closed by the build_menu action (N key).
+ * BuildMenuOverlay — HTML overlay panel for placing and moving buildings.
  * Shows stored bar counts and lets the player start placement or move existing buildings.
  * Mounts into #ui-layer (same pattern as OutpostHud).
  */

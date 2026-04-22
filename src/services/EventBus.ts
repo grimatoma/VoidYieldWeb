@@ -45,7 +45,6 @@ export type GameEvents = {
   'grid:picked-up': [buildingId: string];
   'outpost:inventory-changed': [];
   'furnace:state-changed': [state: 'idle' | 'running' | 'output-ready'];
-  'input:build_menu': [];
 };
 
 class TypedEventBus extends EventEmitter<GameEvents> {}

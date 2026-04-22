@@ -118,9 +118,12 @@ export class AsteroidOutpostScene implements Scene {
     this._player = new Player(480, 270);
     this._stage.addChild(this._player.container);
 
-    // Tap-to-move: delegate to Camera.onTap so coords are already in world space
+    // Tap-to-move: delegate to Camera.onTap so coords are already in world space.
+    // When tapping a building tile, walk the player to it and open its menu on arrival.
     this._camera.onTap((wx, wy) => {
-      if (this._player) handleWorldTap(this._player, wx, wy);
+      if (!this._player) return;
+      if (this._ghostBuilding) { handleWorldTap(this._player, wx, wy); return; }
+      if (!this._handleBuildingTap(wx, wy)) handleWorldTap(this._player, wx, wy);
     });
 
     // Wire mining service
@@ -253,13 +256,6 @@ export class AsteroidOutpostScene implements Scene {
     }
     if (!inputManager.isHeld('interact')) {
       miningService.onInteractReleased();
-    }
-
-    // Build menu toggle (N key)
-    if (inputManager.wasJustPressed('build_menu')) {
-      if (this._furnaceOverlay?.isOpen()) this._furnaceOverlay.close();
-      if (this._droneDepotOverlay?.isOpen()) this._droneDepotOverlay.close();
-      this._buildMenuOverlay?.toggle();
     }
 
     // Close overlays on ESC (pause_menu action)
@@ -484,6 +480,38 @@ export class AsteroidOutpostScene implements Scene {
   // -------------------------------------------------------------------------
   // Interactions
   // -------------------------------------------------------------------------
+
+  /** Walk the player to a tapped building and open its menu on arrival.
+   *  Returns true if the tap landed on a building, false otherwise. */
+  private _handleBuildingTap(wx: number, wy: number): boolean {
+    if (!this._player) return false;
+
+    const col = Math.floor((wx - GRID_ORIGIN.x) / CELL_SIZE);
+    const row = Math.floor((wy - GRID_ORIGIN.y) / CELL_SIZE);
+    if (col < 0 || col >= BuildGrid.COLS || row < 0 || row >= BuildGrid.ROWS) return false;
+
+    const entry = buildGrid.getBuildingAt(row, col);
+    if (!entry) return false;
+
+    miningService.onInteractReleased();
+    miningService.cancelAutoMine();
+
+    if (this._furnaceOverlay?.isOpen())     this._furnaceOverlay.close();
+    if (this._marketplaceOverlay?.isOpen()) this._marketplaceOverlay.close();
+    if (this._droneDepotOverlay?.isOpen())  this._droneDepotOverlay.close();
+    if (this._buildMenuOverlay?.isOpen())   this._buildMenuOverlay.close();
+
+    const targetX = GRID_ORIGIN.x + entry.col * CELL_SIZE + (entry.footprint.cols * CELL_SIZE) / 2;
+    const targetY = GRID_ORIGIN.y + entry.row * CELL_SIZE + (entry.footprint.rows * CELL_SIZE) / 2;
+
+    let onArrive: (() => void) | undefined;
+    if (entry.buildingType === 'furnace')     onArrive = () => this._furnaceOverlay?.open();
+    if (entry.buildingType === 'marketplace') onArrive = () => this._marketplaceOverlay?.open();
+    if (entry.buildingType === 'drone_depot') onArrive = () => this._droneDepotOverlay?.open();
+
+    this._player.setMoveTarget(targetX, targetY, onArrive);
+    return true;
+  }
 
   private _handleInteract(): void {
     const px = this._player!.x;
