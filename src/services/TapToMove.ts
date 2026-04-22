@@ -18,16 +18,18 @@ const TAP_PICK_RADIUS = 32;
  * - Otherwise, just walk toward the tap point.
  */
 export function handleWorldTap(player: Player, wx: number, wy: number): void {
-  // Any new tap cancels any in-progress auto-mine from a prior arrival so
-  // the player stops hammering the previous rock if you re-route mid-hold.
+  // Cancel any in-progress mining (keyboard or tap) so a new tap always
+  // takes precedence and the player re-routes immediately.
   miningService.onInteractReleased();
+  miningService.cancelAutoMine();
 
   const deposit = depositMap.getNearestDeposit(wx, wy, TAP_PICK_RADIUS);
   if (deposit && !deposit.data.isExhausted) {
     const dx = deposit.data.x;
     const dy = deposit.data.y;
     player.setMoveTarget(dx, dy, () => {
-      miningService.onInteract(player.x, player.y);
+      // startAutoMine persists across frames even when E is not held.
+      miningService.startAutoMine(player.x, player.y);
     });
     return;
   }

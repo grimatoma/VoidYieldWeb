@@ -9,6 +9,8 @@ vi.mock('@services/MiningService', () => ({
   miningService: {
     onInteract: vi.fn(),
     onInteractReleased: vi.fn(),
+    startAutoMine: vi.fn(),
+    cancelAutoMine: vi.fn(),
   },
 }));
 
@@ -45,10 +47,11 @@ describe('handleWorldTap', () => {
     expect(miningService.onInteract).not.toHaveBeenCalled();
   });
 
-  it('always cancels any in-progress auto-mine before routing the new tap', () => {
+  it('always cancels any in-progress mining before routing the new tap', () => {
     const player = makePlayer(10, 20);
     handleWorldTap(player, 300, 400);
     expect(miningService.onInteractReleased).toHaveBeenCalled();
+    expect(miningService.cancelAutoMine).toHaveBeenCalled();
   });
 
   it('routes to the deposit and auto-mines on arrival when tap hits ore', () => {
@@ -63,7 +66,7 @@ describe('handleWorldTap', () => {
     const cb = (player as unknown as { _onArrives: Array<(() => void) | undefined> })._onArrives[0];
     expect(cb).toBeTypeOf('function');
     cb!();
-    expect(miningService.onInteract).toHaveBeenCalledWith(500, 600);
+    expect(miningService.startAutoMine).toHaveBeenCalledWith(500, 600);
   });
 
   it('ignores exhausted deposits and falls back to walking to the tap point', () => {
