@@ -29,6 +29,11 @@ export class MiningService {
     return this._holdActive && this._holdTarget !== null && !this._holdTarget.data.isExhausted;
   }
 
+  /** Current hold-to-mine progress (0–1) for the active target. */
+  get progress(): number {
+    return this._holdTarget?.holdProgress ?? 0;
+  }
+
   /** Player position supplied each frame. While E is held & near a deposit, accumulate progress. */
   update(delta: number, playerPos?: { x: number; y: number }): void {
     if (!this._holdActive || !playerPos) {

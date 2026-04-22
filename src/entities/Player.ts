@@ -1,4 +1,4 @@
-import { Container, Sprite } from 'pixi.js';
+import { Container, Graphics, Sprite } from 'pixi.js';
 import type { InputManager } from '@services/InputManager';
 import { assetManager } from '@services/AssetManager';
 import { playerSpriteSheet, type PlayerAnimState } from '@services/PlayerSpriteSheet';
@@ -36,6 +36,7 @@ export class Player {
   mining = false;
 
   private sprite: Sprite;
+  private _miningBar: Graphics;
   private _animState: PlayerAnimState = 'idle';
   private _animClock = 0;     // seconds since this animation started
   private _frameIdx = 0;
@@ -71,6 +72,10 @@ export class Player {
     this.sprite.width = 36;
     this.sprite.height = 52;
     this.container.addChild(this.sprite);
+
+    this._miningBar = new Graphics();
+    this.container.addChild(this._miningBar);
+
     this.container.x = startX;
     this.container.y = startY;
 
@@ -262,6 +267,23 @@ export class Player {
     }
 
     this._applyFrameTexture();
+    this._drawMiningBar(miningService.progress);
+  }
+
+  private _drawMiningBar(progress: number): void {
+    this._miningBar.clear();
+    if (progress <= 0) return;
+
+    const barWidth = 28;
+    const barHeight = 4;
+    const barX = -barWidth / 2;
+    const barY = -54; // above the player's head
+
+    this._miningBar.rect(barX, barY, barWidth, barHeight);
+    this._miningBar.fill(0x333333);
+
+    this._miningBar.rect(barX, barY, barWidth * progress, barHeight);
+    this._miningBar.fill(0x00B8D4);
   }
 
   /** Resolve the current (dir, state, frameIdx) to a texture on the sprite. */

@@ -57,7 +57,6 @@ export class Deposit {
   private fallback: Graphics | null = null;
   private _initialYield: number;
   private _holdProgress = 0; // 0..1 — live hold-to-mine progress, set by MiningService
-  private _progressBar: Graphics | null = null;
   // Drone claim per GDD §11: only one drone targets a node at a time; others
   // skip it. Cleared when the drone releases it or the deposit is depleted.
   private _claimedBy: string | null = null;
@@ -78,7 +77,6 @@ export class Deposit {
   get holdProgress(): number { return this._holdProgress; }
   set holdProgress(value: number) {
     this._holdProgress = value;
-    this._updateProgressBar();
   }
 
   isNearby(px: number, py: number, radius = 40): boolean {
@@ -143,8 +141,6 @@ export class Deposit {
       this.fallback.fill(ORE_COLORS[this.data.oreType]);
       this.container.addChild(this.fallback);
     }
-    this._progressBar = new Graphics();
-    this.container.addChild(this._progressBar);
   }
 
   private _applyState(): void {
@@ -170,26 +166,6 @@ export class Deposit {
       this.fallback.fill(color);
       this.fallback.alpha = alpha;
     }
-  }
-
-  private _updateProgressBar(): void {
-    if (!this._progressBar) return;
-
-    this._progressBar.clear();
-
-    if (this._holdProgress <= 0) return;
-
-    const barWidth = 28;
-    const barHeight = 4;
-    const barX = -barWidth / 2;
-    const barY = -20;
-
-    this._progressBar.rect(barX, barY, barWidth, barHeight);
-    this._progressBar.fill(0x333333);
-
-    const filledWidth = barWidth * this._holdProgress;
-    this._progressBar.rect(barX, barY, filledWidth, barHeight);
-    this._progressBar.fill(0x00B8D4);
   }
 
   serialize(): DepositData {

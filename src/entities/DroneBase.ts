@@ -49,8 +49,10 @@ export class DroneBase {
   private _sprite: Sprite | null = null;
   private _tint: Graphics | null = null;
   private _fallback: Graphics | null = null;
+  private _miningBar: Graphics;
   private _facing: Dir8 = 's';
   private _animClock = 0;
+  private _execDurationSec = 0; // captured when EXECUTING begins, for progress calc
 
   constructor(droneType: DroneType, x: number, y: number, speed: number, carryCapacity: number, mineTimeSec = 3.0) {
     this.id = `drone-${_idCounter++}`;
@@ -86,6 +88,10 @@ export class DroneBase {
       this._fallback.circle(0, 0, 5).fill(DRONE_COLORS[droneType]);
       this.container.addChild(this._fallback);
     }
+
+    // Added last so the bar renders on top of the drone sprite.
+    this._miningBar = new Graphics();
+    this.container.addChild(this._miningBar);
   }
 
   pushTask(task: DroneTask): boolean {
@@ -102,6 +108,7 @@ export class DroneBase {
     this._tasks = [];
     this._pathHops = null;
     this.state = 'IDLE';
+    this._drawMiningBar(0);
   }
 
   getTasks(): readonly DroneTask[] {
@@ -153,6 +160,7 @@ export class DroneBase {
         if (this._pathHops.length === 0) {
           this.state = 'EXECUTING';
           this._execTimer = task.executeDurationSec;
+          this._execDurationSec = task.executeDurationSec;
           this._pathHops = null;
         }
         this._advanceAnim(delta, false, dx, dy);
@@ -170,12 +178,38 @@ export class DroneBase {
     if (this.state === 'EXECUTING') {
       this._execTimer -= delta;
       this._advanceAnim(delta, false, 0, 0);
+      if (task.type === 'MINE' && this._execDurationSec > 0) {
+        const progress = 1 - (this._execTimer / this._execDurationSec);
+        this._drawMiningBar(Math.max(0, Math.min(1, progress)));
+      } else {
+        this._drawMiningBar(0);
+      }
       if (this._execTimer <= 0) {
         task.onExecute?.();
         this._popTask();
         this.state = 'IDLE';
+        this._drawMiningBar(0);
       }
+      return;
     }
+
+    this._drawMiningBar(0);
+  }
+
+  private _drawMiningBar(progress: number): void {
+    this._miningBar.clear();
+    if (progress <= 0) return;
+
+    const barWidth = 24;
+    const barHeight = 3;
+    const barX = -barWidth / 2;
+    const barY = -22; // above the drone sprite
+
+    this._miningBar.rect(barX, barY, barWidth, barHeight);
+    this._miningBar.fill(0x333333);
+
+    this._miningBar.rect(barX, barY, barWidth * progress, barHeight);
+    this._miningBar.fill(0x00B8D4);
   }
 
   /** Update facing texture + frame. `moving` drives frame cycle; when false, holds frame 0. */
