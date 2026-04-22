@@ -2,6 +2,7 @@ import { describe, it, expect, beforeEach, vi } from 'vitest';
 
 vi.mock('pixi.js', () => {
   const make = () => ({
+    clear: vi.fn().mockReturnThis(),
     circle: vi.fn().mockReturnThis(), fill: vi.fn().mockReturnThis(),
     stroke: vi.fn().mockReturnThis(), rect: vi.fn().mockReturnThis(),
     addChild: vi.fn(), x: 0, y: 0, visible: true,

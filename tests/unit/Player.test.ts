@@ -3,6 +3,7 @@ import { describe, it, expect, vi, afterEach } from 'vitest';
 // Mock pixi.js to avoid WebGL init in jsdom
 vi.mock('pixi.js', () => {
   const Graphics = vi.fn(() => ({
+    clear: vi.fn().mockReturnThis(),
     rect: vi.fn().mockReturnThis(),
     fill: vi.fn().mockReturnThis(),
     circle: vi.fn().mockReturnThis(),
