@@ -23,6 +23,10 @@ import { FurnaceOverlay } from '@ui/FurnaceOverlay';
 import { BuildMenuOverlay } from '@ui/BuildMenuOverlay';
 import { DroneDepotOverlay } from '@ui/DroneDepotOverlay';
 import { BuildPromptOverlay } from '@ui/BuildPromptOverlay';
+import { powerManager } from '@services/PowerManager';
+
+// Built-in RTG provides enough power to run the furnace (3 W draw) without needing solar panels.
+const OUTPOST_REACTOR_POWER = 5;
 
 // Build costs per BuildMenuOverlay BUILDABLE list
 const BUILD_COSTS: Record<string, { iron_bar: number; copper_bar: number }> = {
@@ -69,6 +73,9 @@ export class AsteroidOutpostScene implements Scene {
 
     // Draw grid overlay (faint lines)
     this._drawGrid();
+
+    // Register outpost RTG so the furnace has power from the start.
+    powerManager.registerGenerator(OUTPOST_REACTOR_POWER);
 
     // Pre-place Storage at [2,0] and Furnace at [2,1]
     this._initGrid();
@@ -501,6 +508,10 @@ export class AsteroidOutpostScene implements Scene {
     // Clear save getter and storage accessor
     _activeSaveGetter = null;
     _activeStorageGetter = null;
+
+    // Unregister outpost RTG and destroy furnace to release power consumers.
+    powerManager.unregisterGenerator(OUTPOST_REACTOR_POWER);
+    this._furnace?.destroy();
 
     // Stop dispatcher
     outpostDispatcher.stop();
