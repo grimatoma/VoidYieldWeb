@@ -53,10 +53,10 @@ export class BuildMenuOverlay {
     this._root = document.createElement('div');
     this._root.id = 'build-menu-overlay';
     this._root.style.cssText = [
-      'position:absolute',
-      'top:8px',
+      'position:fixed',
+      'top:50%',
       'left:50%',
-      'transform:translateX(-50%)',
+      'transform:translate(-50%, -50%)',
       'background:#0D1B3E',
       'border:1px solid #2A3A5A',
       'color:#D4A843',
