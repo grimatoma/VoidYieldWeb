@@ -14,6 +14,11 @@ export class MiningService {
   private _holdTarget: Deposit | null = null;
   private _holdElapsed = 0;
   private _holdActive = false;
+  /** True when mining was started by a tap-to-mine arrival (not by holding E).
+   *  onInteractReleased() skips cancellation when this is set so the keyboard
+   *  "E not held" check in the scene update loop doesn't immediately undo the
+   *  tap-initiated mine. Cleared by cancelAutoMine() or when E is pressed. */
+  private _autoMining = false;
 
   setDepot(depot: StorageDepot): void { this.depot = depot; }
 
@@ -67,8 +72,28 @@ export class MiningService {
     }
   }
 
+  /** Start mining triggered by tap-to-move arrival. Unlike onInteract, this
+   *  survives the scene's per-frame onInteractReleased() call. */
+  startAutoMine(px: number, py: number): void {
+    const deposit = depositMap.getNearestDeposit(px, py, 28);
+    if (!deposit || deposit.data.isExhausted) return;
+    this._autoMining = true;
+    this._holdActive = true;
+  }
+
+  /** Cancel tap-initiated auto-mining (new tap on ground or deposit). */
+  cancelAutoMine(): void {
+    this._autoMining = false;
+    this._holdActive = false;
+    if (this._holdTarget) this._holdTarget.holdProgress = 0;
+    this._holdElapsed = 0;
+    this._holdTarget = null;
+  }
+
   /** E pressed: if near depot, deposit to storage. Otherwise start hold-mining. */
   onInteract(px: number, py: number): string | null {
+    // Keyboard explicitly takes control — cancel any tap-initiated auto-mine.
+    this._autoMining = false;
     if (this.depot?.isNearby(px, py, 40)) {
       const lots = inventory.drain();
       this.depot.deposit(lots);
@@ -92,8 +117,9 @@ export class MiningService {
     return null;
   }
 
-  /** E released — cancel hold-mine. */
+  /** E released — cancel keyboard hold-mine. No-op during tap-initiated auto-mine. */
   onInteractReleased(): void {
+    if (this._autoMining) return;
     this._holdActive = false;
     if (this._holdTarget) this._holdTarget.holdProgress = 0;
     this._holdElapsed = 0;
