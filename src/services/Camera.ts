@@ -48,6 +48,13 @@ export class Camera {
     startDist: number;
     startZoom: number;
   } | null = null;
+  // Left-click tracking — used to distinguish a tap from a drag.
+  private _leftClick: {
+    startSx: number; startSy: number;
+    startTime: number;
+    moved: boolean;
+    lastSx: number; lastSy: number;
+  } | null = null;
 
   /** Tap callback — fires for a single-finger tap (no drag). World coords. */
   private _onTap: ((worldX: number, worldY: number) => void) | null = null;
@@ -77,6 +84,18 @@ export class Camera {
     };
 
     this._onMouseDown = (e: MouseEvent) => {
+      if (e.button === 0) {
+        // Left click: track it as a potential tap
+        this._leftClick = {
+          startSx: e.screenX,
+          startSy: e.screenY,
+          startTime: Date.now(),
+          moved: false,
+          lastSx: e.screenX,
+          lastSy: e.screenY,
+        };
+        return;
+      }
       if (e.button !== 1) return;
       this.isPanning = true;
       this.panStart = {
@@ -88,6 +107,13 @@ export class Camera {
     };
 
     this._onMouseMove = (e: MouseEvent) => {
+      if (this._leftClick) {
+        this._leftClick.lastSx = e.screenX;
+        this._leftClick.lastSy = e.screenY;
+        const dx = e.screenX - this._leftClick.startSx;
+        const dy = e.screenY - this._leftClick.startSy;
+        if (Math.hypot(dx, dy) > TAP_MOVE_THRESHOLD_PX) this._leftClick.moved = true;
+      }
       if (!this.isPanning) return;
       const dx = e.screenX - this.panStart.sx;
       const dy = e.screenY - this.panStart.sy;
@@ -101,6 +127,18 @@ export class Camera {
     };
 
     this._onMouseUp = (e: MouseEvent) => {
+      if (e.button === 0) {
+        if (this._leftClick) {
+          const click = this._leftClick;
+          this._leftClick = null;
+          const elapsed = Date.now() - click.startTime;
+          if (!click.moved && elapsed <= TAP_TIME_THRESHOLD_MS && this._onTap) {
+            const wp = this.screenToWorld(click.lastSx, click.lastSy);
+            this._onTap(wp.x, wp.y);
+          }
+        }
+        return;
+      }
       if (e.button !== 1) return;
       this.isPanning = false;
     };
@@ -285,5 +323,6 @@ export class Camera {
     this._canvas = null;
     this._touch = null;
     this._pinch = null;
+    this._leftClick = null;
   }
 }
