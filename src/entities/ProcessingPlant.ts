@@ -117,6 +117,18 @@ export class ProcessingPlant {
     }
   }
 
+  /** 0–1 progress through the current batch interval, 0 when no input is loaded. */
+  get batchProgress(): number {
+    if (this.inputBuffer < this.schematic.inputQty) return 0;
+    const interval = 60 / this.schematic.batchPerMin;
+    return Math.min(1, this.batchTimer / interval);
+  }
+
+  /** True when the buffer holds enough ore for the next batch. */
+  get hasInput(): boolean {
+    return this.inputBuffer >= this.schematic.inputQty;
+  }
+
   /**
    * Push ore into the manual input buffer.
    * Only accepted when oreType matches this plant's schematic input.

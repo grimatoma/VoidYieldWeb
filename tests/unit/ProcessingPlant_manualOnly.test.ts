@@ -115,4 +115,39 @@ describe('ProcessingPlant — manualOnly', () => {
     bare.update(6.1);
     expect(bare.state).toBe('STALLED');
   });
+
+  it('batchProgress is 0 when buffer is empty', () => {
+    plant.manualOnly = true;
+    plant.update(3); // timer advances but no ore
+    expect(plant.batchProgress).toBe(0);
+  });
+
+  it('batchProgress increases from 0 to 1 as timer elapses when ore is loaded', () => {
+    plant.manualOnly = true;
+    plant.insertBatch('iron_ore', 2);
+    // iron_smelter: batchInterval = 60/10 = 6s
+    plant.update(3); // halfway
+    expect(plant.batchProgress).toBeCloseTo(0.5, 1);
+    plant.update(3.1); // just past full
+    // After the batch fires, inputBuffer is empty → batchProgress resets to 0
+    expect(plant.batchProgress).toBe(0);
+  });
+
+  it('hasInput is false when buffer is empty', () => {
+    plant.manualOnly = true;
+    expect(plant.hasInput).toBe(false);
+  });
+
+  it('hasInput is true after insertBatch fills the buffer', () => {
+    plant.manualOnly = true;
+    plant.insertBatch('iron_ore', 2);
+    expect(plant.hasInput).toBe(true);
+  });
+
+  it('hasInput returns false again after the batch is consumed', () => {
+    plant.manualOnly = true;
+    plant.insertBatch('iron_ore', 2);
+    plant.update(6.1); // fires the batch
+    expect(plant.hasInput).toBe(false);
+  });
 });

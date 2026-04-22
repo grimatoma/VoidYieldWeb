@@ -1,6 +1,6 @@
 import { Container, Graphics, Text, TextStyle } from 'pixi.js';
 import { ProcessingPlant } from './ProcessingPlant';
-import { StorageDepot } from './StorageDepot';
+import type { StorageDepot } from './StorageDepot';
 import { inventory } from '@services/Inventory';
 import { EventBus } from '@services/EventBus';
 import { SCHEMATICS } from '@data/schematics';
@@ -135,6 +135,7 @@ export class Furnace {
       }
     }
 
+    EventBus.emit('inventory:changed');
     return inserted;
   }
 
@@ -187,10 +188,16 @@ export class Furnace {
     return this._plant.state;
   }
 
-  /** Expose the batch timer progress (0–1) for the overlay. */
+  /** 0–1 progress through the current batch interval; 0 when no ore is loaded. */
   getBatchProgress(): number {
-    // ProcessingPlant doesn't expose batchTimer publicly; use state as proxy.
-    return this._plant.state === 'RUNNING' ? 0.5 : 0;
+    if (this._recipe === 'off') return 0;
+    return this._plant.batchProgress;
+  }
+
+  /** True when the plant buffer holds a full batch of ore and is processing. */
+  isLoaded(): boolean {
+    if (this._recipe === 'off') return false;
+    return this._plant.hasInput;
   }
 
   destroy(): void {
