@@ -18,6 +18,7 @@ import { gameState } from '@services/GameState';
 import { GalaxyMap } from '@ui/GalaxyMap';
 import { EventBus } from '@services/EventBus';
 import type { UILayer } from '@ui/UILayer';
+import { handleWorldTap } from '@services/TapToMove';
 
 const WORLD_WIDTH = 3200;
 const WORLD_HEIGHT = 2400;
@@ -102,7 +103,7 @@ export class PlanetBScene implements Scene {
       app.screen.height,
     );
     this.camera.mount(app.canvas);
-    this.camera.onTap((wx, wy) => this.player.setMoveTarget(wx, wy));
+    this.camera.onTap((wx, wy) => handleWorldTap(this.player, wx, wy));
 
     // 10. Minimap HUD (added to stage, not worldContainer)
     this.minimap = new MinimapOverlay(WORLD_WIDTH, WORLD_HEIGHT, app.screen.width, app.screen.height);

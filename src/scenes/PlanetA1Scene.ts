@@ -43,6 +43,7 @@ import { planetResources, outpostId } from '@store/gameStore';
 import { Launchpad } from '@entities/Launchpad';
 import { surveyService } from '@services/SurveyService';
 import { obstacleManager } from '@services/ObstacleManager';
+import { handleWorldTap } from '@services/TapToMove';
 
 const WORLD_WIDTH = 2800;
 const WORLD_HEIGHT = 2000;
@@ -400,8 +401,10 @@ export class PlanetA1Scene implements Scene {
       app.screen.height,
     );
     this.camera.mount(app.canvas);
-    // Touch: single-finger tap on the canvas walks the player to that spot.
-    this.camera.onTap((wx, wy) => this.player.setMoveTarget(wx, wy));
+    // Touch: single-finger tap on the canvas walks the player to that spot,
+    // pathfinding around walls. Tapping an ore deposit auto-starts mining
+    // once the player arrives (see TapToMove).
+    this.camera.onTap((wx, wy) => handleWorldTap(this.player, wx, wy));
 
     // 9. Minimap HUD (added to stage, not worldContainer)
     this.minimap = new MinimapOverlay(WORLD_WIDTH, WORLD_HEIGHT, app.screen.width, app.screen.height);

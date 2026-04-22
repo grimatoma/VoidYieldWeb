@@ -241,5 +241,61 @@ describe('Player', () => {
       player.update(0.1, noInput, bounds);
       expect(player.x).toBe(100);
     });
+
+    it('routes around a wall via a registered waypoint', () => {
+      // Vertical wall between player (50,100) and goal (450,100); the only
+      // way through is a waypoint above the wall at (250, 30).
+      obstacleManager.addWall({ x: 240, y: 60, w: 20, h: 200 });
+      obstacleManager.addWaypoint({ x: 250, y: 30 });
+      const player = new Player(50, 100);
+      player.setMoveTarget(450, 100);
+      // Simulate several frames of movement. With pathfinding the player
+      // should detour up and around the wall rather than grinding against it.
+      for (let i = 0; i < 80; i++) {
+        player.update(0.1, noInput, bounds);
+        if (player.moveTarget === null) break;
+      }
+      expect(player.moveTarget).toBeNull();
+      // Final position should be at the goal (past the wall).
+      expect(player.x).toBeGreaterThan(440);
+      // And the detour should have carried the player above y=60 at some
+      // point, proving the path was followed.
+      expect(player.y).toBeCloseTo(100, 0);
+    });
+
+    it('fires an onArrive callback when the path finishes', () => {
+      const player = new Player(100, 100);
+      let arrived = false;
+      player.setMoveTarget(110, 100, () => { arrived = true; });
+      player.update(1, noInput, bounds);
+      expect(arrived).toBe(true);
+      expect(player.moveTarget).toBeNull();
+    });
+
+    it('does not fire onArrive if keyboard input cancels the walk', () => {
+      const player = new Player(100, 100);
+      let arrived = false;
+      player.setMoveTarget(400, 100, () => { arrived = true; });
+      const right = makeInput('player_move_right');
+      player.update(0.1, right, bounds);
+      expect(arrived).toBe(false);
+      expect(player.moveTarget).toBeNull();
+    });
+
+    it('does not fire onArrive if walking into an unpassable wall gives up', () => {
+      // No waypoints, direct path blocked — stuck logic should drop the
+      // target without claiming arrival. Player spawns flush to the wall
+      // so every frame is a stall frame.
+      obstacleManager.addWall({ x: 105, y: 50, w: 20, h: 200 });
+      const player = new Player(100, 150);
+      let arrived = false;
+      player.setMoveTarget(400, 150, () => { arrived = true; });
+      // Spin updates until give-up kicks in.
+      for (let i = 0; i < 10 && player.moveTarget !== null; i++) {
+        player.update(0.1, noInput, bounds);
+      }
+      expect(arrived).toBe(false);
+      expect(player.moveTarget).toBeNull();
+    });
   });
 });

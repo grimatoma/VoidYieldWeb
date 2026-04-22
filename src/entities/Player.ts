@@ -3,7 +3,7 @@ import type { InputManager } from '@services/InputManager';
 import { assetManager } from '@services/AssetManager';
 import { playerSpriteSheet, type PlayerAnimState } from '@services/PlayerSpriteSheet';
 import { miningService } from '@services/MiningService';
-import { obstacleManager } from '@services/ObstacleManager';
+import { obstacleManager, type Vec2 } from '@services/ObstacleManager';
 
 export interface WorldBounds { width: number; height: number; }
 
@@ -41,12 +41,23 @@ export class Player {
   private _frameIdx = 0;
 
   /**
-   * Tap-to-move target in world coordinates. When set (and no movement key is
-   * held), the player walks toward this point at `speed`. Cleared on arrival,
-   * when keyboard movement takes over, or when collisions stall progress.
+   * Tap-to-move path in world coordinates. When non-empty (and no movement key
+   * is held), the player walks toward `_movePath[0]` at `speed`, popping each
+   * waypoint on arrival. The path is produced by `obstacleManager.findPath`
+   * so the player routes around walls via registered navigation waypoints.
    */
-  private _moveTarget: { x: number; y: number } | null = null;
-  /** Squared "arrived" distance — within this radius the target clears. */
+  private _movePath: Vec2[] = [];
+  /** Final destination the path was computed toward (kept for recomputes). */
+  private _moveFinal: Vec2 | null = null;
+  /**
+   * Fired once the last waypoint is reached. Used by scenes to trigger an
+   * auto-interact (e.g. start mining when the tap was on an ore deposit).
+   * Cleared after firing, when keyboard takes over, or on give-up.
+   */
+  private _onArrive: (() => void) | null = null;
+  /** Consecutive frames with a path active but zero progress. */
+  private _stuckFrames = 0;
+  /** Squared "arrived" distance — within this radius the waypoint pops. */
   private static readonly TARGET_ARRIVE_DIST = 4;
 
   constructor(startX = 100, startY = 100) {
@@ -69,22 +80,30 @@ export class Player {
   }
 
   /**
-   * Set a tap-to-move target. The player walks toward (x, y) until it arrives,
-   * is blocked, or the user grabs the keyboard again. Calling with the same
-   * coords replaces any prior target.
+   * Set a tap-to-move target. The player walks toward (x, y) along a path
+   * that routes around registered walls via the obstacle graph, until it
+   * arrives, is blocked for too long, or the user grabs the keyboard.
+   * `onArrive` (if given) fires once the final waypoint is reached; it does
+   * not fire if the move is cancelled or gives up.
    */
-  setMoveTarget(x: number, y: number): void {
-    this._moveTarget = { x, y };
+  setMoveTarget(x: number, y: number, onArrive?: () => void): void {
+    this._moveFinal = { x, y };
+    this._movePath = obstacleManager.findPath(this.x, this.y, x, y);
+    this._onArrive = onArrive ?? null;
+    this._stuckFrames = 0;
   }
 
-  /** Cancel any active tap-to-move target. */
+  /** Cancel any active tap-to-move target (and drop the arrive callback). */
   clearMoveTarget(): void {
-    this._moveTarget = null;
+    this._movePath = [];
+    this._moveFinal = null;
+    this._onArrive = null;
+    this._stuckFrames = 0;
   }
 
-  /** Read-only view of the current tap-to-move target (mostly for tests / UI). */
+  /** Read-only view of the current tap-to-move final target (for tests / UI). */
   get moveTarget(): { x: number; y: number } | null {
-    return this._moveTarget;
+    return this._moveFinal;
   }
 
   update(delta: number, input: InputManager, bounds: WorldBounds): void {
@@ -100,18 +119,39 @@ export class Player {
     if (keyboardActive) {
       // Keyboard always wins over tap-to-move so the player can interrupt a
       // long walk by simply pressing WASD.
-      this._moveTarget = null;
+      this._movePath = [];
+      this._moveFinal = null;
+      this._onArrive = null;
+      this._stuckFrames = 0;
       if (input.isHeld('player_move_up'))    dy -= this.speed * delta;
       if (input.isHeld('player_move_down'))  dy += this.speed * delta;
       if (input.isHeld('player_move_left'))  dx -= this.speed * delta;
       if (input.isHeld('player_move_right')) dx += this.speed * delta;
-    } else if (this._moveTarget) {
-      const tx = this._moveTarget.x - this.x;
-      const ty = this._moveTarget.y - this.y;
-      const tdist = Math.sqrt(tx * tx + ty * ty);
-      if (tdist <= Player.TARGET_ARRIVE_DIST) {
-        this._moveTarget = null;
+    } else if (this._movePath.length > 0) {
+      // Pop any waypoints we're already within arrive distance of (covers the
+      // case where a short recompute produced a node right on top of us).
+      while (this._movePath.length > 0) {
+        const next = this._movePath[0];
+        const dxw = next.x - this.x;
+        const dyw = next.y - this.y;
+        if (dxw * dxw + dyw * dyw <= Player.TARGET_ARRIVE_DIST * Player.TARGET_ARRIVE_DIST) {
+          this._movePath.shift();
+        } else {
+          break;
+        }
+      }
+      if (this._movePath.length === 0) {
+        // Path exhausted this frame — fire the arrive callback and stop.
+        const cb = this._onArrive;
+        this._moveFinal = null;
+        this._onArrive = null;
+        this._stuckFrames = 0;
+        if (cb) cb();
       } else {
+        const next = this._movePath[0];
+        const tx = next.x - this.x;
+        const ty = next.y - this.y;
+        const tdist = Math.sqrt(tx * tx + ty * ty);
         const step = Math.min(this.speed * delta, tdist);
         dx = (tx / tdist) * step;
         dy = (ty / tdist) * step;
@@ -140,18 +180,38 @@ export class Player {
       }
     }
 
-    // If a tap-to-move was active, drop it once we either (a) made zero
-    // progress this frame (wall in the way, edge of map, etc.) so the
-    // player doesn't grind forever, or (b) ended within the arrive radius.
-    if (this._moveTarget) {
-      if ((dx !== 0 || dy !== 0) && this.x === startX && this.y === startY) {
-        this._moveTarget = null;
-      } else {
-        const rx = this._moveTarget.x - this.x;
-        const ry = this._moveTarget.y - this.y;
-        if (rx * rx + ry * ry <= Player.TARGET_ARRIVE_DIST * Player.TARGET_ARRIVE_DIST) {
-          this._moveTarget = null;
+    // Path progress bookkeeping: pop the active waypoint if we arrived on it,
+    // and handle stall detection (blocked by geometry the graph doesn't know
+    // about). First stall frame triggers a one-shot recompute from the
+    // current position; a second stall frame gives up so the player doesn't
+    // grind forever.
+    if (this._movePath.length > 0) {
+      const next = this._movePath[0];
+      const rx = next.x - this.x;
+      const ry = next.y - this.y;
+      const arrived = rx * rx + ry * ry <= Player.TARGET_ARRIVE_DIST * Player.TARGET_ARRIVE_DIST;
+      if (arrived) {
+        this._movePath.shift();
+        this._stuckFrames = 0;
+        if (this._movePath.length === 0) {
+          const cb = this._onArrive;
+          this._moveFinal = null;
+          this._onArrive = null;
+          if (cb) cb();
         }
+      } else if ((dx !== 0 || dy !== 0) && this.x === startX && this.y === startY) {
+        if (this._stuckFrames === 0 && this._moveFinal) {
+          const recomputed = obstacleManager.findPath(this.x, this.y, this._moveFinal.x, this._moveFinal.y);
+          if (recomputed.length > 0) this._movePath = recomputed;
+          this._stuckFrames = 1;
+        } else {
+          this._movePath = [];
+          this._moveFinal = null;
+          this._onArrive = null;
+          this._stuckFrames = 0;
+        }
+      } else {
+        this._stuckFrames = 0;
       }
     }
 
