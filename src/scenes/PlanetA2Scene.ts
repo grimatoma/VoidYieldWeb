@@ -5,7 +5,6 @@ import { Camera } from '@services/Camera';
 import { inputManager } from '@services/InputManager';
 import { depositMap } from '@services/DepositMap';
 import { DEPOSITS_A2 } from '../data/deposits_a2';
-import { MinimapOverlay } from '../ui/MinimapOverlay';
 import { GalaxyMap } from '@ui/GalaxyMap';
 import { gameState } from '@services/GameState';
 import { EventBus } from '@services/EventBus';
@@ -26,7 +25,6 @@ export class PlanetA2Scene implements Scene {
   private worldContainer!: Container;
   private player!: Player;
   private camera!: Camera;
-  private minimap!: MinimapOverlay;
   private galaxyMap!: GalaxyMap;
   private unsubInteract?: () => void;
   private _cacheFound = false;
@@ -77,10 +75,6 @@ export class PlanetA2Scene implements Scene {
     );
     this.camera.mount(app.canvas);
     this.camera.onTap((wx, wy) => this.player.setMoveTarget(wx, wy));
-
-    // 8. Minimap
-    this.minimap = new MinimapOverlay(WORLD_WIDTH, WORLD_HEIGHT, app.screen.width, app.screen.height);
-    app.stage.addChild(this.minimap.container);
 
     // 9. Top banner
     const bannerBg = new Graphics();
@@ -171,7 +165,6 @@ export class PlanetA2Scene implements Scene {
   update(delta: number): void {
     this.player.update(delta, inputManager, { width: WORLD_WIDTH, height: WORLD_HEIGHT });
     this.camera.follow({ x: this.player.x, y: this.player.y });
-    this.minimap.update({ x: this.player.x, y: this.player.y });
 
     // Update respawn timers
     for (let i = this._respawnTimers.length - 1; i >= 0; i--) {
