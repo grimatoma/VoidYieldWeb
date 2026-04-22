@@ -110,7 +110,7 @@ export class AsteroidOutpostScene implements Scene {
     this._buildMenuOverlay.mount();
 
     // HUD
-    this._hud = new OutpostHud();
+    this._hud = new OutpostHud(this._storage!);
     this._hud.mount(app);
 
     // Build prompt overlay
