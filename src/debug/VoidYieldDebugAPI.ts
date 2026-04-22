@@ -19,7 +19,7 @@ import { fleetManager } from '@services/FleetManager';
 import { miningCircuitManager } from '@services/MiningCircuitManager';
 import { depositMap } from '@services/DepositMap';
 import { marketplaceService } from '@services/MarketplaceService';
-import { getActiveStorage } from '@scenes/AsteroidOutpostScene';
+import { getActiveStorage, forceBuildInOutpost, setOutpostFurnaceRecipe } from '@scenes/AsteroidOutpostScene';
 
 export interface VoidYieldDebugAPI {
   // ── State setters ─────────────────────────────────────────────
@@ -65,9 +65,19 @@ export interface VoidYieldDebugAPI {
     setInventory(ore: OreType, qty: number): void;
     getInventory(ore: OreType): number;
     resetOutpost(): void;
+    /** Force-place a building without cost deduction — for E2E tests. */
     forceBuild(buildingType: 'marketplace' | 'drone_depot'): void;
+    /** Set storage to exactly ironBars iron_bars and copperBars copper_bars. */
     seedBars(ironBars: number, copperBars: number): void;
     getStorageStock(ore: OreType): number;
+    /** Directly set the outpost storage stockpile for a given ore — for tests. */
+    setStorageStock(ore: OreType, qty: number): void;
+    /** Clear all outpost storage — for tests. */
+    clearStorage(): void;
+    /** Sell all outpost storage at market prices. Returns CR earned. */
+    sellAll(): number;
+    /** Set the furnace recipe: 'off' | 'iron' | 'copper'. */
+    setFurnaceRecipe(recipe: 'off' | 'iron' | 'copper'): void;
   };
 
   // ── Raw service access for advanced tests ────────────────────
@@ -275,14 +285,39 @@ function createDebugAPI(): VoidYieldDebugAPI {
         EventBus.emit('outpost:inventory-changed');
       },
       forceBuild(buildingType) {
-        EventBus.emit('outpost:force-build' as any, buildingType);
+        forceBuildInOutpost(buildingType);
       },
       seedBars(ironBars, copperBars) {
-        EventBus.emit('outpost:seed-bars' as any, { iron_bar: ironBars, copper_bar: copperBars });
+        const storage = getActiveStorage();
+        if (!storage) {
+          console.warn('[voidyield] seedBars: no active outpost storage');
+          return;
+        }
+        storage.setStock('iron_bar', ironBars);
+        storage.setStock('copper_bar', copperBars);
       },
       getStorageStock(ore) {
         const storage = getActiveStorage();
         return storage?.getBarCount(ore) ?? 0;
+      },
+      setStorageStock(ore, qty) {
+        const storage = getActiveStorage();
+        if (!storage) {
+          console.warn('[voidyield] setStorageStock: no active outpost storage');
+          return;
+        }
+        storage.setStock(ore, qty);
+      },
+      clearStorage() {
+        getActiveStorage()?.clearStock();
+      },
+      sellAll() {
+        const storage = getActiveStorage();
+        if (!storage) return 0;
+        return marketplaceService.sellAll(storage);
+      },
+      setFurnaceRecipe(recipe) {
+        setOutpostFurnaceRecipe(recipe);
       },
     },
 
