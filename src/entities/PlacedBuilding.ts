@@ -1,8 +1,8 @@
 import { Container, Graphics, Text, TextStyle } from 'pixi.js';
 import type { GridFootprint } from '@services/BuildGrid';
 
-export const CELL_SIZE = 80; // pixels per grid cell
-export const GRID_ORIGIN = { x: 100, y: 120 }; // top-left of the 5x5 grid in scene coordinates
+export const CELL_SIZE = 88; // pixels per grid cell
+export const GRID_ORIGIN = { x: 260, y: 50 }; // top-left of the 5x5 grid, centered in 960×540
 
 export function gridToWorld(row: number, col: number): { x: number; y: number } {
   return {

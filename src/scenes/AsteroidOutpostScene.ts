@@ -76,8 +76,8 @@ export class AsteroidOutpostScene implements Scene {
     // Spawn deposits
     this._initDeposits();
 
-    // Player starts in the center-right of the scene, away from the grid
-    this._player = new Player(600, 300);
+    // Player starts to the right of the centered grid, near the deposits
+    this._player = new Player(830, 280);
     this._stage.addChild(this._player.container);
 
     // Wire mining service
