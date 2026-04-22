@@ -91,7 +91,7 @@ describe('DroneDepot', () => {
     expect(furnace.manualOnly).toBe(false);
   });
 
-  it('onBuild calls dispatcher.configure with correct slot configs', () => {
+  it('onBuild calls dispatcher.configure with the live bay-slot array', () => {
     const depot = new DroneDepot(400, 300);
     const storage = makeStorage();
     const furnace = makeFurnace();
@@ -104,25 +104,25 @@ describe('DroneDepot', () => {
     expect(s).toBe(storage);
     expect(f).toBe(furnace);
     expect(slots).toHaveLength(3);
-    expect(slots[0]).toMatchObject({ slotId: 'slot_0', role: 'miner',     oreType: 'iron_ore' });
-    expect(slots[1]).toMatchObject({ slotId: 'slot_1', role: 'miner',     oreType: 'copper_ore' });
-    expect(slots[2]).toMatchObject({ slotId: 'slot_2', role: 'logistics', oreType: 'any' });
+    expect(slots[0]).toMatchObject({ slotId: 'slot_0', drone: null, droneType: null, oreType: 'iron_ore' });
+    expect(slots[1]).toMatchObject({ slotId: 'slot_1', drone: null, droneType: null, oreType: 'copper_ore' });
+    expect(slots[2]).toMatchObject({ slotId: 'slot_2', drone: null, droneType: null, oreType: 'iron_ore' });
   });
 
-  it('setSlotConfig updates a slot and re-configures dispatcher', () => {
+  it('setSlotOreType updates oreType for the given slot', () => {
     const depot = new DroneDepot(400, 300);
     const storage = makeStorage();
     const furnace = makeFurnace();
     const dispatcher = makeDispatcher();
 
     depot.onBuild(storage as any, furnace as any, dispatcher as any);
-    dispatcher.configure.mockClear();
 
-    depot.setSlotConfig('slot_1', { slotId: 'slot_1', role: 'miner', oreType: 'iron_ore' });
+    depot.setSlotOreType('slot_0', 'copper_ore');
 
-    expect(dispatcher.configure).toHaveBeenCalledOnce();
-    const slots = depot.getSlotConfigs();
-    expect(slots[1]).toMatchObject({ slotId: 'slot_1', role: 'miner', oreType: 'iron_ore' });
+    const slots = depot.getBaySlots();
+    expect(slots[0]).toMatchObject({ slotId: 'slot_0', oreType: 'copper_ore' });
+    // Mutation is live — no re-configure needed since slots are passed by reference
+    expect(dispatcher.configure).toHaveBeenCalledOnce(); // only from onBuild
   });
 
   it('second DroneDepot throws (MVP limit)', () => {

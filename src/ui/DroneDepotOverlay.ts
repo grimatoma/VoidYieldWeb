@@ -1,27 +1,19 @@
 import type { DroneDepot } from '@entities/DroneDepot';
-import type { DroneSlotConfig } from '@services/OutpostDispatcher';
-import type { OreType, DroneType } from '@data/types';
+import type { DroneBase } from '@entities/DroneBase';
+import type { DroneBaySlot } from '@services/OutpostDispatcher';
+import type { OreType } from '@data/types';
 import type { Container } from 'pixi.js';
-
-const ROLE_OPTIONS: Array<{ value: DroneSlotConfig['role']; label: string }> = [
-  { value: 'miner',    label: 'MINER' },
-  { value: 'logistics', label: 'LOGISTICS' },
-];
+import { gameState } from '@services/GameState';
 
 const ORE_OPTIONS: Array<{ value: OreType | 'any'; label: string }> = [
-  { value: 'iron_ore',    label: 'IRON ORE' },
-  { value: 'copper_ore',  label: 'COPPER ORE' },
-  { value: 'any',         label: 'ANY' },
+  { value: 'iron_ore',   label: 'IRON ORE' },
+  { value: 'copper_ore', label: 'COPPER ORE' },
+  { value: 'any',        label: 'ANY' },
 ];
 
-/**
- * DroneDepotOverlay — HTML overlay for configuring Drone Depot slot configs.
- * Opened when the player interacts with a built DroneDepot.
- * Follows the OutpostHud/FurnaceOverlay HTML overlay pattern.
- */
-const DEPOT_DRONE_SHOP: Array<{ type: DroneType; label: string; desc: string; cost: number }> = [
-  { type: 'scout', label: 'MINING DRONE', desc: '60 px/s · 3 ore · 3s mine', cost: 25 },
-  { type: 'heavy', label: 'HEAVY MINER',  desc: '40 px/s · 10 ore · 2s mine', cost: 150 },
+const DRONE_SPECS = [
+  { type: 'scout' as const, label: 'MINING DRONE', cost: 25  },
+  { type: 'heavy' as const, label: 'HEAVY MINER',  cost: 150 },
 ];
 
 export class DroneDepotOverlay {
@@ -29,6 +21,7 @@ export class DroneDepotOverlay {
   private _getWorldContainer: () => Container;
   private _root: HTMLElement | null = null;
   private _open = false;
+  private _pollHandle: ReturnType<typeof setInterval> | null = null;
 
   constructor(depot: DroneDepot, getWorldContainer: () => Container) {
     this._depot = depot;
@@ -37,31 +30,31 @@ export class DroneDepotOverlay {
 
   mount(): void {
     const parent = document.getElementById('ui-layer') ?? document.body;
-
     this._root = document.createElement('div');
     this._root.id = 'drone-depot-overlay';
     this._root.style.cssText = [
       'position:absolute',
-      'bottom:80px',
+      'top:50%',
       'left:50%',
-      'transform:translateX(-50%)',
-      'background:rgba(13,27,62,0.95)',
+      'transform:translate(-50%,-50%)',
+      'background:rgba(13,27,62,0.97)',
       'border:1px solid #6A4A8C',
       'color:#D4A843',
       'font-family:monospace',
       'font-size:13px',
-      'padding:12px 16px',
-      'min-width:380px',
+      'padding:16px 20px',
+      'min-width:440px',
+      'max-width:520px',
       'z-index:20',
       'pointer-events:auto',
       'display:none',
     ].join(';');
-
     parent.appendChild(this._root);
     this._render();
   }
 
   unmount(): void {
+    this._stopPoll();
     this._root?.remove();
     this._root = null;
     this._open = false;
@@ -73,21 +66,82 @@ export class DroneDepotOverlay {
       this._root.style.display = 'block';
       this._render();
     }
+    this._startPoll();
   }
 
   close(): void {
     this._open = false;
     if (this._root) this._root.style.display = 'none';
+    this._stopPoll();
   }
 
-  isOpen(): boolean {
-    return this._open;
+  isOpen(): boolean { return this._open; }
+
+  private _startPoll(): void {
+    this._stopPoll();
+    this._pollHandle = setInterval(() => {
+      if (this._open) this._render();
+    }, 250);
+  }
+
+  private _stopPoll(): void {
+    if (this._pollHandle !== null) {
+      clearInterval(this._pollHandle);
+      this._pollHandle = null;
+    }
   }
 
   private _render(): void {
     if (!this._root) return;
+    const slots = this._depot.getBaySlots();
+    const credits = gameState.credits;
 
-    const slots = this._depot.getSlotConfigs();
+    let html = `
+      <div style="display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid #2A3A5A;padding-bottom:10px;margin-bottom:4px;">
+        <span style="font-size:15px;font-weight:bold;letter-spacing:1px;">DRONE DEPOT</span>
+        <span style="color:#00B8D4;font-size:12px;">${credits.toLocaleString()} CR</span>
+      </div>
+    `;
+
+    for (let i = 0; i < slots.length; i++) {
+      html += this._renderSlot(slots[i], i + 1);
+    }
+
+    html += `
+      <div style="text-align:center;margin-top:14px;padding-top:10px;border-top:1px solid #2A3A5A;">
+        <button id="ddo-close" style="${this._btnStyle('#D4A843')}">CLOSE</button>
+      </div>
+    `;
+
+    this._root.innerHTML = html;
+    this._wireEvents(slots);
+  }
+
+  private _renderSlot(slot: DroneBaySlot, num: number): string {
+    const wrap = 'border-top:1px solid #2A3A5A;padding:12px 0 8px;';
+
+    if (!slot.drone) {
+      const btns = DRONE_SPECS.map(spec => {
+        const canAfford = gameState.credits >= spec.cost;
+        const style = this._btnStyle(canAfford ? '#00B8D4' : '#555');
+        const disabled = canAfford ? '' : 'disabled';
+        return `<button id="ddo-buy-${slot.slotId}-${spec.type}" ${disabled} style="${style}">${spec.label} — ${spec.cost} CR</button>`;
+      }).join(' ');
+
+      return `
+        <div style="${wrap}">
+          <div style="font-size:11px;opacity:0.45;margin-bottom:8px;letter-spacing:1px;">SLOT ${num} — EMPTY</div>
+          <div style="display:flex;gap:8px;flex-wrap:wrap;">${btns}</div>
+        </div>
+      `;
+    }
+
+    const { dotColor, label } = this._droneStatus(slot.drone);
+    const droneName = slot.droneType === 'scout' ? 'Mining Drone' : 'Heavy Miner';
+
+    const oreOpts = ORE_OPTIONS.map(o =>
+      `<option value="${o.value}" ${slot.oreType === o.value ? 'selected' : ''}>${o.label}</option>`
+    ).join('');
 
     const selectStyle = [
       'font-family:monospace',
@@ -99,92 +153,77 @@ export class DroneDepotOverlay {
       'cursor:pointer',
     ].join(';');
 
-    let html = `
-      <div style="font-size:15px;font-weight:bold;margin-bottom:10px;text-align:center;color:#D4A843;">DRONE DEPOT</div>
-    `;
-
-    for (const slot of slots) {
-      const slotNum = parseInt(slot.slotId.replace('slot_', ''), 10) + 1;
-
-      const roleOpts = ROLE_OPTIONS.map(o =>
-        `<option value="${o.value}" ${slot.role === o.value ? 'selected' : ''}>${o.label}</option>`
-      ).join('');
-
-      const oreOpts = ORE_OPTIONS.map(o =>
-        `<option value="${o.value}" ${slot.oreType === o.value ? 'selected' : ''}>${o.label}</option>`
-      ).join('');
-
-      const showOre = slot.role === 'miner';
-
-      html += `
-        <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;padding:6px;border:1px solid #2A3A5A;">
-          <span style="min-width:48px;opacity:0.7;">Slot ${slotNum}:</span>
-          <select id="dd-role-${slot.slotId}" style="${selectStyle}">${roleOpts}</select>
-          <select id="dd-ore-${slot.slotId}" style="${selectStyle};${showOre ? '' : 'visibility:hidden'}">${oreOpts}</select>
+    return `
+      <div style="${wrap}">
+        <div style="display:flex;align-items:center;gap:8px;">
+          <span style="font-size:11px;opacity:0.45;min-width:52px;letter-spacing:1px;">SLOT ${num}</span>
+          <span style="color:${dotColor};font-size:16px;line-height:1;">●</span>
+          <span style="flex:1;font-size:12px;font-weight:bold;">${label}</span>
+          <select id="ddo-ore-${slot.slotId}" style="${selectStyle}">${oreOpts}</select>
+          <button id="ddo-release-${slot.slotId}" style="${this._btnStyle('#FF5252')}">RELEASE</button>
         </div>
-      `;
-    }
-
-    html += `
-      <div style="border-top:1px solid #2A3A5A;margin-top:10px;padding-top:10px;">
-        <div style="font-size:13px;font-weight:bold;margin-bottom:8px;color:#00B8D4;">BUILD DRONES</div>
-    `;
-
-    for (const spec of DEPOT_DRONE_SHOP) {
-      html += `
-        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;padding:5px;border:1px solid #2A3A5A;">
-          <div>
-            <div style="font-size:12px;">${spec.label}</div>
-            <div style="font-size:10px;opacity:0.6;">${spec.desc}</div>
-          </div>
-          <div style="display:flex;align-items:center;gap:6px;">
-            <span style="font-size:11px;">${spec.cost} CR</span>
-            <button id="dd-buy-${spec.type}" style="font-family:monospace;font-size:11px;padding:3px 8px;border:1px solid #00B8D4;background:transparent;color:#00B8D4;cursor:pointer;">BUILD</button>
-          </div>
-        </div>
-      `;
-    }
-
-    html += `</div>`;
-
-    html += `
-      <div style="text-align:center;margin-top:6px;">
-        <button id="dd-close-btn" style="font-family:monospace;font-size:11px;padding:4px 14px;border:1px solid #D4A843;background:transparent;color:#D4A843;cursor:pointer;">CLOSE</button>
+        <div style="font-size:10px;opacity:0.4;margin-top:5px;padding-left:60px;">${droneName}</div>
       </div>
     `;
+  }
 
-    this._root.innerHTML = html;
-
-    // Wire drone build buttons
-    for (const spec of DEPOT_DRONE_SHOP) {
-      const buyBtn = this._root.querySelector<HTMLButtonElement>(`#dd-buy-${spec.type}`);
-      buyBtn?.addEventListener('click', () => {
-        const drone = this._depot.purchaseDrone(spec.type, this._getWorldContainer());
-        if (drone) this._render();
-      });
+  private _droneStatus(drone: DroneBase): { dotColor: string; label: string } {
+    const tasks = drone.getTasks();
+    const task = tasks[0];
+    if (drone.state === 'IDLE' || !task) {
+      return { dotColor: '#4CAF50', label: 'IDLE' };
     }
+    if (drone.state === 'MOVING_TO_TARGET') {
+      return task.type === 'MINE'
+        ? { dotColor: '#FFC107', label: 'EN ROUTE' }
+        : { dotColor: '#00B8D4', label: 'RETURNING' };
+    }
+    if (drone.state === 'EXECUTING') {
+      return task.type === 'MINE'
+        ? { dotColor: '#FF6D00', label: 'MINING' }
+        : { dotColor: '#00B8D4', label: 'DEPOSITING' };
+    }
+    return { dotColor: '#FFC107', label: 'BUSY' };
+  }
 
-    // Wire slot event listeners after rendering
+  private _btnStyle(color: string): string {
+    return [
+      'font-family:monospace',
+      'font-size:11px',
+      'padding:4px 10px',
+      `border:1px solid ${color}`,
+      'background:transparent',
+      `color:${color}`,
+      'cursor:pointer',
+    ].join(';');
+  }
+
+  private _wireEvents(slots: readonly DroneBaySlot[]): void {
+    if (!this._root) return;
+
+    this._root.querySelector('#ddo-close')?.addEventListener('click', () => this.close());
+
     for (const slot of slots) {
-      const roleSelect = this._root.querySelector<HTMLSelectElement>(`#dd-role-${slot.slotId}`);
-      const oreSelect  = this._root.querySelector<HTMLSelectElement>(`#dd-ore-${slot.slotId}`);
+      if (!slot.drone) {
+        for (const spec of DRONE_SPECS) {
+          const btn = this._root.querySelector(`#ddo-buy-${slot.slotId}-${spec.type}`);
+          btn?.addEventListener('click', () => {
+            this._depot.assignDrone(slot.slotId, spec.type, this._getWorldContainer());
+            this._render();
+          });
+        }
+      } else {
+        const oreSelect = this._root.querySelector<HTMLSelectElement>(`#ddo-ore-${slot.slotId}`);
+        oreSelect?.addEventListener('change', () => {
+          this._depot.setSlotOreType(slot.slotId, oreSelect.value as OreType | 'any');
+        });
 
-      roleSelect?.addEventListener('change', () => {
-        const newRole = (roleSelect.value as DroneSlotConfig['role']);
-        const newOre: OreType | 'any' = oreSelect ? (oreSelect.value as OreType | 'any') : slot.oreType;
-        this._depot.setSlotConfig(slot.slotId, { slotId: slot.slotId, role: newRole, oreType: newOre });
-        // Re-render to show/hide ore select
-        this._render();
-      });
-
-      oreSelect?.addEventListener('change', () => {
-        const newRole = roleSelect ? (roleSelect.value as DroneSlotConfig['role']) : slot.role;
-        const newOre = (oreSelect.value as OreType | 'any');
-        this._depot.setSlotConfig(slot.slotId, { slotId: slot.slotId, role: newRole, oreType: newOre });
-      });
+        const releaseBtn = this._root.querySelector(`#ddo-release-${slot.slotId}`);
+        releaseBtn?.addEventListener('click', () => {
+          this._depot.releaseDrone(slot.slotId);
+          this._render();
+        });
+      }
     }
-
-    const closeBtn = this._root.querySelector<HTMLButtonElement>('#dd-close-btn');
-    closeBtn?.addEventListener('click', () => this.close());
   }
 }

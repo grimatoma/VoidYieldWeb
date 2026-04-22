@@ -531,7 +531,7 @@ export class AsteroidOutpostScene implements Scene {
       grid: buildGrid.serialize(),
       furnaceRecipe: this._furnace?.recipe ?? 'off',
       stockpile: Object.fromEntries(this._storage?.getStockpile() ?? []),
-      droneSlots: this._droneDepot?.getSlotConfigs() ?? [],
+      droneSlots: this._droneDepot?.getBaySlotData() ?? [],
       playerX: this._player?.x ?? 480,
       playerY: this._player?.y ?? 270,
     };
@@ -556,10 +556,10 @@ export class AsteroidOutpostScene implements Scene {
       }
     }
 
-    // Restore drone slot configs
-    if (this._droneDepot) {
-      for (const slotConfig of data.droneSlots) {
-        this._droneDepot.setSlotConfig(slotConfig.slotId, slotConfig);
+    // Restore drone bay slots (re-spawns drones into world without charging credits)
+    if (this._droneDepot && data.droneSlots) {
+      for (const slotData of data.droneSlots) {
+        this._droneDepot.restoreBaySlot(slotData, this._stage!);
       }
     }
 
@@ -585,7 +585,7 @@ export class AsteroidOutpostScene implements Scene {
 
     // Remove drones created in this outpost scene from the global fleet
     if (this._droneDepot) {
-      for (const drone of this._droneDepot.getDeployedDrones()) {
+      for (const drone of this._droneDepot.getAllDrones()) {
         fleetManager.remove(drone.id);
       }
     }
