@@ -1,5 +1,10 @@
 # VoidYield Web — Claude Guidelines
 
+## Git workflow
+
+Commit and push directly to the working branch. Do **not** open pull requests
+for changes on this project — the owner works solo and merges on their own.
+
 ## Model selection
 
 Use the cheapest model that can do the job:
