@@ -65,6 +65,7 @@ export class BuildMenuOverlay {
       'padding:12px 16px',
       'min-width:260px',
       'z-index:100',
+      'pointer-events:auto',
       'display:none',
     ].join(';');
 

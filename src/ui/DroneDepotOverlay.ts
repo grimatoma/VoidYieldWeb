@@ -45,6 +45,7 @@ export class DroneDepotOverlay {
       'padding:12px 16px',
       'min-width:380px',
       'z-index:20',
+      'pointer-events:auto',
       'display:none',
     ].join(';');
 
