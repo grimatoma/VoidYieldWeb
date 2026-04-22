@@ -1,4 +1,4 @@
-import { Container, Sprite } from 'pixi.js';
+import { Container, Graphics, Sprite } from 'pixi.js';
 import type { InputManager } from '@services/InputManager';
 import { assetManager } from '@services/AssetManager';
 import { playerSpriteSheet, type PlayerAnimState } from '@services/PlayerSpriteSheet';
@@ -39,6 +39,7 @@ export class Player {
   private _animState: PlayerAnimState = 'idle';
   private _animClock = 0;     // seconds since this animation started
   private _frameIdx = 0;
+  private _progressBar: Graphics;
 
   /**
    * Tap-to-move path in world coordinates. When non-empty (and no movement key
@@ -73,6 +74,9 @@ export class Player {
     this.container.addChild(this.sprite);
     this.container.x = startX;
     this.container.y = startY;
+
+    this._progressBar = new Graphics();
+    this.container.addChild(this._progressBar);
 
     // Try to upgrade to the sliced sheet texture now; if assets aren't loaded
     // yet, the per-frame update() will pick it up once available.
@@ -261,7 +265,32 @@ export class Player {
       this._frameIdx = Math.floor(this._animClock * fps);
     }
 
+    this._updateProgressBar();
     this._applyFrameTexture();
+  }
+
+  private _updateProgressBar(): void {
+    this._progressBar.clear();
+
+    // Only show progress bar if actively mining
+    if (!miningService.isMining) return;
+
+    const holdProgress = miningService.holdProgress;
+    if (holdProgress <= 0) return;
+
+    const barWidth = 28;
+    const barHeight = 4;
+    const barX = -barWidth / 2;
+    const barY = -40;
+
+    // Background (dark gray)
+    this._progressBar.rect(barX, barY, barWidth, barHeight);
+    this._progressBar.fill(0x333333);
+
+    // Fill (teal)
+    const filledWidth = barWidth * holdProgress;
+    this._progressBar.rect(barX, barY, filledWidth, barHeight);
+    this._progressBar.fill(0x00B8D4);
   }
 
   /** Resolve the current (dir, state, frameIdx) to a texture on the sprite. */
