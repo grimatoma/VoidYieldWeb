@@ -3,7 +3,6 @@ import { Application, Container, Graphics, Text, TextStyle } from 'pixi.js';
 import { Player } from '@entities/Player';
 import { Camera } from '@services/Camera';
 import { IndustrialSite } from '@entities/IndustrialSite';
-import { MinimapOverlay } from '../ui/MinimapOverlay';
 import { inputManager } from '@services/InputManager';
 import { depositMap } from '@services/DepositMap';
 import { DEPOSITS_B } from '../data/deposits_b';
@@ -45,7 +44,6 @@ export class PlanetBScene implements Scene {
   private worldContainer!: Container;
   private player!: Player;
   private camera!: Camera;
-  private minimap!: MinimapOverlay;
   private sites: IndustrialSite[] = [];
   private storageDepot!: StorageDepot;
   private unsubInteract?: () => void;
@@ -103,10 +101,6 @@ export class PlanetBScene implements Scene {
     );
     this.camera.mount(app.canvas);
     this.camera.onTap((wx, wy) => this.player.setMoveTarget(wx, wy));
-
-    // 10. Minimap HUD (added to stage, not worldContainer)
-    this.minimap = new MinimapOverlay(WORLD_WIDTH, WORLD_HEIGHT, app.screen.width, app.screen.height);
-    app.stage.addChild(this.minimap.container);
 
     // 11. Stranding banner (HUD text)
     this.strandingBanner = new Text({
@@ -170,7 +164,6 @@ export class PlanetBScene implements Scene {
   update(delta: number): void {
     this.player.update(delta, inputManager, { width: WORLD_WIDTH, height: WORLD_HEIGHT });
     this.camera.follow({ x: this.player.x, y: this.player.y });
-    this.minimap.update({ x: this.player.x, y: this.player.y });
     miningService.update(delta, { x: this.player.x, y: this.player.y });
     harvesterManager.update(delta);
     fleetManager.update(delta);

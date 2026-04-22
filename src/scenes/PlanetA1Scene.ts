@@ -5,7 +5,6 @@ import { simulateOffline } from '@services/OfflineSimulator';
 import { assetManager } from '@services/AssetManager';
 import { Camera } from '@services/Camera';
 import { IndustrialSite } from '@entities/IndustrialSite';
-import { MinimapOverlay } from '../ui/MinimapOverlay';
 import { inputManager } from '@services/InputManager';
 import { depositMap } from '@services/DepositMap';
 import { DEPOSITS_A1 } from '../data/deposits_a1';
@@ -86,7 +85,6 @@ export class PlanetA1Scene implements Scene {
   private worldContainer!: Container;
   private player!: Player;
   private camera!: Camera;
-  private minimap!: MinimapOverlay;
   private sites: IndustrialSite[] = [];
   private storageDepot!: StorageDepot;
   private unsubInteract?: () => void;
@@ -403,10 +401,6 @@ export class PlanetA1Scene implements Scene {
     // Touch: single-finger tap on the canvas walks the player to that spot.
     this.camera.onTap((wx, wy) => this.player.setMoveTarget(wx, wy));
 
-    // 9. Minimap HUD (added to stage, not worldContainer)
-    this.minimap = new MinimapOverlay(WORLD_WIDTH, WORLD_HEIGHT, app.screen.width, app.screen.height);
-    app.stage.addChild(this.minimap.container);
-
     // Wire offline simulation events to the UILayer-owned panel
     EventBus.on('offline:simulation_needed', (seconds: number) => {
       const uiOff = (window as unknown as { __voidyield_uiLayer?: { offlineDispatch?: { show: (r: ReturnType<typeof simulateOffline>) => void } } }).__voidyield_uiLayer;
@@ -588,7 +582,6 @@ export class PlanetA1Scene implements Scene {
   update(delta: number): void {
     this.player.update(delta, inputManager, { width: WORLD_WIDTH, height: WORLD_HEIGHT });
     this.camera.follow({ x: this.player.x, y: this.player.y });
-    this.minimap.update({ x: this.player.x, y: this.player.y });
     // Survey mode — update scan state machine; suppress interaction prompt when active.
     const playerMoving = inputManager.isHeld('player_move_up')
       || inputManager.isHeld('player_move_down')
