@@ -112,8 +112,8 @@ export class AsteroidOutpostScene implements Scene {
     // Spawn deposits
     this._initDeposits();
 
-    // Player starts to the right of the centered grid, near the deposits
-    this._player = new Player(830, 280);
+    // Player starts at the grid centre so the camera opens with the grid visible
+    this._player = new Player(480, 270);
     this._stage.addChild(this._player.container);
 
     // Tap-to-move: single click/tap walks the player to that spot
