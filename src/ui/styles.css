@@ -240,6 +240,15 @@
   box-shadow: 0 0 30px rgba(212, 168, 67, 0.3);
 }
 
+/* Outpost inventory: anchor to right edge so it doesn't cover the centered grid */
+#inventory-panel {
+  left: auto;
+  right: 8px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 240px;
+}
+
 .trade-panel-head {
   display: flex;
   justify-content: space-between;
