@@ -164,10 +164,13 @@ export class AsteroidOutpostScene implements Scene {
     _forceBuildFn = (type) => this._doForceBuild(type);
     _setFurnaceRecipeFn = (recipe) => this._furnace?.setRecipe(recipe as any);
 
-    // Default starting resources — overridden if save data exists
-    this._storage?.setStock('iron_ore', 100);
-    this._storage?.setStock('iron_bar', 100);
-    this._storage?.setStock('water', 100);
+    // Default starting resources — enough for 5 bars of each type so the
+    // player must engage the drone/mining loop for more. Storage capacity is 50;
+    // keeping total well below that ensures isFull() is false and drones
+    // dispatch immediately after being assigned.
+    this._storage?.setStock('iron_ore', 10);   // 5 iron bars' worth
+    this._storage?.setStock('copper_ore', 10); // 5 copper bars' worth
+    this._storage?.setStock('iron_bar', 10);   // enough to build one structure
 
     // Try to load and deserialize saved outpost state
     const saved = saveManager.loadGame();
@@ -325,9 +328,18 @@ export class AsteroidOutpostScene implements Scene {
       this._marketplaceOverlay = null;
     }
     if (buildingId.startsWith('drone_depot_') && this._droneDepot) {
+      // Release all bay-slot drones from the fleet before destroying the depot
+      // so the active-drone count doesn't leak and trigger the cap on rebuild.
+      for (const drone of this._droneDepot.getAllDrones()) {
+        drone.clearTasks();
+        drone.container.parent?.removeChild(drone.container);
+        fleetManager.remove(drone.id);
+      }
       this._buildingLayer?.removeChild(this._droneDepot.container);
       outpostDispatcher.stop();
       this._droneDepotOverlay?.close();
+      this._droneDepotOverlay?.unmount();
+      this._droneDepotOverlay = null;
       this._droneDepot = null;
       resetDepotBuilt();
     }
