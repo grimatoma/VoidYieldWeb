@@ -33,6 +33,7 @@ export interface SaveData {
   sector_manager?: { sectorBonuses: string[]; warpGateBuilt: boolean; galacticHubBuilt: boolean };
   stranding_manager?: { rocketFuel: number; isStranded: boolean };
   tutorial_state?: { step: number; completed: boolean; skipped: boolean };
+  max_active_drones?: number;
 }
 
 /**

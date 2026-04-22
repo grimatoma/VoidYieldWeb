@@ -16,6 +16,9 @@ export class GameState {
   private _voidCoresProduced: number = 0;
   private _a3Unlocked: boolean = false;
   private _planetCVisited: boolean = false;
+  // Bay-slot cap: how many drones can be "active" at once. GDD §11 Fleet License
+  // and spec 04 §4 Logistics tech nodes raise this. Base = 3 per spec 04.
+  private _maxActiveDrones: number = 3;
 
   get credits(): number { return this._credits; }
   get researchPoints(): number { return this._researchPoints; }
@@ -27,6 +30,16 @@ export class GameState {
   get voidCoresProduced(): number { return this._voidCoresProduced; }
   get a3Unlocked(): boolean { return this._a3Unlocked; }
   get planetCVisited(): boolean { return this._planetCVisited; }
+  get maxActiveDrones(): number { return this._maxActiveDrones; }
+
+  setMaxActiveDrones(n: number): void {
+    this._maxActiveDrones = Math.max(1, Math.floor(n));
+    EventBus.emit('drone:bay_cap_changed', this._maxActiveDrones);
+  }
+
+  addMaxActiveDrones(delta: number): void {
+    this.setMaxActiveDrones(this._maxActiveDrones + delta);
+  }
 
   addCredits(amount: number): void {
     this._credits = Math.max(0, this._credits + amount);
@@ -119,6 +132,7 @@ export class GameState {
       void_cores_produced: this._voidCoresProduced,
       a3_unlocked: this._a3Unlocked,
       planet_c_visited: this._planetCVisited,
+      max_active_drones: this._maxActiveDrones,
     };
   }
 
@@ -134,6 +148,7 @@ export class GameState {
     this._voidCoresProduced = (data as any).void_cores_produced ?? 0;
     this._a3Unlocked = (data as any).a3_unlocked ?? false;
     this._planetCVisited = (data as any).planet_c_visited ?? false;
+    this._maxActiveDrones = (data as any).max_active_drones ?? 3;
   }
 
   reset(): void {
@@ -149,6 +164,7 @@ export class GameState {
     this._voidCoresProduced = 0;
     this._a3Unlocked = false;
     this._planetCVisited = false;
+    this._maxActiveDrones = 3;
     this._paused = false;
     creditsSignal.value = this._credits;
     currentPlanetSignal.value = this._currentPlanet;

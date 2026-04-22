@@ -53,6 +53,9 @@ export class Deposit {
   private fallback: Graphics | null = null;
   private _initialYield: number;
   holdProgress = 0; // 0..1 — live hold-to-mine progress, set by MiningService
+  // Drone claim per GDD §11: only one drone targets a node at a time; others
+  // skip it. Cleared when the drone releases it or the deposit is depleted.
+  private _claimedBy: string | null = null;
 
   constructor(data: DepositData) {
     this.data = { ...data };
@@ -93,9 +96,26 @@ export class Deposit {
     this.data.yieldRemaining -= actual;
     if (this.data.yieldRemaining <= 0) {
       this.data.isExhausted = true;
+      this._claimedBy = null; // auto-release on depletion
     }
     this._applyState();
     return { oreType: this.data.oreType, quantity: actual, attributes: this.data.qualityAttributes ?? {} };
+  }
+
+  get claimedBy(): string | null { return this._claimedBy; }
+
+  /** Claim this deposit for `droneId`. Returns false if already held by someone
+   * else (or exhausted). Re-claiming your own ID is a no-op success. */
+  claim(droneId: string): boolean {
+    if (this.data.isExhausted) return false;
+    if (this._claimedBy !== null && this._claimedBy !== droneId) return false;
+    this._claimedBy = droneId;
+    return true;
+  }
+
+  /** Release the claim if held by `droneId`. Other drones can't release. */
+  release(droneId: string): void {
+    if (this._claimedBy === droneId) this._claimedBy = null;
   }
 
   private _buildVisual(): void {
