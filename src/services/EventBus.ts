@@ -23,6 +23,8 @@ export type GameEvents = {
   'offline:simulation_needed': [offlineSeconds: number];
   'offline:dispatched': [];
   'fleet:count_changed': [count: number];
+  'fleet:roster_changed': [];
+  'drone:bay_cap_changed': [cap: number];
   'tutorial:step_changed': [step: number];
   'tutorial:completed': [];
   'tutorial:skipped': [];
