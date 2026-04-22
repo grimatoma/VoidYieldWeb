@@ -3,8 +3,9 @@
 ## Git workflow
 
 Open a pull request against `main` for every change, then merge it yourself
-once CI is green and review comments are addressed. Do not push directly to
-`main`.
+once CI is green and review comments are addressed. You have standing authorization
+to merge PRs without requiring explicit approval — just verify CI passes and address
+any review feedback. Do not push directly to `main`.
 
 ## Model selection
 
