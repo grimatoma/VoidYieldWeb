@@ -514,9 +514,10 @@ export class AsteroidOutpostScene implements Scene {
       if (e.button !== 0 || !mouseData) return;
       const data = mouseData;
       mouseData = null;
-      if (!data.moved && Date.now() - data.time <= TAP_MS && this._player) {
+      if (!data.moved && Date.now() - data.time <= TAP_MS && this._player && this._camera) {
         const { sx, sy } = canvasCoords(e.clientX, e.clientY);
-        handleWorldTap(this._player, sx, sy);
+        const wp = this._camera.screenToWorld(sx, sy);
+        handleWorldTap(this._player, wp.x, wp.y);
       }
     };
 
@@ -548,8 +549,9 @@ export class AsteroidOutpostScene implements Scene {
       if (lifted) {
         const data = touchData;
         touchData = null;
-        if (!data.moved && Date.now() - data.time <= TAP_MS && this._player) {
-          handleWorldTap(this._player, data.sx, data.sy);
+        if (!data.moved && Date.now() - data.time <= TAP_MS && this._player && this._camera) {
+          const wp = this._camera.screenToWorld(data.sx, data.sy);
+          handleWorldTap(this._player, wp.x, wp.y);
         }
       }
     };
