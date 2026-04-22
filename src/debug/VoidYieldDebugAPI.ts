@@ -59,6 +59,13 @@ export interface VoidYieldDebugAPI {
   // ── Preset loader ─────────────────────────────────────────────
   loadPreset(name: GamePreset): void;
 
+  // ── Outpost helpers ───────────────────────────────────────────
+  outpost: {
+    setInventory(ore: OreType, qty: number): void;
+    getInventory(ore: OreType): number;
+    resetOutpost(): void;
+  };
+
   // ── Raw service access for advanced tests ────────────────────
   services: {
     gameState: typeof gameState;
@@ -252,6 +259,17 @@ function createDebugAPI(): VoidYieldDebugAPI {
           // Stockpile will need to be set per-planet in the test
           break;
       }
+    },
+
+    // ── Outpost helpers ───────────────────────────────────────
+    outpost: {
+      setInventory(ore, qty) { inventory.restore([{ oreType: ore, quantity: qty, attributes: {} }]); },
+      getInventory(ore) { return inventory.getByType(ore); },
+      resetOutpost() {
+        inventory.drain();
+        gameState.setCredits(200);
+        EventBus.emit('outpost:inventory-changed');
+      },
     },
 
     // ── Raw service access ────────────────────────────────────

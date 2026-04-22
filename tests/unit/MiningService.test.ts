@@ -19,7 +19,6 @@ vi.mock('@services/Inventory', () => ({
 
 import { MiningService } from '@services/MiningService';
 import { depositMap } from '@services/DepositMap';
-import { gameState } from '@services/GameState';
 
 function makeDeposit() {
   return {
@@ -53,18 +52,16 @@ describe('MiningService', () => {
     expect(mockDeposit.mine).toHaveBeenCalledWith(1);
   });
 
-  it('sells inventory when interacting with depot', () => {
+  it('deposits inventory to storage when interacting with depot (no sell)', () => {
     const mockDepot = {
       isNearby: vi.fn().mockReturnValue(true),
       deposit: vi.fn(),
-      sellAll: vi.fn().mockReturnValue(15),
       x: 0, y: 0, container: {},
     };
     svc.setDepot(mockDepot as never);
     const result = svc.onInteract(0, 0);
     expect(mockDepot.deposit).toHaveBeenCalled();
-    expect(gameState.addCredits).toHaveBeenCalledWith(15);
-    expect(result).toContain('15 CR');
+    expect(result).toBe('Deposited');
   });
 
   it('stops hold-mining when E is released', () => {

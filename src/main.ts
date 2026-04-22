@@ -1,11 +1,7 @@
 import { Application } from 'pixi.js';
 import { SceneManager } from '@scenes/SceneManager';
 import { BootScene } from '@scenes/BootScene';
-import { PlanetA1Scene } from '@scenes/PlanetA1Scene';
-import { PlanetA2Scene } from '@scenes/PlanetA2Scene';
-import { PlanetBScene } from '@scenes/PlanetBScene';
-import { PlanetCScene } from '@scenes/PlanetCScene';
-import { PlanetA3Scene } from '@scenes/PlanetA3Scene';
+import { AsteroidOutpostScene } from '@scenes/AsteroidOutpostScene';
 import { inputManager } from '@services/InputManager';
 import { EventBus } from '@services/EventBus';
 import { voidyieldDebugAPI, injectSceneUpdater, injectSceneIdGetter } from './debug/VoidYieldDebugAPI';
@@ -42,11 +38,7 @@ async function main(): Promise<void> {
 
   const sceneManager = new SceneManager(app);
   sceneManager.register('boot', async () => new BootScene());
-  sceneManager.register('planet_a1', async () => new PlanetA1Scene());
-  sceneManager.register('planet_a2', async () => new PlanetA2Scene());
-  sceneManager.register('planet_b', async () => new PlanetBScene());
-  sceneManager.register('planet_c', async () => new PlanetCScene());
-  sceneManager.register('planet_a3', async () => new PlanetA3Scene());
+  sceneManager.register('outpost', async () => new AsteroidOutpostScene());
 
   // Fullscreen toggle per spec 16
   inputManager.onAction((action) => {
@@ -68,9 +60,9 @@ async function main(): Promise<void> {
     }
   });
 
-  // Scene travel via galaxy map
-  EventBus.on('scene:travel', async (planetId: string) => {
-    await sceneManager.switchTo(planetId);
+  // Boot sequence navigation
+  EventBus.on('scene:travel', async (sceneId: string) => {
+    await sceneManager.switchTo(sceneId);
   });
 
   app.ticker.add((ticker) => {

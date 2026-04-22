@@ -41,6 +41,10 @@ export const SELL_PRICES: Record<OreType, number> = {
   fuel_tank: 300,
   avionics: 500,
   landing_gear: 250,
+  iron_ore: 1,
+  copper_ore: 2,
+  iron_bar: 5,
+  copper_bar: 10,
 };
 
 const BUY_MARKUP = 1.5;

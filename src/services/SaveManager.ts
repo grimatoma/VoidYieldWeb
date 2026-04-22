@@ -1,6 +1,6 @@
 import { EventBus } from './EventBus';
 
-export const FORMAT_VERSION = 2;
+export const FORMAT_VERSION = 3;
 const SAVE_KEY = 'voidyield_savegame';
 const AUTOSAVE_INTERVAL_MS = 5 * 60 * 1000;
 
@@ -51,6 +51,15 @@ const MIGRATIONS: Record<number, (data: unknown) => SaveData> = {
     stranding_manager: (data as Partial<SaveData>).stranding_manager
       ?? { rocketFuel: 100, isStranded: false },
   }),
+  // v2 -> v3: reset per-planet cruft, set current_planet to 'outpost'
+  2: (data: unknown) => ({
+    ...defaultSaveData(),
+    credits: (data as Partial<SaveData>).credits ?? 200,
+    research_points: (data as Partial<SaveData>).research_points ?? 0,
+    tech_tree_unlocks: (data as Partial<SaveData>).tech_tree_unlocks ?? [],
+    format_version: 3,
+    current_planet: 'outpost',
+  }),
 };
 
 export function defaultSaveData(): SaveData {
@@ -58,7 +67,7 @@ export function defaultSaveData(): SaveData {
     format_version: FORMAT_VERSION,
     last_save_timestamp: Math.floor(Date.now() / 1000),
     sector_number: 1,
-    current_planet: 'planet_a1',
+    current_planet: 'outpost',
     phase_flags: { a1: 0, planet_b: 0, planet_c: 0, a3: 0 },
     credits: 200,
     research_points: 0,

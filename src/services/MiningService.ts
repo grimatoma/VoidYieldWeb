@@ -1,6 +1,5 @@
 import { depositMap } from './DepositMap';
 import { inventory } from './Inventory';
-import { gameState } from './GameState';
 import { EventBus } from './EventBus';
 import type { StorageDepot } from '@entities/StorageDepot';
 import type { Deposit } from '@entities/Deposit';
@@ -64,18 +63,12 @@ export class MiningService {
     }
   }
 
-  /** E pressed: if near depot, deposit+sell. Otherwise start hold-mining. */
+  /** E pressed: if near depot, deposit to storage. Otherwise start hold-mining. */
   onInteract(px: number, py: number): string | null {
     if (this.depot?.isNearby(px, py, 40)) {
       const lots = inventory.drain();
       this.depot.deposit(lots);
-      const cr = this.depot.sellAll();
-      if (cr > 0) {
-        gameState.addCredits(cr);
-        EventBus.emit('ore:sold', cr);
-        return `Sold for ${cr} CR`;
-      }
-      return lots.length > 0 ? 'Deposited (nothing to sell)' : 'Depot is empty';
+      return lots.length > 0 ? 'Deposited' : 'Nothing to deposit';
     }
 
     const deposit = depositMap.getNearestDeposit(px, py, 28);
