@@ -92,9 +92,13 @@ export class BootScene implements Scene {
       tutorialManager.start();
     }
 
-    // Brief splash pause then navigate to saved planet
+    // Brief splash pause then navigate to saved planet. The emit is deferred
+    // to a new task so the outer switchTo('boot') in main.ts finishes setting
+    // sceneManager.current before the listener triggers the planet switch —
+    // otherwise the inner switchTo sees current=null, skips the boot splash
+    // teardown, and the two transitions tangle.
     await new Promise<void>(resolve => setTimeout(resolve, 800));
-    EventBus.emit('scene:travel', gameState.currentPlanet);
+    setTimeout(() => EventBus.emit('scene:travel', gameState.currentPlanet), 0);
   }
 
   update(_delta: number): void {}
