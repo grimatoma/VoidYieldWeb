@@ -5,7 +5,7 @@ import { HeavyDrone } from './HeavyDrone';
 import type { DroneBase } from './DroneBase';
 import type { StorageDepot } from './StorageDepot';
 import type { Furnace } from './Furnace';
-import type { OutpostDispatcher, DroneSlotConfig } from '@services/OutpostDispatcher';
+import type { OutpostDispatcher, DroneBaySlot, DroneBaySlotData } from '@services/OutpostDispatcher';
 import type { OreType, DroneType } from '@data/types';
 import { gameState } from '@services/GameState';
 import { fleetManager } from '@services/FleetManager';
@@ -20,25 +20,20 @@ export function resetDepotBuilt(): void {
 }
 
 /**
- * DroneDepot — manages slot configs for outpost miner/logistics drones.
- * When built (onBuild), disables manual-only furnace mode and starts the
- * OutpostDispatcher with default 3-slot config.
+ * DroneDepot — manages the Drone Bay: three slots, each binding one drone to
+ * one ore target. When built (onBuild), disables manual-only furnace mode and
+ * starts the OutpostDispatcher.
  */
 export class DroneDepot {
   readonly container: Container;
   readonly x: number;
   readonly y: number;
 
-  private _slots: DroneSlotConfig[] = [
-    { slotId: 'slot_0', role: 'miner',    oreType: 'iron_ore' as OreType },
-    { slotId: 'slot_1', role: 'miner',    oreType: 'copper_ore' as OreType },
-    { slotId: 'slot_2', role: 'logistics', oreType: 'any' },
+  private _baySlots: DroneBaySlot[] = [
+    { slotId: 'slot_0', drone: null, droneType: null, oreType: 'iron_ore' as OreType },
+    { slotId: 'slot_1', drone: null, droneType: null, oreType: 'copper_ore' as OreType },
+    { slotId: 'slot_2', drone: null, droneType: null, oreType: 'iron_ore' as OreType },
   ];
-  private _deployedDrones: DroneBase[] = [];
-
-  private _dispatcher: OutpostDispatcher | null = null;
-  private _storage: StorageDepot | null = null;
-  private _furnace: Furnace | null = null;
 
   constructor(worldX: number, worldY: number) {
     this.x = worldX;
@@ -48,7 +43,6 @@ export class DroneDepot {
     this.container.x = worldX;
     this.container.y = worldY;
 
-    // 2×2 footprint: 2×CELL_SIZE wide, 2×CELL_SIZE tall, minus 4px padding
     const w = 2 * CELL_SIZE - 4;
     const h = 2 * CELL_SIZE - 4;
 
@@ -70,7 +64,8 @@ export class DroneDepot {
 
   /**
    * Call after placing on the grid.
-   * Sets furnace.manualOnly = false, configures the dispatcher, and starts it.
+   * Passes the live bay-slot array to the dispatcher by reference so slot
+   * mutations (assignDrone, setSlotOreType) are reflected immediately.
    * Throws if a second DroneDepot is placed (MVP limit).
    */
   onBuild(storage: StorageDepot, furnace: Furnace, dispatcher: OutpostDispatcher): void {
@@ -79,46 +74,19 @@ export class DroneDepot {
       throw new Error('DroneDepot: only one Drone Depot allowed per outpost.');
     }
     _depotBuilt = true;
-
-    this._storage = storage;
-    this._furnace = furnace;
-    this._dispatcher = dispatcher;
-
-    // Enable auto-feed mode for the furnace.
     furnace.manualOnly = false;
-
-    dispatcher.configure(storage, furnace, this._slots);
+    dispatcher.configure(storage, furnace, this._baySlots);
     dispatcher.start();
   }
 
   /**
-   * Update the role/ore config for a given slot ID.
-   * Re-configures the dispatcher immediately if it's been built.
+   * Purchase a drone and assign it to a slot. Deducts credits.
+   * Returns the new drone or null if unaffordable, slot not found, or slot occupied.
    */
-  setSlotConfig(slotId: string, config: DroneSlotConfig): void {
-    const idx = this._slots.findIndex(s => s.slotId === slotId);
-    if (idx === -1) {
-      console.warn(`DroneDepot.setSlotConfig: unknown slotId "${slotId}"`);
-      return;
-    }
-    this._slots[idx] = { ...config, slotId };
+  assignDrone(slotId: string, type: DroneType, worldContainer: Container): DroneBase | null {
+    const slot = this._baySlots.find(s => s.slotId === slotId);
+    if (!slot || slot.drone !== null) return null;
 
-    if (this._dispatcher && this._storage && this._furnace) {
-      this._dispatcher.configure(this._storage, this._furnace, this._slots);
-    }
-  }
-
-  /** Returns a copy of the current slot configs. */
-  getSlotConfigs(): DroneSlotConfig[] {
-    return this._slots.map(s => ({ ...s }));
-  }
-
-  /**
-   * Purchase a drone of the given type, deduct credits, add to fleetManager,
-   * and attach its container to worldContainer. Returns null if unaffordable.
-   * Only 'scout' and 'heavy' are supported in the outpost context.
-   */
-  purchaseDrone(type: DroneType, worldContainer: Container): DroneBase | null {
     const costs: Partial<Record<DroneType, number>> = {
       scout: ScoutDrone.COST,
       heavy: HeavyDrone.COST,
@@ -127,21 +95,57 @@ export class DroneDepot {
     if (cost === undefined || gameState.credits < cost) return null;
 
     gameState.addCredits(-cost);
-
-    let drone: DroneBase;
-    if (type === 'scout') drone = new ScoutDrone(this.x, this.y);
-    else if (type === 'heavy') drone = new HeavyDrone(this.x, this.y);
-    else return null;
-
-    worldContainer.addChild(drone.container);
-    this._deployedDrones.push(drone);
-    fleetManager.add(drone);
     EventBus.emit('drone:purchased', type);
-    return drone;
+    return this._spawnIntoSlot(slot, type as 'scout' | 'heavy', worldContainer);
   }
 
-  getDeployedDrones(): readonly DroneBase[] {
-    return this._deployedDrones;
+  /**
+   * Stop a drone, remove it from the scene and fleet, and free the slot.
+   * Any pending tasks are abandoned (deposit claim may linger until scene exit).
+   */
+  releaseDrone(slotId: string): void {
+    const slot = this._baySlots.find(s => s.slotId === slotId);
+    if (!slot?.drone) return;
+    const drone = slot.drone;
+    drone.clearTasks();
+    drone.disabled = true;
+    drone.container.parent?.removeChild(drone.container);
+    fleetManager.remove(drone.id);
+    slot.drone = null;
+    slot.droneType = null;
+  }
+
+  /** Update the ore preference for a slot without replacing the drone. */
+  setSlotOreType(slotId: string, oreType: OreType | 'any'): void {
+    const slot = this._baySlots.find(s => s.slotId === slotId);
+    if (slot) slot.oreType = oreType;
+  }
+
+  getBaySlots(): readonly DroneBaySlot[] {
+    return this._baySlots;
+  }
+
+  /** Returns all currently assigned drones (for cleanup on scene exit). */
+  getAllDrones(): DroneBase[] {
+    return this._baySlots.filter(s => s.drone !== null).map(s => s.drone!);
+  }
+
+  getBaySlotData(): DroneBaySlotData[] {
+    return this._baySlots.map(s => ({
+      slotId: s.slotId,
+      droneType: s.droneType,
+      oreType: s.oreType,
+    }));
+  }
+
+  /** Restore a slot from saved data. Spawns the drone without charging credits. */
+  restoreBaySlot(data: DroneBaySlotData, worldContainer: Container): void {
+    const slot = this._baySlots.find(s => s.slotId === data.slotId);
+    if (!slot) return;
+    slot.oreType = data.oreType;
+    if (data.droneType && !slot.drone) {
+      this._spawnIntoSlot(slot, data.droneType, worldContainer);
+    }
   }
 
   isNearby(px: number, py: number, radius = 120): boolean {
@@ -152,5 +156,20 @@ export class DroneDepot {
 
   getInteractionPrompt(): { verb: string; target: string } | null {
     return { verb: 'CONFIGURE', target: 'DRONE DEPOT' };
+  }
+
+  private _spawnIntoSlot(
+    slot: DroneBaySlot,
+    type: 'scout' | 'heavy',
+    worldContainer: Container,
+  ): DroneBase {
+    const drone = type === 'scout'
+      ? new ScoutDrone(this.x, this.y)
+      : new HeavyDrone(this.x, this.y);
+    worldContainer.addChild(drone.container);
+    fleetManager.add(drone);
+    slot.drone = drone;
+    slot.droneType = type;
+    return drone;
   }
 }

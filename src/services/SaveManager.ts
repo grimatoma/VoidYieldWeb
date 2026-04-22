@@ -1,6 +1,6 @@
 import { EventBus } from './EventBus';
 import type { PlacedEntry } from './BuildGrid';
-import type { DroneSlotConfig } from './OutpostDispatcher';
+import type { DroneBaySlotData } from './OutpostDispatcher';
 
 export const FORMAT_VERSION = 3;
 const SAVE_KEY = 'voidyield_savegame';
@@ -40,7 +40,7 @@ export interface SaveData {
     grid: PlacedEntry[];
     furnaceRecipe: 'iron' | 'copper' | 'off';
     stockpile: Record<string, number>;
-    droneSlots: DroneSlotConfig[];
+    droneSlots: DroneBaySlotData[];
     playerX: number;
     playerY: number;
   };
