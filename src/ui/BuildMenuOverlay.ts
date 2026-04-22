@@ -55,7 +55,8 @@ export class BuildMenuOverlay {
     this._root.style.cssText = [
       'position:absolute',
       'top:8px',
-      'right:200px',
+      'left:50%',
+      'transform:translateX(-50%)',
       'background:#0D1B3E',
       'border:1px solid #2A3A5A',
       'color:#D4A843',
