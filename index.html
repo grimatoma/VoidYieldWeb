@@ -2,25 +2,28 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <!--
+      user-scalable=no + maximum-scale=1 locks the visual viewport to the layout
+      viewport on iOS Safari / Android Chrome. Without this, a pinch-zoom on
+      empty HUD space leaves the layout viewport (what `position:fixed` uses)
+      larger than the visible area — so fixed overlays like the offline-dispatch
+      modal center themselves off-screen, and the canvas (sized to
+      window.innerWidth/innerHeight = layout viewport) overflows the body.
+      viewport-fit=cover lets the canvas extend under any safe-area insets.
+    -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0, user-scalable=no, viewport-fit=cover" />
     <title>VoidYield</title>
     <style>
       * { margin: 0; padding: 0; box-sizing: border-box; }
-      /* Lock html as well — body:overflow:hidden alone isn't enough on iOS
-         Safari, where 100vh > window.innerHeight (it includes the collapsed
-         URL-bar area), so body ends up taller than the visible viewport and
-         html scrolls. */
-      html { overflow: hidden; width: 100%; height: 100%; overscroll-behavior: none; }
-      body {
+      html, body {
         background: #0D1B3E;
         overflow: hidden;
+        overscroll-behavior: none;
         width: 100%;
         height: 100%;
-        /* Dynamic viewport units where supported — resilient to the mobile
-           URL bar showing/hiding. Falls back to 100% above. */
-        width: 100dvw;
-        height: 100dvh;
-        overscroll-behavior: none;
+        /* Prevent the browser from handling touch gestures on the page
+           (scrolling, pinch-zoom) so the game owns them. */
+        touch-action: none;
       }
       #game-container { width: 100%; height: 100%; overflow: hidden; }
     </style>
