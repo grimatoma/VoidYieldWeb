@@ -1,6 +1,7 @@
 import { Application, Container, Graphics } from 'pixi.js';
 import type { Scene } from './SceneManager';
 import type { SaveData } from '@services/SaveManager';
+import { Camera } from '@services/Camera';
 import { Player } from '@entities/Player';
 import { Deposit } from '@entities/Deposit';
 import { StorageDepot } from '@entities/StorageDepot';
@@ -28,6 +29,9 @@ import { handleWorldTap } from '@services/TapToMove';
 
 // Built-in RTG provides enough power to run the furnace (3 W draw) without needing solar panels.
 const OUTPOST_REACTOR_POWER = 5;
+
+const OUTPOST_WORLD_WIDTH  = 1920;
+const OUTPOST_WORLD_HEIGHT = 1080;
 
 // Build costs per BuildMenuOverlay BUILDABLE list
 const BUILD_COSTS: Record<string, { iron_bar: number; copper_bar: number }> = {
@@ -57,6 +61,7 @@ export class AsteroidOutpostScene implements Scene {
   private _buildPromptOverlay: BuildPromptOverlay | null = null;
   private _droneDepotOverlay: DroneDepotOverlay | null = null;
   private _app: Application | null = null;
+  private _camera: Camera | null = null;
 
   // Ghost placement state
   private _ghostBuilding: PlacedBuilding | null = null;
@@ -77,10 +82,23 @@ export class AsteroidOutpostScene implements Scene {
     this._stage = new Container();
     app.stage.addChild(this._stage);
 
-    // Dark asteroid background
+    // Dark asteroid background — fills the whole world so there are no gaps when camera scrolls
     const bg = new Graphics();
-    bg.rect(0, 0, app.screen.width, app.screen.height).fill(0x1A1A2E);
+    bg.rect(0, 0, OUTPOST_WORLD_WIDTH, OUTPOST_WORLD_HEIGHT).fill(0x1A1A2E);
     this._stage.addChild(bg);
+
+    // Camera — zoom=1.0 keeps world coords 1:1 with pixels; follows the player
+    this._camera = new Camera(
+      this._stage,
+      OUTPOST_WORLD_WIDTH,
+      OUTPOST_WORLD_HEIGHT,
+      app.screen.width,
+      app.screen.height,
+    );
+    this._camera.zoom = 1.0;
+    this._camera.minZoom = 0.5;
+    this._camera.maxZoom = 2.0;
+    this._camera.mount(app.canvas);
 
     // Draw grid overlay (faint lines)
     this._drawGrid();
@@ -198,7 +216,8 @@ export class AsteroidOutpostScene implements Scene {
   update(delta: number): void {
     if (!this._player || !this._app) return;
 
-    this._player.update(delta, inputManager, { width: this._app.screen.width, height: this._app.screen.height });
+    this._player.update(delta, inputManager, { width: OUTPOST_WORLD_WIDTH, height: OUTPOST_WORLD_HEIGHT });
+    this._camera?.follow({ x: this._player.x, y: this._player.y });
 
     // Furnace update
     this._furnace?.update(delta);
@@ -619,6 +638,12 @@ export class AsteroidOutpostScene implements Scene {
 
     // Stop dispatcher
     outpostDispatcher.stop();
+
+    // Unmount camera
+    if (this._camera && this._app) {
+      this._camera.unmount(this._app.canvas);
+    }
+    this._camera = null;
     resetDepotBuilt();
 
     // Clear deposits
