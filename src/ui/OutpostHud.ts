@@ -2,6 +2,7 @@ import type { Application } from 'pixi.js';
 import { EventBus } from '@services/EventBus';
 import { inventory } from '@services/Inventory';
 import { gameState } from '@services/GameState';
+import type { StorageDepot } from '@entities/StorageDepot';
 
 /**
  * OutpostHud — minimal HTML overlay for the AsteroidOutpostScene.
@@ -10,12 +11,17 @@ import { gameState } from '@services/GameState';
  */
 export class OutpostHud {
   private _root: HTMLElement | null = null;
+  private _storage: StorageDepot | null;
   private _ironOreEl!: HTMLElement;
   private _copperOreEl!: HTMLElement;
   private _waterEl!: HTMLElement;
   private _ironBarEl!: HTMLElement;
   private _copperBarEl!: HTMLElement;
   private _creditsEl!: HTMLElement;
+
+  constructor(storage: StorageDepot) {
+    this._storage = storage;
+  }
 
   mount(_app: Application): void {
     const parent = document.getElementById('ui-layer') ?? document.body;
@@ -70,7 +76,7 @@ export class OutpostHud {
   }
 
   update(): void {
-    // No per-frame polling needed; event-driven via EventBus listeners.
+    this._render();
   }
 
   unmount(): void {
@@ -86,8 +92,9 @@ export class OutpostHud {
     this._ironOreEl.textContent   = String(inventory.getByType('iron_ore'));
     this._copperOreEl.textContent = String(inventory.getByType('copper_ore'));
     this._waterEl.textContent     = String(inventory.getByType('water'));
-    this._ironBarEl.textContent   = String(inventory.getByType('iron_bar'));
-    this._copperBarEl.textContent = String(inventory.getByType('copper_bar'));
+    // Bars are deposited to storage by the furnace, not the player's cargo.
+    this._ironBarEl.textContent   = String(this._storage?.getBarCount('iron_bar')   ?? 0);
+    this._copperBarEl.textContent = String(this._storage?.getBarCount('copper_bar') ?? 0);
     this._creditsEl.textContent   = String(Math.floor(gameState.credits));
   }
 
