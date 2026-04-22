@@ -21,6 +21,8 @@ vi.mock('@entities/ProcessingPlant', () => ({
     destroy: vi.fn(),
     manualOnly: true,
     state: 'STALLED',
+    batchProgress: 0,
+    hasInput: false,
     schematic: { inputType: 'iron_ore', inputQty: 2, batchPerMin: 10 },
   })),
 }));
@@ -70,6 +72,7 @@ vi.mock('@data/schematics', () => ({
 }));
 
 import { Furnace } from '@entities/Furnace';
+import { ProcessingPlant } from '@entities/ProcessingPlant';
 import { EventBus } from '@services/EventBus';
 import { inventory } from '@services/Inventory';
 
@@ -168,5 +171,42 @@ describe('Furnace', () => {
     expect(vi.mocked(inventory.add)).toHaveBeenCalledWith(
       expect.objectContaining({ oreType: 'copper_ore', quantity: 5 }),
     );
+  });
+
+  it('insertFromInventory emits inventory:changed on success', () => {
+    furnace.setRecipe('iron');
+    vi.mocked(inventory.getByType).mockReturnValue(2);
+    vi.mocked(inventory.drain).mockReturnValue([
+      { oreType: 'iron_ore', quantity: 2, attributes: {} },
+    ]);
+    vi.mocked(EventBus.emit).mockClear();
+
+    furnace.insertFromInventory();
+
+    expect(vi.mocked(EventBus.emit)).toHaveBeenCalledWith('inventory:changed');
+  });
+
+  it('getBatchProgress returns plant.batchProgress when recipe is active', () => {
+    furnace.setRecipe('iron');
+    const mockPlant = vi.mocked(ProcessingPlant).mock.results.at(-1)!.value;
+    mockPlant.batchProgress = 0.75;
+
+    expect(furnace.getBatchProgress()).toBe(0.75);
+  });
+
+  it('getBatchProgress returns 0 when recipe is off', () => {
+    expect(furnace.getBatchProgress()).toBe(0);
+  });
+
+  it('isLoaded returns plant.hasInput when recipe is active', () => {
+    furnace.setRecipe('iron');
+    const mockPlant = vi.mocked(ProcessingPlant).mock.results.at(-1)!.value;
+    mockPlant.hasInput = true;
+
+    expect(furnace.isLoaded()).toBe(true);
+  });
+
+  it('isLoaded returns false when recipe is off', () => {
+    expect(furnace.isLoaded()).toBe(false);
   });
 });
