@@ -87,7 +87,8 @@ export class AsteroidOutpostScene implements Scene {
     bg.rect(0, 0, OUTPOST_WORLD_WIDTH, OUTPOST_WORLD_HEIGHT).fill(0x1A1A2E);
     this._stage.addChild(bg);
 
-    // Camera — zoom=1.0 keeps world coords 1:1 with pixels; follows the player
+    // Camera — scale to fill the screen like other planet scenes, capped so the
+    // full 5×5 grid remains visible at the reference 960×540 size (zoom ≥ 1.2).
     this._camera = new Camera(
       this._stage,
       OUTPOST_WORLD_WIDTH,
@@ -95,9 +96,9 @@ export class AsteroidOutpostScene implements Scene {
       app.screen.width,
       app.screen.height,
     );
-    this._camera.zoom = 1.0;
+    this._camera.zoom = Math.max(1.2, Math.min(2.0, app.screen.width / 960));
     this._camera.minZoom = 0.5;
-    this._camera.maxZoom = 2.0;
+    this._camera.maxZoom = 3.0;
     this._camera.mount(app.canvas);
 
     // Draw grid overlay (faint lines)
