@@ -2,9 +2,6 @@ import { voidyieldDebugAPI } from '../debug/VoidYieldDebugAPI';
 import { EventBus } from '@services/EventBus';
 import { inputManager } from '@services/InputManager';
 import type { UILayer } from './UILayer';
-import { planetResources, credits as creditsSignal } from '@store/gameStore';
-import type { Launchpad } from '@entities/Launchpad';
-import type { RocketComponentType } from '@data/types';
 
 /**
  * On-screen debug panel — wraps the window.__voidyield__ API as clickable
@@ -41,16 +38,11 @@ export class DebugOverlay {
         <button data-act="rp+100">+100 RP</button>
         <button data-act="rp+1k">+1000 RP</button>
         <button data-act="unlock-all">Unlock All Tech</button>
-        <button data-act="stock-a1">Fill A1 Pool</button>
-        <button data-act="half-res">Resources 50%</button>
+        <button data-act="fill-outpost">Fill Outpost (×100)</button>
         <button data-act="fresh">Preset: Fresh</button>
-        <button data-act="mid">Preset: Mid</button>
-        <button data-act="late">Preset: Late</button>
         <button data-act="reset">Reset All</button>
         <button data-act="advance60">Advance 60s</button>
         <button data-act="advance300">Advance 5m</button>
-        <button data-act="fill-ship">Fill Ship</button>
-        <button data-act="launch">Launch Ship</button>
       </div>
       <div class="debug-ui-scale">
         <div class="debug-ui-scale-label">
@@ -103,55 +95,14 @@ export class DebugOverlay {
     this._flash(`UI scale ${applied.toFixed(2)}x`);
   }
 
-  private _halfResources(): void {
-    // Mid-reference credits/RP and half-pool on every registered planet.
+  private _fillOutpost(): void {
     const api = voidyieldDebugAPI;
-    api.setCredits(5000);
-    api.setRP(500);
-    const res = planetResources.value;
-    const ores = Object.keys(res) as Array<'vorax' | 'krysite' | 'aethite'>;
-    // All potential planet ids — setPlanetStock safely no-ops on unregistered.
-    const planetIds = ['planet_a1', 'planet_a2', 'planet_a3', 'planet_b', 'planet_c'];
-    planetIds.forEach((pid) => {
-      ores.forEach((ore) => {
-        const cap = res[ore].cap;
-        const half = Math.floor(cap / 2);
-        try { api.setPlanetStock(pid, ore, half); } catch { /* unregistered */ }
-      });
-    });
-    creditsSignal.value = 5000;
-    this._flash('resources → 50%');
-  }
-
-  private _getLaunchpad(): Launchpad | null {
-    const scene = (window as unknown as { __voidyield_scene?: { launchpad?: Launchpad } }).__voidyield_scene;
-    return scene?.launchpad ?? null;
-  }
-
-  private _fillShip(): void {
-    const pad = this._getLaunchpad();
-    if (!pad) { this._flash('no launchpad on this scene'); return; }
-    const types: RocketComponentType[] = ['hull', 'engine', 'fuel_tank', 'avionics', 'landing_gear'];
-    for (const t of types) {
-      pad.installComponent({ componentType: t, name: t.toUpperCase(), carrySlots: 1, attributes: {} });
-    }
-    pad.fillFuel(100);
-    EventBus.emit('inventory:changed');
-    this._flash(`ship ready — ${pad.componentsInstalled}/5, ${pad.fuelUnits} RF`);
-  }
-
-  private _launchShip(): void {
-    const pad = this._getLaunchpad();
-    if (!pad) { this._flash('no launchpad on this scene'); return; }
-    if (pad.launch()) {
-      EventBus.emit('inventory:changed');
-      this._flash('ship launched');
-    } else {
-      const need: string[] = [];
-      if (pad.componentsInstalled < 5) need.push(`${5 - pad.componentsInstalled} components`);
-      if (pad.fuelUnits < 100) need.push(`${100 - pad.fuelUnits} RF`);
-      this._flash(`launch failed — need ${need.join(', ') || 'ready state'}`);
-    }
+    api.outpost.setStorageStock('iron_ore', 100);
+    api.outpost.setStorageStock('copper_ore', 100);
+    api.outpost.setStorageStock('water', 100);
+    api.outpost.setStorageStock('iron_bar', 100);
+    api.outpost.setStorageStock('copper_bar', 100);
+    this._flash('outpost storage filled ×100');
   }
 
   private _handle(act: string): void {
@@ -163,21 +114,11 @@ export class DebugOverlay {
         case 'rp+100':      api.setRP(api.getRP() + 100); this._flash(`+100 RP`); break;
         case 'rp+1k':       api.setRP(api.getRP() + 1000); this._flash(`+1000 RP`); break;
         case 'unlock-all':  api.unlockAllTech(); this._flash('all tech unlocked'); break;
-        case 'stock-a1':
-          api.setPlanetStock('planet_a1', 'vorax', 500);
-          api.setPlanetStock('planet_a1', 'krysite', 200);
-          api.setPlanetStock('planet_a1', 'aethite', 50);
-          this._flash('A1 pool filled');
-          break;
+        case 'fill-outpost': this._fillOutpost(); break;
         case 'fresh':  api.loadPreset('fresh_start'); this._flash('preset: fresh'); break;
-        case 'mid':    api.loadPreset('mid_game');    this._flash('preset: mid');   break;
-        case 'late':   api.loadPreset('late_game');   this._flash('preset: late');  break;
         case 'reset':  api.resetAll(); this._flash('reset'); break;
         case 'advance60':  api.advanceTime(60);  this._flash('advanced 60s'); break;
         case 'advance300': api.advanceTime(300); this._flash('advanced 300s'); break;
-        case 'fill-ship':  this._fillShip(); break;
-        case 'launch':     this._launchShip(); break;
-        case 'half-res':   this._halfResources(); break;
         case 'ui-scale-reset': this._setUserScale(1.0); break;
         case 'ui-scale-small': this._setUserScale(0.8); break;
         case 'ui-scale-large': this._setUserScale(1.25); break;

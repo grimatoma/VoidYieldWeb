@@ -67,16 +67,6 @@ export class AsteroidOutpostScene implements Scene {
   private _ghostBuilding: PlacedBuilding | null = null;
   private _ghostBuildingType: string | null = null;
 
-  // Tap-to-move event handlers (kept for removeEventListener in exit)
-  private _tapHandlers: {
-    mousedown: (e: MouseEvent) => void;
-    mousemove: (e: MouseEvent) => void;
-    mouseup: (e: MouseEvent) => void;
-    touchstart: (e: TouchEvent) => void;
-    touchmove: (e: TouchEvent) => void;
-    touchend: (e: TouchEvent) => void;
-  } | null = null;
-
   async enter(app: Application): Promise<void> {
     this._app = app;
     this._stage = new Container();
@@ -117,8 +107,10 @@ export class AsteroidOutpostScene implements Scene {
     this._player = new Player(480, 270);
     this._stage.addChild(this._player.container);
 
-    // Tap-to-move: single click/tap walks the player to that spot
-    this._mountTapToMove(app.canvas);
+    // Tap-to-move: delegate to Camera.onTap so coords are already in world space
+    this._camera.onTap((wx, wy) => {
+      if (this._player) handleWorldTap(this._player, wx, wy);
+    });
 
     // Wire mining service
     miningService.setDepot(this._storage!);
@@ -507,96 +499,6 @@ export class AsteroidOutpostScene implements Scene {
     miningService.onInteract(px, py);
   }
 
-  private _mountTapToMove(canvas: HTMLCanvasElement): void {
-    const TAP_DIST = 14;
-    const TAP_MS = 400;
-
-    let mouseData: { sx: number; sy: number; time: number; moved: boolean } | null = null;
-    let touchData: { id: number; sx: number; sy: number; time: number; moved: boolean } | null = null;
-
-    const canvasCoords = (clientX: number, clientY: number) => {
-      const rect = canvas.getBoundingClientRect();
-      return { sx: clientX - rect.left, sy: clientY - rect.top };
-    };
-
-    const mousedown = (e: MouseEvent) => {
-      if (e.button !== 0) return;
-      const { sx, sy } = canvasCoords(e.clientX, e.clientY);
-      mouseData = { sx, sy, time: Date.now(), moved: false };
-    };
-    const mousemove = (e: MouseEvent) => {
-      if (!mouseData) return;
-      const { sx, sy } = canvasCoords(e.clientX, e.clientY);
-      if (Math.hypot(sx - mouseData.sx, sy - mouseData.sy) > TAP_DIST) mouseData.moved = true;
-    };
-    const mouseup = (e: MouseEvent) => {
-      if (e.button !== 0 || !mouseData) return;
-      const data = mouseData;
-      mouseData = null;
-      if (!data.moved && Date.now() - data.time <= TAP_MS && this._player) {
-        const { sx, sy } = canvasCoords(e.clientX, e.clientY);
-        handleWorldTap(this._player, sx, sy);
-      }
-    };
-
-    const touchstart = (e: TouchEvent) => {
-      if (e.touches.length !== 1) { touchData = null; return; }
-      const t = e.touches[0];
-      const { sx, sy } = canvasCoords(t.clientX, t.clientY);
-      touchData = { id: t.identifier, sx, sy, time: Date.now(), moved: false };
-      if (e.cancelable) e.preventDefault();
-    };
-    const touchmove = (e: TouchEvent) => {
-      if (!touchData) return;
-      for (let i = 0; i < e.touches.length; i++) {
-        const t = e.touches[i];
-        if (t.identifier === touchData.id) {
-          const { sx, sy } = canvasCoords(t.clientX, t.clientY);
-          if (Math.hypot(sx - touchData.sx, sy - touchData.sy) > TAP_DIST) touchData.moved = true;
-          break;
-        }
-      }
-      if (e.cancelable) e.preventDefault();
-    };
-    const touchend = (e: TouchEvent) => {
-      if (!touchData) return;
-      let lifted = true;
-      for (let i = 0; i < e.touches.length; i++) {
-        if (e.touches[i].identifier === touchData.id) { lifted = false; break; }
-      }
-      if (lifted) {
-        const data = touchData;
-        touchData = null;
-        if (!data.moved && Date.now() - data.time <= TAP_MS && this._player) {
-          handleWorldTap(this._player, data.sx, data.sy);
-        }
-      }
-    };
-
-    canvas.addEventListener('mousedown', mousedown);
-    canvas.addEventListener('mousemove', mousemove);
-    canvas.addEventListener('mouseup', mouseup);
-    canvas.addEventListener('touchstart', touchstart, { passive: false });
-    canvas.addEventListener('touchmove', touchmove, { passive: false });
-    canvas.addEventListener('touchend', touchend);
-    canvas.addEventListener('touchcancel', touchend);
-
-    this._tapHandlers = { mousedown, mousemove, mouseup, touchstart, touchmove, touchend };
-  }
-
-  private _unmountTapToMove(canvas: HTMLCanvasElement): void {
-    if (!this._tapHandlers) return;
-    const h = this._tapHandlers;
-    canvas.removeEventListener('mousedown', h.mousedown);
-    canvas.removeEventListener('mousemove', h.mousemove);
-    canvas.removeEventListener('mouseup', h.mouseup);
-    canvas.removeEventListener('touchstart', h.touchstart);
-    canvas.removeEventListener('touchmove', h.touchmove);
-    canvas.removeEventListener('touchend', h.touchend);
-    canvas.removeEventListener('touchcancel', h.touchend);
-    this._tapHandlers = null;
-  }
-
   private _isPlayerNearGrid(px: number, py: number, radius = 120): boolean {
     // Grid is roughly centered at GRID_ORIGIN, spans 5×5 cells
     const gridCenterX = GRID_ORIGIN.x + 2.5 * CELL_SIZE;
@@ -666,8 +568,9 @@ export class AsteroidOutpostScene implements Scene {
     // Stop dispatcher
     outpostDispatcher.stop();
 
-    // Unmount camera
+    // Unmount camera and clear tap callback
     if (this._camera && this._app) {
+      this._camera.onTap(null);
       this._camera.unmount(this._app.canvas);
     }
     this._camera = null;
@@ -687,9 +590,6 @@ export class AsteroidOutpostScene implements Scene {
 
     // Cancel any active ghost
     this._cancelGhost();
-
-    // Remove tap-to-move listeners before canvas is recycled
-    if (this._app) this._unmountTapToMove(this._app.canvas);
 
     // Destroy stage (all children)
     this._stage?.destroy({ children: true });
