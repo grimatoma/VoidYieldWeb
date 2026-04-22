@@ -3,6 +3,7 @@ import type { Scene } from './SceneManager';
 import { saveManager, defaultSaveData } from '@services/SaveManager';
 import { gameState } from '@services/GameState';
 import { EventBus } from '@services/EventBus';
+import { getOutpostSaveData } from './AsteroidOutpostScene';
 
 export class BootScene implements Scene {
   readonly id = 'boot';
@@ -57,6 +58,7 @@ export class BootScene implements Scene {
     const getState = () => ({
       ...defaultSaveData(),
       ...gameState.serialize(),
+      outpost: getOutpostSaveData(),
     });
 
     // Start autosave on the interval

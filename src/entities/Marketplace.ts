@@ -1,9 +1,10 @@
 import { Container, Graphics, Text, TextStyle } from 'pixi.js';
 import { CELL_SIZE } from './PlacedBuilding';
+import type { StorageDepot } from './StorageDepot';
+import { marketplaceService } from '@services/MarketplaceService';
 
 /**
- * Marketplace — stub entity for the build menu. Visual + interaction hook only.
- * Phase C/D fills in the actual sell logic.
+ * Marketplace — sell buildings for converting bars to credits.
  */
 export class Marketplace {
   readonly container: Container;
@@ -36,6 +37,15 @@ export class Marketplace {
     const label = new Text({ text: 'MARKET', style: textStyle });
     label.anchor.set(0.5);
     this.container.addChild(label);
+  }
+
+  /**
+   * Sell all bars from storage and return total credits earned.
+   */
+  sellAll(storage: StorageDepot): number {
+    const ironEarned = marketplaceService.sell(storage, 'iron_bar', storage.getBarCount('iron_bar'));
+    const copperEarned = marketplaceService.sell(storage, 'copper_bar', storage.getBarCount('copper_bar'));
+    return ironEarned + copperEarned;
   }
 
   isNearby(px: number, py: number, radius = 80): boolean {

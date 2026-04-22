@@ -1,5 +1,6 @@
 import { Application, Container, Graphics } from 'pixi.js';
 import type { Scene } from './SceneManager';
+import type { SaveData } from '@services/SaveManager';
 import { Player } from '@entities/Player';
 import { Deposit } from '@entities/Deposit';
 import { StorageDepot } from '@entities/StorageDepot';
@@ -15,11 +16,13 @@ import { inputManager } from '@services/InputManager';
 import { gameState } from '@services/GameState';
 import { marketplaceService } from '@services/MarketplaceService';
 import { outpostDispatcher } from '@services/OutpostDispatcher';
+import { saveManager } from '@services/SaveManager';
 import { OUTPOST_DEPOSITS } from '@data/outpost_deposits';
 import { OutpostHud } from '@ui/OutpostHud';
 import { FurnaceOverlay } from '@ui/FurnaceOverlay';
 import { BuildMenuOverlay } from '@ui/BuildMenuOverlay';
 import { DroneDepotOverlay } from '@ui/DroneDepotOverlay';
+import { BuildPromptOverlay } from '@ui/BuildPromptOverlay';
 
 // Build costs per BuildMenuOverlay BUILDABLE list
 const BUILD_COSTS: Record<string, { iron_bar: number; copper_bar: number }> = {
@@ -46,6 +49,7 @@ export class AsteroidOutpostScene implements Scene {
   private _hud: OutpostHud | null = null;
   private _furnaceOverlay: FurnaceOverlay | null = null;
   private _buildMenuOverlay: BuildMenuOverlay | null = null;
+  private _buildPromptOverlay: BuildPromptOverlay | null = null;
   private _droneDepotOverlay: DroneDepotOverlay | null = null;
   private _app: Application | null = null;
 
@@ -102,10 +106,28 @@ export class AsteroidOutpostScene implements Scene {
     this._hud = new OutpostHud();
     this._hud.mount(app);
 
+    // Build prompt overlay
+    this._buildPromptOverlay = new BuildPromptOverlay();
+    this._buildPromptOverlay.mount();
+
     // Reset module-level depot flag for scene re-entry
     resetDepotBuilt();
 
     gameState.setCurrentPlanet('outpost');
+
+    // Register save getter and storage accessor
+    _activeSaveGetter = () => this.serializeOutpost();
+    _activeStorageGetter = () => this._storage;
+
+    // Try to load and deserialize saved outpost state
+    const saved = saveManager.loadGame();
+    if (saved?.outpost) {
+      try {
+        this.deserializeOutpost(saved.outpost);
+      } catch (err) {
+        console.warn('[AsteroidOutpostScene] Failed to deserialize outpost state:', err);
+      }
+    }
   }
 
   private _drawGrid(): void {
@@ -194,6 +216,11 @@ export class AsteroidOutpostScene implements Scene {
     }
 
     this._hud?.update();
+
+    // Update build prompt overlay visibility
+    const playerNearGrid = this._player && this._isPlayerNearGrid(this._player.x, this._player.y);
+    const menuOpen = this._buildMenuOverlay?.isOpen() ?? false;
+    this._buildPromptOverlay?.update(playerNearGrid ?? false, menuOpen);
   }
 
   // -------------------------------------------------------------------------
@@ -415,7 +442,66 @@ export class AsteroidOutpostScene implements Scene {
     miningService.onInteract(px, py);
   }
 
+  private _isPlayerNearGrid(px: number, py: number, radius = 120): boolean {
+    // Grid is roughly centered at GRID_ORIGIN, spans 5×5 cells
+    const gridCenterX = GRID_ORIGIN.x + 2.5 * CELL_SIZE;
+    const gridCenterY = GRID_ORIGIN.y + 2.5 * CELL_SIZE;
+    const dx = px - gridCenterX;
+    const dy = py - gridCenterY;
+    return dx * dx + dy * dy <= radius * radius;
+  }
+
+  private serializeOutpost(): NonNullable<SaveData['outpost']> {
+    return {
+      grid: buildGrid.serialize(),
+      furnaceRecipe: this._furnace?.recipe ?? 'off',
+      stockpile: Object.fromEntries(this._storage?.getStockpile() ?? []),
+      droneSlots: this._droneDepot?.getSlotConfigs() ?? [],
+      playerX: this._player?.x ?? 480,
+      playerY: this._player?.y ?? 270,
+    };
+  }
+
+  private deserializeOutpost(data: NonNullable<SaveData['outpost']>): void {
+    // Restore grid (re-place buildings)
+    buildGrid.deserialize(data.grid);
+
+    // Restore furnace recipe
+    if (this._furnace) {
+      this._furnace.setRecipe(data.furnaceRecipe);
+    }
+
+    // Restore stockpile
+    if (this._storage) {
+      this._storage.clearStock();
+      for (const [oreType, qty] of Object.entries(data.stockpile)) {
+        if (qty > 0) {
+          this._storage.setStock(oreType as any, qty);
+        }
+      }
+    }
+
+    // Restore drone slot configs
+    if (this._droneDepot) {
+      for (const slotConfig of data.droneSlots) {
+        this._droneDepot.setSlotConfig(slotConfig.slotId, slotConfig);
+      }
+    }
+
+    // Restore player position
+    if (this._player) {
+      this._player.x = data.playerX;
+      this._player.y = data.playerY;
+      this._player.container.x = data.playerX;
+      this._player.container.y = data.playerY;
+    }
+  }
+
   exit(): void {
+    // Clear save getter and storage accessor
+    _activeSaveGetter = null;
+    _activeStorageGetter = null;
+
     // Stop dispatcher
     outpostDispatcher.stop();
     resetDepotBuilt();
@@ -429,6 +515,7 @@ export class AsteroidOutpostScene implements Scene {
     this._hud?.unmount();
     this._furnaceOverlay?.unmount();
     this._buildMenuOverlay?.unmount();
+    this._buildPromptOverlay?.unmount();
     this._droneDepotOverlay?.unmount();
 
     // Cancel any active ghost
@@ -447,6 +534,7 @@ export class AsteroidOutpostScene implements Scene {
     this._hud = null;
     this._furnaceOverlay = null;
     this._buildMenuOverlay = null;
+    this._buildPromptOverlay = null;
     this._droneDepotOverlay = null;
     this._app = null;
   }
@@ -454,3 +542,18 @@ export class AsteroidOutpostScene implements Scene {
 
 // Helper reference for clamping (mirrors BuildGrid statics)
 const BuildGrid = { ROWS: 5, COLS: 5 };
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Module-level save state getter and storage accessor
+// ─────────────────────────────────────────────────────────────────────────────
+
+let _activeSaveGetter: (() => NonNullable<SaveData['outpost']>) | null = null;
+let _activeStorageGetter: (() => StorageDepot | null) | null = null;
+
+export function getOutpostSaveData(): SaveData['outpost'] {
+  return _activeSaveGetter?.();
+}
+
+export function getActiveStorage(): StorageDepot | null {
+  return _activeStorageGetter?.() ?? null;
+}

@@ -1,4 +1,6 @@
 import { EventBus } from './EventBus';
+import type { PlacedEntry } from './BuildGrid';
+import type { DroneSlotConfig } from './OutpostDispatcher';
 
 export const FORMAT_VERSION = 3;
 const SAVE_KEY = 'voidyield_savegame';
@@ -34,6 +36,14 @@ export interface SaveData {
   stranding_manager?: { rocketFuel: number; isStranded: boolean };
   tutorial_state?: { step: number; completed: boolean; skipped: boolean };
   max_active_drones?: number;
+  outpost?: {
+    grid: PlacedEntry[];
+    furnaceRecipe: 'iron' | 'copper' | 'off';
+    stockpile: Record<string, number>;
+    droneSlots: DroneSlotConfig[];
+    playerX: number;
+    playerY: number;
+  };
 }
 
 /**
