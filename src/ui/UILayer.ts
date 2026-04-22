@@ -204,7 +204,6 @@ export class UILayer {
   get productionDashboard(): ProductionDashboard | null { return this._productionDashboard; }
   get logisticsOverlay(): LogisticsOverlay | null { return this._logisticsOverlay; }
   get galaxyMap(): GalaxyMap | null { return this._galaxyMap; }
-  get inventoryPanel(): null { return null; }
   get surveyOverlay(): SurveyOverlay | null { return this._surveyOverlay; }
   get surveyJournal(): SurveyJournalPanel | null { return this._surveyJournal; }
   get offlineDispatch(): OfflineDispatchPanel | null { return this._offlineDispatch; }

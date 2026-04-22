@@ -570,15 +570,6 @@ export class PlanetA1Scene implements Scene {
           this.logisticsOverlay.refresh(logisticsManager.getRoutes());
         }
       }
-      if (action === 'inventory' && pressed) {
-        const ui = (window as unknown as { __voidyield_uiLayer?: UILayer }).__voidyield_uiLayer;
-        if (ui?.inventoryPanel?.visible) {
-          ui.closeAllPanels();
-        } else {
-          ui?.inventoryPanel?.setDepot(this.storageDepot);
-          ui?.inventoryPanel?.open();
-        }
-      }
     });
   }
 
