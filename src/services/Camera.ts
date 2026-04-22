@@ -32,6 +32,7 @@ export class Camera {
   private _onTouchStart: (e: TouchEvent) => void;
   private _onTouchMove: (e: TouchEvent) => void;
   private _onTouchEnd: (e: TouchEvent) => void;
+  private _onWindowResize: () => void;
 
   // Single-finger touch tracking — used to distinguish a tap from a drag.
   private _touch: {
@@ -161,6 +162,22 @@ export class Camera {
       if (e.cancelable) e.preventDefault();
     };
 
+    this._onWindowResize = () => {
+      // Mobile browsers resize the canvas when the URL bar shows/hides and on
+      // rotation. Keep the camera's cached viewport in sync or the worldContainer
+      // ends up clamped against stale bounds — which on tall phones can hide
+      // the map entirely behind the HUD.
+      const c = this._canvas;
+      if (!c) return;
+      const rect = c.getBoundingClientRect();
+      const w = Math.max(1, Math.round(rect.width));
+      const h = Math.max(1, Math.round(rect.height));
+      if (w === this.screenWidth && h === this.screenHeight) return;
+      this.screenWidth = w;
+      this.screenHeight = h;
+      this._applyTransform();
+    };
+
     this._onTouchEnd = (e: TouchEvent) => {
       // If we were pinching and dropped below 2 fingers, end the pinch but
       // do NOT promote the remaining finger into a tap candidate (it's been
@@ -249,6 +266,10 @@ export class Camera {
     canvas.addEventListener('touchmove',  this._onTouchMove,  { passive: false });
     canvas.addEventListener('touchend',   this._onTouchEnd);
     canvas.addEventListener('touchcancel', this._onTouchEnd);
+    window.addEventListener('resize', this._onWindowResize);
+    // Sync once at mount in case the canvas was resized between construction
+    // and mount (common on mobile where layout settles after first paint).
+    this._onWindowResize();
   }
 
   unmount(canvas: HTMLCanvasElement): void {
@@ -260,6 +281,7 @@ export class Camera {
     canvas.removeEventListener('touchmove',  this._onTouchMove);
     canvas.removeEventListener('touchend',   this._onTouchEnd);
     canvas.removeEventListener('touchcancel', this._onTouchEnd);
+    window.removeEventListener('resize', this._onWindowResize);
     this._canvas = null;
     this._touch = null;
     this._pinch = null;
