@@ -400,6 +400,8 @@ export class PlanetA1Scene implements Scene {
       app.screen.height,
     );
     this.camera.mount(app.canvas);
+    // Touch: single-finger tap on the canvas walks the player to that spot.
+    this.camera.onTap((wx, wy) => this.player.setMoveTarget(wx, wy));
 
     // 9. Minimap HUD (added to stage, not worldContainer)
     this.minimap = new MinimapOverlay(WORLD_WIDTH, WORLD_HEIGHT, app.screen.width, app.screen.height);

@@ -2366,3 +2366,82 @@
     right: calc(-1 * 8px * var(--hud-scale));
   }
 }
+
+/* ── Touch Interact Button ─────────────────────────────────────
+   Big bottom-left button for touch users. Mirrors the [E] key —
+   visible only when an interactable is in range. */
+.touch-interact {
+  position: absolute;
+  left: calc(8px * var(--hud-scale));
+  bottom: calc(8px * var(--hud-scale));
+  z-index: 35;
+  display: none;            /* toggled to flex by TouchInteractButton */
+  align-items: center;
+  gap: calc(8px * var(--hud-scale));
+  min-width: calc(64px * var(--hud-scale));
+  min-height: calc(56px * var(--hud-scale));
+  padding: calc(6px * var(--hud-scale)) calc(14px * var(--hud-scale));
+  background: rgba(13, 27, 62, 0.92);
+  border: 2px solid var(--color-primary);
+  color: var(--color-primary);
+  font-family: var(--font-mono);
+  font-size: calc(12px * var(--hud-scale));
+  letter-spacing: 0.08em;
+  cursor: pointer;
+  pointer-events: auto;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+  box-shadow: 0 0 14px rgba(0, 0, 0, 0.55);
+  transition: background 120ms, color 120ms, transform 80ms;
+}
+
+.touch-interact:hover,
+.touch-interact:active {
+  background: var(--color-primary);
+  color: var(--color-bg);
+  transform: scale(0.97);
+}
+
+.touch-interact-key {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: calc(28px * var(--hud-scale));
+  min-height: calc(28px * var(--hud-scale));
+  padding: 0 calc(6px * var(--hud-scale));
+  background: rgba(212, 168, 67, 0.18);
+  border: 1px solid currentColor;
+  font-weight: bold;
+  font-size: calc(14px * var(--hud-scale));
+}
+
+.touch-interact-text {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  line-height: 1.15;
+}
+
+.touch-interact-verb {
+  font-weight: bold;
+  font-size: calc(13px * var(--hud-scale));
+  letter-spacing: 0.12em;
+}
+
+.touch-interact-target {
+  font-size: calc(10px * var(--hud-scale));
+  opacity: 0.85;
+  letter-spacing: 0.06em;
+}
+
+/* Stop the browser from hijacking touch gestures on the game canvas
+   (pull-to-refresh, pinch-zoom, double-tap-to-zoom). The Camera handles
+   pinch and tap manually. Selection is also disabled so a long-press on
+   the canvas doesn't pop up a text-selection toolbar. */
+#game-container,
+#game-container canvas {
+  touch-action: none;
+  -webkit-user-select: none;
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
+}

@@ -1,5 +1,11 @@
 import { Container } from 'pixi.js';
 
+/** Max pixels a finger can drift between touchstart/end before we treat the
+ * gesture as a drag (and therefore ignore the tap). Sized for shaky thumbs. */
+const TAP_MOVE_THRESHOLD_PX = 14;
+/** Max ms between touchstart and touchend for a gesture to register as a tap. */
+const TAP_TIME_THRESHOLD_MS = 400;
+
 export class Camera {
   private worldContainer: Container;
   private worldWidth: number;
@@ -23,6 +29,28 @@ export class Camera {
   private _onMouseDown: (e: MouseEvent) => void;
   private _onMouseMove: (e: MouseEvent) => void;
   private _onMouseUp: (e: MouseEvent) => void;
+  private _onTouchStart: (e: TouchEvent) => void;
+  private _onTouchMove: (e: TouchEvent) => void;
+  private _onTouchEnd: (e: TouchEvent) => void;
+
+  // Single-finger touch tracking — used to distinguish a tap from a drag.
+  private _touch: {
+    id: number;
+    startSx: number; startSy: number;
+    startTime: number;
+    moved: boolean;
+    lastSx: number; lastSy: number;
+  } | null = null;
+  // Two-finger pinch-zoom tracking.
+  private _pinch: {
+    id1: number; id2: number;
+    startDist: number;
+    startZoom: number;
+  } | null = null;
+
+  /** Tap callback — fires for a single-finger tap (no drag). World coords. */
+  private _onTap: ((worldX: number, worldY: number) => void) | null = null;
+  private _canvas: HTMLCanvasElement | null = null;
 
   constructor(
     worldContainer: Container,
@@ -75,6 +103,97 @@ export class Camera {
       if (e.button !== 1) return;
       this.isPanning = false;
     };
+
+    this._onTouchStart = (e: TouchEvent) => {
+      if (e.touches.length === 1) {
+        const t = e.touches[0];
+        const { sx, sy } = this._touchToCanvasCoords(t);
+        this._touch = {
+          id: t.identifier,
+          startSx: sx, startSy: sy,
+          startTime: Date.now(),
+          moved: false,
+          lastSx: sx, lastSy: sy,
+        };
+        this._pinch = null;
+      } else if (e.touches.length >= 2) {
+        // Second finger landed — start pinch and abandon any single-finger tap.
+        this._touch = null;
+        const t1 = e.touches[0], t2 = e.touches[1];
+        const dx = t1.clientX - t2.clientX;
+        const dy = t1.clientY - t2.clientY;
+        this._pinch = {
+          id1: t1.identifier, id2: t2.identifier,
+          startDist: Math.hypot(dx, dy) || 1,
+          startZoom: this.zoom,
+        };
+      }
+      // Block the synthetic mouse events / browser gestures so the page
+      // doesn't pan or zoom under the finger while the user is playing.
+      if (e.cancelable) e.preventDefault();
+    };
+
+    this._onTouchMove = (e: TouchEvent) => {
+      if (this._pinch && e.touches.length >= 2) {
+        // Pinch-zoom: scale relative to the initial finger spread.
+        const t1 = this._findTouch(e.touches, this._pinch.id1);
+        const t2 = this._findTouch(e.touches, this._pinch.id2);
+        if (t1 && t2) {
+          const dx = t1.clientX - t2.clientX;
+          const dy = t1.clientY - t2.clientY;
+          const dist = Math.hypot(dx, dy) || 1;
+          const ratio = dist / this._pinch.startDist;
+          const next = this._pinch.startZoom * ratio;
+          this.zoom = Math.max(this.minZoom, Math.min(this.maxZoom, next));
+          this._applyTransform();
+        }
+      } else if (this._touch) {
+        const t = this._findTouch(e.touches, this._touch.id);
+        if (t) {
+          const { sx, sy } = this._touchToCanvasCoords(t);
+          this._touch.lastSx = sx;
+          this._touch.lastSy = sy;
+          const dx = sx - this._touch.startSx;
+          const dy = sy - this._touch.startSy;
+          if (Math.hypot(dx, dy) > TAP_MOVE_THRESHOLD_PX) this._touch.moved = true;
+        }
+      }
+      if (e.cancelable) e.preventDefault();
+    };
+
+    this._onTouchEnd = (e: TouchEvent) => {
+      // If we were pinching and dropped below 2 fingers, end the pinch but
+      // do NOT promote the remaining finger into a tap candidate (it's been
+      // moving as part of the pinch).
+      if (this._pinch && e.touches.length < 2) {
+        this._pinch = null;
+        this._touch = null;
+        return;
+      }
+      if (this._touch && !this._findTouch(e.touches, this._touch.id)) {
+        const t = this._touch;
+        this._touch = null;
+        const elapsed = Date.now() - t.startTime;
+        if (!t.moved && elapsed <= TAP_TIME_THRESHOLD_MS && this._onTap) {
+          const wp = this.screenToWorld(t.lastSx, t.lastSy);
+          this._onTap(wp.x, wp.y);
+        }
+      }
+    };
+  }
+
+  /** Resolve a Touch to canvas-local CSS pixels (matches `screenToWorld`). */
+  private _touchToCanvasCoords(t: Touch): { sx: number; sy: number } {
+    if (!this._canvas) return { sx: t.clientX, sy: t.clientY };
+    const rect = this._canvas.getBoundingClientRect();
+    return { sx: t.clientX - rect.left, sy: t.clientY - rect.top };
+  }
+
+  private _findTouch(list: TouchList, id: number): Touch | null {
+    for (let i = 0; i < list.length; i++) {
+      if (list[i].identifier === id) return list[i];
+    }
+    return null;
   }
 
   follow(target: { x: number; y: number }): void {
@@ -90,6 +209,22 @@ export class Camera {
     };
   }
 
+  /** Inverse of `worldToScreen`. Input is canvas-local CSS pixels. */
+  screenToWorld(sx: number, sy: number): { x: number; y: number } {
+    return {
+      x: (sx - this.worldContainer.x) / this.zoom,
+      y: (sy - this.worldContainer.y) / this.zoom,
+    };
+  }
+
+  /**
+   * Register a callback for single-finger taps on the canvas. Replaces any
+   * previous callback. Pass null to clear. Coordinates are in world space.
+   */
+  onTap(cb: ((worldX: number, worldY: number) => void) | null): void {
+    this._onTap = cb;
+  }
+
   private _applyTransform(): void {
     const { x, y } = this.lastTarget;
     const { screenWidth, screenHeight, worldWidth, worldHeight, zoom } = this;
@@ -103,10 +238,17 @@ export class Camera {
   }
 
   mount(canvas: HTMLCanvasElement): void {
+    this._canvas = canvas;
     canvas.addEventListener('wheel', this._onWheel);
     canvas.addEventListener('mousedown', this._onMouseDown);
     canvas.addEventListener('mousemove', this._onMouseMove);
     canvas.addEventListener('mouseup', this._onMouseUp);
+    // passive:false so we can preventDefault() and stop the browser from
+    // hijacking the gesture for page scroll / pull-to-refresh / pinch-zoom.
+    canvas.addEventListener('touchstart', this._onTouchStart, { passive: false });
+    canvas.addEventListener('touchmove',  this._onTouchMove,  { passive: false });
+    canvas.addEventListener('touchend',   this._onTouchEnd);
+    canvas.addEventListener('touchcancel', this._onTouchEnd);
   }
 
   unmount(canvas: HTMLCanvasElement): void {
@@ -114,5 +256,12 @@ export class Camera {
     canvas.removeEventListener('mousedown', this._onMouseDown);
     canvas.removeEventListener('mousemove', this._onMouseMove);
     canvas.removeEventListener('mouseup', this._onMouseUp);
+    canvas.removeEventListener('touchstart', this._onTouchStart);
+    canvas.removeEventListener('touchmove',  this._onTouchMove);
+    canvas.removeEventListener('touchend',   this._onTouchEnd);
+    canvas.removeEventListener('touchcancel', this._onTouchEnd);
+    this._canvas = null;
+    this._touch = null;
+    this._pinch = null;
   }
 }

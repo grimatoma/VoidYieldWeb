@@ -28,6 +28,7 @@ import { SectorCompleteOverlay } from './SectorCompleteOverlay';
 import { PrestigePanel } from './PrestigePanel';
 import { OfflineDispatchPanel } from './OfflineDispatchPanel';
 import { TouchMenuOverlay } from './TouchMenuOverlay';
+import { TouchInteractButton } from './TouchInteractButton';
 import { tutorialManager } from '@services/TutorialManager';
 
 const UI_SCALE_STORAGE_KEY = 'voidyield_ui_scale';
@@ -60,6 +61,7 @@ export class UILayer {
   private _prestigePanel: PrestigePanel | null = null;
   private _offlineDispatch: OfflineDispatchPanel | null = null;
   private _touchMenu: TouchMenuOverlay | null = null;
+  private _touchInteract: TouchInteractButton | null = null;
   private _onResize: () => void;
   private _userScale: number = UI_SCALE_DEFAULT;
 
@@ -179,6 +181,9 @@ export class UILayer {
     this._touchMenu = new TouchMenuOverlay();
     this._touchMenu.mount(this._root);
 
+    this._touchInteract = new TouchInteractButton();
+    this._touchInteract.mount(this._root);
+
     // Debug overlay — always mounted and visible by default; toggle via
     // backtick key or the MENU → SYSTEM → Debug Panel entry.
     this._debugOverlay = new DebugOverlay();
@@ -217,6 +222,7 @@ export class UILayer {
   get surveyJournal(): SurveyJournalPanel | null { return this._surveyJournal; }
   get offlineDispatch(): OfflineDispatchPanel | null { return this._offlineDispatch; }
   get touchMenu(): TouchMenuOverlay | null { return this._touchMenu; }
+  get touchInteract(): TouchInteractButton | null { return this._touchInteract; }
 
   /** Close every opened interaction panel — used when switching planets or on Esc. */
   closeAllPanels(): void {
@@ -287,6 +293,8 @@ export class UILayer {
     this._offlineDispatch = null;
     this._touchMenu?.destroy();
     this._touchMenu = null;
+    this._touchInteract?.destroy();
+    this._touchInteract = null;
     this._root.remove();
   }
 }

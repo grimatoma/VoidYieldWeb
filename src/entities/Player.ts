@@ -40,6 +40,15 @@ export class Player {
   private _animClock = 0;     // seconds since this animation started
   private _frameIdx = 0;
 
+  /**
+   * Tap-to-move target in world coordinates. When set (and no movement key is
+   * held), the player walks toward this point at `speed`. Cleared on arrival,
+   * when keyboard movement takes over, or when collisions stall progress.
+   */
+  private _moveTarget: { x: number; y: number } | null = null;
+  /** Squared "arrived" distance — within this radius the target clears. */
+  private static readonly TARGET_ARRIVE_DIST = 4;
+
   constructor(startX = 100, startY = 100) {
     this.x = startX;
     this.y = startY;
@@ -59,14 +68,55 @@ export class Player {
     this._applyFrameTexture();
   }
 
+  /**
+   * Set a tap-to-move target. The player walks toward (x, y) until it arrives,
+   * is blocked, or the user grabs the keyboard again. Calling with the same
+   * coords replaces any prior target.
+   */
+  setMoveTarget(x: number, y: number): void {
+    this._moveTarget = { x, y };
+  }
+
+  /** Cancel any active tap-to-move target. */
+  clearMoveTarget(): void {
+    this._moveTarget = null;
+  }
+
+  /** Read-only view of the current tap-to-move target (mostly for tests / UI). */
+  get moveTarget(): { x: number; y: number } | null {
+    return this._moveTarget;
+  }
+
   update(delta: number, input: InputManager, bounds: WorldBounds): void {
     let dx = 0;
     let dy = 0;
 
-    if (input.isHeld('player_move_up'))    dy -= this.speed * delta;
-    if (input.isHeld('player_move_down'))  dy += this.speed * delta;
-    if (input.isHeld('player_move_left'))  dx -= this.speed * delta;
-    if (input.isHeld('player_move_right')) dx += this.speed * delta;
+    const keyboardActive =
+      input.isHeld('player_move_up')   ||
+      input.isHeld('player_move_down') ||
+      input.isHeld('player_move_left') ||
+      input.isHeld('player_move_right');
+
+    if (keyboardActive) {
+      // Keyboard always wins over tap-to-move so the player can interrupt a
+      // long walk by simply pressing WASD.
+      this._moveTarget = null;
+      if (input.isHeld('player_move_up'))    dy -= this.speed * delta;
+      if (input.isHeld('player_move_down'))  dy += this.speed * delta;
+      if (input.isHeld('player_move_left'))  dx -= this.speed * delta;
+      if (input.isHeld('player_move_right')) dx += this.speed * delta;
+    } else if (this._moveTarget) {
+      const tx = this._moveTarget.x - this.x;
+      const ty = this._moveTarget.y - this.y;
+      const tdist = Math.sqrt(tx * tx + ty * ty);
+      if (tdist <= Player.TARGET_ARRIVE_DIST) {
+        this._moveTarget = null;
+      } else {
+        const step = Math.min(this.speed * delta, tdist);
+        dx = (tx / tdist) * step;
+        dy = (ty / tdist) * step;
+      }
+    }
 
     // Axis-separated, substepped movement so the player slides along walls
     // rather than sticking when pushing diagonally into a corner, and can't
@@ -77,6 +127,8 @@ export class Player {
     const steps = Math.max(1, Math.ceil(dist / maxStep));
     const stepDx = dx / steps;
     const stepDy = dy / steps;
+    const startX = this.x;
+    const startY = this.y;
     for (let i = 0; i < steps; i++) {
       const nextX = Math.max(0, Math.min(bounds.width, this.x + stepDx));
       if (!obstacleManager.isBlocked(nextX, this.y, this.collisionRadius)) {
@@ -85,6 +137,21 @@ export class Player {
       const nextY = Math.max(0, Math.min(bounds.height, this.y + stepDy));
       if (!obstacleManager.isBlocked(this.x, nextY, this.collisionRadius)) {
         this.y = nextY;
+      }
+    }
+
+    // If a tap-to-move was active, drop it once we either (a) made zero
+    // progress this frame (wall in the way, edge of map, etc.) so the
+    // player doesn't grind forever, or (b) ended within the arrive radius.
+    if (this._moveTarget) {
+      if ((dx !== 0 || dy !== 0) && this.x === startX && this.y === startY) {
+        this._moveTarget = null;
+      } else {
+        const rx = this._moveTarget.x - this.x;
+        const ry = this._moveTarget.y - this.y;
+        if (rx * rx + ry * ry <= Player.TARGET_ARRIVE_DIST * Player.TARGET_ARRIVE_DIST) {
+          this._moveTarget = null;
+        }
       }
     }
 

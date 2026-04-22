@@ -106,6 +106,7 @@ export class PlanetA3Scene implements Scene {
       app.screen.height,
     );
     this.camera.mount(app.canvas);
+    this.camera.onTap((wx, wy) => this.player.setMoveTarget(wx, wy));
 
     // 12. Minimap HUD
     this.minimap = new MinimapOverlay(WORLD_WIDTH, WORLD_HEIGHT, app.screen.width, app.screen.height);
