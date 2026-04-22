@@ -219,7 +219,7 @@ export const SCHEMATICS: Record<string, Schematic> = {
     inputQty: 2,
     outputType: 'iron_bar',
     outputQty: 1,
-    batchPerMin: 10,  // 6 s per batch
+    batchPerMin: 60,  // 1 s per batch
     powerDraw: 3,
   },
   copper_smelter: {
@@ -229,7 +229,7 @@ export const SCHEMATICS: Record<string, Schematic> = {
     inputQty: 2,
     outputType: 'copper_bar',
     outputQty: 1,
-    batchPerMin: 7.5,  // 8 s per batch
+    batchPerMin: 60,  // 1 s per batch
     powerDraw: 3,
   },
   ore_smelter: {
