@@ -52,6 +52,7 @@ export class ZoneManager {
   private _findIdleRefinery(): DroneBase | null {
     return fleetManager.getDrones().find(
       d => d.droneType === 'refinery' &&
+           !d.disabled &&
            d.state === 'IDLE' &&
            d.getTasks().length === 0 &&
            !this._dispatched.has(d.id)

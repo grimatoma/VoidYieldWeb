@@ -560,6 +560,84 @@
   font-size: calc(10px * var(--hud-scale));
 }
 
+/* Drone Bay — section headers between roster and shop */
+.dronebay-section-head {
+  font-size: calc(10px * var(--hud-scale));
+  letter-spacing: 0.12em;
+  color: var(--color-accent);
+  padding: calc(10px * var(--hud-scale)) calc(10px * var(--hud-scale)) calc(4px * var(--hud-scale));
+  text-transform: uppercase;
+}
+
+/* Drone Bay — roster table */
+.dronebay-roster {
+  max-height: calc(160px * var(--hud-scale));
+  overflow-y: auto;
+}
+.dronebay-roster-empty {
+  padding: calc(10px * var(--hud-scale));
+  font-size: calc(11px * var(--hud-scale));
+  color: #6c7690;
+  font-style: italic;
+}
+.dronebay-roster-row {
+  display: grid;
+  grid-template-columns: 1fr auto auto;
+  align-items: center;
+  gap: calc(10px * var(--hud-scale));
+  padding: calc(4px * var(--hud-scale)) calc(10px * var(--hud-scale));
+  border-bottom: 1px solid #1a2138;
+  font-size: calc(11px * var(--hud-scale));
+  color: #d0d6ea;
+}
+.dronebay-roster-row--off {
+  opacity: 0.55;
+}
+.dronebay-roster-name {
+  display: flex;
+  align-items: center;
+  gap: calc(8px * var(--hud-scale));
+  font-weight: bold;
+  letter-spacing: 0.04em;
+}
+.dronebay-roster-status {
+  display: inline-block;
+  padding: calc(1px * var(--hud-scale)) calc(6px * var(--hud-scale));
+  border: 1px solid #2a355a;
+  font-size: calc(9px * var(--hud-scale));
+  font-weight: normal;
+  color: #a0a8c0;
+  letter-spacing: 0.08em;
+  background: #0a0e1c;
+}
+.dronebay-roster-status[data-status="MINING"]    { color: #2196F3; border-color: #2196F3; }
+.dronebay-roster-status[data-status="HAULING"]   { color: #D4A843; border-color: #D4A843; }
+.dronebay-roster-status[data-status="RETURNING"] { color: #43A047; border-color: #43A047; }
+.dronebay-roster-status[data-status="OFF"]       { color: #6c7690; border-color: #2a355a; }
+
+.dronebay-roster-ore-select {
+  background: #0a0e1c;
+  color: var(--color-accent);
+  border: 1px solid #2a355a;
+  font-family: inherit;
+  font-size: calc(10px * var(--hud-scale));
+  padding: calc(2px * var(--hud-scale)) calc(4px * var(--hud-scale));
+  letter-spacing: 0.06em;
+}
+.dronebay-roster-toggle {
+  display: flex;
+  align-items: center;
+  gap: calc(4px * var(--hud-scale));
+  font-size: calc(9px * var(--hud-scale));
+  letter-spacing: 0.08em;
+  color: #a0a8c0;
+  cursor: pointer;
+  user-select: none;
+}
+.dronebay-roster-toggle input[type="checkbox"] {
+  accent-color: var(--color-primary);
+}
+
 /* Ship Bay gauge + status */
 .shipbay-gauge {
   background: #0a0e1c;

@@ -1,6 +1,6 @@
 import { Deposit } from '@entities/Deposit';
 import type { Container } from 'pixi.js';
-import type { DepositData, WaypointData } from '@data/types';
+import type { DepositData, OreType, WaypointData } from '@data/types';
 
 export class DepositMap {
   private deposits = new Map<string, Deposit>();
@@ -40,6 +40,31 @@ export class DepositMap {
       if (dist < bestDist) { bestDist = dist; nearest = dep; }
     }
     return nearest;
+  }
+
+  /** Nearest non-exhausted, unclaimed deposit matching an optional ore type.
+   * Used by the drone mining dispatcher. Unlimited radius (the whole map). */
+  getNearestUnclaimedDeposit(x: number, y: number, orePref: OreType | null): Deposit | null {
+    let nearest: Deposit | null = null;
+    let bestDist = Infinity;
+    for (const dep of this.deposits.values()) {
+      if (dep.data.isExhausted) continue;
+      if (dep.claimedBy !== null) continue;
+      if (orePref && dep.data.oreType !== orePref) continue;
+      const dx = dep.data.x - x;
+      const dy = dep.data.y - y;
+      const dist = dx * dx + dy * dy;
+      if (dist < bestDist) { bestDist = dist; nearest = dep; }
+    }
+    return nearest;
+  }
+
+  /** Release any deposit claims held by `droneId`. Safe no-op when the drone
+   * isn't claiming anything. Called when a drone is disabled/cleared. */
+  releaseClaimsBy(droneId: string): void {
+    for (const dep of this.deposits.values()) {
+      dep.release(droneId);
+    }
   }
 
   addWaypoint(wp: WaypointData): void {

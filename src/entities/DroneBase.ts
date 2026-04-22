@@ -1,5 +1,5 @@
 import { Container, Graphics, Sprite } from 'pixi.js';
-import type { DroneType, DroneState, DroneTask, QualityLot } from '@data/types';
+import type { DroneType, DroneState, DroneTask, OreType, QualityLot } from '@data/types';
 import { droneSpriteSheet, dirFromVelocity, type Dir8 } from '@services/DroneSpriteSheet';
 import { obstacleManager, type Vec2 } from '@services/ObstacleManager';
 
@@ -23,9 +23,18 @@ export class DroneBase {
   readonly droneType: DroneType;
   readonly speed: number;       // px/s
   readonly carryCapacity: number;
+  /** Seconds to extract a single load of ore from a deposit (GDD §11). */
+  readonly mineTimeSec: number;
   state: DroneState = 'IDLE';
   cargo: QualityLot | null = null;
   loop = false;
+  /** When true the drone parks and the mining dispatcher skips it. Toggled
+   * from the Drone Bay UI. Bay-slot cap (gameState.maxActiveDrones) limits
+   * how many drones can be enabled at once. */
+  disabled = false;
+  /** Preferred ore type for auto-mining. null = "any" (default). Set via the
+   * Drone Bay roster dropdown. Ignored for non-miner drone types. */
+  orePreference: OreType | null = null;
 
   private _tasks: DroneTask[] = [];
   private _execTimer = 0;
@@ -43,13 +52,14 @@ export class DroneBase {
   private _facing: Dir8 = 's';
   private _animClock = 0;
 
-  constructor(droneType: DroneType, x: number, y: number, speed: number, carryCapacity: number) {
+  constructor(droneType: DroneType, x: number, y: number, speed: number, carryCapacity: number, mineTimeSec = 3.0) {
     this.id = `drone-${_idCounter++}`;
     this.droneType = droneType;
     this.x = x;
     this.y = y;
     this.speed = speed;
     this.carryCapacity = carryCapacity;
+    this.mineTimeSec = mineTimeSec;
 
     this.container = new Container();
     this.container.x = x;

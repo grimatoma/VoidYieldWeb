@@ -15,6 +15,10 @@ import { saveManager } from '@services/SaveManager';
 import { settingsManager } from '@services/SettingsManager';
 import { EventBus } from '@services/EventBus';
 import { tutorialManager } from '@services/TutorialManager';
+import { fleetManager } from '@services/FleetManager';
+import { miningCircuitManager } from '@services/MiningCircuitManager';
+import { depositMap } from '@services/DepositMap';
+import { marketplaceService } from '@services/MarketplaceService';
 
 export interface VoidYieldDebugAPI {
   // ── State setters ─────────────────────────────────────────────
@@ -67,6 +71,10 @@ export interface VoidYieldDebugAPI {
     settingsManager: typeof settingsManager;
     EventBus: typeof EventBus;
     surveyService: typeof surveyService;
+    fleetManager: typeof fleetManager;
+    miningCircuitManager: typeof miningCircuitManager;
+    depositMap: typeof depositMap;
+    marketplaceService: typeof marketplaceService;
   };
 }
 
@@ -258,6 +266,10 @@ function createDebugAPI(): VoidYieldDebugAPI {
       settingsManager,
       EventBus,
       surveyService,
+      fleetManager,
+      miningCircuitManager,
+      depositMap,
+      marketplaceService,
     },
   };
 }

@@ -27,6 +27,7 @@ import { HabitationModule } from '@entities/HabitationModule';
 import { WaterCondenser } from '@entities/WaterCondenser';
 import { consumptionManager } from '@services/ConsumptionManager';
 import { zoneManager } from '@services/ZoneManager';
+import { miningCircuitManager } from '@services/MiningCircuitManager';
 import { FleetPanel } from '../ui/FleetPanel';
 import { CoverageOverlay } from '../ui/CoverageOverlay';
 import { Fabricator } from '@entities/Fabricator';
@@ -273,24 +274,13 @@ export class PlanetA1Scene implements Scene {
     this.droneBay = new DroneBay(SLOT.DRONE_BAY.x, SLOT.DRONE_BAY.y);
     this.worldContainer.addChild(this.droneBay.container);
 
-    // Spawn a starter scout drone so the player sees the swarm is alive.
-    // Credits aren't charged — this is a demo drone; proper purchasing uses
-    // the Drone Bay panel. A looping patrol task drives visible motion.
+    // Starter Mining Drone so a fresh save has a visible, working drone.
+    // No credits charged — gifted to the player. MiningCircuitManager will
+    // pick it up and drive it through the SEEK → MINE → HAUL loop.
     const starter = new (await import('@entities/ScoutDrone')).ScoutDrone(this.droneBay.x, this.droneBay.y);
     this.worldContainer.addChild(starter.container);
     this.droneBay['_drones'].push(starter); // direct push avoids the price charge
     fleetManager.add(starter);
-    starter.loop = true;
-    // Patrol four corners around the compound for a visible circuit.
-    const patrol = [
-      { x: OUTPOST_CX - 160, y: OUTPOST_CY - 80 },
-      { x: OUTPOST_CX + 160, y: OUTPOST_CY - 80 },
-      { x: OUTPOST_CX + 160, y: OUTPOST_CY + 60 },
-      { x: OUTPOST_CX - 160, y: OUTPOST_CY + 60 },
-    ];
-    for (const p of patrol) {
-      starter.pushTask({ type: 'CARRY', targetX: p.x, targetY: p.y, executeDurationSec: 0.3 });
-    }
 
     // Traffic overlay (T key)
     this.trafficOverlay = new TrafficOverlay();
@@ -329,6 +319,10 @@ export class PlanetA1Scene implements Scene {
 
     // Auto-harvest-support zone (GasCollector is at 300,900; depot at 1400,1000)
     zoneManager.enable(300, 900, this.storageDepot);
+
+    // Drone auto-mining dispatcher — makes Mining Drones / Heavy Miners
+    // actually mine deposits and deliver to the pool.
+    miningCircuitManager.setDepot(this.storageDepot);
 
     // Solar panels (power supply) — inside compound, east side
     const sp1 = new SolarPanel(SLOT.SOLAR_A.x, SLOT.SOLAR_A.y);
@@ -615,7 +609,9 @@ export class PlanetA1Scene implements Scene {
     harvesterManager.update(delta);
     fleetManager.update(delta);
     zoneManager.update(delta);
+    miningCircuitManager.update(delta);
     if (this.fleetPanel.visible) this.fleetPanel.update();
+    ui?.droneBayPanel?.update(delta);
     this.trafficOverlay.update(fleetManager.getDrones());
     this.processingPlant.update(delta);
     this.platePressPlant.update(delta);
@@ -663,6 +659,7 @@ export class PlanetA1Scene implements Scene {
     harvesterManager.clear(this.worldContainer);
     fleetManager.clear();
     zoneManager.reset();
+    miningCircuitManager.reset();
     this.processingPlant.destroy();
     this.platePressPlant.destroy();
     for (const fab of this.fabricators) fab.destroy();
