@@ -179,4 +179,67 @@ describe('Player', () => {
       expect(player.x).toBeGreaterThan(220);
     });
   });
+
+  describe('tap-to-move', () => {
+    afterEach(() => {
+      obstacleManager.clear();
+    });
+
+    it('walks toward a tap target when no key is held', () => {
+      const player = new Player(100, 100);
+      player.setMoveTarget(400, 100);
+      player.update(0.1, noInput, bounds);   // 200 px/s * 0.1 = 20 px step
+      expect(player.x).toBeGreaterThan(100);
+      expect(player.x).toBeLessThan(400);
+      expect(player.moveTarget).not.toBeNull();
+    });
+
+    it('clears the target on arrival', () => {
+      const player = new Player(100, 100);
+      player.setMoveTarget(110, 100);   // close enough that one big step lands it
+      player.update(1, noInput, bounds);
+      expect(player.moveTarget).toBeNull();
+      expect(player.x).toBeCloseTo(110, 0);
+    });
+
+    it('keyboard input cancels the tap target', () => {
+      const player = new Player(100, 100);
+      player.setMoveTarget(800, 800);
+      const right = makeInput('player_move_right');
+      player.update(0.1, right, bounds);
+      expect(player.moveTarget).toBeNull();
+      // Player moved right (keyboard) not toward the SE target.
+      expect(player.x).toBeGreaterThan(100);
+      expect(player.y).toBe(100);
+    });
+
+    it('clears the target if a wall blocks all progress', () => {
+      // Wall directly to the right of the player.
+      obstacleManager.addWall({ x: 105, y: 50, w: 20, h: 200 });
+      const player = new Player(100, 150);
+      // First flush the player against the wall so further attempts make
+      // zero progress (otherwise the wind-up step still moves a fractional
+      // amount on the first call).
+      player.setMoveTarget(400, 150);
+      player.update(1, noInput, bounds);
+      // Now the target is either cleared (stalled in the same frame) or
+      // we re-target and confirm a stalled second update clears it.
+      if (player.moveTarget) {
+        const before = player.x;
+        player.update(0.1, noInput, bounds);
+        expect(player.x).toBe(before);
+        expect(player.moveTarget).toBeNull();
+      } else {
+        expect(player.moveTarget).toBeNull();
+      }
+    });
+
+    it('clearMoveTarget() stops tap-to-move motion', () => {
+      const player = new Player(100, 100);
+      player.setMoveTarget(400, 100);
+      player.clearMoveTarget();
+      player.update(0.1, noInput, bounds);
+      expect(player.x).toBe(100);
+    });
+  });
 });

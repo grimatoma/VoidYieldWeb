@@ -82,7 +82,29 @@ Before adding any new key binding to any spec file, check this document. If the 
 
 ---
 
-## 7. Controller Bindings (Equivalent Mapping)
+## 7. Touch Bindings (Equivalent Mapping)
+
+Touch controls mirror the mouse + keyboard scheme so the game is fully playable
+on a phone or tablet without a physical input device.
+
+| Touch Gesture | Equivalent Action |
+|---|---|
+| One-finger tap on world | Set tap-to-move target — player walks toward the tapped point; camera follows automatically |
+| One-finger drag on world | No-op (drag past the tap threshold cancels the tap) |
+| Two-finger pinch | Camera zoom in / out (Mouse Scroll) |
+| **INTERACT** button (bottom-left) | Interact [E] — visible only when an interactable is in range |
+| **MENU** button (bottom-right) | Open Touch Menu Overlay [M] — gateway to every panel / overlay / tool |
+
+The on-screen INTERACT button is implemented in `src/ui/TouchInteractButton.ts`
+and listens to the `interaction:target` event so its label always matches the
+world-space [E] prompt (e.g., "MINE VORAX", "OPEN STORAGE"). Tap-to-move is
+implemented in `src/entities/Player.ts` (`setMoveTarget`) and dispatched by
+`Camera.onTap` in `src/services/Camera.ts`. Pressing any movement key (WASD /
+arrows) cancels the active tap-to-move target.
+
+---
+
+## 8. Controller Bindings (Equivalent Mapping)
 
 | Controller Input | Equivalent Keyboard Action |
 |---|---|
@@ -106,7 +128,7 @@ Controller bindings should be remappable in Settings → Controls.
 
 ---
 
-## 8. Full Binding Summary (Quick Reference)
+## 9. Full Binding Summary (Quick Reference)
 
 | Key | Action |
 |---|---|
