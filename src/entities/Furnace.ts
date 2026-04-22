@@ -94,6 +94,15 @@ export class Furnace {
   }
 
   /**
+   * Insert ore directly from an external source (e.g., a logistics drone).
+   * Returns the number of units actually accepted.
+   */
+  insertBatch(oreType: OreType, qty: number): number {
+    if (this._recipe === 'off') return 0;
+    return this._plant.insertBatch(oreType, qty);
+  }
+
+  /**
    * Called by a player E-press: consume matching ore from player inventory
    * and push it into the furnace input buffer.
    * Returns the number of ore units actually inserted.
