@@ -32,6 +32,10 @@ const ORE_COLORS: Record<OreType, number> = {
   fuel_tank: 0x607D8B,
   avionics: 0x00ACC1,
   landing_gear: 0x795548,
+  iron_ore: 0xB0BEC5,
+  copper_ore: 0xE07B39,
+  iron_bar: 0x78909C,
+  copper_bar: 0xBF6030,
 };
 
 /** Map ore type to the sprite key where legacy assets exist; otherwise null -> color circle fallback. */

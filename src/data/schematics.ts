@@ -212,6 +212,26 @@ export const ASSEMBLY_SCHEMATICS: Record<string, AssemblySchematic> = {
 };
 
 export const SCHEMATICS: Record<string, Schematic> = {
+  iron_smelter: {
+    schematicId: 'iron_smelter',
+    name: 'Iron Smelt',
+    inputType: 'iron_ore',
+    inputQty: 2,
+    outputType: 'iron_bar',
+    outputQty: 1,
+    batchPerMin: 10,  // 6 s per batch
+    powerDraw: 3,
+  },
+  copper_smelter: {
+    schematicId: 'copper_smelter',
+    name: 'Copper Smelt',
+    inputType: 'copper_ore',
+    inputQty: 2,
+    outputType: 'copper_bar',
+    outputQty: 1,
+    batchPerMin: 7.5,  // 8 s per batch
+    powerDraw: 3,
+  },
   ore_smelter: {
     schematicId: 'ore_smelter',
     name: 'Ore Smelter',

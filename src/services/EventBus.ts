@@ -41,6 +41,11 @@ export type GameEvents = {
   'survey:scan_complete': [stage: string, depositId: string, concentration: number];
   'survey:waypoint_placed': [depositId: string, x: number, y: number];
   'survey:mode_changed': [active: boolean];
+  'grid:placed': [buildingId: string, row: number, col: number];
+  'grid:picked-up': [buildingId: string];
+  'outpost:inventory-changed': [];
+  'furnace:state-changed': [state: 'idle' | 'running' | 'output-ready'];
+  'input:build_menu': [];
 };
 
 class TypedEventBus extends EventEmitter<GameEvents> {}

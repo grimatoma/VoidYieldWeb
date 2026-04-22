@@ -23,7 +23,8 @@ export type InputAction =
   | 'fullscreen_toggle'
   | 'camera_zoom_in'
   | 'camera_zoom_out'
-  | 'debug_toggle';
+  | 'debug_toggle'
+  | 'build_menu';  // N key — B is claimed by coverage_overlay (spec 16)
 
 type KeyMap = Record<string, InputAction>;
 
@@ -54,6 +55,7 @@ const DEFAULT_BINDINGS: KeyMap = {
   Escape: 'pause_menu',
   F11: 'fullscreen_toggle',
   Backquote: 'debug_toggle',
+  KeyN: 'build_menu',  // N — B is claimed by coverage_overlay (spec 16)
 };
 
 export class InputManager {

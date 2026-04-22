@@ -101,6 +101,11 @@ export class StorageDepot {
     this.stockpile.clear();
   }
 
+  /** Returns the count of a specific bar type in the stockpile. */
+  getBarCount(oreType: OreType): number {
+    return this.stockpile.get(oreType) ?? 0;
+  }
+
   isNearby(px: number, py: number, radius = 40): boolean {
     const dx = px - this.x;
     const dy = py - this.y;

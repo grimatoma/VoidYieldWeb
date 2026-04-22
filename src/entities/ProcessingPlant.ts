@@ -14,9 +14,18 @@ export class ProcessingPlant {
   readonly schematic: Schematic;
   state: PlantState = 'STALLED';
 
+  /**
+   * When true the plant does NOT auto-pull from the input depot on its timer;
+   * input must arrive via insertBatch(). When false, the existing auto-pull
+   * behaviour runs unchanged.
+   */
+  manualOnly = false;
+
   private inputDepot: StorageDepot | null = null;
   private outputDepot: StorageDepot | null = null;
   private batchTimer = 0;
+  /** Manual input buffer — units available to consume in the next batch. */
+  private inputBuffer = 0;
   private label!: Text;
 
   constructor(worldX: number, worldY: number, schematic: Schematic) {
@@ -58,7 +67,13 @@ export class ProcessingPlant {
    * batchInterval = 60 / batchPerMin seconds
    */
   update(delta: number): void {
-    if (!this.inputDepot || !this.outputDepot) {
+    if (!this.outputDepot) {
+      this.state = 'STALLED';
+      return;
+    }
+
+    // manualOnly mode: inputDepot is not required — input comes from insertBatch().
+    if (!this.manualOnly && !this.inputDepot) {
       this.state = 'STALLED';
       return;
     }
@@ -75,10 +90,19 @@ export class ProcessingPlant {
     if (this.batchTimer >= batchInterval) {
       this.batchTimer -= batchInterval;
 
-      // Try to pull input
-      const inputAvailable = this.inputDepot.pull(this.schematic.inputType, this.schematic.inputQty);
+      let inputConsumed = 0;
+      if (this.manualOnly) {
+        // Consume from the manual input buffer instead of pulling from depot.
+        if (this.inputBuffer >= this.schematic.inputQty) {
+          this.inputBuffer -= this.schematic.inputQty;
+          inputConsumed = this.schematic.inputQty;
+        }
+      } else {
+        // Auto-pull from linked input depot.
+        inputConsumed = this.inputDepot!.pull(this.schematic.inputType, this.schematic.inputQty);
+      }
 
-      if (inputAvailable > 0) {
+      if (inputConsumed > 0) {
         // Produce output lot
         const outputLot: QualityLot = {
           oreType: this.schematic.outputType as OreType,
@@ -91,6 +115,21 @@ export class ProcessingPlant {
         this.state = 'STALLED';
       }
     }
+  }
+
+  /**
+   * Push ore into the manual input buffer.
+   * Only accepted when oreType matches this plant's schematic input.
+   * Returns the amount actually accepted (capped by remaining space until next batch).
+   */
+  insertBatch(oreType: OreType, qty: number): number {
+    if (oreType !== this.schematic.inputType) return 0;
+    // Cap: don't allow more than one batch-worth of backlog beyond what's already there.
+    const maxBuffer = this.schematic.inputQty;
+    const space = Math.max(0, maxBuffer - this.inputBuffer);
+    const accepted = Math.min(qty, space);
+    this.inputBuffer += accepted;
+    return accepted;
   }
 
   destroy(): void {

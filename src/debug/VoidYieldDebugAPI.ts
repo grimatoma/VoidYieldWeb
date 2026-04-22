@@ -19,6 +19,7 @@ import { fleetManager } from '@services/FleetManager';
 import { miningCircuitManager } from '@services/MiningCircuitManager';
 import { depositMap } from '@services/DepositMap';
 import { marketplaceService } from '@services/MarketplaceService';
+import { getActiveStorage } from '@scenes/AsteroidOutpostScene';
 
 export interface VoidYieldDebugAPI {
   // ── State setters ─────────────────────────────────────────────
@@ -58,6 +59,16 @@ export interface VoidYieldDebugAPI {
 
   // ── Preset loader ─────────────────────────────────────────────
   loadPreset(name: GamePreset): void;
+
+  // ── Outpost helpers ───────────────────────────────────────────
+  outpost: {
+    setInventory(ore: OreType, qty: number): void;
+    getInventory(ore: OreType): number;
+    resetOutpost(): void;
+    forceBuild(buildingType: 'marketplace' | 'drone_depot'): void;
+    seedBars(ironBars: number, copperBars: number): void;
+    getStorageStock(ore: OreType): number;
+  };
 
   // ── Raw service access for advanced tests ────────────────────
   services: {
@@ -252,6 +263,27 @@ function createDebugAPI(): VoidYieldDebugAPI {
           // Stockpile will need to be set per-planet in the test
           break;
       }
+    },
+
+    // ── Outpost helpers ───────────────────────────────────────
+    outpost: {
+      setInventory(ore, qty) { inventory.restore([{ oreType: ore, quantity: qty, attributes: {} }]); },
+      getInventory(ore) { return inventory.getByType(ore); },
+      resetOutpost() {
+        inventory.drain();
+        gameState.setCredits(200);
+        EventBus.emit('outpost:inventory-changed');
+      },
+      forceBuild(buildingType) {
+        EventBus.emit('outpost:force-build' as any, buildingType);
+      },
+      seedBars(ironBars, copperBars) {
+        EventBus.emit('outpost:seed-bars' as any, { iron_bar: ironBars, copper_bar: copperBars });
+      },
+      getStorageStock(ore) {
+        const storage = getActiveStorage();
+        return storage?.getBarCount(ore) ?? 0;
+      },
     },
 
     // ── Raw service access ────────────────────────────────────

@@ -1,0 +1,118 @@
+import { describe, it, expect, beforeEach, vi } from 'vitest';
+
+vi.mock('pixi.js', () => {
+  const make = () => ({
+    rect: vi.fn().mockReturnThis(), fill: vi.fn().mockReturnThis(),
+    stroke: vi.fn().mockReturnThis(), circle: vi.fn().mockReturnThis(),
+    addChild: vi.fn(), x: 0, y: 0, visible: true, style: { fill: '#00B8D4' },
+    anchor: { set: vi.fn() },
+  });
+  return {
+    Graphics: vi.fn().mockImplementation(make),
+    Container: vi.fn().mockImplementation(make),
+    Text: vi.fn().mockImplementation(() => ({ ...make(), text: '', anchor: { set: vi.fn() } })),
+    TextStyle: vi.fn(),
+  };
+});
+
+vi.mock('@services/PowerManager', () => ({
+  powerManager: {
+    registerConsumer: vi.fn(),
+    unregisterConsumer: vi.fn(),
+    throttleMultiplier: 1.0,
+  },
+}));
+
+vi.mock('@services/ConsumptionManager', () => ({
+  consumptionManager: { productivityMultiplier: 1.0 },
+}));
+
+import { ProcessingPlant } from '@entities/ProcessingPlant';
+import { SCHEMATICS } from '@data/schematics';
+
+function makeDepot(pullReturn = 1) {
+  return {
+    getStockpile: vi.fn().mockReturnValue(new Map([['vorax', 10]])),
+    deposit: vi.fn(),
+    pull: vi.fn().mockReturnValue(pullReturn),
+    x: 0, y: 0,
+  };
+}
+
+describe('ProcessingPlant — manualOnly', () => {
+  let plant: ProcessingPlant;
+  let inputDepot: ReturnType<typeof makeDepot>;
+  let outputDepot: ReturnType<typeof makeDepot>;
+
+  beforeEach(() => {
+    vi.clearAllMocks();
+    plant = new ProcessingPlant(0, 0, SCHEMATICS.iron_smelter);
+    inputDepot = makeDepot(2);
+    outputDepot = makeDepot();
+    plant.link(inputDepot as never, outputDepot as never);
+  });
+
+  it('starts with manualOnly = false (default)', () => {
+    expect(plant.manualOnly).toBe(false);
+  });
+
+  it('when manualOnly = false, update() auto-pulls from input depot', () => {
+    plant.manualOnly = false;
+    // batchInterval for iron_smelter = 60/10 = 6 s
+    plant.update(6.1);
+    expect(inputDepot.pull).toHaveBeenCalledWith('iron_ore', 2);
+    expect(outputDepot.deposit).toHaveBeenCalled();
+    expect(plant.state).toBe('RUNNING');
+  });
+
+  it('when manualOnly = true, update() does NOT pull from input depot', () => {
+    plant.manualOnly = true;
+    plant.update(6.1);
+    expect(inputDepot.pull).not.toHaveBeenCalled();
+  });
+
+  it('when manualOnly = true and buffer is empty, state stays STALLED', () => {
+    plant.manualOnly = true;
+    plant.update(6.1);
+    expect(plant.state).toBe('STALLED');
+  });
+
+  it('insertBatch() adds to the input buffer and returns accepted qty', () => {
+    plant.manualOnly = true;
+    const accepted = plant.insertBatch('iron_ore', 2);
+    expect(accepted).toBe(2);
+    // Now trigger a batch — plant should produce without touching depot.
+    plant.update(6.1);
+    expect(inputDepot.pull).not.toHaveBeenCalled();
+    expect(outputDepot.deposit).toHaveBeenCalled();
+    expect(plant.state).toBe('RUNNING');
+  });
+
+  it('insertBatch() returns 0 when oreType does not match schematic input', () => {
+    plant.manualOnly = true;
+    const accepted = plant.insertBatch('copper_ore', 4);
+    expect(accepted).toBe(0);
+  });
+
+  it('insertBatch() caps at one batch-worth of buffer space', () => {
+    plant.manualOnly = true;
+    // iron_smelter.inputQty = 2; inserting 10 should be capped at 2.
+    const accepted = plant.insertBatch('iron_ore', 10);
+    expect(accepted).toBe(2);
+  });
+
+  it('insertBatch() returns 0 when buffer is already full', () => {
+    plant.manualOnly = true;
+    plant.insertBatch('iron_ore', 2); // fills the buffer
+    const second = plant.insertBatch('iron_ore', 1);
+    expect(second).toBe(0);
+  });
+
+  it('manualOnly plant still requires outputDepot; STALLED without it', () => {
+    const bare = new ProcessingPlant(0, 0, SCHEMATICS.iron_smelter);
+    bare.manualOnly = true;
+    bare.insertBatch('iron_ore', 2);
+    bare.update(6.1);
+    expect(bare.state).toBe('STALLED');
+  });
+});

@@ -3,10 +3,7 @@ import type { Scene } from './SceneManager';
 import { saveManager, defaultSaveData } from '@services/SaveManager';
 import { gameState } from '@services/GameState';
 import { EventBus } from '@services/EventBus';
-import { sectorManager } from '@services/SectorManager';
-import { strandingManager } from '@services/StrandingManager';
-import { logisticsManager } from '@services/LogisticsManager';
-import { tutorialManager } from '@services/TutorialManager';
+import { getOutpostSaveData } from './AsteroidOutpostScene';
 
 export class BootScene implements Scene {
   readonly id = 'boot';
@@ -50,17 +47,6 @@ export class BootScene implements Scene {
     const saved = saveManager.loadGame();
     if (saved) {
       gameState.applyFromSave(saved);
-      tutorialManager.deserialize(saved.tutorial_state);
-      // Restore entity/service state from save
-      if (saved.sector_manager) {
-        sectorManager.deserialize(saved.sector_manager as any);
-      }
-      if (saved.stranding_manager) {
-        strandingManager.deserialize(saved.stranding_manager);
-      }
-      if (saved.active_trade_routes?.length) {
-        logisticsManager.loadRoutes(saved.active_trade_routes);
-      }
     } else {
       gameState.applyFromSave(defaultSaveData());
     }
@@ -72,10 +58,7 @@ export class BootScene implements Scene {
     const getState = () => ({
       ...defaultSaveData(),
       ...gameState.serialize(),
-      sector_manager: sectorManager.serialize(),
-      stranding_manager: strandingManager.serialize(),
-      active_trade_routes: [...logisticsManager.getRoutes()],
-      tutorial_state: tutorialManager.serialize(),
+      outpost: getOutpostSaveData(),
     });
 
     // Start autosave on the interval
@@ -88,17 +71,9 @@ export class BootScene implements Scene {
 
     EventBus.emit('game:loaded');
 
-    if (tutorialManager.shouldShow()) {
-      tutorialManager.start();
-    }
-
-    // Brief splash pause then navigate to saved planet. The emit is deferred
-    // to a new task so the outer switchTo('boot') in main.ts finishes setting
-    // sceneManager.current before the listener triggers the planet switch —
-    // otherwise the inner switchTo sees current=null, skips the boot splash
-    // teardown, and the two transitions tangle.
+    // Brief splash pause then navigate to the outpost scene.
     await new Promise<void>(resolve => setTimeout(resolve, 800));
-    setTimeout(() => EventBus.emit('scene:travel', gameState.currentPlanet), 0);
+    setTimeout(() => EventBus.emit('scene:travel', 'outpost'), 0);
   }
 
   update(_delta: number): void {}

@@ -41,6 +41,10 @@ const ORE_HEX: Record<OreType, string> = {
   fuel_tank:         '#607D8B',
   avionics:          '#00ACC1',
   landing_gear:      '#795548',
+  iron_ore:          '#B0BEC5',
+  copper_ore:        '#E07B39',
+  iron_bar:          '#78909C',
+  copper_bar:        '#BF6030',
 };
 
 const STAGE_LABEL: Record<ScanStage, string> = {
