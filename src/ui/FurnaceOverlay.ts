@@ -43,6 +43,7 @@ export class FurnaceOverlay {
       'padding:12px 16px',
       'min-width:320px',
       'z-index:20',
+      'pointer-events:auto',
       'display:none',
     ].join(';');
 
