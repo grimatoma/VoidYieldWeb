@@ -2,8 +2,9 @@
 
 ## Git workflow
 
-Commit and push directly to the working branch. Do **not** open pull requests
-for changes on this project — the owner works solo and merges on their own.
+Open a pull request against `main` for every change, then merge it yourself
+once CI is green and review comments are addressed. Do not push directly to
+`main`.
 
 ## Model selection
 
