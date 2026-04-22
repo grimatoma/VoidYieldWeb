@@ -15,7 +15,6 @@ import { depositMap } from '@services/DepositMap';
 import { miningService } from '@services/MiningService';
 import { inputManager } from '@services/InputManager';
 import { gameState } from '@services/GameState';
-import { marketplaceService } from '@services/MarketplaceService';
 import { outpostDispatcher } from '@services/OutpostDispatcher';
 import { saveManager } from '@services/SaveManager';
 import { OUTPOST_DEPOSITS } from '@data/outpost_deposits';
@@ -24,6 +23,7 @@ import { FurnaceOverlay } from '@ui/FurnaceOverlay';
 import { BuildMenuOverlay } from '@ui/BuildMenuOverlay';
 import { DroneDepotOverlay } from '@ui/DroneDepotOverlay';
 import { BuildPromptOverlay } from '@ui/BuildPromptOverlay';
+import { MarketplaceOverlay } from '@ui/MarketplaceOverlay';
 import { powerManager } from '@services/PowerManager';
 import { handleWorldTap } from '@services/TapToMove';
 
@@ -60,6 +60,7 @@ export class AsteroidOutpostScene implements Scene {
   private _buildMenuOverlay: BuildMenuOverlay | null = null;
   private _buildPromptOverlay: BuildPromptOverlay | null = null;
   private _droneDepotOverlay: DroneDepotOverlay | null = null;
+  private _marketplaceOverlay: MarketplaceOverlay | null = null;
   private _app: Application | null = null;
   private _camera: Camera | null = null;
 
@@ -250,9 +251,10 @@ export class AsteroidOutpostScene implements Scene {
 
     // Close overlays on ESC (pause_menu action)
     if (inputManager.wasJustPressed('pause_menu')) {
-      if (this._furnaceOverlay?.isOpen()) { this._furnaceOverlay.close(); return; }
-      if (this._droneDepotOverlay?.isOpen()) { this._droneDepotOverlay.close(); return; }
-      if (this._buildMenuOverlay?.isOpen()) { this._buildMenuOverlay.close(); return; }
+      if (this._furnaceOverlay?.isOpen())     { this._furnaceOverlay.close();     return; }
+      if (this._marketplaceOverlay?.isOpen()) { this._marketplaceOverlay.close(); return; }
+      if (this._droneDepotOverlay?.isOpen())  { this._droneDepotOverlay.close();  return; }
+      if (this._buildMenuOverlay?.isOpen())   { this._buildMenuOverlay.close();   return; }
     }
 
     this._hud?.update();
@@ -303,6 +305,8 @@ export class AsteroidOutpostScene implements Scene {
     if (buildingId.startsWith('marketplace_') && this._marketplace) {
       this._stage?.removeChild(this._marketplace.container);
       this._marketplace = null;
+      this._marketplaceOverlay?.unmount();
+      this._marketplaceOverlay = null;
     }
     if (buildingId.startsWith('drone_depot_') && this._droneDepot) {
       this._stage?.removeChild(this._droneDepot.container);
@@ -422,6 +426,10 @@ export class AsteroidOutpostScene implements Scene {
       const market = new Marketplace(wx, wy);
       this._marketplace = market;
       this._stage!.addChild(market.container);
+
+      this._marketplaceOverlay?.unmount();
+      this._marketplaceOverlay = new MarketplaceOverlay(market, this._storage!);
+      this._marketplaceOverlay.mount();
     } else if (buildingType === 'drone_depot') {
       const depot = new DroneDepot(wx, wy);
       this._droneDepot = depot;
@@ -454,48 +462,29 @@ export class AsteroidOutpostScene implements Scene {
     const px = this._player!.x;
     const py = this._player!.y;
 
-    // Close overlays if open (E acts as confirm/close)
-    if (this._furnaceOverlay?.isOpen()) {
-      this._furnaceOverlay.close();
-      return;
-    }
-    if (this._droneDepotOverlay?.isOpen()) {
-      this._droneDepotOverlay.close();
+    // Close whichever overlay is open and bail
+    if (this._furnaceOverlay?.isOpen())     { this._furnaceOverlay.close();     return; }
+    if (this._marketplaceOverlay?.isOpen()) { this._marketplaceOverlay.close(); return; }
+    if (this._droneDepotOverlay?.isOpen())  { this._droneDepotOverlay.close();  return; }
+    if (this._buildMenuOverlay?.isOpen())   { this._buildMenuOverlay.close();   return; }
+
+    // Building interactions — nearest entity takes priority
+    if (this._furnace?.isNearby(px, py))    { this._furnaceOverlay?.open();     return; }
+    if (this._marketplace?.isNearby(px, py)){ this._marketplaceOverlay?.open(); return; }
+    if (this._droneDepot?.isNearby(px, py)) { this._droneDepotOverlay?.open();  return; }
+
+    // Storage: deposit carried ore
+    if (this._storage?.isNearby(px, py)) { miningService.onInteract(px, py); return; }
+
+    // Empty grid tile → open build menu
+    const col = Math.floor((px - GRID_ORIGIN.x) / CELL_SIZE);
+    const row = Math.floor((py - GRID_ORIGIN.y) / CELL_SIZE);
+    if (col >= 0 && col < 5 && row >= 0 && row < 5 && buildGrid.getBuildingAt(row, col) === null) {
+      this._buildMenuOverlay?.open();
       return;
     }
 
-    // Storage: deposit inventory
-    if (this._storage?.isNearby(px, py)) {
-      miningService.onInteract(px, py);
-      return;
-    }
-
-    // Furnace: insert or open overlay
-    if (this._furnace?.isNearby(px, py)) {
-      const inserted = this._furnace.insertFromInventory();
-      if (inserted === 0) {
-        // No ore to insert — open config overlay
-        this._furnaceOverlay?.open();
-      }
-      return;
-    }
-
-    // Marketplace: sell all
-    if (this._marketplace?.isNearby(px, py)) {
-      const earned = marketplaceService.sellAll(this._storage!);
-      if (earned > 0) {
-        console.log(`[Marketplace] Sold all for ${earned} CR`);
-      }
-      return;
-    }
-
-    // DroneDepot: open config overlay
-    if (this._droneDepot?.isNearby(px, py)) {
-      this._droneDepotOverlay?.open();
-      return;
-    }
-
-    // Fall through to normal mining
+    // Default: mine deposit
     miningService.onInteract(px, py);
   }
 
@@ -584,6 +573,7 @@ export class AsteroidOutpostScene implements Scene {
     // Unmount overlays
     this._hud?.unmount();
     this._furnaceOverlay?.unmount();
+    this._marketplaceOverlay?.unmount();
     this._buildMenuOverlay?.unmount();
     this._buildPromptOverlay?.unmount();
     this._droneDepotOverlay?.unmount();
@@ -603,6 +593,7 @@ export class AsteroidOutpostScene implements Scene {
     this._droneDepot = null;
     this._hud = null;
     this._furnaceOverlay = null;
+    this._marketplaceOverlay = null;
     this._buildMenuOverlay = null;
     this._buildPromptOverlay = null;
     this._droneDepotOverlay = null;

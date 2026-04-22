@@ -38,7 +38,7 @@ export class DebugOverlay {
         <button data-act="rp+100">+100 RP</button>
         <button data-act="rp+1k">+1000 RP</button>
         <button data-act="unlock-all">Unlock All Tech</button>
-        <button data-act="fill-outpost">Fill Outpost (×100)</button>
+        <button data-act="fill-outpost">Fill All (×100)</button>
         <button data-act="fresh">Preset: Fresh</button>
         <button data-act="reset">Reset All</button>
         <button data-act="advance60">Advance 60s</button>
@@ -102,7 +102,8 @@ export class DebugOverlay {
     api.outpost.setStorageStock('water', 100);
     api.outpost.setStorageStock('iron_bar', 100);
     api.outpost.setStorageStock('copper_bar', 100);
-    this._flash('outpost storage filled ×100');
+    api.setCredits(api.getCredits() + 5000);
+    this._flash('storage ×100 + 5000 CR');
   }
 
   private _handle(act: string): void {
