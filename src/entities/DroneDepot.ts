@@ -1,9 +1,15 @@
 import { Container, Graphics, Text, TextStyle } from 'pixi.js';
 import { CELL_SIZE } from './PlacedBuilding';
+import { ScoutDrone } from './ScoutDrone';
+import { HeavyDrone } from './HeavyDrone';
+import type { DroneBase } from './DroneBase';
 import type { StorageDepot } from './StorageDepot';
 import type { Furnace } from './Furnace';
 import type { OutpostDispatcher, DroneSlotConfig } from '@services/OutpostDispatcher';
-import type { OreType } from '@data/types';
+import type { OreType, DroneType } from '@data/types';
+import { gameState } from '@services/GameState';
+import { fleetManager } from '@services/FleetManager';
+import { EventBus } from '@services/EventBus';
 
 /** Module-level flag to enforce MVP limit of one DroneDepot per outpost. */
 let _depotBuilt = false;
@@ -28,6 +34,7 @@ export class DroneDepot {
     { slotId: 'slot_1', role: 'miner',    oreType: 'copper_ore' as OreType },
     { slotId: 'slot_2', role: 'logistics', oreType: 'any' },
   ];
+  private _deployedDrones: DroneBase[] = [];
 
   private _dispatcher: OutpostDispatcher | null = null;
   private _storage: StorageDepot | null = null;
@@ -104,6 +111,37 @@ export class DroneDepot {
   /** Returns a copy of the current slot configs. */
   getSlotConfigs(): DroneSlotConfig[] {
     return this._slots.map(s => ({ ...s }));
+  }
+
+  /**
+   * Purchase a drone of the given type, deduct credits, add to fleetManager,
+   * and attach its container to worldContainer. Returns null if unaffordable.
+   * Only 'scout' and 'heavy' are supported in the outpost context.
+   */
+  purchaseDrone(type: DroneType, worldContainer: Container): DroneBase | null {
+    const costs: Partial<Record<DroneType, number>> = {
+      scout: ScoutDrone.COST,
+      heavy: HeavyDrone.COST,
+    };
+    const cost = costs[type];
+    if (cost === undefined || gameState.credits < cost) return null;
+
+    gameState.addCredits(-cost);
+
+    let drone: DroneBase;
+    if (type === 'scout') drone = new ScoutDrone(this.x, this.y);
+    else if (type === 'heavy') drone = new HeavyDrone(this.x, this.y);
+    else return null;
+
+    worldContainer.addChild(drone.container);
+    this._deployedDrones.push(drone);
+    fleetManager.add(drone);
+    EventBus.emit('drone:purchased', type);
+    return drone;
+  }
+
+  getDeployedDrones(): readonly DroneBase[] {
+    return this._deployedDrones;
   }
 
   isNearby(px: number, py: number, radius = 120): boolean {

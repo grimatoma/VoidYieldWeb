@@ -10,7 +10,8 @@ import { Marketplace } from '@entities/Marketplace';
 import { DroneDepot, resetDepotBuilt } from '@entities/DroneDepot';
 import { PlacedBuilding, CELL_SIZE, GRID_ORIGIN, gridToWorld } from '@entities/PlacedBuilding';
 import { buildGrid } from '@services/BuildGrid';
-import type { GridFootprint } from '@services/BuildGrid';
+import type { GridFootprint, PlacedEntry } from '@services/BuildGrid';
+import { fleetManager } from '@services/FleetManager';
 import { depositMap } from '@services/DepositMap';
 import { miningService } from '@services/MiningService';
 import { inputManager } from '@services/InputManager';
@@ -64,9 +65,14 @@ export class AsteroidOutpostScene implements Scene {
   private _app: Application | null = null;
   private _camera: Camera | null = null;
 
+  // Building layer — sits below the player so all buildings render behind them
+  private _buildingLayer: Container | null = null;
+
   // Ghost placement state
   private _ghostBuilding: PlacedBuilding | null = null;
   private _ghostBuildingType: string | null = null;
+  // Stored when moving an existing building; restored if the move is canceled
+  private _ghostMoveEntry: PlacedEntry | null = null;
 
   async enter(app: Application): Promise<void> {
     this._app = app;
@@ -94,6 +100,10 @@ export class AsteroidOutpostScene implements Scene {
 
     // Draw grid overlay (faint lines)
     this._drawGrid();
+
+    // Building layer — added before the player so buildings always render behind them
+    this._buildingLayer = new Container();
+    this._stage.addChild(this._buildingLayer);
 
     // Register outpost RTG so the furnace has power from the start.
     powerManager.registerGenerator(OUTPOST_REACTOR_POWER);
@@ -193,14 +203,14 @@ export class AsteroidOutpostScene implements Scene {
     buildGrid.place({ buildingId: 'storage_0', buildingType: 'storage', row: 2, col: 0, footprint: { rows: 1, cols: 1 } });
     const storagePlaced = new PlacedBuilding('storage_0', 'storage', 2, 0, { rows: 1, cols: 1 });
     this._placedBuildings.push(storagePlaced);
-    this._stage!.addChild(storagePlaced.container);
-    this._stage!.addChild(this._storage.container);
+    this._buildingLayer!.addChild(storagePlaced.container);
+    this._buildingLayer!.addChild(this._storage.container);
 
     // Furnace (1×1) at [2,1] — use Furnace entity, not PlacedBuilding
     const furnacePos = gridToWorld(2, 1);
     this._furnace = new Furnace(furnacePos.x, furnacePos.y, this._storage);
     buildGrid.place({ buildingId: 'furnace_0', buildingType: 'furnace', row: 2, col: 1, footprint: { rows: 1, cols: 1 } });
-    this._stage!.addChild(this._furnace.container);
+    this._buildingLayer!.addChild(this._furnace.container);
   }
 
   private _initDeposits(): void {
@@ -222,6 +232,9 @@ export class AsteroidOutpostScene implements Scene {
 
     // Furnace update
     this._furnace?.update(delta);
+
+    // Drone entity movement update
+    fleetManager.update(delta);
 
     // Dispatcher update
     outpostDispatcher.update(delta);
@@ -283,6 +296,9 @@ export class AsteroidOutpostScene implements Scene {
     const entry = buildGrid.pickup(buildingId);
     if (!entry) return;
 
+    // Store so we can restore the building if the move is canceled via Esc
+    this._ghostMoveEntry = entry;
+
     // Remove the visual PlacedBuilding for the picked-up building
     const idx = this._placedBuildings.findIndex(b => b.buildingId === buildingId);
     if (idx !== -1) {
@@ -303,13 +319,13 @@ export class AsteroidOutpostScene implements Scene {
     // This handles removal if the marketplace or drone depot was picked up.
     // For now it's a visual-only concern; entity stays but can be re-placed.
     if (buildingId.startsWith('marketplace_') && this._marketplace) {
-      this._stage?.removeChild(this._marketplace.container);
+      this._buildingLayer?.removeChild(this._marketplace.container);
       this._marketplace = null;
       this._marketplaceOverlay?.unmount();
       this._marketplaceOverlay = null;
     }
     if (buildingId.startsWith('drone_depot_') && this._droneDepot) {
-      this._stage?.removeChild(this._droneDepot.container);
+      this._buildingLayer?.removeChild(this._droneDepot.container);
       outpostDispatcher.stop();
       this._droneDepotOverlay?.close();
       this._droneDepot = null;
@@ -351,24 +367,25 @@ export class AsteroidOutpostScene implements Scene {
     if (!this._ghostBuilding || !this._ghostBuildingType || !this._storage) return;
 
     const buildingType = this._ghostBuildingType;
-    const costs = BUILD_COSTS[buildingType] ?? { iron_bar: 0, copper_bar: 0 };
+    const isMove = this._ghostMoveEntry !== null;
 
-    // Check storage has enough bars
-    if (
-      this._storage.getBarCount('iron_bar')    < costs.iron_bar ||
-      this._storage.getBarCount('copper_bar')  < costs.copper_bar
-    ) {
-      // Cannot afford — cancel ghost
-      this._cancelGhost();
-      return;
+    if (!isMove) {
+      // New placement — check and deduct resource costs
+      const costs = BUILD_COSTS[buildingType] ?? { iron_bar: 0, copper_bar: 0 };
+      if (
+        this._storage.getBarCount('iron_bar')    < costs.iron_bar ||
+        this._storage.getBarCount('copper_bar')  < costs.copper_bar
+      ) {
+        this._cancelGhost();
+        return;
+      }
+      this._storage.pull('iron_bar',   costs.iron_bar);
+      this._storage.pull('copper_bar', costs.copper_bar);
     }
 
-    // Deduct bars
-    this._storage.pull('iron_bar',   costs.iron_bar);
-    this._storage.pull('copper_bar', costs.copper_bar);
-
     const footprint = this._ghostBuilding.footprint;
-    const buildingId = `${buildingType}_${Date.now()}`;
+    // Preserve the original buildingId when re-placing a moved building
+    const buildingId = isMove ? this._ghostMoveEntry!.buildingId : `${buildingType}_${Date.now()}`;
 
     // Register in grid
     buildGrid.place({ buildingId, buildingType, row, col, footprint });
@@ -381,6 +398,7 @@ export class AsteroidOutpostScene implements Scene {
     this._stage!.removeChild(this._ghostBuilding.container);
     this._ghostBuilding = null;
     this._ghostBuildingType = null;
+    this._ghostMoveEntry = null;
 
     // Refresh build menu
     this._buildMenuOverlay?.refresh();
@@ -392,6 +410,15 @@ export class AsteroidOutpostScene implements Scene {
     this._stage?.removeChild(this._ghostBuilding.container);
     this._ghostBuilding = null;
     this._ghostBuildingType = null;
+
+    // If we were moving an existing building, restore it to its original position
+    if (this._ghostMoveEntry) {
+      const entry = this._ghostMoveEntry;
+      this._ghostMoveEntry = null;
+      buildGrid.place({ ...entry });
+      this._spawnBuilding(entry.buildingType, entry.buildingId, entry.row, entry.col, entry.footprint);
+      this._buildMenuOverlay?.refresh();
+    }
   }
 
   /** Debug/test: place a building in the first available grid cell, no cost deducted. */
@@ -425,7 +452,7 @@ export class AsteroidOutpostScene implements Scene {
     if (buildingType === 'marketplace') {
       const market = new Marketplace(wx, wy);
       this._marketplace = market;
-      this._stage!.addChild(market.container);
+      this._buildingLayer!.addChild(market.container);
 
       this._marketplaceOverlay?.unmount();
       this._marketplaceOverlay = new MarketplaceOverlay(market, this._storage!);
@@ -433,7 +460,7 @@ export class AsteroidOutpostScene implements Scene {
     } else if (buildingType === 'drone_depot') {
       const depot = new DroneDepot(wx, wy);
       this._droneDepot = depot;
-      this._stage!.addChild(depot.container);
+      this._buildingLayer!.addChild(depot.container);
 
       // Wire up depot
       try {
@@ -442,15 +469,15 @@ export class AsteroidOutpostScene implements Scene {
         console.warn('DroneDepot.onBuild failed:', err);
       }
 
-      // Create overlay for this depot
+      // Create overlay for this depot; pass stage as drone spawn container
       this._droneDepotOverlay?.unmount();
-      this._droneDepotOverlay = new DroneDepotOverlay(depot);
+      this._droneDepotOverlay = new DroneDepotOverlay(depot, () => this._stage!);
       this._droneDepotOverlay.mount();
     } else {
       // Generic PlacedBuilding fallback
       const pb = new PlacedBuilding(buildingId, buildingType, row, col, footprint);
       this._placedBuildings.push(pb);
-      this._stage!.addChild(pb.container);
+      this._buildingLayer!.addChild(pb.container);
     }
   }
 
@@ -468,23 +495,25 @@ export class AsteroidOutpostScene implements Scene {
     if (this._droneDepotOverlay?.isOpen())  { this._droneDepotOverlay.close();  return; }
     if (this._buildMenuOverlay?.isOpen())   { this._buildMenuOverlay.close();   return; }
 
-    // Building interactions — nearest entity takes priority
-    if (this._furnace?.isNearby(px, py))    { this._furnaceOverlay?.open();     return; }
-    if (this._marketplace?.isNearby(px, py)){ this._marketplaceOverlay?.open(); return; }
-    if (this._droneDepot?.isNearby(px, py)) { this._droneDepotOverlay?.open();  return; }
-
-    // Storage: deposit carried ore
-    if (this._storage?.isNearby(px, py)) { miningService.onInteract(px, py); return; }
-
-    // Empty grid tile → open build menu
+    // Grid-tile-based interaction: every cell of a building's footprint triggers
+    // the correct action menu, eliminating the circle-radius gap bugs.
     const col = Math.floor((px - GRID_ORIGIN.x) / CELL_SIZE);
     const row = Math.floor((py - GRID_ORIGIN.y) / CELL_SIZE);
-    if (col >= 0 && col < 5 && row >= 0 && row < 5 && buildGrid.getBuildingAt(row, col) === null) {
+    if (col >= 0 && col < BuildGrid.COLS && row >= 0 && row < BuildGrid.ROWS) {
+      const entry = buildGrid.getBuildingAt(row, col);
+      if (entry) {
+        if (entry.buildingType === 'furnace')     { this._furnaceOverlay?.open();     return; }
+        if (entry.buildingType === 'marketplace') { this._marketplaceOverlay?.open(); return; }
+        if (entry.buildingType === 'drone_depot') { this._droneDepotOverlay?.open();  return; }
+        if (entry.buildingType === 'storage')     { miningService.onInteract(px, py); return; }
+        return; // occupied tile, type not interactable
+      }
+      // Empty grid tile → build menu
       this._buildMenuOverlay?.open();
       return;
     }
 
-    // Default: mine deposit
+    // Outside grid → mine deposit
     miningService.onInteract(px, py);
   }
 
@@ -554,6 +583,13 @@ export class AsteroidOutpostScene implements Scene {
     powerManager.unregisterGenerator(OUTPOST_REACTOR_POWER);
     this._furnace?.destroy();
 
+    // Remove drones created in this outpost scene from the global fleet
+    if (this._droneDepot) {
+      for (const drone of this._droneDepot.getDeployedDrones()) {
+        fleetManager.remove(drone.id);
+      }
+    }
+
     // Stop dispatcher
     outpostDispatcher.stop();
 
@@ -581,9 +617,10 @@ export class AsteroidOutpostScene implements Scene {
     // Cancel any active ghost
     this._cancelGhost();
 
-    // Destroy stage (all children)
+    // Destroy stage (all children, including _buildingLayer)
     this._stage?.destroy({ children: true });
     this._stage = null;
+    this._buildingLayer = null;
     this._player = null;
     this._deposits = [];
     this._placedBuildings = [];
