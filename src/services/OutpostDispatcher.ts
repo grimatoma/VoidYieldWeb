@@ -12,6 +12,10 @@ export interface DroneBaySlot {
   drone: DroneBase | null;
   droneType: DroneType | null;
   oreType: OreType | 'any';
+  /** Role override: 'miner' or 'logistics'. Defaults based on droneType at
+   *  assign time (scout/heavy → 'miner', refinery → 'logistics').
+   *  Can be changed at runtime via OutpostDispatcher.setSlotRole(). */
+  role?: 'miner' | 'logistics';
 }
 
 /** Serialization-only mirror of DroneBaySlot (no DroneBase instance). */
@@ -47,6 +51,16 @@ export class OutpostDispatcher {
     this._active = false;
   }
 
+  /**
+   * Override the role of a specific slot. Changes take effect after the
+   * drone's current task completes (the dispatcher simply won't dispatch
+   * a new task of the old role type on the next tick).
+   */
+  setSlotRole(slotId: string, role: 'miner' | 'logistics'): void {
+    const slot = this._slots.find(s => s.slotId === slotId);
+    if (slot) slot.role = role;
+  }
+
   update(_delta: number): void {
     if (!this._active || !this._storage || !this._furnace) return;
     this._tickMiners();
@@ -60,8 +74,10 @@ export class OutpostDispatcher {
     for (const slot of this._slots) {
       const drone = slot.drone;
       if (!drone || drone.disabled) continue;
-      // Logistics drones don't mine
-      if (drone.droneType === 'refinery' || drone.droneType === 'cargo') continue;
+      // Determine effective role: explicit override > droneType default
+      const effectiveRole = slot.role
+        ?? (drone.droneType === 'refinery' || drone.droneType === 'cargo' ? 'logistics' : 'miner');
+      if (effectiveRole !== 'miner') continue;
       if (drone.state !== 'IDLE' || drone.getTasks().length > 0) continue;
 
       const orePref: OreType | null = slot.oreType === 'any' ? null : slot.oreType as OreType;
@@ -101,9 +117,22 @@ export class OutpostDispatcher {
     const storage = this._storage;
     const recipe = furnace.recipe;
 
+    // Build the set of drone IDs assigned the logistics role (via role override
+    // or droneType default: refinery/cargo → logistics).
+    const logisticsIds = new Set<string>(
+      this._slots
+        .filter(s => {
+          if (!s.drone || s.drone.disabled) return false;
+          const effectiveRole = s.role
+            ?? (s.drone.droneType === 'refinery' || s.drone.droneType === 'cargo' ? 'logistics' : 'miner');
+          return effectiveRole === 'logistics';
+        })
+        .map(s => s.drone!.id),
+    );
+
     const idleLogistics = fleetManager
       .getIdleDrones()
-      .filter(d => d.droneType === 'refinery'); // Use refinery for local logistics
+      .filter(d => logisticsIds.has(d.id) || (logisticsIds.size === 0 && d.droneType === 'refinery'));
     
     if (idleLogistics.length === 0) return;
 

@@ -176,6 +176,8 @@ export class DroneDepot {
     fleetManager.add(drone);
     slot.drone = drone;
     slot.droneType = type;
+    // Set default role based on drone type so the role is explicit from purchase.
+    slot.role = type === 'refinery' ? 'logistics' : 'miner';
     return drone;
   }
 }
