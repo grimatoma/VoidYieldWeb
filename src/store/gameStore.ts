@@ -30,17 +30,17 @@ export const droneCount = signal<number>(0);
  * pool (depot stockpile) counts for the three primary flavored ores.
  * Scenes update this object each frame. The HUD reads via effect().
  */
-export interface PlanetResources {
-  vorax:   { carried: number; pool: number; cap: number };
-  krysite: { carried: number; pool: number; cap: number };
-  aethite: { carried: number; pool: number; cap: number };
+export interface PlanetResourceData {
+  key: string;
+  label: string;
+  subLabel: string;
+  swatchColor: string;
+  carried: number;
+  pool: number;
+  cap: number;
 }
 
-export const planetResources = signal<PlanetResources>({
-  vorax:   { carried: 0, pool: 0, cap: 50 },
-  krysite: { carried: 0, pool: 0, cap: 50 },
-  aethite: { carried: 0, pool: 0, cap: 50 },
-});
+export const planetResources = signal<PlanetResourceData[]>([]);
 
 /** Outpost identifier shown in the HUD header (e.g. "A1"). */
 export const outpostId = signal<string>('A1');

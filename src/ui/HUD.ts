@@ -21,18 +21,7 @@ import {
   outpostId,
 } from '@store/gameStore';
 
-interface ResourceRow {
-  key: 'vorax' | 'krysite' | 'aethite';
-  label: string;
-  subLabel: string;
-  swatchColor: string;
-}
-
-const RESOURCE_ROWS: ResourceRow[] = [
-  { key: 'vorax',   label: 'ORE',     subLabel: 'POOL', swatchColor: '#8b5a2a' },
-  { key: 'krysite', label: 'CRYSTAL', subLabel: 'POOL', swatchColor: '#5a8fa8' },
-  { key: 'aethite', label: 'FUEL',    subLabel: 'RARE', swatchColor: '#7cb87c' },
-];
+// Removed static RESOURCE_ROWS
 
 export class HUD {
   private _root: HTMLElement;
@@ -56,24 +45,7 @@ export class HUD {
         <span>RESOURCES</span>
         <span id="hud-outpost-id"></span>
       </div>
-      ${RESOURCE_ROWS.map(r => `
-        <div class="hud-resource-row" data-key="${r.key}">
-          <span class="hud-resource-swatch" style="background:${r.swatchColor}"></span>
-          <div class="hud-resource-body">
-            <div class="hud-resource-top">
-              <span class="hud-resource-label">${r.label}</span>
-              <span class="hud-resource-carried" data-field="carried">0000</span>
-            </div>
-            <div class="hud-resource-pool-label">
-              <span>${r.subLabel}</span>
-              <span data-field="pool-text">0 / 0</span>
-            </div>
-            <div class="hud-resource-pool-bar">
-              <div class="hud-resource-pool-fill" style="background:${r.swatchColor}"></div>
-            </div>
-          </div>
-        </div>
-      `).join('')}
+      <div id="hud-resource-rows-container"></div>
     `;
     hud.appendChild(rail);
 
@@ -137,15 +109,34 @@ export class HUD {
       }),
 
       effect(() => {
-        const res = planetResources.value;
-        for (const row of RESOURCE_ROWS) {
-          const el = this._root.querySelector<HTMLElement>(`[data-key="${row.key}"]`);
+        const resList = planetResources.value;
+        const container = this._root.querySelector<HTMLElement>('#hud-resource-rows-container')!;
+        
+        // Rebuild DOM if keys don't match
+        const currentKeys = Array.from(container.querySelectorAll('.hud-resource-row')).map(el => (el as HTMLElement).dataset.key);
+        const newKeys = resList.map(r => r.key);
+        if (currentKeys.join(',') !== newKeys.join(',')) {
+          container.innerHTML = resList.map(r => `
+            <div class="hud-resource-row" data-key="${r.key}">
+              <span class="hud-resource-swatch" style="background:${r.swatchColor}"></span>
+              <div class="hud-resource-body">
+                <div class="hud-resource-pool-label">
+                  <span class="hud-resource-label">${r.label} <span style="opacity:0.6;font-size:0.85em">${r.subLabel}</span></span>
+                  <span data-field="pool-text">0 / 0</span>
+                </div>
+                <div class="hud-resource-pool-bar">
+                  <div class="hud-resource-pool-fill" style="background:${r.swatchColor}"></div>
+                </div>
+              </div>
+            </div>
+          `).join('');
+        }
+
+        for (const data of resList) {
+          const el = container.querySelector<HTMLElement>(`[data-key="${data.key}"]`);
           if (!el) continue;
-          const data = res[row.key];
-          const carried = el.querySelector<HTMLElement>('[data-field="carried"]')!;
           const poolText = el.querySelector<HTMLElement>('[data-field="pool-text"]')!;
           const fill = el.querySelector<HTMLElement>('.hud-resource-pool-fill')!;
-          carried.textContent = String(data.carried).padStart(4, '0');
           poolText.textContent = `${data.pool} / ${data.cap}`;
           const pct = data.cap > 0 ? Math.min(100, (data.pool / data.cap) * 100) : 0;
           fill.style.width = `${pct.toFixed(1)}%`;

@@ -139,6 +139,19 @@ export class Furnace {
     return inserted;
   }
 
+  /**
+   * Called by a player E-press: extract products from the furnace output buffer
+   * and add them to the player's inventory.
+   */
+  takeProducts(): boolean {
+    if (this._recipe === 'off') return false;
+    const lot = this._plant.takeOutput();
+    if (!lot) return false;
+    inventory.add(lot);
+    EventBus.emit('inventory:changed');
+    return true;
+  }
+
   /** Called every frame from the scene update loop. */
   update(delta: number): void {
     if (this._recipe === 'off') return;
@@ -172,6 +185,11 @@ export class Furnace {
     if (this._recipe === 'off') {
       return { verb: 'CONFIGURE', target: 'FURNACE (off)' };
     }
+    
+    if (this._plant.outputBuffer > 0) {
+      return { verb: 'TAKE', target: 'PRODUCTS' };
+    }
+
     const r = FURNACE_RECIPES[this._recipe];
     const canInsert = inventory.getByType(r.input) > 0;
     return canInsert
@@ -181,6 +199,9 @@ export class Furnace {
         }
       : { verb: 'CONFIGURE', target: `FURNACE (${this._recipe})` };
   }
+
+  /** Expose internal plant for queries */
+  get plant() { return this._plant; }
 
   /** Expose the internal plant state for the overlay. */
   getPlantState(): string {

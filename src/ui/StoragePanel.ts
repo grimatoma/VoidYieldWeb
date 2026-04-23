@@ -114,7 +114,6 @@ export class StoragePanel {
     for (const type of stockpile.keys()) oreTypes.add(type);
     for (const lot of inventory.getLots()) oreTypes.add(lot.oreType);
 
-    const POOL_CAP = 50; // matches Resource Rail cap; purely display here.
     let totalPool = 0;
     let totalValue = 0;
     let topRate: number | null = null;

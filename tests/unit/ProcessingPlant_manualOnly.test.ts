@@ -84,7 +84,8 @@ describe('ProcessingPlant — manualOnly', () => {
     // Now trigger a batch — plant should produce without touching depot.
     plant.update(6.1);
     expect(inputDepot.pull).not.toHaveBeenCalled();
-    expect(outputDepot.deposit).toHaveBeenCalled();
+    expect(outputDepot.deposit).not.toHaveBeenCalled(); // Because it goes to internal output buffer now!
+    expect(plant.outputBuffer).toBe(1);
     expect(plant.state).toBe('RUNNING');
   });
 
@@ -94,26 +95,26 @@ describe('ProcessingPlant — manualOnly', () => {
     expect(accepted).toBe(0);
   });
 
-  it('insertBatch() caps at one batch-worth of buffer space', () => {
+  it('insertBatch() caps at 10x batch-worth of buffer space', () => {
     plant.manualOnly = true;
-    // iron_smelter.inputQty = 2; inserting 10 should be capped at 2.
-    const accepted = plant.insertBatch('iron_ore', 10);
-    expect(accepted).toBe(2);
+    // iron_smelter.inputQty = 2; inserting 30 should be capped at 20.
+    const accepted = plant.insertBatch('iron_ore', 30);
+    expect(accepted).toBe(20);
   });
 
   it('insertBatch() returns 0 when buffer is already full', () => {
     plant.manualOnly = true;
-    plant.insertBatch('iron_ore', 2); // fills the buffer
+    plant.insertBatch('iron_ore', 20); // fills the 10x buffer
     const second = plant.insertBatch('iron_ore', 1);
     expect(second).toBe(0);
   });
 
-  it('manualOnly plant still requires outputDepot; STALLED without it', () => {
+  it('manualOnly plant does NOT require outputDepot', () => {
     const bare = new ProcessingPlant(0, 0, SCHEMATICS.iron_smelter);
     bare.manualOnly = true;
     bare.insertBatch('iron_ore', 2);
     bare.update(6.1);
-    expect(bare.state).toBe('STALLED');
+    expect(bare.state).toBe('RUNNING'); // Now runs fine on internal buffer
   });
 
   it('batchProgress is 0 when buffer is empty', () => {
@@ -125,10 +126,10 @@ describe('ProcessingPlant — manualOnly', () => {
   it('batchProgress increases from 0 to 1 as timer elapses when ore is loaded', () => {
     plant.manualOnly = true;
     plant.insertBatch('iron_ore', 2);
-    // iron_smelter: batchInterval = 60/10 = 6s
-    plant.update(3); // halfway
+    // iron_smelter: batchInterval = 60/60 = 1s
+    plant.update(0.5); // halfway
     expect(plant.batchProgress).toBeCloseTo(0.5, 1);
-    plant.update(3.1); // just past full
+    plant.update(0.6); // just past full
     // After the batch fires, inputBuffer is empty → batchProgress resets to 0
     expect(plant.batchProgress).toBe(0);
   });

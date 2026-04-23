@@ -19,7 +19,8 @@ import { gameState } from '@services/GameState';
 import { outpostDispatcher } from '@services/OutpostDispatcher';
 import { saveManager } from '@services/SaveManager';
 import { OUTPOST_DEPOSITS } from '@data/outpost_deposits';
-import { OutpostHud } from '@ui/OutpostHud';
+import { planetResources, outpostId } from '@store/gameStore';
+import { inventory } from '@services/Inventory';
 import { FurnaceOverlay } from '@ui/FurnaceOverlay';
 import { BuildMenuOverlay } from '@ui/BuildMenuOverlay';
 import { DroneDepotOverlay } from '@ui/DroneDepotOverlay';
@@ -56,7 +57,6 @@ export class AsteroidOutpostScene implements Scene {
   private _marketplace: Marketplace | null = null;
   private _droneDepot: DroneDepot | null = null;
   private _placedBuildings: PlacedBuilding[] = [];
-  private _hud: OutpostHud | null = null;
   private _furnaceOverlay: FurnaceOverlay | null = null;
   private _buildMenuOverlay: BuildMenuOverlay | null = null;
   private _buildPromptOverlay: BuildPromptOverlay | null = null;
@@ -166,9 +166,8 @@ export class AsteroidOutpostScene implements Scene {
     });
     this._buildMenuOverlay.mount();
 
-    // HUD
-    this._hud = new OutpostHud(this._storage!);
-    this._hud.mount(app);
+    // HUD is managed by UILayer; we just need to ensure outpostId is correct
+    outpostId.value = 'OUTPOST';
 
     // Build prompt overlay
     this._buildPromptOverlay = new BuildPromptOverlay();
@@ -185,11 +184,6 @@ export class AsteroidOutpostScene implements Scene {
     _forceBuildFn = (type) => this._doForceBuild(type);
     _setFurnaceRecipeFn = (recipe) => this._furnace?.setRecipe(recipe as any);
 
-    // Default starting resources — overridden if save data exists
-    this._storage?.setStock('iron_ore', 100);
-    this._storage?.setStock('iron_bar', 100);
-    this._storage?.setStock('water', 100);
-
     // Try to load and deserialize saved outpost state
     const saved = saveManager.loadGame();
     if (saved?.outpost) {
@@ -197,6 +191,20 @@ export class AsteroidOutpostScene implements Scene {
         this.deserializeOutpost(saved.outpost);
       } catch (err) {
         console.warn('[AsteroidOutpostScene] Failed to deserialize outpost state:', err);
+      }
+    } else {
+      // Default starting resources
+      this._storage?.setStock('iron_ore', 100);
+      this._storage?.setStock('copper_ore', 100);
+      this._storage?.setStock('water', 100);
+      this._storage?.setStock('iron_bar', 100);
+      this._storage?.setStock('copper_bar', 100);
+
+      // Default starting drones
+      if (this._droneDepot) {
+        this._droneDepot.restoreBaySlot({ slotId: 'slot_0', droneType: 'scout', oreType: 'iron_ore' }, this._stage!);
+        this._droneDepot.restoreBaySlot({ slotId: 'slot_1', droneType: 'scout', oreType: 'copper_ore' }, this._stage!);
+        this._droneDepot.restoreBaySlot({ slotId: 'slot_2', droneType: 'refinery', oreType: 'any' }, this._stage!);
       }
     }
   }
@@ -296,12 +304,29 @@ export class AsteroidOutpostScene implements Scene {
       if (this._buildMenuOverlay?.isOpen())   { this._buildMenuOverlay.close();   return; }
     }
 
-    this._hud?.update();
+    this._updateResourceRail();
 
     // Update build prompt overlay visibility
     const playerNearGrid = this._player && this._isPlayerNearGrid(this._player.x, this._player.y);
     const menuOpen = this._buildMenuOverlay?.isOpen() ?? false;
     this._buildPromptOverlay?.update(playerNearGrid ?? false, menuOpen);
+  }
+
+  private _railUpdateTimer = 0;
+  private _updateResourceRail(): void {
+    this._railUpdateTimer += 1/60;
+    if (this._railUpdateTimer < 0.25) return;
+    this._railUpdateTimer = 0;
+
+    const pool = this._storage?.getStockpile() ?? new Map();
+    const cap = 1000;
+    planetResources.value = [
+      { key: 'iron_ore',    label: 'IRON',   subLabel: 'ORE', swatchColor: '#B45F06', carried: inventory.getByType('iron_ore'),    pool: pool.get('iron_ore')    ?? 0, cap },
+      { key: 'copper_ore',  label: 'COPPER', subLabel: 'ORE', swatchColor: '#E69138', carried: inventory.getByType('copper_ore'),  pool: pool.get('copper_ore')  ?? 0, cap },
+      { key: 'water',       label: 'WATER',  subLabel: 'ICE', swatchColor: '#3D85C6', carried: inventory.getByType('water'),       pool: pool.get('water')       ?? 0, cap },
+      { key: 'iron_bar',    label: 'IRON',   subLabel: 'BAR', swatchColor: '#999999', carried: inventory.getByType('iron_bar'),    pool: pool.get('iron_bar')    ?? 0, cap },
+      { key: 'copper_bar',  label: 'COPPER', subLabel: 'BAR', swatchColor: '#F6B26B', carried: inventory.getByType('copper_bar'),  pool: pool.get('copper_bar')  ?? 0, cap },
+    ];
   }
 
   // -------------------------------------------------------------------------
@@ -633,7 +658,6 @@ export class AsteroidOutpostScene implements Scene {
     miningService.setFurnace(null);
 
     // Unmount overlays
-    this._hud?.unmount();
     this._furnaceOverlay?.unmount();
     this._marketplaceOverlay?.unmount();
     this._buildMenuOverlay?.unmount();
@@ -654,7 +678,6 @@ export class AsteroidOutpostScene implements Scene {
     this._furnace = null;
     this._marketplace = null;
     this._droneDepot = null;
-    this._hud = null;
     this._furnaceOverlay = null;
     this._marketplaceOverlay = null;
     this._buildMenuOverlay = null;

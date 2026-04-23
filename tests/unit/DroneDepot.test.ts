@@ -100,13 +100,15 @@ describe('DroneDepot', () => {
     depot.onBuild(storage as any, furnace as any, dispatcher as any);
 
     expect(dispatcher.configure).toHaveBeenCalledOnce();
-    const [s, f, slots] = dispatcher.configure.mock.calls[0];
+    const [s, f, pos, slots] = dispatcher.configure.mock.calls[0];
     expect(s).toBe(storage);
     expect(f).toBe(furnace);
-    expect(slots).toHaveLength(3);
+    expect(pos).toMatchObject({ x: 400, y: 300 });
+    expect(slots).toHaveLength(4);
     expect(slots[0]).toMatchObject({ slotId: 'slot_0', drone: null, droneType: null, oreType: 'iron_ore' });
     expect(slots[1]).toMatchObject({ slotId: 'slot_1', drone: null, droneType: null, oreType: 'copper_ore' });
     expect(slots[2]).toMatchObject({ slotId: 'slot_2', drone: null, droneType: null, oreType: 'iron_ore' });
+    expect(slots[3]).toMatchObject({ slotId: 'slot_3', drone: null, droneType: null, oreType: 'iron_ore' });
   });
 
   it('setSlotOreType updates oreType for the given slot', () => {

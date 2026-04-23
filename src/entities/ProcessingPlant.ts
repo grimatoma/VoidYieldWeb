@@ -25,7 +25,9 @@ export class ProcessingPlant {
   private outputDepot: StorageDepot | null = null;
   private batchTimer = 0;
   /** Manual input buffer — units available to consume in the next batch. */
-  private inputBuffer = 0;
+  private _inputBuffer = 0;
+  /** Manual output buffer — finished products waiting to be taken. */
+  private _outputBuffer = 0;
   private label!: Text;
 
   constructor(worldX: number, worldY: number, schematic: Schematic) {
@@ -67,13 +69,22 @@ export class ProcessingPlant {
    * batchInterval = 60 / batchPerMin seconds
    */
   update(delta: number): void {
-    if (!this.outputDepot) {
+    // If not manualOnly and output depot is missing, stall.
+    // If manualOnly, we can run even without an outputDepot, as long as outputBuffer isn't full.
+    if (!this.manualOnly && !this.outputDepot) {
       this.state = 'STALLED';
       return;
     }
 
     // manualOnly mode: inputDepot is not required — input comes from insertBatch().
     if (!this.manualOnly && !this.inputDepot) {
+      this.state = 'STALLED';
+      return;
+    }
+
+    // Check if output buffer is full
+    const maxOutputBuffer = this.schematic.outputQty * 10;
+    if (this.manualOnly && this._outputBuffer >= maxOutputBuffer) {
       this.state = 'STALLED';
       return;
     }
@@ -93,8 +104,8 @@ export class ProcessingPlant {
       let inputConsumed = 0;
       if (this.manualOnly) {
         // Consume from the manual input buffer instead of pulling from depot.
-        if (this.inputBuffer >= this.schematic.inputQty) {
-          this.inputBuffer -= this.schematic.inputQty;
+        if (this._inputBuffer >= this.schematic.inputQty) {
+          this._inputBuffer -= this.schematic.inputQty;
           inputConsumed = this.schematic.inputQty;
         }
       } else {
@@ -103,14 +114,20 @@ export class ProcessingPlant {
       }
 
       if (inputConsumed > 0) {
-        // Produce output lot
-        const outputLot: QualityLot = {
-          oreType: this.schematic.outputType as OreType,
-          quantity: this.schematic.outputQty,
-          attributes: {},
-        };
-        this.outputDepot.deposit([outputLot]);
-        this.state = 'RUNNING';
+        if (this.manualOnly) {
+          // Send output to internal buffer
+          this._outputBuffer += this.schematic.outputQty;
+          this.state = 'RUNNING';
+        } else {
+          // Produce output lot and send to depot
+          const outputLot: QualityLot = {
+            oreType: this.schematic.outputType as OreType,
+            quantity: this.schematic.outputQty,
+            attributes: {},
+          };
+          this.outputDepot!.deposit([outputLot]);
+          this.state = 'RUNNING';
+        }
       } else {
         this.state = 'STALLED';
       }
@@ -118,30 +135,44 @@ export class ProcessingPlant {
   }
 
   /** 0–1 progress through the current batch interval, 0 when no input is loaded. */
-  get batchProgress(): number {
-    if (this.inputBuffer < this.schematic.inputQty) return 0;
+  get batchProgress(): number { 
+    if (this._inputBuffer < this.schematic.inputQty) return 0;
     const interval = 60 / this.schematic.batchPerMin;
     return Math.min(1, this.batchTimer / interval);
   }
 
   /** True when the buffer holds enough ore for the next batch. */
   get hasInput(): boolean {
-    return this.inputBuffer >= this.schematic.inputQty;
+    return this._inputBuffer >= this.schematic.inputQty;
   }
+
+  get inputBuffer(): number { return this._inputBuffer; }
+  get outputBuffer(): number { return this._outputBuffer; }
 
   /**
    * Push ore into the manual input buffer.
    * Only accepted when oreType matches this plant's schematic input.
-   * Returns the amount actually accepted (capped by remaining space until next batch).
+   * Returns the amount actually accepted (capped by remaining space).
    */
   insertBatch(oreType: OreType, qty: number): number {
     if (oreType !== this.schematic.inputType) return 0;
-    // Cap: don't allow more than one batch-worth of backlog beyond what's already there.
-    const maxBuffer = this.schematic.inputQty;
-    const space = Math.max(0, maxBuffer - this.inputBuffer);
+    const maxBuffer = this.schematic.inputQty * 10;
+    const space = Math.max(0, maxBuffer - this._inputBuffer);
     const accepted = Math.min(qty, space);
-    this.inputBuffer += accepted;
+    this._inputBuffer += accepted;
     return accepted;
+  }
+
+  /** Takes accumulated product from the output buffer. */
+  takeOutput(): QualityLot | null {
+    if (this._outputBuffer <= 0) return null;
+    const lot: QualityLot = {
+      oreType: this.schematic.outputType as OreType,
+      quantity: this._outputBuffer,
+      attributes: {},
+    };
+    this._outputBuffer = 0;
+    return lot;
   }
 
   destroy(): void {

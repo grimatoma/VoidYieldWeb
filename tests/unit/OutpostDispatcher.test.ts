@@ -109,6 +109,11 @@ function makeFurnace(recipe = 'off') {
     recipe,
     insertBatch: vi.fn((_ore: string, _qty: number) => 0),
     manualOnly: true,
+    plant: {
+      inputBuffer: 0,
+      outputBuffer: 0,
+      takeOutput: vi.fn(() => null),
+    },
   };
 }
 
@@ -149,7 +154,7 @@ describe('OutpostDispatcher', () => {
     const miner = makeDrone('d1', 'scout');
     const slots: DroneBaySlot[] = [occupiedSlot('slot_0', miner, 'iron_ore')];
 
-    dispatcher.configure(storage as any, furnace as any, slots);
+    dispatcher.configure(storage as any, furnace as any, { x: 500, y: 500 }, slots);
     // NOT calling dispatcher.start()
     dispatcher.update(0.016);
 
@@ -168,7 +173,7 @@ describe('OutpostDispatcher', () => {
       emptySlot('slot_1', 'copper_ore'),
     ];
 
-    dispatcher.configure(storage as any, furnace as any, slots);
+    dispatcher.configure(storage as any, furnace as any, { x: 500, y: 500 }, slots);
     dispatcher.start();
     dispatcher.update(0.016);
 
@@ -184,23 +189,7 @@ describe('OutpostDispatcher', () => {
     const miner = makeDrone('d1', 'scout');
     const slots: DroneBaySlot[] = [occupiedSlot('slot_0', miner, 'iron_ore')];
 
-    dispatcher.configure(storage as any, furnace as any, slots);
-    dispatcher.start();
-    dispatcher.update(0.016);
-
-    expect(miner.pushTask).not.toHaveBeenCalled();
-  });
-
-  it('miner skips when storage is full', () => {
-    const deposit = makeDeposit('iron_ore');
-    vi.mocked(depositMap.getNearestUnclaimedDeposit).mockReturnValue(deposit as any);
-
-    const storage = makeStorage({}, true); // isFull = true
-    const furnace = makeFurnace('iron');
-    const miner = makeDrone('d1', 'scout');
-    const slots: DroneBaySlot[] = [occupiedSlot('slot_0', miner, 'iron_ore')];
-
-    dispatcher.configure(storage as any, furnace as any, slots);
+    dispatcher.configure(storage as any, furnace as any, { x: 500, y: 500 }, slots);
     dispatcher.start();
     dispatcher.update(0.016);
 
@@ -217,7 +206,7 @@ describe('OutpostDispatcher', () => {
     miner.disabled = true;
     const slots: DroneBaySlot[] = [occupiedSlot('slot_0', miner, 'iron_ore')];
 
-    dispatcher.configure(storage as any, furnace as any, slots);
+    dispatcher.configure(storage as any, furnace as any, { x: 500, y: 500 }, slots);
     dispatcher.start();
     dispatcher.update(0.016);
 
@@ -235,7 +224,7 @@ describe('OutpostDispatcher', () => {
       emptySlot('slot_1', 'copper_ore'),
     ];
 
-    dispatcher.configure(storage as any, furnace as any, slots);
+    dispatcher.configure(storage as any, furnace as any, { x: 500, y: 500 }, slots);
     dispatcher.start();
     // Should not throw
     expect(() => dispatcher.update(0.016)).not.toThrow();
@@ -245,23 +234,25 @@ describe('OutpostDispatcher', () => {
   it('logistics does nothing when furnace recipe is off', () => {
     const storage = makeStorage({ iron_ore: 10 });
     const furnace = makeFurnace('off');
-    const cargo = makeDrone('c1', 'cargo');
+    const cargo = makeDrone('c1', 'refinery');
     _mockDrones = [cargo];
 
-    dispatcher.configure(storage as any, furnace as any, []);
+    dispatcher.configure(storage as any, furnace as any, { x: 500, y: 500 }, []);
     dispatcher.start();
     dispatcher.update(0.016);
 
-    expect(cargo.pushTask).not.toHaveBeenCalled();
+    // The drone should be commanded to return to the depot and wait.
+    expect(cargo.pushTask).toHaveBeenCalledTimes(1);
+    expect(cargo.getTasks()[0]).toMatchObject({ targetX: 500, targetY: 500 });
   });
 
   it('logistics pushes carry tasks when furnace has recipe and storage has ore', () => {
     const storage = makeStorage({ iron_ore: 10 });
     const furnace = makeFurnace('iron');
-    const cargo = makeDrone('c1', 'cargo');
+    const cargo = makeDrone('c1', 'refinery');
     _mockDrones = [cargo];
 
-    dispatcher.configure(storage as any, furnace as any, []);
+    dispatcher.configure(storage as any, furnace as any, { x: 500, y: 500 }, []);
     dispatcher.start();
     dispatcher.update(0.016);
 

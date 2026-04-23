@@ -649,11 +649,11 @@ export class PlanetA1Scene implements Scene {
     if (this._railUpdateTimer < 0.25) return;
     this._railUpdateTimer = 0;
     const pool = this.storageDepot.getStockpile();
-    planetResources.value = {
-      vorax:   { carried: inventory.getByType('vorax'),   pool: pool.get('vorax') ?? 0,   cap: 50 },
-      krysite: { carried: inventory.getByType('krysite'), pool: pool.get('krysite') ?? 0, cap: 50 },
-      aethite: { carried: inventory.getByType('aethite'), pool: pool.get('aethite') ?? 0, cap: 50 },
-    };
+    planetResources.value = [
+      { key: 'vorax',   label: 'ORE',     subLabel: 'POOL', swatchColor: '#8b5a2a', carried: inventory.getByType('vorax'),   pool: pool.get('vorax')   ?? 0, cap: 50 },
+      { key: 'krysite', label: 'CRYSTAL', subLabel: 'POOL', swatchColor: '#5a8fa8', carried: inventory.getByType('krysite'), pool: pool.get('krysite') ?? 0, cap: 50 },
+      { key: 'aethite', label: 'FUEL',    subLabel: 'RARE', swatchColor: '#7cb87c', carried: inventory.getByType('aethite'), pool: pool.get('aethite') ?? 0, cap: 50 },
+    ];
   }
 
   exit(): void {

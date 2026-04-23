@@ -11,8 +11,11 @@ export class FurnaceOverlay {
   private _pollId: ReturnType<typeof setInterval> | null = null;
 
   private _statusEl!: HTMLElement;
+  private _inBufEl!: HTMLElement;
+  private _outBufEl!: HTMLElement;
   private _progressFill!: HTMLElement;
   private _insertBtn!: HTMLButtonElement;
+  private _extractBtn!: HTMLButtonElement;
   private _ironBtn!: HTMLButtonElement;
   private _copperBtn!: HTMLButtonElement;
   private _noneBtn!: HTMLButtonElement;
@@ -67,8 +70,14 @@ export class FurnaceOverlay {
         <div id="furnace-status" style="text-align:center;font-size:11px;opacity:0.8;">IDLE</div>
       </div>
 
+      <div style="display:flex;justify-content:space-between;margin-bottom:12px;font-size:11px;">
+        <div style="color:#A0B0C0;">IN: <span id="furnace-in-buf" style="color:#D4A843;font-weight:bold;">0</span></div>
+        <div style="color:#A0B0C0;">OUT: <span id="furnace-out-buf" style="color:#4CAF50;font-weight:bold;">0</span></div>
+      </div>
+
       <div style="text-align:center;">
         <button id="furnace-insert-btn" style="${this._btnStyle()}">INSERT ORE</button>
+        <button id="furnace-extract-btn" style="${this._btnStyle()}">EXTRACT</button>
         <div id="furnace-cargo-hint" style="font-size:10px;opacity:0.5;margin-top:5px;min-height:14px;"></div>
       </div>
     `;
@@ -76,8 +85,11 @@ export class FurnaceOverlay {
     parent.appendChild(this._root);
 
     this._statusEl     = this._root.querySelector('#furnace-status')!       as HTMLElement;
+    this._inBufEl      = this._root.querySelector('#furnace-in-buf')!       as HTMLElement;
+    this._outBufEl     = this._root.querySelector('#furnace-out-buf')!      as HTMLElement;
     this._progressFill = this._root.querySelector('#furnace-progress-fill')! as HTMLElement;
     this._insertBtn    = this._root.querySelector('#furnace-insert-btn')!   as HTMLButtonElement;
+    this._extractBtn   = this._root.querySelector('#furnace-extract-btn')!  as HTMLButtonElement;
     this._ironBtn      = this._root.querySelector('#furnace-btn-iron')!     as HTMLButtonElement;
     this._copperBtn    = this._root.querySelector('#furnace-btn-copper')!   as HTMLButtonElement;
     this._noneBtn      = this._root.querySelector('#furnace-btn-none')!     as HTMLButtonElement;
@@ -98,6 +110,10 @@ export class FurnaceOverlay {
     });
     this._insertBtn.addEventListener('click', () => {
       this._onInsert();
+      this.refresh();
+    });
+    this._extractBtn.addEventListener('click', () => {
+      this._furnace.takeProducts();
       this.refresh();
     });
 
@@ -163,9 +179,18 @@ export class FurnaceOverlay {
       this._statusEl.textContent = 'NO POWER';
     } else if (isLoaded) {
       this._statusEl.textContent = `PROCESSING... ${Math.round(progress * 100)}%`;
+    } else if (this._furnace.plant.outputBuffer > 0) {
+      this._statusEl.textContent = `FINISHED: ${this._furnace.plant.outputBuffer} READY`;
     } else {
       this._statusEl.textContent = 'IDLE — insert ore to begin';
     }
+
+    // Buffer readouts
+    const plant = this._furnace.plant;
+    const maxIn = plant.schematic.inputQty * 10;
+    const maxOut = plant.schematic.outputQty * 10;
+    this._inBufEl.textContent = `${plant.inputBuffer}/${maxIn}`;
+    this._outBufEl.textContent = `${plant.outputBuffer}/${maxOut}`;
 
     // Insert button label and enabled state.
     const r = recipe !== 'off'
@@ -181,6 +206,13 @@ export class FurnaceOverlay {
       : 'INSERT ORE';
     this._insertBtn.disabled = !canInsert;
     this._insertBtn.style.opacity = canInsert ? '1' : '0.4';
+
+    const canExtract = this._furnace.plant.outputBuffer > 0;
+    this._extractBtn.textContent = r
+      ? `TAKE ${r.output.replace(/_/g, ' ').toUpperCase()}`
+      : 'EXTRACT';
+    this._extractBtn.disabled = !canExtract;
+    this._extractBtn.style.display = canExtract ? 'inline-block' : 'none';
 
     if (isLoaded) {
       this._cargoHint.textContent = 'Processing batch — wait for completion';

@@ -2,29 +2,29 @@ import type { StorageDepot } from '@entities/StorageDepot';
 import type { Furnace } from '@entities/Furnace';
 import { FURNACE_RECIPES } from '@entities/Furnace';
 import type { DroneBase } from '@entities/DroneBase';
-import { CargoDrone } from '@entities/CargoDrone';
 import { depositMap } from './DepositMap';
 import { fleetManager } from './FleetManager';
-import type { OreType, DroneTask } from '@data/types';
+import type { OreType, DroneTask, DroneType } from '@data/types';
 
 /** A slot in the Drone Bay — binds one specific drone to one ore target. */
 export interface DroneBaySlot {
   slotId: string;
   drone: DroneBase | null;
-  droneType: 'scout' | 'heavy' | null;
+  droneType: DroneType | null;
   oreType: OreType | 'any';
 }
 
 /** Serialization-only mirror of DroneBaySlot (no DroneBase instance). */
 export interface DroneBaySlotData {
   slotId: string;
-  droneType: 'scout' | 'heavy' | null;
+  droneType: DroneType | null;
   oreType: OreType | 'any';
 }
 
 export class OutpostDispatcher {
   private _storage: StorageDepot | null = null;
   private _furnace: Furnace | null = null;
+  private _depotPos: { x: number; y: number } | null = null;
   private _slots: DroneBaySlot[] = [];
   private _active = false;
 
@@ -32,9 +32,10 @@ export class OutpostDispatcher {
    * Wire up storage, furnace, and the live bay-slot array.
    * Slots are stored by reference — mutations to slot objects propagate automatically.
    */
-  configure(storage: StorageDepot, furnace: Furnace, slots: DroneBaySlot[]): void {
+  configure(storage: StorageDepot, furnace: Furnace, depotPos: { x: number; y: number }, slots: DroneBaySlot[]): void {
     this._storage = storage;
     this._furnace = furnace;
+    this._depotPos = depotPos;
     this._slots = slots;
   }
 
@@ -59,6 +60,8 @@ export class OutpostDispatcher {
     for (const slot of this._slots) {
       const drone = slot.drone;
       if (!drone || drone.disabled) continue;
+      // Logistics drones don't mine
+      if (drone.droneType === 'refinery' || drone.droneType === 'cargo') continue;
       if (drone.state !== 'IDLE' || drone.getTasks().length > 0) continue;
 
       const orePref: OreType | null = slot.oreType === 'any' ? null : slot.oreType as OreType;
@@ -97,46 +100,115 @@ export class OutpostDispatcher {
     const furnace = this._furnace;
     const storage = this._storage;
     const recipe = furnace.recipe;
-    if (recipe === 'off') return;
 
-    const idleCargoList = fleetManager
+    const idleLogistics = fleetManager
       .getIdleDrones()
-      .filter(d => d.droneType === 'cargo') as CargoDrone[];
-    if (idleCargoList.length === 0) return;
+      .filter(d => d.droneType === 'refinery'); // Use refinery for local logistics
+    
+    if (idleLogistics.length === 0) return;
 
-    const recipeData = FURNACE_RECIPES[recipe];
-    const inputOre = recipeData.input;
-    const inputQty = recipeData.inputQty;
-    const available = storage.getStockpile().get(inputOre) ?? 0;
-    if (available < inputQty) return;
+    // 1. Output Pickup: Prioritize getting products OUT of the furnace
+    if (furnace.plant.outputBuffer > 0) {
+      for (const drone of idleLogistics) {
+        if (furnace.plant.outputBuffer <= 0) break; // someone else might grab it, but for now we just dispatch one by one
+        
+        const takeTask: DroneTask = {
+          type: 'CARRY',
+          targetX: furnace.x,
+          targetY: furnace.y,
+          executeDurationSec: 0.3,
+          onExecute: () => {
+            const lot = furnace.plant.takeOutput();
+            if (lot) {
+              drone.cargo = lot;
+            }
+          },
+        };
+        const deliverTask: DroneTask = {
+          type: 'CARRY',
+          targetX: storage.x,
+          targetY: storage.y,
+          executeDurationSec: 0.3,
+          onExecute: () => {
+            if (drone.cargo) {
+              storage.deposit([drone.cargo]);
+              drone.cargo = null;
+            }
+          },
+        };
+        drone.pushTask(takeTask);
+        drone.pushTask(deliverTask);
+        return; // Only dispatch one drone per tick to avoid piling up
+      }
+    }
 
-    for (const drone of idleCargoList) {
-      const pullTask: DroneTask = {
-        type: 'CARRY',
-        targetX: storage.x,
-        targetY: storage.y,
-        executeDurationSec: 0.3,
-        onExecute: () => {
-          const pulled = storage.pull(inputOre, inputQty);
-          if (pulled > 0) {
-            drone.cargo = { oreType: inputOre, quantity: pulled, attributes: {} };
+    // 2. Input Delivery: If furnace has room and we have idle drones
+    if (recipe !== 'off') {
+      const recipeData = FURNACE_RECIPES[recipe];
+      const inputOre = recipeData.input;
+      const inputQty = recipeData.inputQty;
+      
+      const missingInput = (recipeData.inputQty * 10) - furnace.plant.inputBuffer;
+      if (missingInput >= inputQty) {
+        const available = storage.getStockpile().get(inputOre) ?? 0;
+        if (available >= inputQty) {
+          for (const drone of idleLogistics) {
+            // Already dispatched for output? Skip (though we return above, so it's safe)
+            const pullQty = Math.min(missingInput, available, drone.carryCapacity);
+            if (pullQty <= 0) break;
+
+            const pullTask: DroneTask = {
+              type: 'CARRY',
+              targetX: storage.x,
+              targetY: storage.y,
+              executeDurationSec: 0.3,
+              onExecute: () => {
+                const pulled = storage.pull(inputOre, pullQty);
+                if (pulled > 0) {
+                  drone.cargo = { oreType: inputOre, quantity: pulled, attributes: {} };
+                }
+              },
+            };
+            const deliverTask: DroneTask = {
+              type: 'CARRY',
+              targetX: furnace.x,
+              targetY: furnace.y,
+              executeDurationSec: 0.3,
+              onExecute: () => {
+                if (drone.cargo) {
+                  furnace.insertBatch(drone.cargo.oreType, drone.cargo.quantity);
+                  drone.cargo = null;
+                }
+              },
+            };
+            drone.pushTask(pullTask);
+            drone.pushTask(deliverTask);
+            return; // Dispatch one per tick
           }
-        },
-      };
-      const deliverTask: DroneTask = {
-        type: 'CARRY',
-        targetX: furnace.x,
-        targetY: furnace.y,
-        executeDurationSec: 0.3,
-        onExecute: () => {
-          if (drone.cargo) {
-            furnace.insertBatch(drone.cargo.oreType, drone.cargo.quantity);
-            drone.cargo = null;
-          }
-        },
-      };
-      drone.pushTask(pullTask);
-      drone.pushTask(deliverTask);
+        }
+      }
+    }
+
+    // 3. Idle Return: if still idle and not at drone depot, return to drone depot to wait
+    if (this._depotPos) {
+      for (const drone of idleLogistics) {
+        // If it was given a task in steps 1 or 2, it won't be in idleLogistics, wait, yes it will be in the array, but its task length will be > 0.
+        if (drone.getTasks().length > 0) continue;
+        
+        const dx = drone.x - this._depotPos.x;
+        const dy = drone.y - this._depotPos.y;
+        const distSq = dx * dx + dy * dy;
+        
+        // If it's more than ~20px away, fly back
+        if (distSq > 400) {
+          drone.pushTask({
+            type: 'CARRY',
+            targetX: this._depotPos.x,
+            targetY: this._depotPos.y,
+            executeDurationSec: 0,
+          });
+        }
+      }
     }
   }
 }

@@ -106,6 +106,11 @@ export class MiningService {
     }
 
     if (this._furnace?.isNearby(px, py, 40)) {
+      if (this._furnace.plant.outputBuffer > 0) {
+        if (this._furnace.takeProducts()) {
+          return 'Products extracted';
+        }
+      }
       const inserted = this._furnace.insertFromInventory();
       if (inserted > 0) {
         EventBus.emit('inventory:changed');

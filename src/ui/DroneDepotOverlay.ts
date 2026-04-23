@@ -14,6 +14,7 @@ const ORE_OPTIONS: Array<{ value: OreType | 'any'; label: string }> = [
 const DRONE_SPECS = [
   { type: 'scout' as const, label: 'MINING DRONE', cost: 25  },
   { type: 'heavy' as const, label: 'HEAVY MINER',  cost: 150 },
+  { type: 'refinery' as const, label: 'LOGISTICS DRONE', cost: 75 },
 ];
 
 export class DroneDepotOverlay {
@@ -154,7 +155,7 @@ export class DroneDepotOverlay {
     }
 
     const { dotColor, label } = this._droneStatus(slot.drone);
-    const droneName = slot.droneType === 'scout' ? 'Mining Drone' : 'Heavy Miner';
+    const droneName = slot.droneType === 'scout' ? 'Mining Drone' : slot.droneType === 'refinery' ? 'Logistics Drone' : 'Heavy Miner';
 
     const oreOpts = ORE_OPTIONS.map(o =>
       `<option value="${o.value}" ${slot.oreType === o.value ? 'selected' : ''}>${o.label}</option>`
@@ -170,13 +171,17 @@ export class DroneDepotOverlay {
       'cursor:pointer',
     ].join(';');
 
+    const selectHtml = slot.droneType !== 'refinery'
+      ? `<select id="ddo-ore-${slot.slotId}" style="${selectStyle}">${oreOpts}</select>`
+      : `<span style="font-size:10px;opacity:0.5;margin-right:10px;">AUTO LOGISTICS</span>`;
+
     return `
       <div style="${wrap}">
         <div style="display:flex;align-items:center;gap:8px;">
           <span style="font-size:11px;opacity:0.45;min-width:52px;letter-spacing:1px;">SLOT ${num}</span>
           <span id="ddo-dot-${slot.slotId}" style="color:${dotColor};font-size:16px;line-height:1;">●</span>
           <span id="ddo-lbl-${slot.slotId}" style="flex:1;font-size:12px;font-weight:bold;">${label}</span>
-          <select id="ddo-ore-${slot.slotId}" style="${selectStyle}">${oreOpts}</select>
+          ${selectHtml}
           <button id="ddo-release-${slot.slotId}" style="${this._btnStyle('#FF5252')}">RELEASE</button>
         </div>
         <div style="font-size:10px;opacity:0.4;margin-top:5px;padding-left:60px;">${droneName}</div>
