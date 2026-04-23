@@ -28,9 +28,9 @@ The player starts on a 40×30 asteroid surface. The outpost perimeter fence encl
 ### The manual loop (first 5–10 minutes)
 
 ```
-Walk to deposit → [E] hand-mine ore → carry to Furnace
-→ smelt into bars → carry bars to Fabricator
-→ [E] craft a Drone Bay or Road batch → place it
+Walk to deposit → [E] hand-mine ore → ore goes straight to Storage
+→ walk to Furnace → configure recipe → bars accumulate in output buffer
+→ [E] at Fabricator → bars drawn from Storage → [CRAFT] Drone Bay or Roads → place it
 ```
 
 ### The automation loop (once Drone Bay is built)
@@ -195,10 +195,6 @@ The core game view. The camera shows the 40×30 asteroid surface (scrollable) wi
 ║  │  · · · · · · · · · · · · · · · · · · · · · · · ·    │   ║
 ║  └──────────────────────────────────────────────────────┘   ║
 ║                                                              ║
-║  ┌───────────────┐  ┌─────────────┐  ┌────────────────┐    ║
-║  │ CARGO: 0/12   │  │ IRON ORE: 0 │  │COPPER ORE: 0   │    ║ ← carry status
-║  └───────────────┘  └─────────────┘  └────────────────┘    ║
-║                                                              ║
 ║  [WASD] Move  [E] Interact  [B] Build  [R] Roads  [ESC] Menu║ ← key hints
 ╚══════════════════════════════════════════════════════════════╝
 
@@ -217,14 +213,15 @@ WORLD SYMBOLS:
 
 TOP RESOURCE BAR:
   CREDITS     → Current credit balance from Marketplace sales
-  IRON BARS   → Iron bars in nearest Storage Depot
-  COPPER BARS → Copper bars in nearest Storage Depot
+  IRON ORE    → Iron ore in Storage (all deposits flow here directly)
+  IRON BARS   → Iron bars in Storage (smelted by Furnace)
+  COPPER ORE  → Copper ore in Storage
+  COPPER BARS → Copper bars in Storage
   DAY         → In-game day counter
 
-CARRY STATUS BAR:
-  CARGO       → Items in player's hands (hand-mined ore)
-  IRON ORE    → Iron ore units in carry
-  COPPER ORE  → Copper ore units in carry
+NOTE: The player has no personal inventory. All mined ore and produced items
+go directly into Storage. The player is an action-controller, not a carrier.
+Drones are the only entities with inventory — they carry items between buildings.
 
 KEY HINTS BAR:
   [WASD]  → Move player (or Arrow Keys)
@@ -249,19 +246,26 @@ KEY HINTS BAR:
 ║  ║  Road access:      ✓ Connected (road leads here)    ║     ║
 ║  ║  Drone miner:      None assigned                    ║     ║
 ║  ║                                                     ║     ║
-║  ║  [HAND MINE]   ← Hold E to mine; fills carry        ║     ║
-║  ║                  (+3–5 ore per 0.8s)                ║     ║
+║  ║  [HAND MINE]   ← Hold E to mine; ore → Storage      ║     ║
+║  ║                  (+3–5 ore per 0.8s, direct to Depot)║     ║
 ║  ║                                                     ║     ║
 ║  ╚═════════════════════════════════════════════════════╝     ║
 ║  [E] Mine   [ESC] Close                                      ║
 ╚══════════════════════════════════════════════════════════════╝
 
 HAND MINE behavior:
-  Hold [E]    → Player plays swing animation; 3–5 ore added to carry per hit
-  Carry fills → "CARRY FULL" text floats above player; mining stops
-  Deposit runs dry → "DEPLETED" shown on deposit; deposit darkens
-  No road to deposit → "NO ROAD ACCESS — drones cannot reach this deposit"
-                        (player can still hand-mine; drones require roads)
+  Hold [E]       → Player plays swing animation; 3–5 ore added to nearest Storage per hit
+  Storage full   → "STORAGE FULL" floats above player; mining stops
+                   (need to wait for Logistics drones to consume ore, or build more Storage)
+  Deposit dry    → "DEPLETED" shown on deposit; deposit darkens
+  No road        → "NO ROAD — drones cannot reach this deposit"
+                   (player can still hand-mine regardless; drones require roads)
+
+PLAYER HAS NO PERSONAL INVENTORY:
+  Mined ore goes directly into the outpost Storage system.
+  No carry bar, no inventory panel, no "drop items" mechanic.
+  Player role: trigger actions + configure buildings + place structures.
+  Drones are the only entities with inventory — they haul between buildings.
 
 DEPOSIT DETAIL WHEN DRONE IS ASSIGNED:
   ╔═════════════════════════════════════════════════════╗
@@ -291,26 +295,29 @@ DEPOSIT DETAIL WHEN DRONE IS ASSIGNED:
 ║  ║    Iron Ore:   ████████░░░░  14 / 20                ║     ║
 ║  ║                                                     ║     ║
 ║  ║  OUTPUT BUFFER:                                     ║     ║
-║  ║    Iron Bars:  ██░░░░░░░░░░   3 / 20                ║     ║
-║  ║    [COLLECT BARS → carry]                           ║     ║
+║  ║    Iron Bars:  ██░░░░░░░░░░   3 / 20               ║     ║
+║  ║    → Logistics drone hauls bars to Storage auto.   ║     ║
 ║  ║                                                     ║     ║
 ║  ║  SMELT RATE:  1 bar / 4 seconds                     ║     ║
 ║  ║                                                     ║     ║
-║  ║  [DEPOSIT ORE FROM CARRY]   [COLLECT BARS]          ║     ║
 ║  ║  [SWITCH RECIPE: Copper]    [CLOSE]                 ║     ║
 ║  ╚═════════════════════════════════════════════════════╝     ║
 ╚══════════════════════════════════════════════════════════════╝
 
-PLAYER ACTIONS:
-  [DEPOSIT ORE FROM CARRY] → Moves all ore from carry into furnace input buffer
-  [COLLECT BARS]           → Moves bars from furnace output buffer into carry
-  [SWITCH RECIPE]          → Changes which ore type is smelted; clears input buffer
-  [CLOSE]                  → Closes panel; furnace keeps smelting
+PLAYER ACTIONS (panel is read-mostly):
+  [SWITCH RECIPE]  → Changes which ore type is smelted; clears input buffer
+  [CLOSE]          → Closes panel; furnace keeps smelting
+
+NO MANUAL TRANSFER:
+  Input buffer is filled by Logistics drones (Storage → Furnace).
+  Output buffer is emptied by Logistics drones (Furnace → Storage).
+  Player never manually deposits or collects — that is always drone work.
 
 FURNACE STALL CONDITIONS:
-  Input buffer empty  → STATUS shows IDLE (grey); no bars produced
-  Output buffer full  → STATUS shows STALLED (yellow); smelting pauses
-  Fix: collect output bars OR wire Logistics Drone to haul output to Storage
+  Input empty  → STATUS shows IDLE (grey); no bars produced
+               Fix: assign a Logistics drone (Storage → Furnace route) in Drone Bay
+  Output full  → STATUS shows STALLED (orange); smelting pauses
+               Fix: assign a Logistics drone (Furnace → Storage route) in Drone Bay
 ```
 
 ---
@@ -340,27 +347,26 @@ FURNACE STALL CONDITIONS:
 ║  ║  ░ Electrolysis Unit     6 iron bars    (need 6)       ║  ║
 ║  ║    (water → hydrolox)    + 4 copper bars               ║  ║
 ║  ║                                                        ║  ║
-║  ║  CARRY:  Iron Bars ×3   Copper Bars ×0                 ║  ║
-║  ║          (Storage Depot: Iron Bars ×12 nearby ✓)       ║  ║
+║  ║  STORAGE (nearby):  Iron Bars ×12 ✓  Copper Bars ×0   ║  ║
 ║  ║                                                        ║  ║
 ║  ║  [CRAFT — Road ×4]     Costs 2 iron bars               ║  ║
-║  ║  Time: instant (items placed in carry)                 ║  ║
+║  ║  Deducted from Storage. Road placement mode opens.     ║  ║
 ║  ╚════════════════════════════════════════════════════════╝  ║
 ╚══════════════════════════════════════════════════════════════╝
 
 RECIPE STATES:
   [CRAFT]   → Affordable; button is amber and clickable
-  (need X)  → Greyed out; shows what's missing
-  ░ recipe  → Sufficient materials in carry OR nearby Storage
+  (need X)  → Greyed out; shows shortfall vs. Storage stock
+  ░ recipe  → Locked; not enough materials in Storage
 
 CRAFTING BEHAVIOR:
-  Clicking [CRAFT] → item lands in player carry immediately
-  Crafted building item → must be placed via [B] Build menu (§3.6)
-  Crafted Road ×4 → opens Road placement mode automatically (§3.6)
+  Clicking [CRAFT] → bars deducted from Storage; build mode opens immediately
+  Crafted building → ghost follows cursor; player places via click (§3.6)
+  Crafted Road ×4  → road paint mode opens automatically (§3.7)
 
 MATERIAL SOURCING:
-  Fabricator checks player carry first, then nearest Storage Depot
-  If both insufficient → shows combined total + deficit
+  Fabricator draws entirely from nearest Storage Depot.
+  No player carry involved — player has no inventory.
 ```
 
 ---
@@ -408,9 +414,9 @@ PLACEMENT FEEDBACK TEXT (at cursor):
   "Drone Bay must touch a road"
 
 CLICK TO PLACE:
-  Deducts crafted item from carry → building appears at grid position
+  Bars already deducted at Fabricator → building appears at grid position
   Building is immediately operational (drones assignable, furnace idle ready)
-  No building cost beyond the crafted item (bars already spent at Fabricator)
+  No additional cost at placement time
 
 MOVING AN EXISTING BUILDING:
   Click [PICK UP] on a placed building (via §3.7 building panel) 
@@ -685,42 +691,38 @@ Player         MainMenu       SceneManager    GameState      PlanetA1Scene
 
 ---
 
-### 4.2 Manual Mining → Carry → Furnace → Bars
+### 4.2 Manual Mining → Storage → Furnace → Bars (no carry)
 
 ```
-Player       InputManager   DepositEntity   Inventory    FurnaceEntity   HUD
-  │               │               │             │               │         │
-  │─WASD──────────▶│               │             │               │         │
-  │               │─movePlayer()──▶              │               │         │
-  │  (reaches Iron deposit; [E] prompt appears)  │               │         │
-  │               │               │             │               │         │
-  │─[E] hold──────▶│               │             │               │         │
-  │               │─interact()────▶              │               │         │
-  │               │               │─swingAnim()  │               │         │
-  │               │               │─calcYield(3-5)               │         │
-  │               │               │─addToCarry()▶│               │         │
-  │               │               │             │─updateCargoBar()────────▶│
-  │               │               │─decrement() │               │         │
-  │               │               │  (deposit stock - 4)         │         │
-  │  (player carries 12 iron ore; moves to Furnace)              │         │
-  │               │               │             │               │         │
-  │─[E] at Furnace▶│               │             │               │         │
+Player       InputManager   DepositEntity   StorageEntity  FurnaceEntity   HUD
+  │               │               │               │               │         │
+  │─WASD──────────▶│               │               │               │         │
+  │               │─movePlayer()──▶               │               │         │
+  │  (reaches Iron deposit; [E] prompt appears)   │               │         │
+  │               │               │               │               │         │
+  │─[E] hold──────▶│               │               │               │         │
+  │               │─interact()────▶               │               │         │
+  │               │               │─swingAnim()   │               │         │
+  │               │               │─calcYield(3-5)│               │         │
+  │               │               │─addToStorage()▶               │         │
+  │               │               │  (direct to nearest Depot)    │         │
+  │               │               │               │─updateBars()──────────▶│
+  │               │               │─decrementStock()              │         │
+  │               │               │               │               │         │
+  │  (player mines several times; Storage fills with iron ore)    │         │
+  │  (player does NOT carry ore — walks to Furnace to configure)  │         │
+  │               │               │               │               │         │
+  │─[E] at Furnace▶│               │               │               │         │
   │               │─interact()───────────────────────────────────▶│         │
-  │               │               │             │               │─showPanel()│
+  │               │               │               │               │─showPanel()
   │◀──────────────────────────────────────────────────Furnace panel visible │
-  │               │               │             │               │         │
-  │─[DEPOSIT ORE]─▶│               │             │               │         │
-  │               │               │             │─transfer()───▶│         │
-  │               │               │             │  carry → input│         │
-  │               │               │             │  buffer       │         │
-  │               │               │             │               │─startSmelt()│
-  │               │               │             │               │  4s/bar  │
-  │  (comes back after 4s; output buffer has 1 bar)              │         │
-  │               │               │             │               │         │
-  │─[COLLECT BARS]─▶              │             │               │         │
-  │               │               │             │◀──transfer()──│         │
-  │               │               │             │  bar → carry  │         │
-  │◀───────────────────────────────────────[CARRY: 1 iron bar]             │
+  │  (Panel shows recipe, buffer levels, rate — no transfer buttons)        │
+  │               │               │               │               │         │
+  │  Furnace input fills automatically when a Logistics drone is assigned   │
+  │               │               │               │               │─startSmelt()
+  │               │               │               │               │  (when input>0)
+  │  Bars accumulate in output buffer → Logistics drone hauls to Storage    │
+  │◀───────────────────────────────────────────────[BARS appear in Storage] │
 ```
 
 ---
@@ -743,11 +745,11 @@ Player      FabricatorEntity  Inventory   GridSystem   DroneBayEntity
   │               │               │            │               │
   │─[CRAFT Drone Bay]──────────────▶            │               │
   │               │─deductBars(6)─▶            │               │
-  │               │               │─bars -6    │               │
-  │               │─addToCarry()─▶│            │               │
-  │               │               │─carry: DroneBay(item)       │
+  │               │  (from Storage — no carry) │               │
+  │               │─openPlacement()────────────▶               │
+  │               │  (ghost mode activates)    │               │
   │               │               │            │               │
-  │─[B] to place──────────────────────────────▶│               │
+  │─[B] or auto-opens placement────────────────▶               │
   │               │               │            │─ghostFollow(cursor)     │
   │  (player moves ghost over valid 2×2 tiles touching a road)  │         │
   │               │               │            │               │         │
@@ -1031,14 +1033,20 @@ If player attempts to place in occupied tile:
 → No hard cap panel shown; tile grid is the visual constraint
 ```
 
-### 7.4 Carry Full — Cannot Collect Bars
+### 7.4 Storage Full — Mining Blocked
 ```
-Player carry = 12/12
-→ Approaches Furnace
-→ Furnace panel [COLLECT BARS] shows: "CARRY FULL"
-→ Must deposit carry items at Storage first
-→ OR logistics drone should be collecting bars automatically
-→ This is a design prompt: "assign a Logistics drone to this circuit"
+All Storage Depots at 100% capacity
+→ Player presses [E] at deposit → swing animation plays once, then stops
+→ "STORAGE FULL" floats above player
+→ Top resource bar shows all ore counts at their maximums highlighted red
+→ Root cause options:
+   (a) Furnace idle / not smelting — ore not being consumed
+       Fix: ensure a Logistics drone is assigned to feed the Furnace
+   (b) No Logistics drones assigned at all
+       Fix: open Drone Bay panel [E] → assign at least 1 Logistics drone
+   (c) Storage capacity too small — need to craft Storage Expansion
+       Fix: craft Storage Expansion from Fabricator (8 iron bars)
+→ This is a design nudge: "your base is not consuming fast enough"
 ```
 
 ### 7.5 Drone Returning with No Bay

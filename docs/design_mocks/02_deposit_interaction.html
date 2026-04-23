@@ -91,8 +91,8 @@ h2 { color: #D4A843; font-size: 14px; letter-spacing: 3px; text-transform: upper
   <!-- Floating ore particles -->
   <div class="ore-float" style="left:222px; top:186px;">+4</div>
 
-  <!-- Carry indicator -->
-  <div class="carry-label" style="left:246px; top:224px;">CARRY 4/12</div>
+  <!-- Ore-to-storage feedback (no player carry) -->
+  <div class="carry-label" style="left:232px; top:224px;border-color:#4ade80;color:#4ade80;">+4 → Storage</div>
 
   <!-- Panel — NO DRONE state -->
   <div class="panel" style="right: 40px; top: 60px; width: 320px;">
@@ -116,7 +116,8 @@ h2 { color: #D4A843; font-size: 14px; letter-spacing: 3px; text-transform: upper
         <button class="btn btn-primary">⛏ HAND MINE (hold E)</button>
         <button class="btn btn-secondary">CLOSE</button>
       </div>
-      <div style="margin-top:8px;font-size:10px;color:#666;">Tip: Assign a Miner drone from a Drone Bay to automate this deposit.</div>
+      <div style="margin-top:8px;font-size:10px;color:#4ade80;">Ore goes directly to Storage — no player carry.</div>
+      <div style="margin-top:4px;font-size:10px;color:#666;">Tip: Assign a Miner drone from a Drone Bay to automate this deposit.</div>
     </div>
   </div>
 
@@ -134,7 +135,7 @@ h2 { color: #D4A843; font-size: 14px; letter-spacing: 3px; text-transform: upper
   </div>
 </div>
 
-<!-- ROW 2: Two half-screens - drone assigned + carry full -->
+<!-- ROW 2: Two half-screens - drone assigned + storage full -->
 <div class="row">
 
   <!-- State B: Drone assigned -->
@@ -180,15 +181,15 @@ h2 { color: #D4A843; font-size: 14px; letter-spacing: 3px; text-transform: upper
 
   <!-- State C: Carry full warning -->
   <div>
-    <div class="section-label">STATE C — Player carry full. Mining stops; must deposit first.</div>
+    <div class="section-label">STATE C — Storage full. Mining stops; base must consume ore first.</div>
     <div class="screen screen-half" style="margin-top:6px;">
       <div class="world-bg"></div>
       <div class="deposit-node deposit-iron" style="left:100px;top:120px;"></div>
       <div class="player-sprite" style="left:160px;top:132px;"></div>
 
-      <!-- CARRY FULL float text -->
-      <div style="position:absolute;left:144px;top:108px;font-size:12px;color:#f87171;font-weight:bold;background:rgba(0,0,0,0.8);border:1px solid #f87171;padding:3px 8px;animation:blink2 0.8s ease-in-out infinite;">
-        CARRY FULL
+      <!-- STORAGE FULL float text -->
+      <div style="position:absolute;left:136px;top:108px;font-size:12px;color:#f87171;font-weight:bold;background:rgba(0,0,0,0.8);border:1px solid #f87171;padding:3px 8px;animation:blink2 0.8s ease-in-out infinite;">
+        STORAGE FULL
       </div>
       <style>@keyframes blink2{0%,100%{opacity:1}50%{opacity:0.5}}</style>
 
@@ -199,18 +200,18 @@ h2 { color: #D4A843; font-size: 14px; letter-spacing: 3px; text-transform: upper
         </div>
         <div class="panel-body">
           <div style="background:#2d1a0a;border:1px solid #ea580c;padding:8px;font-size:11px;color:#fed7aa;margin-bottom:8px;">
-            ⚠ Carry full (12/12)<br>Deposit items to continue mining.
+            ⚠ Storage full<br>Base must consume ore before more can be mined.
           </div>
-          <div class="panel-row"><span class="lbl">Carry</span><span class="val warn">12 / 12 (full)</span></div>
-          <div class="panel-row"><span class="lbl">Nearest depot</span><span class="val">38 tiles away</span></div>
+          <div class="panel-row"><span class="lbl">Storage</span><span class="val warn">160 / 160 (full)</span></div>
+          <div class="panel-row"><span class="lbl">Furnace</span><span class="val warn">IDLE — no logistics</span></div>
           <hr class="divider">
           <div class="btn-row">
-            <button class="btn btn-disabled">⛏ HAND MINE (carry full)</button>
+            <button class="btn btn-disabled">⛏ HAND MINE (storage full)</button>
           </div>
-          <div style="margin-top:8px;font-size:10px;color:#666;">Walk to Storage Depot and [E] to deposit carry.</div>
+          <div style="margin-top:8px;font-size:10px;color:#666;">Fix: assign a Logistics drone to feed the Furnace — it will clear storage.</div>
         </div>
       </div>
-      <div style="position:absolute;bottom:0;left:0;right:0;height:22px;background:#050e1e;border-top:1px solid #1a3060;display:flex;align-items:center;padding:0 10px;font-size:10px;color:#666;">State C: Carry full → mining locked → must deposit</div>
+      <div style="position:absolute;bottom:0;left:0;right:0;height:22px;background:#050e1e;border-top:1px solid #1a3060;display:flex;align-items:center;padding:0 10px;font-size:10px;color:#666;">State C: Storage full → mining locked → assign Logistics drone to consume ore</div>
     </div>
   </div>
 
