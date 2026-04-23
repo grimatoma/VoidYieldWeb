@@ -1,0 +1,300 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Mock 03 — Furnace & Fabricator Panels</title>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { background: #060e1e; color: #E8E4D0; font-family: 'Courier New', monospace; display: flex; flex-direction: column; align-items: center; padding: 20px; gap: 16px; }
+h2 { color: #D4A843; font-size: 14px; letter-spacing: 3px; text-transform: uppercase; }
+.ref { color: #00B8D4; font-size: 11px; }
+.row { display: flex; gap: 20px; width: 960px; }
+
+.screen { background: #0D1B3E; border: 2px solid #D4A843; position: relative; image-rendering: pixelated; }
+
+.panel { background: #07122a; border: 1px solid #D4A843; }
+.panel-title { background: #1a2d5a; color: #D4A843; padding: 7px 12px; font-size: 12px; font-weight: bold; border-bottom: 1px solid #D4A843; display: flex; justify-content: space-between; align-items: center; }
+.status-badge { font-size: 10px; padding: 2px 8px; border-radius: 2px; }
+.status-running { background: #14532d; color: #4ade80; border: 1px solid #22c55e; }
+.status-stalled { background: #422006; color: #fb923c; border: 1px solid #f97316; }
+.status-idle    { background: #1e2030; color: #94a3b8; border: 1px solid #475569; }
+.panel-body { padding: 14px; }
+
+.section { margin-bottom: 12px; }
+.section-title { font-size: 10px; color: #00B8D4; letter-spacing: 1px; text-transform: uppercase; margin-bottom: 6px; border-bottom: 1px solid #1a3060; padding-bottom: 3px; }
+
+.bar-row { display: flex; align-items: center; gap: 8px; font-size: 11px; margin-bottom: 7px; }
+.bar-row .lbl { color: #888; width: 100px; flex-shrink: 0; }
+.bar-track { flex: 1; height: 8px; background: #1a3060; border: 1px solid #2a4080; }
+.bar-fill { height: 100%; }
+.bar-row .num { color: #E8E4D0; font-size: 10px; width: 56px; text-align: right; flex-shrink: 0; }
+.bar-row .time { color: #666; font-size: 10px; width: 70px; text-align: right; flex-shrink: 0; }
+
+.divider { border: none; border-top: 1px solid #1a3060; margin: 10px 0; }
+
+.recipe-row { display: flex; align-items: center; gap: 8px; padding: 6px 8px; margin-bottom: 4px; font-size: 11px; cursor: pointer; border: 1px solid transparent; }
+.recipe-row.active { border: 1px solid #D4A843; background: rgba(212,168,67,0.08); }
+.recipe-row .bullet { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
+.bullet-active { background: #D4A843; }
+.bullet-inactive { background: #1a3060; border: 1px solid #3a5a8a; }
+.recipe-arrow { color: #00B8D4; }
+.recipe-result { color: #4ade80; }
+.recipe-label { color: #888; font-size: 10px; margin-left: auto; }
+
+.btn-row { display: flex; gap: 8px; margin-top: 10px; flex-wrap: wrap; }
+.btn { padding: 5px 12px; font-family: 'Courier New', monospace; font-size: 11px; cursor: pointer; border: none; }
+.btn-primary { background: #D4A843; color: #0D1B3E; font-weight: bold; }
+.btn-secondary { background: #1a3060; color: #E8E4D0; border: 1px solid #3a5a8a; }
+.btn-accent { background: #00B8D4; color: #0D1B3E; font-weight: bold; }
+
+.crafting-row { display: flex; align-items: flex-start; gap: 10px; padding: 8px; margin-bottom: 6px; border: 1px solid #1a3060; }
+.crafting-row.affordable { border-color: #D4A843; background: rgba(212,168,67,0.05); }
+.crafting-row.locked { opacity: 0.5; border-color: #1a3060; }
+.recipe-name { font-size: 12px; color: #E8E4D0; font-weight: bold; margin-bottom: 3px; }
+.recipe-desc { font-size: 10px; color: #666; margin-bottom: 4px; }
+.recipe-cost { font-size: 11px; }
+.cost-met { color: #4ade80; }
+.cost-unmet { color: #f87171; }
+.craft-btn { margin-left: auto; flex-shrink: 0; align-self: center; }
+.craft-btn-active { background: #D4A843; color: #0D1B3E; font-family: 'Courier New', monospace; font-size: 11px; font-weight: bold; padding: 5px 10px; border: none; cursor: pointer; }
+.craft-btn-inactive { background: #0f1e38; color: #3a5a8a; font-family: 'Courier New', monospace; font-size: 11px; padding: 5px 10px; border: 1px solid #1a3060; cursor: default; }
+
+.world-bg { position: absolute; inset: 0; background: #0a1628; }
+.building-icon { position: absolute; display: flex; align-items: center; justify-content: center; font-size: 9px; font-weight: bold; }
+.label-tag { position: absolute; font-size: 9px; background: rgba(5,14,30,0.9); border: 1px solid #00B8D4; padding: 2px 5px; color: #00B8D4; }
+
+.section-label { font-size: 11px; color: #666; margin-bottom: 6px; }
+.smelt-anim { animation: glow 1.2s ease-in-out infinite; }
+@keyframes glow { 0%,100%{text-shadow:0 0 4px #ff8844} 50%{text-shadow:0 0 12px #ff8844,0 0 20px #ff4400} }
+</style>
+</head>
+<body>
+
+<h2>Mock 03 — Furnace & Fabricator Panels</h2>
+<div class="ref">TDD §3.4 §3.5 · SSD §4.2 §4.3 — Smelting and crafting interfaces</div>
+
+<div class="row">
+
+  <!-- FURNACE PANEL -->
+  <div style="flex:1;">
+    <div class="section-label">FURNACE — [E] to open · Iron/Copper ore → bars · 1 bar / 4 sec</div>
+    <div class="screen" style="width:100%;height:400px;">
+      <div class="world-bg"></div>
+
+      <!-- Furnace building in world context -->
+      <div class="building-icon" style="left:30px;top:160px;width:56px;height:56px;background:#2a1a0a;border:1px solid #c06020;color:#ff8844;flex-direction:column;gap:1px;">
+        <div class="smelt-anim">▣▣</div><div>▣▣</div>
+        <div style="font-size:7px;color:#c06020;margin-top:2px;">FURNACE</div>
+      </div>
+      <!-- Player next to furnace -->
+      <div style="position:absolute;left:92px;top:174px;width:12px;height:16px;background:#D4A843;clip-path:polygon(50% 0%,80% 30%,100% 60%,80% 100%,20% 100%,0% 60%,20% 30%);"></div>
+      <div class="label-tag" style="left:24px;top:136px;">[E] Furnace</div>
+
+      <!-- Panel -->
+      <div class="panel" style="position:absolute;left:120px;top:20px;right:10px;bottom:10px;">
+        <div class="panel-title">
+          ▣ FURNACE
+          <span class="status-badge status-running">▶ SMELTING</span>
+        </div>
+        <div class="panel-body">
+
+          <div class="section">
+            <div class="section-title">Recipes</div>
+            <div class="recipe-row active">
+              <div class="bullet bullet-active"></div>
+              <span>Iron Ore ×2</span>
+              <span class="recipe-arrow">→</span>
+              <span class="recipe-result">Iron Bar ×1</span>
+              <span class="recipe-label">active</span>
+            </div>
+            <div class="recipe-row">
+              <div class="bullet bullet-inactive"></div>
+              <span style="color:#888;">Copper Ore ×2</span>
+              <span class="recipe-arrow" style="color:#888;">→</span>
+              <span style="color:#888;">Copper Bar ×1</span>
+              <button class="btn btn-secondary" style="margin-left:auto;padding:2px 8px;font-size:10px;">SWITCH</button>
+            </div>
+            <div style="font-size:10px;color:#666;margin-top:4px;padding-left:18px;">Switching clears the input buffer. Cost: free. Downtime: 5 sec.</div>
+          </div>
+
+          <div class="section">
+            <div class="section-title">Input Buffer</div>
+            <div class="bar-row">
+              <span class="lbl">Iron Ore</span>
+              <div class="bar-track"><div class="bar-fill" style="width:70%;background:#cd6020;"></div></div>
+              <span class="num">14 / 20</span>
+              <span class="time">~56 sec</span>
+            </div>
+          </div>
+
+          <div class="section">
+            <div class="section-title">Output Buffer → Storage (via Logistics drone)</div>
+            <div class="bar-row">
+              <span class="lbl">Iron Bars</span>
+              <div class="bar-track"><div class="bar-fill" style="width:15%;background:#D4A843;"></div></div>
+              <span class="num">3 / 20</span>
+              <span class="time">space ok</span>
+            </div>
+            <div style="font-size:10px;color:#666;margin-top:2px;">Logistics drone hauls bars → Storage automatically.</div>
+          </div>
+
+          <div class="section">
+            <div class="section-title">Performance</div>
+            <div style="display:flex;gap:20px;font-size:11px;">
+              <div><span style="color:#888;">Rate:</span> <span style="color:#E8E4D0;">1 bar / 4 sec</span></div>
+              <div><span style="color:#888;">Throughput:</span> <span style="color:#4ade80;">0.25 bars/min</span></div>
+            </div>
+          </div>
+
+          <div style="background:#0a1a0a;border:1px solid #14532d;padding:7px 10px;font-size:10px;color:#86efac;margin:8px 0;">
+            ✓ No manual transfers — player has no inventory.<br>
+            Input/output handled entirely by Logistics drones.
+          </div>
+
+          <div class="divider"></div>
+          <div class="btn-row">
+            <button class="btn btn-secondary">SWITCH RECIPE: Copper</button>
+            <button class="btn btn-secondary">CLOSE</button>
+          </div>
+          <div style="margin-top:8px;font-size:10px;color:#666;">Tip: Assign a Logistics drone in the Drone Bay panel to feed this furnace.</div>
+        </div>
+      </div>
+
+      <div style="position:absolute;bottom:0;left:0;right:0;height:22px;background:#050e1e;border-top:1px solid #1a3060;display:flex;align-items:center;padding:0 10px;font-size:10px;color:#666;">Furnace: smelts ore into bars · recipe switch available · Logistics drone automates this</div>
+    </div>
+  </div>
+
+  <!-- FABRICATOR PANEL -->
+  <div style="flex:1;">
+    <div class="section-label">FABRICATOR — [E] to open · Consumes bars from carry or nearby Storage</div>
+    <div class="screen" style="width:100%;height:400px;">
+      <div class="world-bg"></div>
+
+      <!-- Fabricator building in world context -->
+      <div class="building-icon" style="left:20px;top:140px;width:56px;height:88px;background:#0a2a1a;border:1px solid #20a060;color:#44ff88;flex-direction:column;gap:1px;">
+        <div>✦✦</div><div>✦✦</div><div>✦✦</div>
+        <div style="font-size:7px;color:#20a060;margin-top:2px;">FABRICATOR</div>
+      </div>
+      <div style="position:absolute;left:82px;top:182px;width:12px;height:16px;background:#D4A843;clip-path:polygon(50% 0%,80% 30%,100% 60%,80% 100%,20% 100%,0% 60%,20% 30%);"></div>
+      <div class="label-tag" style="left:14px;top:118px;">[E] Fabricator</div>
+
+      <!-- Panel -->
+      <div class="panel" style="position:absolute;left:110px;top:20px;right:10px;bottom:10px;">
+        <div class="panel-title">
+          ✦ FABRICATOR
+          <span style="font-size:10px;color:#888;">Craft buildings from bars</span>
+        </div>
+        <div class="panel-body">
+
+          <div style="display:flex;gap:16px;font-size:11px;margin-bottom:10px;padding:6px 8px;background:#0a1628;border:1px solid #1a3060;">
+            <span style="color:#888;">STORAGE (nearby):</span>
+            <span>Iron Bars <strong style="color:#D4A843;">×12 ✓</strong></span>
+            <span>Copper Bars <strong style="color:#888;">×0</strong></span>
+            <span style="margin-left:auto;color:#4ade80;font-size:10px;">Draws from Storage — no carry</span>
+          </div>
+
+          <!-- Recipe: Road x4 — affordable -->
+          <div class="crafting-row affordable">
+            <div>
+              <div class="recipe-name">Road ×4 tiles</div>
+              <div class="recipe-desc">Lays 4 road tiles. Drones require roads to move.</div>
+              <div class="recipe-cost">Cost: <span class="cost-met">Iron Bar ×2 ✓</span></div>
+            </div>
+            <button class="craft-btn-active craft-btn">CRAFT</button>
+          </div>
+
+          <!-- Recipe: Drone Bay — need 3 more bars -->
+          <div class="crafting-row" style="border-color:#3a5a8a;">
+            <div>
+              <div class="recipe-name" style="color:#888;">Drone Bay</div>
+              <div class="recipe-desc">2×2 building · 4 drones · must touch road</div>
+              <div class="recipe-cost">Cost: <span class="cost-unmet">Iron Bar ×6 (have 3, need 3 more)</span></div>
+            </div>
+            <button class="craft-btn-inactive craft-btn">CRAFT</button>
+          </div>
+
+          <!-- Recipe: Marketplace — locked -->
+          <div class="crafting-row locked">
+            <div>
+              <div class="recipe-name">Marketplace</div>
+              <div class="recipe-desc">Sell surplus bars for Credits</div>
+              <div class="recipe-cost">Cost: <span class="cost-unmet">Iron ×4 + Copper ×2 (have 0 copper)</span></div>
+            </div>
+            <button class="craft-btn-inactive craft-btn">CRAFT</button>
+          </div>
+
+          <!-- Recipe: Electrolysis Unit — locked -->
+          <div class="crafting-row locked">
+            <div>
+              <div class="recipe-name">Electrolysis Unit</div>
+              <div class="recipe-desc">Water → Hydrolox fuel (Phase 2 off-ramp)</div>
+              <div class="recipe-cost">Cost: <span class="cost-unmet">Iron ×6 + Copper ×4</span></div>
+            </div>
+            <button class="craft-btn-inactive craft-btn">CRAFT</button>
+          </div>
+
+          <div class="divider"></div>
+          <div style="font-size:10px;color:#666;">Crafted items go to player carry instantly. Buildings must be placed via [B].</div>
+        </div>
+      </div>
+
+      <div style="position:absolute;bottom:0;left:0;right:0;height:22px;background:#050e1e;border-top:1px solid #1a3060;display:flex;align-items:center;padding:0 10px;font-size:10px;color:#666;">Fabricator: bars → buildings/items · checks carry first, then nearby Storage · placed via [B]</div>
+    </div>
+  </div>
+
+</div>
+
+<!-- STALL STATES ROW -->
+<div style="width:960px;">
+  <div class="section-label" style="margin-bottom:8px;">FURNACE STALL STATES — what the player sees when something goes wrong</div>
+  <div style="display:flex;gap:12px;">
+
+    <div style="flex:1;border:1px solid #422006;background:#07122a;padding:10px;">
+      <div style="color:#fb923c;font-size:11px;font-weight:bold;margin-bottom:6px;">⚠ STALLED — Output Full</div>
+      <div style="font-size:10px;color:#888;line-height:1.5;">Output buffer at 20/20 bars. Smelting paused.<br>
+      Fix: [COLLECT BARS] manually, or assign Logistics drone to haul output to Storage.</div>
+      <div style="margin-top:6px;">
+        <div class="bar-row">
+          <span class="lbl" style="width:80px;font-size:10px;">Output</span>
+          <div class="bar-track"><div class="bar-fill" style="width:100%;background:#fb923c;"></div></div>
+          <span class="num" style="font-size:10px;">20/20 FULL</span>
+        </div>
+      </div>
+    </div>
+
+    <div style="flex:1;border:1px solid #1e3a5f;background:#07122a;padding:10px;">
+      <div style="color:#94a3b8;font-size:11px;font-weight:bold;margin-bottom:6px;">● IDLE — No Input</div>
+      <div style="font-size:10px;color:#888;line-height:1.5;">Input buffer empty. No ore to smelt.<br>
+      Fix: Hand-carry ore to Furnace, or assign Logistics drone to haul from Storage.</div>
+      <div style="margin-top:6px;">
+        <div class="bar-row">
+          <span class="lbl" style="width:80px;font-size:10px;">Input</span>
+          <div class="bar-track"><div class="bar-fill" style="width:0%;background:#cd6020;"></div></div>
+          <span class="num" style="font-size:10px;">0/20 EMPTY</span>
+        </div>
+      </div>
+    </div>
+
+    <div style="flex:1;border:1px solid #14532d;background:#07122a;padding:10px;">
+      <div style="color:#4ade80;font-size:11px;font-weight:bold;margin-bottom:6px;">▶ RUNNING — Optimal</div>
+      <div style="font-size:10px;color:#888;line-height:1.5;">Input flowing, output being collected, smelting continuously.<br>
+      Logistics drones handling both sides.</div>
+      <div style="margin-top:6px;">
+        <div class="bar-row">
+          <span class="lbl" style="width:80px;font-size:10px;">Input</span>
+          <div class="bar-track"><div class="bar-fill" style="width:65%;background:#cd6020;"></div></div>
+          <span class="num" style="font-size:10px;">13/20</span>
+        </div>
+        <div class="bar-row">
+          <span class="lbl" style="width:80px;font-size:10px;">Output</span>
+          <div class="bar-track"><div class="bar-fill" style="width:20%;background:#D4A843;"></div></div>
+          <span class="num" style="font-size:10px;">4/20</span>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+</body>
+</html>

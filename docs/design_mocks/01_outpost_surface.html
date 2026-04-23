@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Mock 01 — Outpost Surface</title>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { background: #060e1e; color: #E8E4D0; font-family: 'Courier New', monospace; display: flex; flex-direction: column; align-items: center; padding: 20px; }
+h2 { color: #D4A843; font-size: 14px; letter-spacing: 3px; text-transform: uppercase; margin-bottom: 4px; }
+.ref { color: #00B8D4; font-size: 11px; margin-bottom: 16px; }
+.screen { width: 960px; height: 540px; background: #0D1B3E; border: 2px solid #D4A843; position: relative; overflow: hidden; image-rendering: pixelated; }
+
+/* TOP BAR */
+.top-bar { position: absolute; top: 0; left: 0; right: 0; height: 28px; background: #07122a; border-bottom: 1px solid #1a3060; display: flex; align-items: center; padding: 0 12px; gap: 24px; font-size: 11px; }
+.top-bar .label { color: #888; }
+.top-bar .val { color: #D4A843; font-weight: bold; }
+.top-bar .val.pos { color: #4ade80; }
+.top-bar .val.neg { color: #f87171; }
+.top-bar .right { margin-left: auto; color: #00B8D4; font-size: 10px; }
+
+/* WORLD */
+.world { position: absolute; top: 28px; left: 0; right: 0; bottom: 56px; background: #0a1628; overflow: hidden; }
+
+/* TILE GRID */
+.tile-grid { position: absolute; top: 0; left: 0; width: 100%; height: 100%; }
+
+/* Asteroid surface tiles */
+.surface { position: absolute; width: 100%; height: 100%; }
+
+/* Perimeter fence */
+.perimeter { position: absolute; border: 2px solid #3a5a9a; background: rgba(13,27,62,0.6); }
+
+/* Buildings */
+.building { position: absolute; display: flex; align-items: center; justify-content: center; font-size: 9px; font-weight: bold; image-rendering: pixelated; }
+.storage { background: #1a3a6a; border: 1px solid #4a7abf; color: #7ab4ff; }
+.furnace { background: #2a1a0a; border: 1px solid #c06020; color: #ff8844; }
+.fabricator { background: #0a2a1a; border: 1px solid #20a060; color: #44ff88; }
+.drone-bay { background: #1a0a2a; border: 1px solid #8040c0; color: #cc88ff; }
+.marketplace { background: #1a2a0a; border: 1px solid #80a020; color: #ccff44; }
+
+/* Roads */
+.road-h { position: absolute; background: #2a4a2a; border-top: 1px solid #3a6a3a; border-bottom: 1px solid #3a6a3a; height: 6px; }
+.road-v { position: absolute; background: #2a4a2a; border-left: 1px solid #3a6a3a; border-right: 1px solid #3a6a3a; width: 6px; }
+
+/* Deposits */
+.deposit { position: absolute; display: flex; align-items: center; justify-content: center; border-radius: 50%; font-size: 10px; font-weight: bold; animation: pulse 2s ease-in-out infinite; }
+.deposit-iron { background: radial-gradient(circle, #8b4513, #4a2008); border: 2px solid #cd6020; color: #ffaa44; width: 32px; height: 32px; }
+.deposit-copper { background: radial-gradient(circle, #8b6513, #4a3008); border: 2px solid #cdaa20; color: #ffdd44; width: 32px; height: 32px; }
+.deposit-water { background: radial-gradient(circle, #134a8b, #082048); border: 2px solid #2080cd; color: #44aaff; width: 32px; height: 32px; }
+@keyframes pulse { 0%,100%{box-shadow:0 0 6px currentColor} 50%{box-shadow:0 0 14px currentColor} }
+
+/* Player */
+.player { position: absolute; width: 16px; height: 20px; background: #D4A843; clip-path: polygon(50% 0%, 80% 30%, 100% 60%, 80% 100%, 20% 100%, 0% 60%, 20% 30%); animation: breathe 1.4s ease-in-out infinite; }
+@keyframes breathe { 0%,100%{transform:scaleY(1)} 50%{transform:scaleY(0.95)} }
+
+/* Drone */
+.drone { position: absolute; width: 10px; height: 10px; background: #8040c0; border: 1px solid #cc88ff; border-radius: 2px; }
+.drone-trail { position: absolute; width: 3px; height: 3px; background: rgba(128,64,192,0.4); border-radius: 50%; }
+
+/* Deposit label */
+.dep-label { position: absolute; font-size: 9px; color: #aaa; text-align: center; }
+
+/* STATUS BAR */
+.status-bar { position: absolute; bottom: 28px; left: 0; right: 0; height: 28px; background: #07122a; border-top: 1px solid #1a3060; border-bottom: 1px solid #1a3060; display: flex; align-items: center; padding: 0 12px; gap: 20px; font-size: 11px; }
+.stat-item { display: flex; align-items: center; gap: 6px; }
+.stat-label { color: #888; }
+.stat-val { color: #E8E4D0; }
+.bar-wrap { display: flex; align-items: center; gap: 4px; }
+.bar { height: 8px; background: #1a3060; width: 60px; border: 1px solid #2a4080; }
+.bar-fill { height: 100%; }
+
+/* KEY HINTS */
+.key-hints { position: absolute; bottom: 0; left: 0; right: 0; height: 28px; background: #050e1e; border-top: 1px solid #1a3060; display: flex; align-items: center; padding: 0 12px; gap: 16px; font-size: 10px; }
+.key { background: #1a2a4a; border: 1px solid #3a5a8a; padding: 1px 5px; color: #D4A843; border-radius: 2px; }
+.key-desc { color: #666; margin-right: 8px; }
+
+/* Terrain */
+.terrain-dot { position: absolute; width: 2px; height: 2px; background: #1a3060; border-radius: 50%; }
+.terrain-rock { position: absolute; background: #0f2040; border: 1px solid #1a3060; }
+
+/* Overlay label */
+.overlay-label { position: absolute; background: rgba(5,14,30,0.9); border: 1px solid #00B8D4; padding: 2px 6px; font-size: 10px; color: #00B8D4; pointer-events: none; }
+
+/* Day indicator */
+.day-counter { margin-left: auto; color: #666; font-size: 10px; }
+</style>
+</head>
+<body>
+
+<h2>Mock 01 — Outpost Surface (Base HUD)</h2>
+<div class="ref">TDD §3.2 · SSD §4.1 — 40×30 asteroid, 20×15 perimeter, pre-placed buildings, deposits outside</div>
+
+<div class="screen">
+
+  <!-- TOP RESOURCE BAR -->
+  <div class="top-bar">
+    <span class="label">CREDITS</span><span class="val pos">480</span>
+    <span class="label">IRON BARS</span><span class="val">6</span>
+    <span class="label">COPPER BARS</span><span class="val">2</span>
+    <span class="label">IRON ORE</span><span class="val">14</span>
+    <span class="label">COPPER ORE</span><span class="val">0</span>
+    <div class="day-counter">DAY 3</div>
+  </div>
+
+  <!-- WORLD -->
+  <div class="world">
+
+    <!-- Scattered terrain dots for asteroid surface feel -->
+    <div class="terrain-rock" style="left:20px;top:30px;width:8px;height:5px;opacity:.5"></div>
+    <div class="terrain-rock" style="left:820px;top:60px;width:12px;height:6px;opacity:.4"></div>
+    <div class="terrain-rock" style="left:60px;top:340px;width:6px;height:4px;opacity:.5"></div>
+    <div class="terrain-rock" style="left:880px;top:300px;width:10px;height:5px;opacity:.4"></div>
+    <div class="terrain-rock" style="left:700px;top:380px;width:8px;height:5px;opacity:.4"></div>
+    <div class="terrain-rock" style="left:100px;top:200px;width:5px;height:3px;opacity:.3"></div>
+    <div class="terrain-rock" style="left:450px;top:20px;width:9px;height:5px;opacity:.4"></div>
+    <div class="terrain-rock" style="left:800px;top:350px;width:11px;height:6px;opacity:.3"></div>
+    <div class="terrain-rock" style="left:150px;top:390px;width:7px;height:4px;opacity:.5"></div>
+    <div class="terrain-rock" style="left:600px;top:40px;width:8px;height:5px;opacity:.3"></div>
+
+    <!-- PERIMETER FENCE (20×15 interior — displayed as a rect) -->
+    <div class="perimeter" style="left:220px; top:100px; width:480px; height:260px;"></div>
+
+    <!-- ROADS — to iron deposit (upper left) -->
+    <div class="road-v" style="left:232px; top:44px; height:56px;"></div>
+    <!-- roads to copper deposit (right) -->
+    <div class="road-h" style="left:700px; top:196px; width:170px;"></div>
+    <!-- roads to water deposit (bottom) -->
+    <div class="road-v" style="left:440px; top:360px; height:88px;"></div>
+    <!-- interior roads connecting buildings -->
+    <div class="road-h" style="left:280px; top:196px; width:200px;"></div>
+    <div class="road-v" style="left:360px; top:160px; height:120px;"></div>
+
+    <!-- IRON DEPOSIT (outside perimeter, upper left) -->
+    <div class="deposit deposit-iron" style="left:218px; top:14px;">Fe</div>
+    <div class="dep-label" style="left:210px; top:50px;">IRON ORE</div>
+
+    <!-- COPPER DEPOSIT (outside perimeter, right) -->
+    <div class="deposit deposit-copper" style="left:880px; top:176px;">Cu</div>
+    <div class="dep-label" style="left:873px; top:212px;">COPPER</div>
+
+    <!-- WATER DEPOSIT (outside perimeter, bottom) -->
+    <div class="deposit deposit-water" style="left:424px; top:434px;">H₂O</div>
+    <div class="dep-label" style="left:418px; top:468px;">WATER</div>
+
+    <!-- STORAGE DEPOT (2×2 = ~64×64 at 32px/tile) inside perimeter -->
+    <div class="building storage" style="left:268px; top:140px; width:64px; height:64px; font-size:8px; flex-direction:column; gap:2px;">
+      <div>■■</div><div>■■</div>
+      <div style="font-size:7px;color:#4a7abf;margin-top:2px;">STORAGE</div>
+    </div>
+
+    <!-- FURNACE (2×2) -->
+    <div class="building furnace" style="left:364px; top:140px; width:64px; height:64px; font-size:8px; flex-direction:column; gap:2px;">
+      <div>▣▣</div><div>▣▣</div>
+      <div style="font-size:7px;color:#c06020;margin-top:2px;">FURNACE</div>
+    </div>
+
+    <!-- FABRICATOR (2×3) -->
+    <div class="building fabricator" style="left:268px; top:214px; width:64px; height:96px; font-size:8px; flex-direction:column; gap:2px;">
+      <div>✦✦</div><div>✦✦</div><div>✦✦</div>
+      <div style="font-size:7px;color:#20a060;margin-top:2px;">FABRICATOR</div>
+    </div>
+
+    <!-- DRONE BAY (placed by player) -->
+    <div class="building drone-bay" style="left:460px; top:140px; width:64px; height:64px; font-size:8px; flex-direction:column; gap:2px;">
+      <div>⬡⬡</div><div>⬡⬡</div>
+      <div style="font-size:7px;color:#8040c0;margin-top:2px;">DRONE BAY</div>
+    </div>
+
+    <!-- PLAYER -->
+    <div class="player" style="left:404px; top:192px;"></div>
+
+    <!-- DRONE (miner — heading toward iron deposit) -->
+    <div class="drone" style="left:234px; top:80px;"></div>
+    <div class="drone-trail" style="left:240px; top:90px;"></div>
+    <div class="drone-trail" style="left:236px; top:100px; opacity:.5;"></div>
+    <div class="drone-trail" style="left:233px; top:112px; opacity:.25;"></div>
+
+    <!-- DRONE (logistics — inside perimeter) -->
+    <div class="drone" style="left:320px; top:190px; background:#204080;border-color:#4488cc;"></div>
+
+    <!-- INTERACT PROMPT (floating near player) -->
+    <div class="overlay-label" style="left:420px; top:172px;">[E] Interact</div>
+
+    <!-- PRODUCTION OVERLAY BADGE on furnace (green = running) -->
+    <div style="position:absolute;left:364px;top:140px;width:8px;height:8px;background:#4ade80;border-radius:50%;border:1px solid #22c55e;"></div>
+    <!-- Storage badge -->
+    <div style="position:absolute;left:268px;top:140px;width:8px;height:8px;background:#4ade80;border-radius:50%;border:1px solid #22c55e;"></div>
+    <!-- Drone bay badge -->
+    <div style="position:absolute;left:460px;top:140px;width:8px;height:8px;background:#4ade80;border-radius:50%;border:1px solid #22c55e;"></div>
+    <!-- Fabricator badge (yellow = stalled) -->
+    <div style="position:absolute;left:268px;top:214px;width:8px;height:8px;background:#fbbf24;border-radius:50%;border:1px solid #f59e0b;"></div>
+
+  </div>
+
+  <!-- STATUS BAR — no player carry; shows base activity status -->
+  <div class="status-bar">
+    <div class="stat-item" style="color:#4ade80;font-size:10px;">
+      ▶ Furnace: 0.25 bars/min
+    </div>
+    <div class="stat-item" style="color:#fbbf24;font-size:10px;">
+      ⚠ Fabricator: stalled (output full)
+    </div>
+    <div class="stat-item" style="color:#cc88ff;font-size:10px;">
+      ⬡ D-01 MINING · D-02 HAULING
+    </div>
+    <div class="stat-item" style="margin-left:auto;color:#666;font-size:10px;">
+      No player carry — ore mines direct to Storage
+    </div>
+  </div>
+
+  <!-- KEY HINTS -->
+  <div class="key-hints">
+    <span class="key">WASD</span><span class="key-desc">Move</span>
+    <span class="key">E</span><span class="key-desc">Interact</span>
+    <span class="key">B</span><span class="key-desc">Build</span>
+    <span class="key">R</span><span class="key-desc">Roads</span>
+    <span class="key">O</span><span class="key-desc">Overlay</span>
+    <span class="key">ESC</span><span class="key-desc">Menu</span>
+    <div style="margin-left:auto;color:#1a3060;font-size:10px;">TDD §3.2 · SSD §4.1</div>
+  </div>
+
+</div>
+
+<div style="margin-top:12px;font-size:11px;color:#444;max-width:960px;">
+  <strong style="color:#666;">Layout notes:</strong> Perimeter fence (blue border) encloses 20×15 interior. Deposits (glowing circles) sit outside fence. Roads (green lines) extend from perimeter to each deposit and connect interior buildings. Player (amber triangle) stands near Furnace. Two drones visible: miner heading to iron deposit (trail visible), logistics drone inside perimeter. Status badges (green/yellow dots) are Production Overlay indicators.
+</div>
+
+</body>
+</html>
