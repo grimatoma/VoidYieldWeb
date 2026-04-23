@@ -15,6 +15,24 @@ const STATUS_COLORS = {
   FUEL_EMPTY: 0xF44336,
 } as const;
 
+/** Status type for outpost buildings (simpler 3-state model). */
+export type OutpostBuildingStatusType = 'RUNNING' | 'STALLED' | 'IDLE';
+
+/** Describes the status of a single outpost building for the overlay. */
+export interface OutpostBuildingStatus {
+  x: number;
+  y: number;
+  label: string;
+  status: OutpostBuildingStatusType;
+}
+
+/** Color mapping for the 3-state outpost status. */
+const OUTPOST_STATUS_COLORS: Record<OutpostBuildingStatusType, number> = {
+  RUNNING: 0x4CAF50,  // green
+  STALLED: 0xFFC107,  // yellow/amber
+  IDLE:    0x555555,  // grey
+};
+
 export class ProductionOverlay {
   readonly container: Container;
   private _dimRect: Graphics;
@@ -51,6 +69,22 @@ export class ProductionOverlay {
       const color = STATUS_COLORS[fab.state] ?? STATUS_COLORS.IDLE;
       this._dots.circle(fab.x, fab.y - 28, 5).fill(color);
       this._dots.circle(fab.x, fab.y - 28, 5).stroke({ width: 1, color: 0xFFFFFF, alpha: 0.4 });
+    }
+  }
+
+  /**
+   * Render status dots for outpost buildings (Furnace, StorageDepot, DroneDepot,
+   * Marketplace). Clears the dots layer and redraws from the provided list.
+   */
+  renderOutpost(buildings: readonly OutpostBuildingStatus[]): void {
+    this._dots.clear();
+
+    for (const bld of buildings) {
+      const color = OUTPOST_STATUS_COLORS[bld.status];
+      // Filled circle above the building
+      this._dots.circle(bld.x, bld.y - 28, 5).fill(color);
+      // White stroke ring at 40% alpha
+      this._dots.circle(bld.x, bld.y - 28, 5).stroke({ width: 1, color: 0xFFFFFF, alpha: 0.4 });
     }
   }
 

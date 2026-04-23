@@ -26,6 +26,8 @@ import { BuildMenuOverlay } from '@ui/BuildMenuOverlay';
 import { DroneDepotOverlay } from '@ui/DroneDepotOverlay';
 import { BuildPromptOverlay } from '@ui/BuildPromptOverlay';
 import { MarketplaceOverlay } from '@ui/MarketplaceOverlay';
+import { ProductionOverlay } from '@ui/ProductionOverlay';
+import type { OutpostBuildingStatus } from '@ui/ProductionOverlay';
 import { powerManager } from '@services/PowerManager';
 import { handleWorldTap } from '@services/TapToMove';
 import { roadNetwork } from '@services/RoadNetwork';
@@ -63,6 +65,8 @@ export class AsteroidOutpostScene implements Scene {
   private _buildPromptOverlay: BuildPromptOverlay | null = null;
   private _droneDepotOverlay: DroneDepotOverlay | null = null;
   private _marketplaceOverlay: MarketplaceOverlay | null = null;
+  private _productionOverlay: ProductionOverlay | null = null;
+  private _productionOverlayActive = false;
   private _app: Application | null = null;
   private _camera: Camera | null = null;
 
@@ -83,6 +87,9 @@ export class AsteroidOutpostScene implements Scene {
   private _roadPreview = new Set<string>(); // pending cells (key = "row,col")
   private _roadModeBanner: HTMLDivElement | null = null;
   private _roadBudgetPanel: HTMLDivElement | null = null;
+
+  // Production overlay legend banner (DOM element shown while overlay is active)
+  private _productionLegend: HTMLDivElement | null = null;
 
   async enter(app: Application): Promise<void> {
     this._app = app;
@@ -118,6 +125,10 @@ export class AsteroidOutpostScene implements Scene {
     // Building layer — added before the player so buildings always render behind them
     this._buildingLayer = new Container();
     this._stage.addChild(this._buildingLayer);
+
+    // Production overlay — sits above buildings; starts hidden
+    this._productionOverlay = new ProductionOverlay(OUTPOST_WORLD_WIDTH, OUTPOST_WORLD_HEIGHT);
+    this._stage.addChild(this._productionOverlay.container);
 
     // Register outpost RTG so the furnace has power from the start.
     powerManager.registerGenerator(OUTPOST_REACTOR_POWER);
@@ -538,6 +549,22 @@ export class AsteroidOutpostScene implements Scene {
       }
     }
 
+    // Production overlay toggle [O]
+    if (inputManager.wasJustPressed('production_overlay')) {
+      this._productionOverlayActive = !this._productionOverlayActive;
+      this._productionOverlay?.setVisible(this._productionOverlayActive);
+      if (this._productionOverlayActive) {
+        this._showProductionLegend();
+      } else {
+        this._hideProductionLegend();
+      }
+    }
+
+    // Update production overlay each frame when active
+    if (this._productionOverlayActive && this._productionOverlay) {
+      this._productionOverlay.renderOutpost(this._gatherBuildingStatuses());
+    }
+
     // Mining + interactions
     miningService.update(delta, { x: this._player.x, y: this._player.y });
 
@@ -846,6 +873,110 @@ export class AsteroidOutpostScene implements Scene {
     return dx * dx + dy * dy <= radius * radius;
   }
 
+  // -------------------------------------------------------------------------
+  // Production overlay helpers
+  // -------------------------------------------------------------------------
+
+  private _gatherBuildingStatuses(): OutpostBuildingStatus[] {
+    const statuses: OutpostBuildingStatus[] = [];
+
+    // Storage Depot — always operational
+    if (this._storage) {
+      statuses.push({
+        x: this._storage.x,
+        y: this._storage.y,
+        label: 'Storage',
+        status: 'RUNNING',
+      });
+    }
+
+    // Furnace
+    if (this._furnace) {
+      let furnaceStatus: OutpostBuildingStatus['status'];
+      const recipe = this._furnace.recipe;
+      if (recipe === 'off') {
+        furnaceStatus = 'IDLE';
+      } else {
+        const plantState = this._furnace.plant.state;
+        if (plantState === 'RUNNING') {
+          furnaceStatus = 'RUNNING';
+        } else {
+          // STALLED (no input ore or output full) or NO_POWER
+          furnaceStatus = 'STALLED';
+        }
+      }
+      statuses.push({
+        x: this._furnace.x,
+        y: this._furnace.y,
+        label: 'Furnace',
+        status: furnaceStatus,
+      });
+    }
+
+    // Drone Depot — RUNNING if any drone is active, IDLE otherwise
+    if (this._droneDepot) {
+      const hasActiveDrone = this._droneDepot.getAllDrones().length > 0;
+      statuses.push({
+        x: this._droneDepot.x,
+        y: this._droneDepot.y,
+        label: 'Drone Depot',
+        status: hasActiveDrone ? 'RUNNING' : 'IDLE',
+      });
+    }
+
+    // Marketplace — always RUNNING when placed
+    if (this._marketplace) {
+      statuses.push({
+        x: this._marketplace.x,
+        y: this._marketplace.y,
+        label: 'Marketplace',
+        status: 'RUNNING',
+      });
+    }
+
+    return statuses;
+  }
+
+  private _showProductionLegend(): void {
+    if (this._productionLegend) return;
+    const uiLayer = document.getElementById('ui-layer') ?? document.body;
+    const banner = document.createElement('div');
+    banner.id = 'production-overlay-legend';
+    banner.style.cssText = [
+      'position:absolute',
+      'top:0',
+      'left:0',
+      'right:0',
+      'height:22px',
+      'display:flex',
+      'align-items:center',
+      'padding:0 10px',
+      'gap:12px',
+      'font-size:10px',
+      'font-family:monospace',
+      'background:rgba(5,14,30,0.90)',
+      'border-bottom:1px solid #1a3060',
+      'color:#D4A843',
+      'z-index:100',
+      'pointer-events:none',
+    ].join(';');
+    banner.innerHTML = [
+      '<span style="font-weight:bold;">[O] OVERLAY</span>',
+      '<span style="display:flex;align-items:center;gap:4px;"><span style="width:8px;height:8px;border-radius:50%;background:#4CAF50;display:inline-block;border:1px solid rgba(0,0,0,0.3);"></span><span style="color:#4CAF50;">RUNNING</span></span>',
+      '<span style="display:flex;align-items:center;gap:4px;"><span style="width:8px;height:8px;border-radius:50%;background:#FFC107;display:inline-block;border:1px solid rgba(0,0,0,0.3);"></span><span style="color:#FFC107;">STALLED</span></span>',
+      '<span style="display:flex;align-items:center;gap:4px;"><span style="width:8px;height:8px;border-radius:50%;background:#555555;display:inline-block;border:1px solid rgba(0,0,0,0.3);"></span><span style="color:#666666;">IDLE</span></span>',
+      '<span style="color:#666;margin-left:auto;">Hover building for details</span>',
+      '<span style="background:#1a2a4a;border:1px solid #3a5a8a;padding:1px 5px;color:#D4A843;border-radius:2px;">O</span><span style="color:#666;">toggle off</span>',
+    ].join('');
+    uiLayer.appendChild(banner);
+    this._productionLegend = banner;
+  }
+
+  private _hideProductionLegend(): void {
+    this._productionLegend?.remove();
+    this._productionLegend = null;
+  }
+
   private serializeOutpost(): NonNullable<SaveData['outpost']> {
     return {
       grid: buildGrid.serialize(),
@@ -897,6 +1028,11 @@ export class AsteroidOutpostScene implements Scene {
   }
 
   exit(): void {
+    // Hide production overlay and remove legend banner
+    this._hideProductionLegend();
+    this._productionOverlay = null;
+    this._productionOverlayActive = false;
+
     // Exit road mode and clean up DOM elements
     if (this._roadMode) {
       this._exitRoadMode();
