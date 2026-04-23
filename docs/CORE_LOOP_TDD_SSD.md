@@ -1,7 +1,7 @@
 # VoidYield — Core Loop Technical Design Document & System Sequence Diagrams
 
 **Classification:** TDD + SSD  
-**Version:** 1.1  
+**Version:** 1.2  
 **Date:** 2026-04-23  
 **Based on:** `docs/CORE_LOOP_DESIGN_REVIEW.md` (decisions locked)  
 **Status:** Design spec — see §7 of design review for implementation status  
@@ -485,8 +485,6 @@ REMOVING ROADS:
 ║  ║    Iron Bars:   ██░░░░░░░░░   6 / 40                  ║   ║
 ║  ║    Copper Ore:  ░░░░░░░░░░░   0 / 40                  ║   ║
 ║  ║    Copper Bars: ░░░░░░░░░░░   0 / 40                  ║   ║
-║  ║                                                        ║   ║
-║  ║  CAPACITY: ████████░░░░  20 / 160 slots used           ║   ║
 ║  ║                                                        ║   ║
 ║  ║  [DEPOSIT CARRY]  → Move all carry items into Depot    ║   ║
 ║  ║  [TAKE ITEMS]     → Move items from Depot to carry     ║   ║
@@ -1033,21 +1031,9 @@ If player attempts to place in occupied tile:
 → No hard cap panel shown; tile grid is the visual constraint
 ```
 
-### 7.4 Storage Full — Mining Blocked
-```
-All Storage Depots at 100% capacity
-→ Player presses [E] at deposit → swing animation plays once, then stops
-→ "STORAGE FULL" floats above player
-→ Top resource bar shows all ore counts at their maximums highlighted red
-→ Root cause options:
-   (a) Furnace idle / not smelting — ore not being consumed
-       Fix: ensure a Logistics drone is assigned to feed the Furnace
-   (b) No Logistics drones assigned at all
-       Fix: open Drone Bay panel [E] → assign at least 1 Logistics drone
-   (c) Storage capacity too small — need to craft Storage Expansion
-       Fix: craft Storage Expansion from Fabricator (8 iron bars)
-→ This is a design nudge: "your base is not consuming fast enough"
-```
+### 7.4 ~~Storage Full — Mining Blocked~~ (removed)
+
+> **Note:** StorageDepot has no capacity limit. This edge case was removed from the implementation — mining and drone dispatch are never blocked by depot fullness. The §7.4 scenario no longer applies.
 
 ### 7.5 Drone Returning with No Bay
 ```
