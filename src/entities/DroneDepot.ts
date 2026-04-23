@@ -2,6 +2,7 @@ import { Container, Graphics, Text, TextStyle } from 'pixi.js';
 import { CELL_SIZE } from './PlacedBuilding';
 import { ScoutDrone } from './ScoutDrone';
 import { HeavyDrone } from './HeavyDrone';
+import { RefineryDrone } from './RefineryDrone';
 import type { DroneBase } from './DroneBase';
 import type { StorageDepot } from './StorageDepot';
 import type { Furnace } from './Furnace';
@@ -33,6 +34,7 @@ export class DroneDepot {
     { slotId: 'slot_0', drone: null, droneType: null, oreType: 'iron_ore' as OreType },
     { slotId: 'slot_1', drone: null, droneType: null, oreType: 'copper_ore' as OreType },
     { slotId: 'slot_2', drone: null, droneType: null, oreType: 'iron_ore' as OreType },
+    { slotId: 'slot_3', drone: null, droneType: null, oreType: 'iron_ore' as OreType },
   ];
 
   constructor(worldX: number, worldY: number) {
@@ -74,8 +76,10 @@ export class DroneDepot {
       throw new Error('DroneDepot: only one Drone Depot allowed per outpost.');
     }
     _depotBuilt = true;
-    furnace.manualOnly = false;
-    dispatcher.configure(storage, furnace, this._baySlots);
+    // Do NOT set furnace.manualOnly = false — the furnace always buffers output
+    // internally so that drones (and the player) can explicitly pick it up.
+    // The OutpostDispatcher handles output collection via furnace.plant.takeOutput().
+    dispatcher.configure(storage, furnace, { x: this.x, y: this.y }, this._baySlots);
     dispatcher.start();
   }
 
@@ -90,13 +94,14 @@ export class DroneDepot {
     const costs: Partial<Record<DroneType, number>> = {
       scout: ScoutDrone.COST,
       heavy: HeavyDrone.COST,
+      refinery: RefineryDrone.COST,
     };
     const cost = costs[type];
     if (cost === undefined || gameState.credits < cost) return null;
 
     gameState.addCredits(-cost);
     EventBus.emit('drone:purchased', type);
-    return this._spawnIntoSlot(slot, type as 'scout' | 'heavy', worldContainer);
+    return this._spawnIntoSlot(slot, type, worldContainer);
   }
 
   /**
@@ -160,12 +165,15 @@ export class DroneDepot {
 
   private _spawnIntoSlot(
     slot: DroneBaySlot,
-    type: 'scout' | 'heavy',
+    type: DroneType,
     worldContainer: Container,
   ): DroneBase {
-    const drone = type === 'scout'
-      ? new ScoutDrone(this.x, this.y)
-      : new HeavyDrone(this.x, this.y);
+    let drone: DroneBase;
+    if (type === 'scout') drone = new ScoutDrone(this.x, this.y);
+    else if (type === 'heavy') drone = new HeavyDrone(this.x, this.y);
+    else if (type === 'refinery') drone = new RefineryDrone(this.x, this.y);
+    else throw new Error(`DroneDepot: unsupported drone type ${type}`);
+
     worldContainer.addChild(drone.container);
     fleetManager.add(drone);
     slot.drone = drone;
