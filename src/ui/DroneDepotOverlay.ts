@@ -80,8 +80,25 @@ export class DroneDepotOverlay {
   private _startPoll(): void {
     this._stopPoll();
     this._pollHandle = setInterval(() => {
-      if (this._open) this._render();
+      if (this._open) this._updatePoll();
     }, 250);
+  }
+
+  private _updatePoll(): void {
+    if (!this._root) return;
+    const creditsEl = this._root.querySelector('#ddo-credits');
+    if (creditsEl) creditsEl.textContent = `${gameState.credits.toLocaleString()} CR`;
+
+    const slots = this._depot.getBaySlots();
+    for (const slot of slots) {
+      if (slot.drone) {
+        const { dotColor, label } = this._droneStatus(slot.drone);
+        const dotEl = this._root.querySelector(`#ddo-dot-${slot.slotId}`) as HTMLElement;
+        const lblEl = this._root.querySelector(`#ddo-lbl-${slot.slotId}`) as HTMLElement;
+        if (dotEl) dotEl.style.color = dotColor;
+        if (lblEl) lblEl.textContent = label;
+      }
+    }
   }
 
   private _stopPoll(): void {
@@ -99,7 +116,7 @@ export class DroneDepotOverlay {
     let html = `
       <div style="display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid #2A3A5A;padding-bottom:10px;margin-bottom:4px;">
         <span style="font-size:15px;font-weight:bold;letter-spacing:1px;">DRONE DEPOT</span>
-        <span style="color:#00B8D4;font-size:12px;">${credits.toLocaleString()} CR</span>
+        <span id="ddo-credits" style="color:#00B8D4;font-size:12px;">${credits.toLocaleString()} CR</span>
       </div>
     `;
 
@@ -157,8 +174,8 @@ export class DroneDepotOverlay {
       <div style="${wrap}">
         <div style="display:flex;align-items:center;gap:8px;">
           <span style="font-size:11px;opacity:0.45;min-width:52px;letter-spacing:1px;">SLOT ${num}</span>
-          <span style="color:${dotColor};font-size:16px;line-height:1;">●</span>
-          <span style="flex:1;font-size:12px;font-weight:bold;">${label}</span>
+          <span id="ddo-dot-${slot.slotId}" style="color:${dotColor};font-size:16px;line-height:1;">●</span>
+          <span id="ddo-lbl-${slot.slotId}" style="flex:1;font-size:12px;font-weight:bold;">${label}</span>
           <select id="ddo-ore-${slot.slotId}" style="${selectStyle}">${oreOpts}</select>
           <button id="ddo-release-${slot.slotId}" style="${this._btnStyle('#FF5252')}">RELEASE</button>
         </div>

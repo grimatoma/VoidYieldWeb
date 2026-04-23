@@ -120,7 +120,28 @@ export class AsteroidOutpostScene implements Scene {
 
     // Tap-to-move: delegate to Camera.onTap so coords are already in world space
     this._camera.onTap((wx, wy) => {
-      if (this._player) handleWorldTap(this._player, wx, wy);
+      if (!this._player) return;
+
+      if (this._furnaceOverlay?.isOpen())     { this._furnaceOverlay.close();     }
+      if (this._marketplaceOverlay?.isOpen()) { this._marketplaceOverlay.close(); }
+      if (this._droneDepotOverlay?.isOpen())  { this._droneDepotOverlay.close();  }
+      if (this._buildMenuOverlay?.isOpen())   { this._buildMenuOverlay.close();   }
+
+      const col = Math.floor((wx - GRID_ORIGIN.x) / CELL_SIZE);
+      const row = Math.floor((wy - GRID_ORIGIN.y) / CELL_SIZE);
+      if (col >= 0 && col < BuildGrid.COLS && row >= 0 && row < BuildGrid.ROWS) {
+        const entry = buildGrid.getBuildingAt(row, col);
+        if (entry) {
+          const targetX = GRID_ORIGIN.x + col * CELL_SIZE + CELL_SIZE / 2;
+          const targetY = GRID_ORIGIN.y + row * CELL_SIZE + CELL_SIZE / 2;
+          this._player.setMoveTarget(targetX, targetY, () => {
+            this._handleInteract();
+          });
+          return;
+        }
+      }
+
+      handleWorldTap(this._player, wx, wy);
     });
 
     // Wire mining service
@@ -211,6 +232,11 @@ export class AsteroidOutpostScene implements Scene {
     this._furnace = new Furnace(furnacePos.x, furnacePos.y, this._storage);
     buildGrid.place({ buildingId: 'furnace_0', buildingType: 'furnace', row: 2, col: 1, footprint: { rows: 1, cols: 1 } });
     this._buildingLayer!.addChild(this._furnace.container);
+
+    // Drone Depot (2x2) at [0,3] (top right)
+    const depotFootprint = BUILD_FOOTPRINTS['drone_depot'];
+    buildGrid.place({ buildingId: 'drone_depot_0', buildingType: 'drone_depot', row: 0, col: 3, footprint: depotFootprint });
+    this._spawnBuilding('drone_depot', 'drone_depot_0', 0, 3, depotFootprint);
   }
 
   private _initDeposits(): void {

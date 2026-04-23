@@ -54,10 +54,7 @@ export class StoragePanel {
       <div class="sell-led-screen">
         <div class="sell-led-row">
           <span class="sell-led-label">POOL</span>
-          <span class="sell-led-value sell-led-pool">000 / 000</span>
-        </div>
-        <div class="sell-led-bar-bg">
-          <div class="sell-led-bar-fill"></div>
+          <span class="sell-led-value sell-led-pool">000</span>
         </div>
         <div class="sell-led-rate">
           <span class="sell-led-rate-text">RATE: --</span>
@@ -71,7 +68,7 @@ export class StoragePanel {
       <div class="sell-auto-toggle">
         <div class="sell-auto-toggle-main">
           <span class="sell-auto-toggle-name">AUTO-SELL</span>
-          <span class="sell-auto-toggle-desc">Sells at 80% capacity</span>
+          <span class="sell-auto-toggle-desc">Sells automatically</span>
         </div>
         <div class="sell-auto-toggle-lock">LOCKED \u00B7 500 CR</div>
       </div>
@@ -132,10 +129,7 @@ export class StoragePanel {
     // Amber LED readout — mock 14
     const padN = (n: number) => String(n).padStart(3, '0');
     this._root.querySelector<HTMLElement>('.sell-led-pool')!.textContent =
-      `${padN(totalPool)} / ${padN(POOL_CAP)}`;
-    const pct = Math.min(100, (totalPool / POOL_CAP) * 100);
-    this._root.querySelector<HTMLElement>('.sell-led-bar-fill')!
-      .style.width = `${pct.toFixed(1)}%`;
+      `${padN(totalPool)}`;
     this._root.querySelector<HTMLElement>('.sell-led-rate-text')!.textContent =
       topRate != null ? `RATE: ${topRate} CR / UNIT` : 'RATE: --';
     this._root.querySelector<HTMLElement>('.sell-led-total')!.textContent =

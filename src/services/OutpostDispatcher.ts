@@ -53,7 +53,7 @@ export class OutpostDispatcher {
   }
 
   private _tickMiners(): void {
-    if (!this._storage || this._storage.isFull()) return;
+    if (!this._storage) return;
     const storage = this._storage;
 
     for (const slot of this._slots) {

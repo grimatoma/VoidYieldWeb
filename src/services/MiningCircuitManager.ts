@@ -59,7 +59,7 @@ export class MiningCircuitManager {
   /** One dispatch scan: find idle miners and assign them a mining circuit. */
   private _tick(): void {
     if (!this._depot) return;
-    if (this._depot.isFull()) return; // GDD: drones stay IDLE when pool is full
+    // removed isFull check
 
     for (const drone of fleetManager.getDrones()) {
       if (!MINER_TYPES.has(drone.droneType)) continue;

@@ -58,9 +58,9 @@ const OUTPOST_GATE_HALF = 70; // gate gap = 140px on south wall
 
 // Grid coords for the 3x2 inner building slots.
 const SLOT = {
-  DRONE_BAY:      { x: OUTPOST_CX - 180, y: OUTPOST_CY - 130 },
+  DRONE_BAY:      { x: OUTPOST_CX + 180, y: OUTPOST_CY - 130 },
   RESEARCH_LAB:   { x: OUTPOST_CX,       y: OUTPOST_CY - 130 },
-  TRADE_HUB:      { x: OUTPOST_CX + 180, y: OUTPOST_CY - 130 },
+  TRADE_HUB:      { x: OUTPOST_CX - 180, y: OUTPOST_CY - 130 },
   STORAGE_DEPOT:  { x: OUTPOST_CX - 180, y: OUTPOST_CY + 90  },
   PROCESSING:     { x: OUTPOST_CX,       y: OUTPOST_CY + 90  },
   HABITATION:     { x: OUTPOST_CX + 180, y: OUTPOST_CY + 90  },
@@ -402,7 +402,24 @@ export class PlanetA1Scene implements Scene {
     // Touch: single-finger tap on the canvas walks the player to that spot,
     // pathfinding around walls. Tapping an ore deposit auto-starts mining
     // once the player arrives (see TapToMove).
-    this.camera.onTap((wx, wy) => handleWorldTap(this.player, wx, wy));
+    this.camera.onTap((wx, wy) => {
+      const ui = (window as unknown as { __voidyield_uiLayer?: UILayer }).__voidyield_uiLayer;
+      ui?.closeAllPanels();
+
+      const buildings = [
+        this.droneBay, this.tradeHub, this.launchpad, this.storageDepot,
+        this.habitationModule, this.processingPlant, this.platePressPlant,
+        this.researchLab, ...this.fabricators
+      ];
+      const tapped = buildings.find(b => b.isNearby(wx, wy, 80));
+      if (tapped) {
+        this.player.setMoveTarget(tapped.x, tapped.y, () => {
+          this._handleInteract();
+        });
+        return;
+      }
+      handleWorldTap(this.player, wx, wy);
+    });
 
     // Wire offline simulation events to the UILayer-owned panel
     EventBus.on('offline:simulation_needed', (seconds: number) => {
@@ -467,66 +484,7 @@ export class PlanetA1Scene implements Scene {
       }
       if (action === 'interact') {
         if (pressed) {
-          const ui2 = (window as unknown as { __voidyield_uiLayer?: UILayer }).__voidyield_uiLayer;
-          // If any panel is already open, close it (E to dismiss).
-          if (ui2?.shopPanel?.visible
-              || ui2?.storagePanel?.visible
-              || ui2?.droneBayPanel?.visible
-              || ui2?.habitationPanel?.visible
-              || ui2?.shipBayPanel?.visible
-              || ui2?.techTreePanel?.visible
-              || ui2?.fabricatorPanel?.visible) {
-            ui2.closeAllPanels();
-            return;
-          }
-          // Route E to the nearest building's panel. Checked in priority order
-          // so neighbours don't steal the interaction.
-          const px = this.player.x, py = this.player.y;
-          if (this.droneBay.isNearby(px, py, 80)) {
-            ui2?.droneBayPanel?.setBay(this.droneBay, this.worldContainer);
-            ui2?.droneBayPanel?.open();
-            return;
-          }
-          if (this.tradeHub.isNearby(px, py, 80)) {
-            ui2?.shopPanel?.setTradeHub(this.tradeHub);
-            ui2?.shopPanel?.setDepot(this.storageDepot);
-            ui2?.shopPanel?.open();
-            return;
-          }
-          if (this.launchpad.isNearby(px, py, 80)) {
-            ui2?.shipBayPanel?.setPad(this.launchpad);
-            ui2?.shipBayPanel?.setDepot(this.storageDepot);
-            ui2?.shipBayPanel?.open();
-            return;
-          }
-          if (this.storageDepot.isNearby(px, py, 80)) {
-            ui2?.storagePanel?.setDepot(this.storageDepot);
-            ui2?.storagePanel?.open();
-            return;
-          }
-          if (this.habitationModule.isNearby(px, py, 80)) {
-            ui2?.habitationPanel?.open();
-            return;
-          }
-          if (this.processingPlant.isNearby(px, py, 80) || this.platePressPlant.isNearby(px, py, 80)) {
-            this.productionDashboard.toggle();
-            return;
-          }
-          const nearestFab = this.fabricators.find((f) => f.isNearby(px, py, 80));
-          if (nearestFab) {
-            ui2?.fabricatorPanel?.setFabricator(nearestFab);
-            ui2?.fabricatorPanel?.open();
-            return;
-          }
-          if (this.researchLab.isNearby(px, py, 80)) {
-            const ui3 = (window as unknown as { __voidyield_uiLayer?: UILayer }).__voidyield_uiLayer;
-            ui3?.techTreePanel?.toggle();
-            return;
-          }
-          const harvesterResult = harvesterManager.onInteract(px, py);
-          if (harvesterResult === null) {
-            miningService.onInteract(px, py);
-          }
+          this._handleInteract();
         } else {
           miningService.onInteractReleased();
         }
@@ -571,6 +529,65 @@ export class PlanetA1Scene implements Scene {
         }
       }
     });
+  }
+
+  private _handleInteract(): void {
+    const ui2 = (window as unknown as { __voidyield_uiLayer?: UILayer }).__voidyield_uiLayer;
+    if (ui2?.shopPanel?.visible
+        || ui2?.storagePanel?.visible
+        || ui2?.droneBayPanel?.visible
+        || ui2?.habitationPanel?.visible
+        || ui2?.shipBayPanel?.visible
+        || ui2?.techTreePanel?.visible
+        || ui2?.fabricatorPanel?.visible) {
+      ui2.closeAllPanels();
+      return;
+    }
+    const px = this.player.x, py = this.player.y;
+    if (this.droneBay.isNearby(px, py, 80)) {
+      ui2?.droneBayPanel?.setBay(this.droneBay, this.worldContainer);
+      ui2?.droneBayPanel?.open();
+      return;
+    }
+    if (this.tradeHub.isNearby(px, py, 80)) {
+      ui2?.shopPanel?.setTradeHub(this.tradeHub);
+      ui2?.shopPanel?.setDepot(this.storageDepot);
+      ui2?.shopPanel?.open();
+      return;
+    }
+    if (this.launchpad.isNearby(px, py, 80)) {
+      ui2?.shipBayPanel?.setPad(this.launchpad);
+      ui2?.shipBayPanel?.setDepot(this.storageDepot);
+      ui2?.shipBayPanel?.open();
+      return;
+    }
+    if (this.storageDepot.isNearby(px, py, 80)) {
+      ui2?.storagePanel?.setDepot(this.storageDepot);
+      ui2?.storagePanel?.open();
+      return;
+    }
+    if (this.habitationModule.isNearby(px, py, 80)) {
+      ui2?.habitationPanel?.open();
+      return;
+    }
+    if (this.processingPlant.isNearby(px, py, 80) || this.platePressPlant.isNearby(px, py, 80)) {
+      this.productionDashboard.toggle();
+      return;
+    }
+    const nearestFab = this.fabricators.find((f) => f.isNearby(px, py, 80));
+    if (nearestFab) {
+      ui2?.fabricatorPanel?.setFabricator(nearestFab);
+      ui2?.fabricatorPanel?.open();
+      return;
+    }
+    if (this.researchLab.isNearby(px, py, 80)) {
+      ui2?.techTreePanel?.toggle();
+      return;
+    }
+    const harvesterResult = harvesterManager.onInteract(px, py);
+    if (harvesterResult === null) {
+      miningService.onInteract(px, py);
+    }
   }
 
   update(delta: number): void {

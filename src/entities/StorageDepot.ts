@@ -7,11 +7,7 @@ export class StorageDepot {
   readonly container: Container;
   readonly x: number;
   readonly y: number;
-  /** Soft cap used by the drone mining dispatcher: while total >= capacity,
-   * drones stay IDLE (GDD §10 "drones return to idle — they won't mine if
-   * there's nowhere to put it"). `deposit()` still accepts everything; the cap
-   * only gates mining dispatch. */
-  capacity: number = 50;
+
   private stockpile = new Map<OreType, number>();
   private label!: Text;
 
@@ -78,14 +74,7 @@ export class StorageDepot {
     return total;
   }
 
-  /** True when the pool has reached capacity. Drone mining dispatcher should
-   * stop sending drones to mine while this is true. */
-  isFull(): boolean { return this.getTotal() >= this.capacity; }
 
-  /** Remaining space before hitting capacity. */
-  getRemainingCapacity(): number {
-    return Math.max(0, this.capacity - this.getTotal());
-  }
 
   /** Set stockpile amount for a specific ore type — for testing/debug only */
   setStock(oreType: OreType, qty: number): void {
