@@ -28,6 +28,7 @@ import { BuildPromptOverlay } from '@ui/BuildPromptOverlay';
 import { MarketplaceOverlay } from '@ui/MarketplaceOverlay';
 import { powerManager } from '@services/PowerManager';
 import { handleWorldTap } from '@services/TapToMove';
+import { roadNetwork } from '@services/RoadNetwork';
 
 // Built-in RTG provides enough power to run the furnace (3 W draw) without needing solar panels.
 const OUTPOST_REACTOR_POWER = 5;
@@ -68,11 +69,20 @@ export class AsteroidOutpostScene implements Scene {
   // Building layer — sits below the player so all buildings render behind them
   private _buildingLayer: Container | null = null;
 
+  // Road rendering layer — sits below the building layer
+  private _roadLayer: Graphics | null = null;
+
   // Ghost placement state
   private _ghostBuilding: PlacedBuilding | null = null;
   private _ghostBuildingType: string | null = null;
   // Stored when moving an existing building; restored if the move is canceled
   private _ghostMoveEntry: PlacedEntry | null = null;
+
+  // Road placement mode state
+  private _roadMode = false;
+  private _roadPreview = new Set<string>(); // pending cells (key = "row,col")
+  private _roadModeBanner: HTMLDivElement | null = null;
+  private _roadBudgetPanel: HTMLDivElement | null = null;
 
   async enter(app: Application): Promise<void> {
     this._app = app;
@@ -100,6 +110,10 @@ export class AsteroidOutpostScene implements Scene {
 
     // Draw grid overlay (faint lines)
     this._drawGrid();
+
+    // Road layer — sits below the building layer
+    this._roadLayer = new Graphics();
+    this._stage.addChild(this._roadLayer);
 
     // Building layer — added before the player so buildings always render behind them
     this._buildingLayer = new Container();
@@ -209,6 +223,233 @@ export class AsteroidOutpostScene implements Scene {
     }
   }
 
+  // -------------------------------------------------------------------------
+  // Road layer rendering
+  // -------------------------------------------------------------------------
+
+  private _roadKey(row: number, col: number): string { return `${row},${col}`; }
+
+  private _drawRoadLayer(): void {
+    if (!this._roadLayer) return;
+    this._roadLayer.clear();
+
+    const margin = 4;
+    const tileW = CELL_SIZE - margin * 2;
+    const tileH = CELL_SIZE - margin * 2;
+
+    // Draw placed roads (dark green)
+    for (const { row, col } of roadNetwork.getAll()) {
+      const wx = GRID_ORIGIN.x + col * CELL_SIZE + margin;
+      const wy = GRID_ORIGIN.y + row * CELL_SIZE + margin;
+      this._roadLayer.rect(wx, wy, tileW, tileH).fill({ color: 0x1E3A1E });
+      this._roadLayer.rect(wx, wy, tileW, tileH).stroke({ width: 2, color: 0x3A6A3A });
+    }
+
+    // Draw preview roads (teal, 40% alpha)
+    if (this._roadMode) {
+      for (const key of this._roadPreview) {
+        const [r, c] = key.split(',').map(Number);
+        // Skip cells that are already placed roads
+        if (roadNetwork.hasRoad(r, c)) continue;
+        const wx = GRID_ORIGIN.x + c * CELL_SIZE + margin;
+        const wy = GRID_ORIGIN.y + r * CELL_SIZE + margin;
+        this._roadLayer.rect(wx, wy, tileW, tileH).fill({ color: 0x00B8D4, alpha: 0.4 });
+        this._roadLayer.rect(wx, wy, tileW, tileH).stroke({ width: 1, color: 0x00B8D4 });
+      }
+
+      // Highlight the current cell under the player
+      if (this._player) {
+        const col = Math.floor((this._player.x - GRID_ORIGIN.x) / CELL_SIZE);
+        const row = Math.floor((this._player.y - GRID_ORIGIN.y) / CELL_SIZE);
+        if (col >= 0 && col < BuildGrid.COLS && row >= 0 && row < BuildGrid.ROWS) {
+          const wx = GRID_ORIGIN.x + col * CELL_SIZE + margin;
+          const wy = GRID_ORIGIN.y + row * CELL_SIZE + margin;
+          this._roadLayer.rect(wx, wy, tileW, tileH).stroke({ width: 2, color: 0x00FFFF, alpha: 0.8 });
+        }
+      }
+    }
+  }
+
+  // -------------------------------------------------------------------------
+  // Road mode enter/exit/update
+  // -------------------------------------------------------------------------
+
+  private _enterRoadMode(): void {
+    this._roadMode = true;
+    this._roadPreview.clear();
+
+    // Show mode banner
+    const uiLayer = document.getElementById('ui-layer') ?? document.body;
+    const banner = document.createElement('div');
+    banner.id = 'road-mode-banner';
+    banner.style.cssText = [
+      'position:absolute',
+      'top:0',
+      'left:0',
+      'right:0',
+      'height:28px',
+      'display:flex',
+      'align-items:center',
+      'padding:0 12px',
+      'gap:10px',
+      'font-size:11px',
+      'font-family:monospace',
+      'background:rgba(0,184,212,0.12)',
+      'border-bottom:1px solid #00B8D4',
+      'color:#00B8D4',
+      'z-index:100',
+      'pointer-events:none',
+    ].join(';');
+    banner.innerHTML = [
+      '<span style="background:#0a2030;border:1px solid #00B8D4;padding:1px 5px;border-radius:2px;color:#00B8D4;">R</span>',
+      '<strong>ROAD MODE</strong>',
+      '<span style="color:#888;font-size:10px;">Move &amp; [E] to paint · Shift+[E] to remove · [R] confirm · [ESC] cancel</span>',
+      '<span style="margin-left:auto;color:#666;font-size:10px;">[R] or [ESC] to exit</span>',
+    ].join('');
+    uiLayer.appendChild(banner);
+    this._roadModeBanner = banner;
+
+    // Show budget panel
+    const panel = document.createElement('div');
+    panel.id = 'road-budget-panel';
+    panel.style.cssText = [
+      'position:absolute',
+      'bottom:10px',
+      'left:50%',
+      'transform:translateX(-50%)',
+      'background:#07122a',
+      'border:1px solid #00B8D4',
+      'padding:8px 14px',
+      'display:flex',
+      'gap:12px',
+      'align-items:center',
+      'font-size:11px',
+      'font-family:monospace',
+      'color:#E8E4D0',
+      'white-space:nowrap',
+      'z-index:100',
+    ].join(';');
+    uiLayer.appendChild(panel);
+    this._roadBudgetPanel = panel;
+    this._updateBudgetPanel();
+  }
+
+  private _exitRoadMode(): void {
+    this._roadMode = false;
+    this._roadPreview.clear();
+    this._roadModeBanner?.remove();
+    this._roadModeBanner = null;
+    this._roadBudgetPanel?.remove();
+    this._roadBudgetPanel = null;
+    this._drawRoadLayer();
+  }
+
+  private _updateBudgetPanel(): void {
+    if (!this._roadBudgetPanel || !this._storage) return;
+    const available = this._storage.getBarCount('iron_bar');
+    const queued = this._roadPreview.size;
+    const canAfford = available >= queued;
+    const confirmColor = canAfford ? '#D4A843' : '#3a5a8a';
+    const confirmBg = canAfford ? '#1a3060' : '#0f1e38';
+    const costColor = canAfford ? '#E8E4D0' : '#f87171';
+
+    this._roadBudgetPanel.innerHTML = [
+      `<span style="color:#888;">Iron Bars:</span>`,
+      `<span style="color:#D4A843;font-weight:bold;">${available} available</span>`,
+      `<span style="color:#444;">│</span>`,
+      `<span style="color:#888;">Preview:</span>`,
+      `<span style="color:#00B8D4;">${queued} tiles</span>`,
+      `<span style="color:#444;">│</span>`,
+      `<span style="color:#888;">Cost:</span>`,
+      `<span style="color:${costColor};font-weight:bold;">${queued} bars${!canAfford && queued > 0 ? ` (need ${queued - available} more)` : ''}</span>`,
+      `<span style="color:#444;">│</span>`,
+      `<button id="road-confirm-btn" style="background:${confirmBg};color:${confirmColor};border:1px solid #3a5a8a;font-family:monospace;font-size:10px;padding:3px 8px;cursor:${canAfford && queued > 0 ? 'pointer' : 'default'};">CONFIRM</button>`,
+      `<button id="road-cancel-btn" style="background:#1a3060;color:#E8E4D0;border:1px solid #3a5a8a;font-family:monospace;font-size:10px;padding:3px 8px;cursor:pointer;">CANCEL</button>`,
+    ].join('');
+
+    const confirmBtn = this._roadBudgetPanel.querySelector('#road-confirm-btn') as HTMLButtonElement | null;
+    const cancelBtn = this._roadBudgetPanel.querySelector('#road-cancel-btn') as HTMLButtonElement | null;
+    confirmBtn?.addEventListener('click', () => this._confirmRoadPlacement());
+    cancelBtn?.addEventListener('click', () => this._exitRoadMode());
+  }
+
+  private _confirmRoadPlacement(): void {
+    if (!this._storage) { this._exitRoadMode(); return; }
+    const available = this._storage.getBarCount('iron_bar');
+    const queued = this._roadPreview.size;
+    if (queued === 0) { this._exitRoadMode(); return; }
+    if (available < queued) {
+      // Cannot afford — don't place
+      this._updateBudgetPanel();
+      return;
+    }
+    // Deduct iron bars and place all preview roads
+    this._storage.pull('iron_bar', queued);
+    for (const key of this._roadPreview) {
+      const [r, c] = key.split(',').map(Number);
+      roadNetwork.add(r, c);
+    }
+    this._exitRoadMode();
+  }
+
+  private _updateRoadMode(): void {
+    if (!this._player) return;
+
+    // Draw road layer each frame while in road mode (preview changes with player movement)
+    this._drawRoadLayer();
+
+    // R key again = confirm
+    if (inputManager.wasJustPressed('retool_factory')) {
+      this._confirmRoadPlacement();
+      return;
+    }
+
+    // ESC = cancel
+    if (inputManager.wasJustPressed('pause_menu')) {
+      this._exitRoadMode();
+      return;
+    }
+
+    // Determine current cell under player
+    const col = Math.floor((this._player.x - GRID_ORIGIN.x) / CELL_SIZE);
+    const row = Math.floor((this._player.y - GRID_ORIGIN.y) / CELL_SIZE);
+    const inBounds = col >= 0 && col < BuildGrid.COLS && row >= 0 && row < BuildGrid.ROWS;
+
+    if (inBounds && inputManager.wasJustPressed('interact')) {
+      const k = this._roadKey(row, col);
+      if (inputManager.isHeld('zone_paint') /* Shift analogue */ || false) {
+        // Shift+E: remove placed road and refund bar
+        if (roadNetwork.hasRoad(row, col)) {
+          roadNetwork.remove(row, col);
+          if (this._storage) {
+            this._storage.setStock('iron_bar', this._storage.getBarCount('iron_bar') + 1);
+          }
+        } else {
+          this._roadPreview.delete(k);
+        }
+      } else {
+        // E: toggle current cell in preview
+        if (roadNetwork.hasRoad(row, col)) {
+          // Already a placed road — treat Shift+E as remove; plain E does nothing
+        } else if (this._roadPreview.has(k)) {
+          this._roadPreview.delete(k);
+        } else {
+          this._roadPreview.add(k);
+        }
+      }
+      this._updateBudgetPanel();
+    }
+
+    // Hold E + player moving = continuously add cells (paint)
+    if (inBounds && inputManager.isHeld('interact') && !inputManager.wasJustPressed('interact')) {
+      const k = this._roadKey(row, col);
+      if (!roadNetwork.hasRoad(row, col) && !this._roadPreview.has(k)) {
+        this._roadPreview.add(k);
+        this._updateBudgetPanel();
+      }
+    }
+  }
+
   private _drawGrid(): void {
     const g = new Graphics();
     for (let r = 0; r <= 5; r++) {
@@ -279,6 +520,24 @@ export class AsteroidOutpostScene implements Scene {
       return; // while ghost is active, skip normal interactions
     }
 
+    // Road mode update
+    if (this._roadMode) {
+      this._updateRoadMode();
+      return; // while road mode is active, skip normal interactions
+    }
+
+    // Enter road mode on R key (retool_factory) when no ghost and no overlay is open
+    if (inputManager.wasJustPressed('retool_factory')) {
+      const anyOverlayOpen =
+        (this._furnaceOverlay?.isOpen() ?? false) ||
+        (this._marketplaceOverlay?.isOpen() ?? false) ||
+        (this._droneDepotOverlay?.isOpen() ?? false) ||
+        (this._buildMenuOverlay?.isOpen() ?? false);
+      if (!anyOverlayOpen) {
+        this._enterRoadMode();
+      }
+    }
+
     // Mining + interactions
     miningService.update(delta, { x: this._player.x, y: this._player.y });
 
@@ -293,6 +552,7 @@ export class AsteroidOutpostScene implements Scene {
     if (inputManager.wasJustPressed('build_menu')) {
       if (this._furnaceOverlay?.isOpen()) this._furnaceOverlay.close();
       if (this._droneDepotOverlay?.isOpen()) this._droneDepotOverlay.close();
+      if (this._roadMode) this._exitRoadMode();
       this._buildMenuOverlay?.toggle();
     }
 
@@ -305,6 +565,9 @@ export class AsteroidOutpostScene implements Scene {
     }
 
     this._updateResourceRail();
+
+    // Redraw road layer to show placed roads
+    this._drawRoadLayer();
 
     // Update build prompt overlay visibility
     const playerNearGrid = this._player && this._isPlayerNearGrid(this._player.x, this._player.y);
@@ -334,6 +597,9 @@ export class AsteroidOutpostScene implements Scene {
   // -------------------------------------------------------------------------
 
   private _startGhostPlacement(buildingType: string): void {
+    if (this._roadMode) {
+      this._exitRoadMode();
+    }
     if (this._ghostBuilding) {
       this._cancelGhost();
     }
@@ -344,6 +610,9 @@ export class AsteroidOutpostScene implements Scene {
   }
 
   private _startGhostMove(buildingId: string): void {
+    if (this._roadMode) {
+      this._exitRoadMode();
+    }
     const entry = buildGrid.pickup(buildingId);
     if (!entry) return;
 
@@ -585,6 +854,7 @@ export class AsteroidOutpostScene implements Scene {
       droneSlots: this._droneDepot?.getBaySlotData() ?? [],
       playerX: this._player?.x ?? 480,
       playerY: this._player?.y ?? 270,
+      roads: roadNetwork.serialize(),
     };
   }
 
@@ -621,9 +891,17 @@ export class AsteroidOutpostScene implements Scene {
       this._player.container.x = data.playerX;
       this._player.container.y = data.playerY;
     }
+
+    // Restore road network
+    roadNetwork.deserialize(data.roads ?? []);
   }
 
   exit(): void {
+    // Exit road mode and clean up DOM elements
+    if (this._roadMode) {
+      this._exitRoadMode();
+    }
+
     // Clear save getter, storage accessor, and debug hooks
     _activeSaveGetter = null;
     _activeStorageGetter = null;
@@ -667,10 +945,11 @@ export class AsteroidOutpostScene implements Scene {
     // Cancel any active ghost
     this._cancelGhost();
 
-    // Destroy stage (all children, including _buildingLayer)
+    // Destroy stage (all children, including _buildingLayer and _roadLayer)
     this._stage?.destroy({ children: true });
     this._stage = null;
     this._buildingLayer = null;
+    this._roadLayer = null;
     this._player = null;
     this._deposits = [];
     this._placedBuildings = [];

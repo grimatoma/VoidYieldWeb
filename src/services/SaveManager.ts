@@ -43,6 +43,7 @@ export interface SaveData {
     droneSlots: DroneBaySlotData[];
     playerX: number;
     playerY: number;
+    roads?: string[];
   };
 }
 
