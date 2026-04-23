@@ -150,7 +150,7 @@ describe('MiningCircuitManager', () => {
   });
 
   it('skips dispatch when depot is full', () => {
-    depot.deposit([{ oreType: 'vorax', quantity: depot.capacity, attributes: {} }]);
+    depot.deposit([{ oreType: 'vorax', quantity: 50, attributes: {} }]);
     const drone = new ScoutDrone(1400, 1000);
     fleetManager.add(drone);
 

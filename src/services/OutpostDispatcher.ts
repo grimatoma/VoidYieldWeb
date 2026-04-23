@@ -11,14 +11,14 @@ import type { OreType, DroneTask } from '@data/types';
 export interface DroneBaySlot {
   slotId: string;
   drone: DroneBase | null;
-  droneType: 'scout' | 'heavy' | null;
+  droneType: 'scout' | 'heavy' | 'refinery' | null;
   oreType: OreType | 'any';
 }
 
 /** Serialization-only mirror of DroneBaySlot (no DroneBase instance). */
 export interface DroneBaySlotData {
   slotId: string;
-  droneType: 'scout' | 'heavy' | null;
+  droneType: 'scout' | 'heavy' | 'refinery' | null;
   oreType: OreType | 'any';
 }
 

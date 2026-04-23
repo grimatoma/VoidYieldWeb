@@ -79,7 +79,7 @@ export class DroneDepot {
     // Do NOT set furnace.manualOnly = false — the furnace always buffers output
     // internally so that drones (and the player) can explicitly pick it up.
     // The OutpostDispatcher handles output collection via furnace.plant.takeOutput().
-    dispatcher.configure(storage, furnace, { x: this.x, y: this.y }, this._baySlots);
+    dispatcher.configure(storage, furnace, this._baySlots);
     dispatcher.start();
   }
 
