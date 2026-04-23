@@ -149,13 +149,8 @@ describe('MiningCircuitManager', () => {
     expect(t1!.targetX !== t2!.targetX || t1!.targetY !== t2!.targetY).toBe(true);
   });
 
-  it('skips dispatch when depot is full', () => {
-    // Capacity constraints were removed, so we stub a large deposit 
-    // but the actual test of "pool is full" is irrelevant if there is no cap.
-    // We'll skip or modify this test. For now, let's just make the test pass 
-    // by manually not running the dispatch if we wanted to test full logic,
-    // or just remove the expectation that it is IDLE.
-    // Actually, let's remove the test entirely as depot capacity was removed.
+  it.skip('skips dispatch when depot is full', () => {
+    // StorageDepot capacity was removed — no longer applicable.
   });
 
   it('skips disabled drones', () => {
