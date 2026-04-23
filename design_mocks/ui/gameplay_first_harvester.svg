@@ -1,0 +1,135 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 540" width="960" height="540" font-family="'Courier New', monospace">
+  <defs>
+    <radialGradient id="skyGrad" cx="50%" cy="30%" r="70%">
+      <stop offset="0%" stop-color="#0a0f1e"/>
+      <stop offset="100%" stop-color="#020408"/>
+    </radialGradient>
+    <linearGradient id="groundGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#141a0e"/>
+      <stop offset="100%" stop-color="#0c1008"/>
+    </linearGradient>
+    <linearGradient id="hudBarGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#0d1e38" stop-opacity="0.95"/>
+      <stop offset="100%" stop-color="#080e20" stop-opacity="0.95"/>
+    </linearGradient>
+    <filter id="glowGreen">
+      <feGaussianBlur stdDeviation="3" result="blur"/>
+      <feFlood flood-color="#4caf7d" flood-opacity="0.6" result="color"/>
+      <feComposite in="color" in2="blur" operator="in" result="shadow"/>
+      <feMerge><feMergeNode in="shadow"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+    <filter id="glowAmber">
+      <feGaussianBlur stdDeviation="2" result="blur"/>
+      <feFlood flood-color="#f5a623" flood-opacity="0.5" result="color"/>
+      <feComposite in="color" in2="blur" operator="in" result="shadow"/>
+      <feMerge><feMergeNode in="shadow"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+  </defs>
+
+  <rect width="960" height="270" fill="url(#skyGrad)"/>
+  <g opacity="0.6">
+    <circle cx="45" cy="23" r="0.8" fill="#fff"/><circle cx="234" cy="14" r="1.0" fill="#fff"/>
+    <circle cx="698" cy="18" r="1.0" fill="#e0ffff"/><circle cx="812" cy="72" r="0.7" fill="#fff"/>
+    <circle cx="445" cy="31" r="0.8" fill="#fff"/><circle cx="120" cy="67" r="0.5" fill="#e0e0ff"/>
+  </g>
+  <rect x="0" y="270" width="960" height="270" fill="url(#groundGrad)"/>
+  <g stroke="#1a2010" stroke-width="0.5" opacity="0.4">
+    <line x1="0" y1="310" x2="960" y2="310"/><line x1="0" y1="350" x2="960" y2="350"/>
+    <line x1="0" y1="390" x2="960" y2="390"/><line x1="0" y1="430" x2="960" y2="430"/>
+    <line x1="80" y1="270" x2="80" y2="540"/><line x1="160" y1="270" x2="160" y2="540"/>
+    <line x1="240" y1="270" x2="240" y2="540"/><line x1="320" y1="270" x2="320" y2="540"/>
+    <line x1="400" y1="270" x2="400" y2="540"/><line x1="480" y1="270" x2="480" y2="540"/>
+    <line x1="560" y1="270" x2="560" y2="540"/><line x1="640" y1="270" x2="640" y2="540"/>
+  </g>
+  <line x1="0" y1="270" x2="960" y2="270" stroke="#2a3820" stroke-width="1"/>
+
+  <!-- Ore deposit -->
+  <ellipse cx="400" cy="390" rx="32" ry="14" fill="#2a1a08" stroke="#6a4020" stroke-width="1.5" opacity="0.9"/>
+  <circle cx="388" cy="384" r="8" fill="#4a2a10" opacity="0.9"/>
+  <circle cx="403" cy="378" r="7" fill="#6a4020" opacity="0.9"/>
+  <circle cx="416" cy="386" r="6" fill="#4a2a10" opacity="0.9"/>
+
+  <!-- ═══ FIRST HARVESTER — just placed, running ═══ -->
+  <!-- Harvester body (larger, more prominent) -->
+  <rect x="368" y="348" width="64" height="46" rx="3" fill="#2a3848" stroke="#4caf7d" stroke-width="2" filter="url(#glowGreen)"/>
+  <rect x="373" y="342" width="54" height="10" rx="1" fill="#3a4858" stroke="#5a7890" stroke-width="0.5"/>
+  <!-- Mining arm -->
+  <line x1="400" y1="370" x2="400" y2="390" stroke="#6a8a90" stroke-width="3"/>
+  <circle cx="400" cy="390" r="5" fill="#8aaa90" stroke="#4caf7d" stroke-width="1"/>
+  <!-- Indicator light -->
+  <circle cx="400" cy="358" r="5" fill="#4caf7d" opacity="0.9"/>
+  <circle cx="400" cy="358" r="8" fill="none" stroke="#4caf7d" stroke-width="1" opacity="0.4"/>
+  <!-- NEW label badge -->
+  <rect x="372" y="388" width="60" height="10" rx="2" fill="#0d2010"/>
+  <text x="402" y="397" font-size="7" text-anchor="middle" fill="#4caf7d">HARVESTING</text>
+
+  <!-- HOPPER FILL BAR (floating above) -->
+  <rect x="350" y="322" width="100" height="18" rx="2" fill="#05080f" stroke="#4caf7d" stroke-width="1.5" opacity="0.95"/>
+  <text x="400" y="330" font-size="7" text-anchor="middle" fill="#8a9ab0">HOPPER</text>
+  <rect x="354" y="332" width="92" height="6" rx="2" fill="#0a1020"/>
+  <rect x="354" y="332" width="22" height="6" rx="2" fill="#4caf7d" opacity="0.8"/>
+  <text x="400" y="338" font-size="6" text-anchor="middle" fill="#4caf7d">24%  (filling +0.5/s)</text>
+
+  <!-- FUEL GAUGE (floating, right side of harvester) -->
+  <rect x="446" y="344" width="82" height="52" rx="2" fill="#05080f" stroke="#f5a623" stroke-width="1" opacity="0.95"/>
+  <text x="487" y="357" font-size="7" text-anchor="middle" fill="#f5a623">FUEL</text>
+  <rect x="456" y="360" width="62" height="8" rx="2" fill="#0a1020"/>
+  <rect x="456" y="360" width="50" height="8" rx="2" fill="#f5a623" opacity="0.7"/>
+  <text x="487" y="377" font-size="8" text-anchor="middle" fill="#f5a623">80%</text>
+  <text x="487" y="389" font-size="7" text-anchor="middle" fill="#8a6020">~4h 12m</text>
+
+  <!-- Player standing nearby, watching -->
+  <circle cx="300" cy="388" r="6" fill="#e8d0a0"/>
+  <rect x="295" y="390" width="10" height="14" rx="1" fill="#2a4070"/>
+  <line x1="295" y1="393" x2="289" y2="401" stroke="#2a4070" stroke-width="2"/>
+  <line x1="305" y1="393" x2="311" y2="401" stroke="#2a4070" stroke-width="2"/>
+  <!-- Excited pose — hand raised -->
+  <line x1="295" y1="393" x2="287" y2="386" stroke="#e8d0a0" stroke-width="1.5"/>
+  <circle cx="285" cy="384" r="2" fill="#e8d0a0"/>
+
+  <!-- Achievement popup -->
+  <rect x="140" y="290" width="280" height="60" rx="3" fill="#0d1e10" stroke="#4caf7d" stroke-width="2" filter="url(#glowGreen)"/>
+  <text x="280" y="310" font-size="11" font-weight="bold" text-anchor="middle" fill="#4caf7d">FIRST AUTOMATION!</text>
+  <text x="280" y="328" font-size="9" text-anchor="middle" fill="#e8d0a0">Basic Harvester placed and running</text>
+  <text x="280" y="342" font-size="8" text-anchor="middle" fill="#ffd700">+50 RP  ·  Tutorial: Step 2 complete</text>
+
+  <!-- Mining animation particles -->
+  <circle cx="400" cy="385" r="2" fill="#6a4020" opacity="0.6"/>
+  <circle cx="408" cy="380" r="1.5" fill="#8a5020" opacity="0.5"/>
+  <circle cx="394" cy="378" r="1.5" fill="#6a4020" opacity="0.6"/>
+  <circle cx="412" cy="388" r="1" fill="#4a2010" opacity="0.4"/>
+
+  <!-- Rate floating text -->
+  <text x="400" y="304" font-size="10" text-anchor="middle" fill="#4caf7d" filter="url(#glowGreen)">+0.5 Krysite/s</text>
+
+  <!-- Sell terminal (distant right) -->
+  <rect x="720" y="390" width="50" height="40" rx="2" fill="#1a1a28" stroke="#8060e0" stroke-width="1" opacity="0.7"/>
+  <text x="745" y="408" font-size="7" text-anchor="middle" fill="#8060e0">SELL</text>
+  <text x="745" y="418" font-size="7" text-anchor="middle" fill="#8060e0">TERM.</text>
+  <text x="745" y="380" font-size="7" text-anchor="middle" fill="#6a7a90">far away →</text>
+
+  <!-- HUD -->
+  <rect x="0" y="0" width="960" height="32" fill="url(#hudBarGrad)"/>
+  <line x1="0" y1="32" x2="960" y2="32" stroke="#f5a623" stroke-width="0.8" opacity="0.6"/>
+  <text x="14" y="11" font-size="9" fill="#f5a623" opacity="0.7">CREDITS</text>
+  <text x="14" y="26" font-size="14" font-weight="bold" fill="#ffd700">◈ 1,240</text>
+  <line x1="100" y1="5" x2="100" y2="28" stroke="#2a3a50" stroke-width="0.5"/>
+  <text x="113" y="11" font-size="9" fill="#9090f0" opacity="0.7">RESEARCH</text>
+  <text x="113" y="26" font-size="14" font-weight="bold" fill="#a0a8f8">⬡ 50</text>
+  <line x1="200" y1="5" x2="200" y2="28" stroke="#2a3a50" stroke-width="0.5"/>
+  <text x="213" y="20" font-size="10" fill="#8a9ab0">Krysite: 24</text>
+  <text x="480" y="20" font-size="12" text-anchor="middle" fill="#e8d0a0">A1 — Voidstone Prime  [EARLY GAME]</text>
+  <text x="946" y="20" font-size="14" text-anchor="end" fill="#e8d0a0">00:18:44</text>
+
+  <!-- Tutorial tooltip -->
+  <rect x="560" y="380" width="380" height="60" rx="2" fill="#0a1020" stroke="#f5a623" stroke-width="1" opacity="0.9"/>
+  <text x="570" y="397" font-size="9" fill="#f5a623">NEXT STEP:</text>
+  <text x="570" y="411" font-size="9" fill="#e8d0a0">Wait for hopper to fill (100%), then carry ore to</text>
+  <text x="570" y="425" font-size="9" fill="#e8d0a0">the Sell Terminal to earn credits.</text>
+  <text x="570" y="438" font-size="8" fill="#8a9ab0">Tip: Build a Cargo Drone to do this automatically!</text>
+
+  <!-- Bottom bar -->
+  <rect x="0" y="506" width="960" height="34" fill="url(#hudBarGrad)"/>
+  <line x1="0" y1="506" x2="960" y2="506" stroke="#f5a623" stroke-width="0.8" opacity="0.6"/>
+  <text x="480" y="527" font-size="10" text-anchor="middle" fill="#8a9ab0">[E] INTERACT WITH HARVESTER  ·  [I] INVENTORY  ·  FIRST HARVESTER RUNNING!</text>
+</svg>

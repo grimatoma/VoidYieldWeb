@@ -1,0 +1,204 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 540" width="960" height="540" font-family="'Courier New', monospace">
+  <defs>
+    <radialGradient id="skyGrad" cx="50%" cy="30%" r="70%">
+      <stop offset="0%" stop-color="#0a0f1e"/>
+      <stop offset="100%" stop-color="#020408"/>
+    </radialGradient>
+    <linearGradient id="groundGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#141a0e"/>
+      <stop offset="100%" stop-color="#0c1008"/>
+    </linearGradient>
+    <linearGradient id="hudBarGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#0d1e38" stop-opacity="0.95"/>
+      <stop offset="100%" stop-color="#080e20" stop-opacity="0.95"/>
+    </linearGradient>
+    <linearGradient id="panelGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#0e1a2e"/>
+      <stop offset="100%" stop-color="#080e1c"/>
+    </linearGradient>
+    <filter id="glowAmber">
+      <feGaussianBlur stdDeviation="3" result="blur"/>
+      <feFlood flood-color="#f5a623" flood-opacity="0.6" result="color"/>
+      <feComposite in="color" in2="blur" operator="in" result="shadow"/>
+      <feMerge><feMergeNode in="shadow"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+    <filter id="glowGreen">
+      <feGaussianBlur stdDeviation="2" result="blur"/>
+      <feFlood flood-color="#4caf7d" flood-opacity="0.5" result="color"/>
+      <feComposite in="color" in2="blur" operator="in" result="shadow"/>
+      <feMerge><feMergeNode in="shadow"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+    <filter id="glowBlue">
+      <feGaussianBlur stdDeviation="2" result="blur"/>
+      <feFlood flood-color="#4a9fd4" flood-opacity="0.5" result="color"/>
+      <feComposite in="color" in2="blur" operator="in" result="shadow"/>
+      <feMerge><feMergeNode in="shadow"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+  </defs>
+
+  <!-- World -->
+  <rect width="960" height="270" fill="url(#skyGrad)"/>
+  <g opacity="0.4">
+    <circle cx="45" cy="23" r="0.8" fill="#fff"/><circle cx="234" cy="14" r="1.0" fill="#fff"/>
+    <circle cx="698" cy="18" r="1.0" fill="#e0ffff"/><circle cx="812" cy="72" r="0.7" fill="#fff"/>
+    <circle cx="445" cy="31" r="0.8" fill="#fff"/>
+  </g>
+  <rect x="0" y="270" width="960" height="270" fill="url(#groundGrad)"/>
+  <g stroke="#1a2010" stroke-width="0.5" opacity="0.3">
+    <line x1="0" y1="310" x2="960" y2="310"/><line x1="0" y1="350" x2="960" y2="350"/>
+    <line x1="0" y1="390" x2="960" y2="390"/><line x1="0" y1="430" x2="960" y2="430"/>
+    <line x1="80" y1="270" x2="80" y2="540"/><line x1="240" y1="270" x2="240" y2="540"/>
+    <line x1="400" y1="270" x2="400" y2="540"/><line x1="560" y1="270" x2="560" y2="540"/>
+    <line x1="720" y1="270" x2="720" y2="540"/>
+  </g>
+  <line x1="0" y1="270" x2="960" y2="270" stroke="#2a3820" stroke-width="1"/>
+
+  <!-- Storage Silo (ore input, left) -->
+  <rect x="100" y="340" width="70" height="80" rx="2" fill="#1a2030" stroke="#3a5070" stroke-width="1.5"/>
+  <rect x="106" y="335" width="58" height="8" rx="1" fill="#252e3a"/>
+  <rect x="110" y="350" width="50" height="60" rx="1" fill="#101828"/>
+  <rect x="114" y="372" width="42" height="38" rx="1" fill="#4a9fd4" opacity="0.45"/>
+  <text x="135" y="354" font-size="6" text-anchor="middle" fill="#4a9fd4">ORE SILO</text>
+  <text x="135" y="398" font-size="7" text-anchor="middle" fill="#4a9fd4">68%</text>
+  <text x="135" y="410" font-size="6" text-anchor="middle" fill="#6a7a90">Krysite ×340</text>
+
+  <!-- Conveyor: Silo → Plant (ore in) -->
+  <rect x="170" y="382" width="100" height="8" rx="2" fill="#1a2030" stroke="#3a4a50" stroke-width="0.8"/>
+  <!-- Moving ore dots on conveyor -->
+  <circle cx="185" cy="386" r="3" fill="#4a9fd4" opacity="0.7"/>
+  <circle cx="210" cy="386" r="3" fill="#4a9fd4" opacity="0.7"/>
+  <circle cx="235" cy="386" r="3" fill="#4a9fd4" opacity="0.6"/>
+  <circle cx="260" cy="386" r="3" fill="#4a9fd4" opacity="0.5"/>
+  <!-- Arrow -->
+  <polygon points="270,383 278,386 270,389" fill="#3a5070"/>
+
+  <!-- ═══ PROCESSING PLANT ═══ (center) -->
+  <rect x="280" y="315" width="140" height="110" rx="4" fill="#1a2838" stroke="#f5a623" stroke-width="2" filter="url(#glowAmber)"/>
+  <rect x="280" y="315" width="140" height="28" rx="4" fill="#1a1000"/>
+  <text x="350" y="334" font-size="10" text-anchor="middle" fill="#f5a623" font-weight="bold">PROCESSING PLANT</text>
+  <!-- Chimney stacks -->
+  <rect x="296" y="295" width="10" height="22" rx="1" fill="#252e3a"/>
+  <rect x="316" y="288" width="10" height="29" rx="1" fill="#252e3a"/>
+  <!-- Smoke puffs -->
+  <circle cx="301" cy="292" r="5" fill="#2a3040" opacity="0.6"/>
+  <circle cx="321" cy="284" r="6" fill="#2a3040" opacity="0.5"/>
+  <circle cx="304" cy="285" r="4" fill="#2a3040" opacity="0.4"/>
+  <!-- Interior machinery lines -->
+  <rect x="292" y="352" width="36" height="20" rx="2" fill="#0d1828" stroke="#2a4060" stroke-width="1"/>
+  <text x="310" y="360" font-size="6" text-anchor="middle" fill="#4a6080">CRUSHER</text>
+  <text x="310" y="368" font-size="6" text-anchor="middle" fill="#4a9fd4">↻ active</text>
+  <rect x="342" y="352" width="36" height="20" rx="2" fill="#0d1828" stroke="#2a4060" stroke-width="1"/>
+  <text x="360" y="360" font-size="6" text-anchor="middle" fill="#4a6080">SMELTER</text>
+  <text x="360" y="368" font-size="6" text-anchor="middle" fill="#f5a623">↻ active</text>
+  <!-- Status indicator -->
+  <circle cx="350" cy="343" r="4" fill="#4caf7d" opacity="0.9"/>
+  <text x="350" y="416" font-size="7" text-anchor="middle" fill="#4caf7d">RUNNING  ·  Eff: 87%</text>
+  <!-- Recipe label -->
+  <text x="350" y="400" font-size="8" text-anchor="middle" fill="#8a9ab0">Krysite Ore × 5  →  Krysite Ingot × 1</text>
+
+  <!-- Conveyor: Plant → Output Storage (ingot out) -->
+  <rect x="420" y="382" width="100" height="8" rx="2" fill="#1a2030" stroke="#3a4a50" stroke-width="0.8"/>
+  <!-- Moving ingot dots on conveyor -->
+  <circle cx="435" cy="386" r="3" fill="#ffd700" opacity="0.8"/>
+  <circle cx="460" cy="386" r="3" fill="#ffd700" opacity="0.7"/>
+  <circle cx="485" cy="386" r="3" fill="#ffd700" opacity="0.6"/>
+  <circle cx="510" cy="386" r="3" fill="#ffd700" opacity="0.5"/>
+  <polygon points="520,383 528,386 520,389" fill="#5a5020"/>
+
+  <!-- Output Storage (ingot) -->
+  <rect x="530" y="345" width="70" height="75" rx="2" fill="#1a2030" stroke="#ffd700" stroke-width="1.5"/>
+  <rect x="536" y="340" width="58" height="8" rx="1" fill="#252e3a"/>
+  <rect x="540" y="355" width="50" height="55" rx="1" fill="#101828"/>
+  <rect x="544" y="374" width="42" height="36" rx="1" fill="#ffd700" opacity="0.35"/>
+  <text x="565" y="360" font-size="6" text-anchor="middle" fill="#ffd700">INGOT SILO</text>
+  <text x="565" y="396" font-size="7" text-anchor="middle" fill="#ffd700">42%</text>
+  <text x="565" y="408" font-size="6" text-anchor="middle" fill="#8a6020">Krysite ×210</text>
+
+  <!-- Player -->
+  <circle cx="660" cy="385" r="6" fill="#e8d0a0"/>
+  <rect x="655" y="387" width="10" height="14" rx="1" fill="#2a4070"/>
+
+  <!-- ═══ PLANT DETAIL PANEL ═══ (right) -->
+  <rect x="680" y="40" width="272" height="340" rx="3" fill="#05080f" stroke="#f5a623" stroke-width="1.5" opacity="0.96"/>
+  <rect x="680" y="40" width="272" height="36" rx="3" fill="#1a1000"/>
+  <line x1="680" y1="76" x2="952" y2="76" stroke="#f5a623" stroke-width="1" opacity="0.7"/>
+  <text x="816" y="62" font-size="12" font-weight="bold" text-anchor="middle" fill="#f5a623">PROCESSING PLANT</text>
+
+  <g font-size="9">
+    <!-- Status -->
+    <text x="694" y="92" fill="#6a7a90">Status:</text>
+    <text x="944" y="92" text-anchor="end" fill="#4caf7d" font-weight="bold">RUNNING</text>
+    <text x="694" y="108" fill="#6a7a90">Active Recipe:</text>
+    <text x="944" y="108" text-anchor="end" fill="#e8d0a0">Krysite Ingot</text>
+
+    <line x1="688" y1="115" x2="944" y2="115" stroke="#1a2a30" stroke-width="0.5"/>
+
+    <!-- Recipe breakdown -->
+    <text x="694" y="130" fill="#8a9ab0" letter-spacing="1">RECIPE</text>
+    <!-- Input -->
+    <rect x="694" y="135" width="120" height="42" rx="2" fill="#0a1020" stroke="#2a3a50" stroke-width="0.8"/>
+    <text x="754" y="148" font-size="8" text-anchor="middle" fill="#4a9fd4">INPUT</text>
+    <polygon points="718,163 725,167 725,175 718,179 711,175 711,167" fill="#1a3a60" stroke="#3a7aaa" stroke-width="1"/>
+    <text x="718" y="175" font-size="6" text-anchor="middle" fill="#4a9fd4">⬡</text>
+    <text x="740" y="165" font-size="8" fill="#e8d0a0">Krysite Ore</text>
+    <text x="740" y="175" font-size="7" fill="#4a9fd4">× 5 per batch</text>
+    <!-- Arrow -->
+    <text x="754" y="186" font-size="12" text-anchor="middle" fill="#f5a623">→</text>
+    <!-- Output -->
+    <rect x="820" y="135" width="120" height="42" rx="2" fill="#0a1020" stroke="#ffd700" stroke-width="0.8"/>
+    <text x="880" y="148" font-size="8" text-anchor="middle" fill="#ffd700">OUTPUT</text>
+    <rect x="840" y="158" width="12" height="14" rx="1" fill="#3a2a00" stroke="#ffd700" stroke-width="1"/>
+    <text x="865" y="165" font-size="8" fill="#e8d0a0">Krysite Ingot</text>
+    <text x="865" y="175" font-size="7" fill="#ffd700">× 1 per batch</text>
+
+    <line x1="688" y1="185" x2="944" y2="185" stroke="#1a2a30" stroke-width="0.5"/>
+
+    <!-- Throughput -->
+    <text x="694" y="200" fill="#8a9ab0" letter-spacing="1">THROUGHPUT</text>
+    <text x="694" y="216" fill="#6a7a90">Batch time:</text>
+    <text x="944" y="216" text-anchor="end" fill="#e8d0a0">8.2s</text>
+    <text x="694" y="232" fill="#6a7a90">Output rate:</text>
+    <text x="944" y="232" text-anchor="end" fill="#4caf7d">+7.3 ingots/min</text>
+    <text x="694" y="248" fill="#6a7a90">Ore consumed:</text>
+    <text x="944" y="248" text-anchor="end" fill="#4a9fd4">−36.5 ore/min</text>
+
+    <line x1="688" y1="255" x2="944" y2="255" stroke="#1a2a30" stroke-width="0.5"/>
+
+    <!-- Quality influence -->
+    <text x="694" y="270" fill="#8a9ab0" letter-spacing="1">QUALITY INFLUENCE</text>
+    <text x="694" y="286" fill="#6a7a90">Ore ER avg:</text>
+    <text x="944" y="286" text-anchor="end" fill="#ffd700">847</text>
+    <text x="694" y="302" fill="#6a7a90">Ingot quality:</text>
+    <text x="944" y="302" text-anchor="end" fill="#ffd700">Grade A  (ER→output)</text>
+    <text x="694" y="318" fill="#6a7a90">Efficiency:</text>
+    <rect x="770" y="311" width="120" height="7" rx="2" fill="#0a1020"/>
+    <rect x="770" y="311" width="104" height="7" rx="2" fill="#4caf7d" opacity="0.8"/>
+    <text x="944" y="318" text-anchor="end" fill="#4caf7d">87%</text>
+
+    <line x1="688" y1="325" x2="944" y2="325" stroke="#1a2a30" stroke-width="0.5"/>
+
+    <!-- Value multiplier -->
+    <text x="694" y="340" fill="#8a9ab0">Raw ore value:</text>
+    <text x="944" y="340" text-anchor="end" fill="#4a9fd4">◈ 4.20 / unit</text>
+    <text x="694" y="356" fill="#8a9ab0">Ingot sell price:</text>
+    <text x="944" y="356" text-anchor="end" fill="#ffd700">◈ 14.00 / ingot</text>
+    <text x="694" y="372" fill="#4caf7d" font-weight="bold">Value multiplier:</text>
+    <text x="944" y="372" text-anchor="end" fill="#4caf7d" font-weight="bold">×3.33</text>
+  </g>
+
+  <!-- HUD top bar -->
+  <rect x="0" y="0" width="960" height="32" fill="url(#hudBarGrad)"/>
+  <line x1="0" y1="32" x2="960" y2="32" stroke="#f5a623" stroke-width="0.8" opacity="0.6"/>
+  <text x="14" y="11" font-size="9" fill="#f5a623" opacity="0.7">CREDITS</text>
+  <text x="14" y="26" font-size="14" font-weight="bold" fill="#ffd700">◈ 12,400</text>
+  <line x1="100" y1="5" x2="100" y2="28" stroke="#2a3a50" stroke-width="0.5"/>
+  <text x="113" y="11" font-size="9" fill="#9090f0" opacity="0.7">RESEARCH</text>
+  <text x="113" y="26" font-size="14" font-weight="bold" fill="#a0a8f8">⬡ 720</text>
+  <text x="480" y="20" font-size="12" text-anchor="middle" fill="#e8d0a0">A1 — Processing Zone</text>
+  <text x="946" y="20" font-size="14" text-anchor="end" fill="#e8d0a0">01:12:38</text>
+
+  <!-- Bottom bar -->
+  <rect x="0" y="506" width="960" height="34" fill="url(#hudBarGrad)"/>
+  <line x1="0" y1="506" x2="960" y2="506" stroke="#f5a623" stroke-width="0.8" opacity="0.6"/>
+  <text x="480" y="527" font-size="10" text-anchor="middle" fill="#8a9ab0">[E] OPEN PLANT  ·  [P] PRODUCTION  ·  PROCESSING: +7.3 ingots/min  ·  ×3.33 value</text>
+</svg>

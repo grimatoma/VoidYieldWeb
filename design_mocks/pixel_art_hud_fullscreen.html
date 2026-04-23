@@ -1,0 +1,975 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>VoidYield — Pixel Art UI Concept</title>
+<style>
+  /* ── Pixel-art rendering ─────────────────────────────────── */
+  * { margin: 0; padding: 0; box-sizing: border-box; image-rendering: pixelated; }
+
+  @font-face {
+    /* Press Start 2P via CDN */
+    font-family: 'Press Start 2P';
+    src: url('https://fonts.gstatic.com/s/pressstart2p/v15/e3t4euO8T-267oIAQAu6jDQyK0nU.woff2') format('woff2');
+  }
+
+  :root {
+    /* 4-shade moon palette + single amber accent */
+    --black:   #0B0C0F;
+    --dark:    #151820;
+    --mid:     #2A2F3E;
+    --light:   #44506A;
+    --bright:  #8A9AB8;
+    --white:   #C8D4E8;
+    --amber:   #D4A843;
+    --amber2:  #FFD86E;
+    --teal:    #3A8888;
+    --teal2:   #5AC8C8;
+    --red:     #882830;
+    --red2:    #C84040;
+    --green:   #285838;
+    --green2:  #40A858;
+    --px: 'Press Start 2P', monospace;
+  }
+
+  html, body {
+    width: 960px; height: 540px;
+    overflow: hidden;
+    background: var(--black);
+    font-family: var(--px);
+    font-size: 8px;
+    color: var(--white);
+    line-height: 1.6;
+    /* CRT scanline overlay */
+    position: relative;
+  }
+
+  body::after {
+    content: '';
+    position: fixed; inset: 0;
+    background: repeating-linear-gradient(
+      0deg,
+      transparent,
+      transparent 2px,
+      rgba(0,0,0,0.06) 2px,
+      rgba(0,0,0,0.06) 4px
+    );
+    pointer-events: none;
+    z-index: 9999;
+  }
+
+  /* ── PIXEL BOX HELPER ────────────────────────────────────── */
+  /* 2px solid "pixel" border effect */
+  .pbox {
+    border: 2px solid var(--mid);
+    background: var(--dark);
+    position: relative;
+  }
+  .pbox::before {
+    content: '';
+    position: absolute;
+    inset: -4px;
+    border: 2px solid var(--black);
+    pointer-events: none;
+  }
+
+  /* ── LAYOUT ──────────────────────────────────────────────── */
+  #root {
+    width: 960px; height: 540px;
+    display: grid;
+    grid-template-columns: 192px 1fr 160px;
+    grid-template-rows: 24px 1fr 88px;
+    gap: 0;
+    background: var(--black);
+  }
+
+  /* ── TOP BAR ─────────────────────────────────────────────── */
+  #topbar {
+    grid-column: 1 / -1;
+    background: var(--dark);
+    border-bottom: 2px solid var(--mid);
+    display: flex;
+    align-items: center;
+    padding: 0 8px;
+    gap: 0;
+  }
+
+  .logo {
+    font-size: 7px;
+    color: var(--amber);
+    letter-spacing: 0.05em;
+    padding-right: 10px;
+    border-right: 2px solid var(--mid);
+    margin-right: 10px;
+  }
+
+  .hud-stat {
+    display: flex; align-items: center; gap: 4px;
+    padding: 0 8px;
+    border-right: 2px solid var(--mid);
+    height: 100%;
+  }
+  .hud-icon {
+    width: 8px; height: 8px;
+    image-rendering: pixelated;
+    flex-shrink: 0;
+  }
+  /* Pixel gem icon via CSS */
+  .gem-icon {
+    width: 8px; height: 8px;
+    background: var(--amber);
+    clip-path: polygon(50% 0%, 100% 38%, 82% 100%, 18% 100%, 0% 38%);
+  }
+  .gem-icon.s { background: var(--teal2); clip-path: polygon(50% 0%, 100% 50%, 50% 100%, 0% 50%); }
+  .gem-icon.c { background: var(--green2); clip-path: polygon(25% 0%, 75% 0%, 100% 50%, 75% 100%, 25% 100%, 0% 50%); }
+  .coin-icon {
+    width: 8px; height: 8px;
+    background: var(--amber2);
+    border-radius: 50%;
+  }
+  .drone-icon {
+    width: 8px; height: 8px;
+    background: var(--teal);
+    clip-path: polygon(50% 0%, 100% 30%, 100% 70%, 50% 100%, 0% 70%, 0% 30%);
+  }
+
+  .hud-val { font-size: 7px; color: var(--white); }
+  .hud-val.amber { color: var(--amber2); }
+  .hud-val.teal { color: var(--teal2); }
+
+  .spacer { flex: 1; }
+  .hud-clock { font-size: 6px; color: var(--light); }
+
+  /* Blink dot */
+  .blink {
+    width: 4px; height: 4px;
+    background: var(--green2);
+    margin-left: 8px;
+    animation: blink 1.2s step-end infinite;
+  }
+  @keyframes blink { 0%,100% { opacity:1; } 50% { opacity:0; } }
+
+  /* ── LEFT PANEL ──────────────────────────────────────────── */
+  #left {
+    background: var(--dark);
+    border-right: 2px solid var(--mid);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+
+  .ptitle {
+    font-size: 6px;
+    color: var(--bright);
+    letter-spacing: 0.05em;
+    padding: 5px 8px 4px;
+    border-bottom: 2px solid var(--mid);
+    background: var(--black);
+    text-transform: uppercase;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .ptitle-badge {
+    background: var(--amber);
+    color: var(--black);
+    padding: 1px 4px;
+    font-size: 5px;
+  }
+
+  /* Minimap */
+  .minimap {
+    height: 128px;
+    background: var(--black);
+    border-bottom: 2px solid var(--mid);
+    position: relative;
+    overflow: hidden;
+    flex-shrink: 0;
+  }
+  /* Pixel grid */
+  .mm-grid {
+    position: absolute; inset: 0;
+    background-image:
+      linear-gradient(var(--dark) 1px, transparent 1px),
+      linear-gradient(90deg, var(--dark) 1px, transparent 1px);
+    background-size: 16px 16px;
+  }
+  .mm-label { position: absolute; top:3px; left:5px; font-size:5px; color:var(--light); }
+  .mm-dot { position: absolute; width:4px; height:4px; }
+  .mm-viewport { position: absolute; border: 2px solid var(--bright); opacity:0.4; }
+  .mm-player-dot {
+    position: absolute;
+    width: 4px; height: 4px;
+    background: var(--white);
+  }
+
+  /* Drone rows */
+  .drone-row {
+    display: flex; align-items: center; gap: 5px;
+    padding: 4px 8px;
+    border-bottom: 1px solid var(--mid);
+    cursor: pointer;
+  }
+  .drone-row:hover { background: var(--mid); }
+
+  .d-sprite {
+    width: 12px; height: 12px; flex-shrink: 0;
+    background: var(--teal);
+    clip-path: polygon(50% 0%, 100% 30%, 100% 70%, 50% 100%, 0% 70%, 0% 30%);
+    border: 1px solid var(--teal2);
+  }
+  .d-sprite.idle { background: var(--mid); border-color: var(--light); }
+
+  .d-info { flex: 1; min-width: 0; }
+  .d-name { font-size: 5px; color: var(--white); }
+  .d-status { font-size: 5px; color: var(--light); margin-top: 1px; }
+  .d-status.active { color: var(--teal2); }
+
+  .d-hp {
+    width: 20px; height: 3px;
+    background: var(--mid);
+    flex-shrink: 0;
+    position: relative;
+  }
+  .d-hp-fill { position: absolute; inset: 0; background: var(--green2); }
+  .d-hp-fill.warn { background: var(--amber); }
+
+  /* Empty slot */
+  .drone-row.empty { opacity: 0.35; }
+  .d-sprite.empty { clip-path: none; background: transparent; border: 1px dashed var(--mid); }
+
+  /* ── WORLD ───────────────────────────────────────────────── */
+  #world {
+    background: var(--black);
+    position: relative;
+    overflow: hidden;
+  }
+
+  /* Pixel grid overlay */
+  .w-grid {
+    position: absolute; inset: 0;
+    background-image:
+      linear-gradient(rgba(42,47,62,0.3) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(42,47,62,0.3) 1px, transparent 1px);
+    background-size: 16px 16px;
+  }
+
+  /* Terrain tiles — sharp chunky shapes */
+  .tile {
+    position: absolute;
+    background: var(--dark);
+  }
+
+  /* Ore deposit — 8-bit gem shape */
+  .ore {
+    position: absolute;
+    display: flex; flex-direction: column; align-items: center;
+    cursor: pointer;
+  }
+  /* 16×16 pixel gem sprite approximation */
+  .ore-sprite {
+    width: 16px; height: 16px;
+    position: relative;
+    flex-shrink: 0;
+  }
+  .ore-sprite .px {
+    position: absolute;
+    background: var(--amber);
+  }
+  /* Build the gem pixel-by-pixel via rows */
+  .ore-sprite.vorax { filter: none; }
+  .ore-sprite.krysite .px { background: var(--teal2); }
+  .ore-sprite.aethite .px { background: var(--green2); }
+
+  .ore-label {
+    font-size: 5px;
+    color: var(--bright);
+    margin-top: 2px;
+    white-space: nowrap;
+  }
+  .ore.selected .ore-sprite { filter: drop-shadow(0 0 3px var(--amber)); }
+  .ore.selected .ore-label { color: var(--amber2); }
+
+  /* Buildings — sharp pixel blocks */
+  .bldg {
+    position: absolute;
+    background: var(--mid);
+    border: 2px solid var(--light);
+  }
+  .bldg.harvester {
+    width: 16px; height: 12px;
+    clip-path: polygon(0% 100%, 25% 0%, 75% 0%, 100% 100%);
+    background: var(--teal);
+    border: none;
+  }
+  .bldg.shop {
+    width: 20px; height: 18px;
+    background: var(--mid);
+    border-color: var(--amber);
+  }
+  .bldg.fab {
+    width: 18px; height: 16px;
+    background: var(--dark);
+    border-color: var(--teal);
+  }
+
+  .bldg-label {
+    position: absolute;
+    top: calc(100% + 3px); left: 50%;
+    transform: translateX(-50%);
+    font-size: 5px;
+    color: var(--light);
+    white-space: nowrap;
+  }
+
+  /* Player sprite — 8px chunky character */
+  .player {
+    position: absolute;
+    width: 8px; height: 12px;
+    background: var(--white);
+    clip-path: polygon(
+      30% 0%, 70% 0%,          /* head */
+      70% 40%, 100% 40%,        /* right shoulder */
+      100% 70%, 70% 70%,        /* right arm down */
+      70% 100%, 30% 100%,       /* legs */
+      30% 70%, 0% 70%,          /* left arm down */
+      0% 40%, 30% 40%           /* left shoulder */
+    );
+    filter: drop-shadow(0 0 3px rgba(200,212,232,0.6));
+  }
+
+  /* Drone sprites on map */
+  .drone-world {
+    position: absolute;
+    width: 6px; height: 6px;
+    background: var(--teal2);
+    clip-path: polygon(50% 0%, 100% 30%, 100% 70%, 50% 100%, 0% 70%, 0% 30%);
+  }
+
+  /* Selection box — pixel style */
+  .sel-box {
+    position: absolute;
+    border: 2px solid var(--amber);
+    background: rgba(212,168,67,0.05);
+    animation: sel-pulse 1s step-end infinite;
+  }
+  @keyframes sel-pulse {
+    0%,100% { border-color: var(--amber); }
+    50% { border-color: var(--amber2); }
+  }
+
+  /* Info popup — pixelated panel */
+  .popup {
+    position: absolute;
+    background: var(--dark);
+    border: 2px solid var(--mid);
+    padding: 6px 8px;
+    min-width: 110px;
+  }
+  .popup::before {
+    content: '';
+    position: absolute; inset: -4px;
+    border: 2px solid var(--black);
+    pointer-events: none;
+  }
+  .popup-title {
+    font-size: 5px; color: var(--amber2);
+    letter-spacing: 0.05em;
+    border-bottom: 1px solid var(--mid);
+    padding-bottom: 4px; margin-bottom: 5px;
+    text-transform: uppercase;
+  }
+  .popup-row {
+    display: flex; justify-content: space-between;
+    margin-bottom: 3px;
+    gap: 8px;
+  }
+  .popup-label { font-size: 5px; color: var(--light); }
+  .popup-val { font-size: 5px; color: var(--white); }
+  .popup-val.amber { color: var(--amber2); }
+
+  /* Float text */
+  .floattext {
+    position: absolute;
+    font-size: 6px;
+    color: var(--amber2);
+    animation: floatup 2s ease-out forwards;
+    pointer-events: none;
+    white-space: nowrap;
+  }
+  .floattext.teal { color: var(--teal2); }
+  @keyframes floatup {
+    0%   { opacity: 1; transform: translateY(0); }
+    100% { opacity: 0; transform: translateY(-20px); }
+  }
+
+  /* Notification banner */
+  .notif {
+    position: absolute;
+    right: 6px; top: 6px;
+    background: var(--dark);
+    border: 2px solid var(--mid);
+    padding: 4px 8px;
+    font-size: 6px;
+    color: var(--white);
+  }
+  .notif .hl { color: var(--amber2); }
+
+  /* ── RIGHT PANEL ─────────────────────────────────────────── */
+  #right {
+    background: var(--dark);
+    border-left: 2px solid var(--mid);
+    display: flex; flex-direction: column;
+    overflow: hidden;
+  }
+
+  .store-row {
+    display: flex; align-items: center; gap: 4px;
+    padding: 3px 8px;
+    border-bottom: 1px solid var(--mid);
+  }
+  .store-ico { width: 8px; height: 8px; flex-shrink: 0; }
+  .store-name { font-size: 5px; color: var(--light); flex: 1; }
+  .store-val { font-size: 5px; color: var(--white); min-width: 24px; text-align: right; }
+  .store-bar { width: 32px; height: 3px; background: var(--mid); flex-shrink: 0; overflow: hidden; }
+  .store-bar-f { height: 100%; }
+
+  /* Tech nodes */
+  .tech-row {
+    display: flex; align-items: flex-start; gap: 5px;
+    padding: 4px 8px;
+    border-bottom: 1px solid var(--mid);
+    cursor: pointer;
+  }
+  .tech-row:hover { background: var(--mid); }
+  .tech-sq {
+    width: 10px; height: 10px; flex-shrink: 0;
+    border: 1px solid var(--light);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 5px;
+  }
+  .tech-sq.done { border-color: var(--green2); color: var(--green2); background: rgba(40,88,56,0.3); }
+  .tech-sq.act  { border-color: var(--amber); color: var(--amber); background: rgba(212,168,67,0.12); }
+  .tech-sq.lock { border-color: var(--mid); color: var(--mid); }
+  .tech-info { flex:1; }
+  .tech-name { font-size: 5px; color: var(--bright); }
+  .tech-name.dim { color: var(--light); }
+  .tech-prog { font-size: 5px; color: var(--amber); margin-top: 2px; letter-spacing: -0.02em; }
+
+  /* Log */
+  .log-row {
+    display: flex; align-items: flex-start; gap: 4px;
+    padding: 3px 8px;
+    border-bottom: 1px solid var(--mid);
+  }
+  .log-time { font-size: 5px; color: var(--light); flex-shrink: 0; }
+  .log-text { font-size: 5px; color: var(--bright); }
+  .log-text .a { color: var(--amber2); }
+  .log-text .t { color: var(--teal2); }
+
+  /* ── BOTTOM ──────────────────────────────────────────────── */
+  #bottom {
+    grid-column: 1 / -1;
+    background: var(--dark);
+    border-top: 2px solid var(--mid);
+    display: flex; align-items: stretch;
+    overflow: hidden;
+  }
+
+  /* Action slots */
+  .slots {
+    display: flex; align-items: center; gap: 2px;
+    padding: 0 8px;
+    border-right: 2px solid var(--mid);
+  }
+  .slot {
+    width: 60px; height: 72px;
+    background: var(--black);
+    border: 2px solid var(--mid);
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center; gap: 4px;
+    cursor: pointer;
+    position: relative;
+    flex-shrink: 0;
+  }
+  .slot:hover { border-color: var(--light); background: var(--mid); }
+  .slot.active { border-color: var(--amber); background: rgba(212,168,67,0.08); }
+
+  /* Pixel art slot icons */
+  .slot-sprite {
+    width: 24px; height: 24px;
+    flex-shrink: 0;
+    image-rendering: pixelated;
+  }
+  .pick-sprite {
+    width: 24px; height: 24px;
+    background: var(--bright);
+    clip-path: polygon(
+      45% 0%, 55% 0%,
+      55% 50%, 80% 80%, 70% 90%,
+      50% 65%,
+      30% 90%, 20% 80%, 45% 50%
+    );
+  }
+  .slot.active .pick-sprite { background: var(--amber2); }
+  .build-sprite {
+    width: 24px; height: 18px;
+    background: var(--mid);
+    border: 2px solid var(--bright);
+    position: relative;
+  }
+  .build-sprite::before {
+    content: '';
+    position: absolute;
+    left: 50%; top: -6px;
+    transform: translateX(-50%);
+    width: 0; height: 0;
+    border-left: 6px solid transparent;
+    border-right: 6px solid transparent;
+    border-bottom: 6px solid var(--bright);
+  }
+  .drone-sprite {
+    width: 20px; height: 20px;
+    background: var(--teal);
+    clip-path: polygon(50% 0%, 100% 30%, 100% 70%, 50% 100%, 0% 70%, 0% 30%);
+    border: 1px solid var(--teal2);
+  }
+  .tech-sprite {
+    width: 20px; height: 20px;
+    background: transparent;
+    border: 2px solid var(--bright);
+    border-radius: 50%;
+    position: relative;
+  }
+  .tech-sprite::before {
+    content: '';
+    position: absolute; inset: 3px;
+    background: var(--bright);
+    border-radius: 50%;
+  }
+  .shop-sprite {
+    width: 20px; height: 18px;
+    background: var(--mid);
+    border: 2px solid var(--amber);
+    position: relative;
+  }
+  .shop-sprite::after {
+    content: '$';
+    position: absolute; inset: 0;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 8px;
+    color: var(--amber2);
+  }
+
+  .slot-label { font-size: 5px; color: var(--light); text-transform: uppercase; }
+  .slot.active .slot-label { color: var(--amber2); }
+  .slot-key {
+    position: absolute; top: 3px; right: 4px;
+    font-size: 5px; color: var(--mid);
+  }
+  .slot-count {
+    position: absolute; bottom: 3px; right: 4px;
+    font-size: 5px; color: var(--light);
+  }
+
+  /* Detail panel */
+  .detail {
+    flex: 1;
+    padding: 8px 12px;
+    border-right: 2px solid var(--mid);
+    display: flex; flex-direction: column; justify-content: center; gap: 4px;
+  }
+  .det-name { font-size: 7px; color: var(--white); }
+  .det-type { font-size: 5px; color: var(--amber2); margin-top: 1px; }
+  .det-stats { display: flex; gap: 14px; margin-top: 4px; }
+  .det-stat { display: flex; flex-direction: column; gap: 2px; }
+  .det-stat-l { font-size: 5px; color: var(--light); }
+  .det-stat-v { font-size: 6px; color: var(--white); }
+  .det-stat-v.a { color: var(--amber2); }
+
+  /* HP / progress bar */
+  .hp-bar { width: 60px; height: 4px; background: var(--mid); overflow: hidden; margin-top: 3px; }
+  .hp-bar-f { height: 100%; background: var(--amber); }
+
+  /* Action buttons */
+  .act-btns {
+    display: flex; flex-direction: column; justify-content: center; gap: 4px;
+    padding: 6px 10px;
+    border-right: 2px solid var(--mid);
+    min-width: 110px;
+  }
+  .pbtn {
+    padding: 5px 6px;
+    font-family: var(--px);
+    font-size: 5px;
+    letter-spacing: 0.03em;
+    text-transform: uppercase;
+    border: 2px solid;
+    cursor: pointer;
+    text-align: center;
+  }
+  .pbtn-p { background: rgba(212,168,67,0.15); border-color: var(--amber); color: var(--amber2); }
+  .pbtn-p:hover { background: rgba(212,168,67,0.3); }
+  .pbtn-s { background: transparent; border-color: var(--mid); color: var(--light); }
+  .pbtn-s:hover { border-color: var(--light); color: var(--white); }
+
+  /* Summary */
+  .summary {
+    display: flex; flex-direction: column; justify-content: center; gap: 5px;
+    padding: 8px 12px;
+    min-width: 130px;
+  }
+  .sum-row { display: flex; align-items: center; gap: 6px; }
+  .sum-label { font-size: 5px; color: var(--light); min-width: 44px; }
+  .sum-val { font-size: 6px; }
+  .sum-val.a { color: var(--amber2); }
+  .sum-val.g { color: var(--green2); }
+  .sum-bar { flex: 1; height: 3px; background: var(--mid); max-width: 48px; overflow: hidden; }
+  .sum-bar-f { height: 100%; background: var(--teal); }
+</style>
+</head>
+<body>
+<div id="root">
+
+  <!-- TOP BAR -->
+  <div id="topbar">
+    <span class="logo">■ VOIDYIELD</span>
+
+    <div class="hud-stat">
+      <div class="coin-icon"></div>
+      <span class="hud-val amber">4820</span>
+    </div>
+    <div class="hud-stat">
+      <div class="gem-icon"></div>
+      <span class="hud-val">340</span>
+    </div>
+    <div class="hud-stat">
+      <div class="gem-icon s"></div>
+      <span class="hud-val">120</span>
+    </div>
+    <div class="hud-stat">
+      <div class="gem-icon c"></div>
+      <span class="hud-val">60</span>
+    </div>
+    <div class="hud-stat">
+      <div class="drone-icon"></div>
+      <span class="hud-val teal">3/5</span>
+    </div>
+
+    <div class="spacer"></div>
+
+    <span class="hud-clock">SOL 14  08:42</span>
+    <div class="blink"></div>
+  </div>
+
+  <!-- LEFT -->
+  <div id="left">
+    <div class="ptitle">MAP — SECTOR A-1 <span class="ptitle-badge">2.4km</span></div>
+    <div class="minimap">
+      <div class="mm-grid"></div>
+      <span class="mm-label">SURFACE</span>
+      <div class="mm-viewport" style="left:28px;top:32px;width:56px;height:50px;"></div>
+      <!-- Deposits -->
+      <div class="mm-dot" style="left:44px;top:48px;width:5px;height:5px;background:var(--amber);"></div>
+      <div class="mm-dot" style="left:70px;top:54px;width:5px;height:5px;background:var(--amber);"></div>
+      <div class="mm-dot" style="left:58px;top:70px;width:5px;height:5px;background:var(--amber);"></div>
+      <div class="mm-dot" style="left:90px;top:44px;width:5px;height:5px;background:var(--teal2);"></div>
+      <div class="mm-dot" style="left:108px;top:68px;width:5px;height:5px;background:var(--teal2);"></div>
+      <div class="mm-dot" style="left:34px;top:88px;width:5px;height:5px;background:var(--green2);"></div>
+      <!-- Buildings -->
+      <div class="mm-dot" style="left:46px;top:50px;width:4px;height:4px;background:var(--teal);"></div>
+      <div class="mm-dot" style="left:72px;top:56px;width:4px;height:4px;background:var(--teal);"></div>
+      <!-- Player -->
+      <div class="mm-player-dot" style="left:60px;top:60px;"></div>
+    </div>
+
+    <div class="ptitle">DRONES <span class="ptitle-badge">3</span></div>
+
+    <div class="drone-row">
+      <div class="d-sprite"></div>
+      <div class="d-info">
+        <div class="d-name">SCOUT-01</div>
+        <div class="d-status active">SURVEY D-04</div>
+      </div>
+      <div class="d-hp"><div class="d-hp-fill" style="width:70%"></div></div>
+    </div>
+    <div class="drone-row">
+      <div class="d-sprite"></div>
+      <div class="d-info">
+        <div class="d-name">CARGO-01</div>
+        <div class="d-status active">HAUL→STORE</div>
+      </div>
+      <div class="d-hp"><div class="d-hp-fill warn" style="width:45%"></div></div>
+    </div>
+    <div class="drone-row">
+      <div class="d-sprite"></div>
+      <div class="d-info">
+        <div class="d-name">CARGO-02</div>
+        <div class="d-status">IDLE</div>
+      </div>
+      <div class="d-hp"><div class="d-hp-fill" style="width:100%"></div></div>
+    </div>
+    <div class="drone-row empty">
+      <div class="d-sprite empty"></div>
+      <div class="d-info">
+        <div class="d-name" style="color:var(--light);">EMPTY SLOT</div>
+        <div class="d-status">800 CR</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- WORLD -->
+  <div id="world">
+    <div class="w-grid"></div>
+
+    <!-- Chunky terrain tiles -->
+    <div class="tile" style="left:48px;top:40px;width:96px;height:72px;clip-path:polygon(0%100%,8%0%,92%0%,100%100%);opacity:0.6;"></div>
+    <div class="tile" style="left:380px;top:130px;width:72px;height:56px;clip-path:polygon(0%100%,10%0%,90%0%,100%100%);opacity:0.5;"></div>
+    <div class="tile" style="left:490px;top:20px;width:48px;height:40px;clip-path:polygon(0%100%,12%0%,88%0%,100%100%);opacity:0.4;"></div>
+    <div class="tile" style="left:30px;top:230px;width:56px;height:40px;clip-path:polygon(0%100%,15%0%,85%0%,100%100%);opacity:0.4;"></div>
+
+    <!-- Deposits — pixel gem sprites -->
+    <!-- Deposit 1 (selected) -->
+    <div class="ore selected" style="left:138px;top:98px;">
+      <div class="ore-sprite vorax">
+        <div class="px" style="left:4px;top:0;width:8px;height:2px;"></div>
+        <div class="px" style="left:2px;top:2px;width:12px;height:2px;"></div>
+        <div class="px" style="left:0;top:4px;width:16px;height:6px;"></div>
+        <div class="px" style="left:2px;top:10px;width:12px;height:2px;"></div>
+        <div class="px" style="left:4px;top:12px;width:8px;height:2px;"></div>
+        <div class="px" style="left:6px;top:14px;width:4px;height:2px;background:rgba(255,200,80,0.5);"></div>
+        <!-- specular highlight -->
+        <div class="px" style="left:3px;top:4px;width:3px;height:3px;background:var(--amber2);"></div>
+      </div>
+      <div class="ore-label">VORAX ·34</div>
+    </div>
+
+    <!-- Deposit 2 -->
+    <div class="ore" style="left:258px;top:138px;">
+      <div class="ore-sprite vorax">
+        <div class="px" style="left:4px;top:0;width:8px;height:2px;opacity:0.7;"></div>
+        <div class="px" style="left:2px;top:2px;width:12px;height:2px;opacity:0.7;"></div>
+        <div class="px" style="left:0;top:4px;width:16px;height:6px;opacity:0.7;"></div>
+        <div class="px" style="left:2px;top:10px;width:12px;height:2px;opacity:0.7;"></div>
+        <div class="px" style="left:4px;top:12px;width:8px;height:2px;opacity:0.7;"></div>
+      </div>
+      <div class="ore-label">VORAX ·21</div>
+    </div>
+
+    <!-- Krysite deposit -->
+    <div class="ore" style="left:328px;top:78px;">
+      <div class="ore-sprite krysite">
+        <div class="px" style="left:4px;top:0;width:8px;height:2px;"></div>
+        <div class="px" style="left:0;top:2px;width:16px;height:8px;"></div>
+        <div class="px" style="left:4px;top:10px;width:8px;height:4px;"></div>
+        <div class="px" style="left:2px;top:4px;width:3px;height:3px;background:var(--white);opacity:0.4;"></div>
+      </div>
+      <div class="ore-label" style="color:var(--teal);">KRYSITE</div>
+    </div>
+
+    <!-- Aethite -->
+    <div class="ore" style="left:78px;top:198px;">
+      <div class="ore-sprite aethite">
+        <div class="px" style="left:4px;top:0;width:8px;height:2px;"></div>
+        <div class="px" style="left:0;top:2px;width:16px;height:10px;"></div>
+        <div class="px" style="left:4px;top:12px;width:8px;height:2px;"></div>
+      </div>
+      <div class="ore-label" style="color:var(--green);">AETHITE</div>
+    </div>
+
+    <!-- Buildings -->
+    <div class="bldg harvester" style="left:154px;top:114px;">
+      <div class="bldg-label">H-01</div>
+    </div>
+    <div class="bldg harvester" style="left:274px;top:154px;">
+      <div class="bldg-label">H-02</div>
+    </div>
+    <div class="bldg shop" style="left:350px;top:160px;">
+      <div class="bldg-label">OUTPOST</div>
+    </div>
+    <div class="bldg fab" style="left:300px;top:120px;">
+      <div class="bldg-label">FAB-01</div>
+    </div>
+
+    <!-- Selection box on deposit 1 -->
+    <div class="sel-box" style="left:130px;top:90px;width:38px;height:38px;"></div>
+
+    <!-- Player -->
+    <div class="player" style="left:212px;top:162px;"></div>
+
+    <!-- Drones on map -->
+    <div class="drone-world" style="left:180px;top:80px;"></div>
+    <div class="drone-world" style="left:256px;top:140px;"></div>
+
+    <!-- Info popup -->
+    <div class="popup" style="left:172px;top:72px;">
+      <div class="popup-title">D-01 · VORAX</div>
+      <div class="popup-row">
+        <span class="popup-label">QUALITY</span>
+        <span class="popup-val amber">B+ 74%</span>
+      </div>
+      <div class="popup-row">
+        <span class="popup-label">YIELD/H</span>
+        <span class="popup-val">2.4T</span>
+      </div>
+      <div class="popup-row">
+        <span class="popup-label">RESERVE</span>
+        <span class="popup-val">340T</span>
+      </div>
+      <div class="popup-row">
+        <span class="popup-label">HARV</span>
+        <span class="popup-val">1 ACT</span>
+      </div>
+    </div>
+
+    <!-- Floating text -->
+    <div class="floattext" style="left:160px;top:60px;">+18 VORAX</div>
+    <div class="floattext teal" style="left:256px;top:110px;">DELIVERED</div>
+
+    <!-- Notification -->
+    <div class="notif">CARGO-01 → <span class="hl">+18 VORAX</span></div>
+  </div>
+
+  <!-- RIGHT -->
+  <div id="right">
+    <div class="ptitle">STORAGE</div>
+
+    <div class="store-row">
+      <div class="gem-icon store-ico"></div>
+      <span class="store-name">VORAX</span>
+      <span class="store-val">340</span>
+      <div class="store-bar"><div class="store-bar-f" style="width:68%;background:var(--amber);"></div></div>
+    </div>
+    <div class="store-row">
+      <div class="gem-icon s store-ico"></div>
+      <span class="store-name">KRYSITE</span>
+      <span class="store-val">120</span>
+      <div class="store-bar"><div class="store-bar-f" style="width:24%;background:var(--teal2);"></div></div>
+    </div>
+    <div class="store-row">
+      <div class="gem-icon c store-ico"></div>
+      <span class="store-name">AETHITE</span>
+      <span class="store-val">60</span>
+      <div class="store-bar"><div class="store-bar-f" style="width:12%;background:var(--green2);"></div></div>
+    </div>
+
+    <div class="ptitle" style="margin-top:2px;">TECH TREE <span class="ptitle-badge">ACT</span></div>
+
+    <div class="tech-row">
+      <div class="tech-sq done">✓</div>
+      <div class="tech-info"><div class="tech-name dim">DRONE BAY I</div></div>
+    </div>
+    <div class="tech-row">
+      <div class="tech-sq done">✓</div>
+      <div class="tech-info"><div class="tech-name dim">GEO SURVEY</div></div>
+    </div>
+    <div class="tech-row">
+      <div class="tech-sq act">▶</div>
+      <div class="tech-info">
+        <div class="tech-name">HARV MK.II</div>
+        <div class="tech-prog">████░░ 74%</div>
+      </div>
+    </div>
+    <div class="tech-row">
+      <div class="tech-sq lock">-</div>
+      <div class="tech-info"><div class="tech-name dim">PROC PLANT</div></div>
+    </div>
+    <div class="tech-row">
+      <div class="tech-sq lock">-</div>
+      <div class="tech-info"><div class="tech-name dim">DRONE BAY II</div></div>
+    </div>
+
+    <div class="ptitle" style="margin-top:auto;">LOG</div>
+    <div class="log-row">
+      <span class="log-time">08:41</span>
+      <span class="log-text"><span class="t">C-01</span> +<span class="a">18 VRX</span></span>
+    </div>
+    <div class="log-row">
+      <span class="log-time">08:38</span>
+      <span class="log-text">RESEARCH <span class="a">74%</span></span>
+    </div>
+    <div class="log-row">
+      <span class="log-time">08:30</span>
+      <span class="log-text">D-01 QUAL <span class="a">B+</span></span>
+    </div>
+  </div>
+
+  <!-- BOTTOM -->
+  <div id="bottom">
+    <div class="slots">
+      <div class="slot active">
+        <div class="pick-sprite"></div>
+        <span class="slot-label">MINE</span>
+        <span class="slot-key">1</span>
+      </div>
+      <div class="slot">
+        <div class="build-sprite"></div>
+        <span class="slot-label">BUILD</span>
+        <span class="slot-key">2</span>
+      </div>
+      <div class="slot">
+        <div class="drone-sprite"></div>
+        <span class="slot-label">DRONES</span>
+        <span class="slot-key">3</span>
+        <span class="slot-count">3</span>
+      </div>
+      <div class="slot">
+        <div class="tech-sprite"></div>
+        <span class="slot-label">TECH</span>
+        <span class="slot-key">4</span>
+      </div>
+      <div class="slot">
+        <div class="shop-sprite"></div>
+        <span class="slot-label">SHOP</span>
+        <span class="slot-key">5</span>
+      </div>
+    </div>
+
+    <div class="detail">
+      <div class="det-name">DEPOSIT D-01</div>
+      <div class="det-type">VORAX ORE · GRADE B+</div>
+      <div class="det-stats">
+        <div class="det-stat">
+          <span class="det-stat-l">YIELD</span>
+          <span class="det-stat-v a">2.4T/H</span>
+        </div>
+        <div class="det-stat">
+          <span class="det-stat-l">RESRV</span>
+          <span class="det-stat-v">340T</span>
+        </div>
+        <div class="det-stat">
+          <span class="det-stat-l">HARV</span>
+          <span class="det-stat-v">1/2</span>
+        </div>
+        <div class="det-stat">
+          <span class="det-stat-l">VALUE</span>
+          <span class="det-stat-v a">12CR/T</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="act-btns">
+      <div class="pbtn pbtn-p">PLACE HARV</div>
+      <div class="pbtn pbtn-s">ASSIGN DRONE</div>
+    </div>
+
+    <div class="summary">
+      <div class="sum-row">
+        <span class="sum-label">CREDITS</span>
+        <span class="sum-val a">4,820</span>
+      </div>
+      <div class="sum-row">
+        <span class="sum-label">CR/HOUR</span>
+        <span class="sum-val g">+320</span>
+      </div>
+      <div class="sum-row">
+        <span class="sum-label">ESCAPE</span>
+        <div class="sum-bar"><div class="sum-bar-f" style="width:28%;"></div></div>
+        <span class="sum-val" style="font-size:5px;color:var(--light);">28%</span>
+      </div>
+    </div>
+  </div>
+
+</div>
+</body>
+</html>

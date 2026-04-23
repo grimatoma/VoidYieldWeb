@@ -1,0 +1,216 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>Void Yield — Design Mocks</title>
+<style>
+  * { box-sizing: border-box; }
+  body { background:#080810; color:#d4a843; font-family: monospace; margin:0; padding:0; }
+
+  /* NAV */
+  nav { position:sticky; top:0; z-index:100; background:#0d0d18; border-bottom:1px solid #2a2a3a; padding:12px 24px; display:flex; align-items:center; gap:24px; flex-wrap:wrap; }
+  nav h1 { color:#d4a843; font-size:16px; margin:0; letter-spacing:3px; white-space:nowrap; }
+  nav .badge { background:#1a1a2e; border:1px solid #3a3a50; color:#a88a4a; font-size:10px; padding:3px 8px; letter-spacing:1px; }
+  nav .links { display:flex; gap:16px; flex-wrap:wrap; }
+  nav a { color:#5a8fa8; font-size:11px; text-decoration:none; letter-spacing:1px; }
+  nav a:hover { color:#d4a843; }
+
+  /* LAYOUT */
+  main { padding:24px; }
+  h2.group {
+    color:#5a8fa8; font-size:11px; letter-spacing:4px; margin:40px 0 16px;
+    border-bottom:1px solid #1e1e2e; padding-bottom:8px; text-transform:uppercase;
+  }
+  h2.group:first-of-type { margin-top:0; }
+  h2.group span { color:#3a3a50; margin-left:8px; font-size:10px; }
+
+  /* GRID */
+  .grid { display:grid; grid-template-columns: repeat(auto-fill, minmax(520px, 1fr)); gap:20px; }
+  .grid.wide { grid-template-columns: repeat(auto-fill, minmax(700px, 1fr)); }
+
+  /* CARD */
+  .card {
+    background:#0f0f18; border:1px solid #2a2a3a;
+    transition: border-color 0.15s;
+    cursor:pointer;
+  }
+  .card:hover { border-color:#d4a843; }
+  .card:hover .card-label { color:#d4a843; }
+  .card-label {
+    font-size:10px; color:#5a6a70; padding:6px 10px;
+    letter-spacing:2px; border-bottom:1px solid #1e1e2e;
+    transition: color 0.15s;
+  }
+  .card object, .card img {
+    display:block; width:100%; height:auto;
+    pointer-events:none;
+  }
+
+  /* LIGHTBOX */
+  #lb { display:none; position:fixed; inset:0; z-index:1000; background:rgba(0,0,0,0.92); align-items:center; justify-content:center; }
+  #lb.open { display:flex; }
+  #lb object { max-width:90vw; max-height:90vh; width:960px; }
+  #lb-close { position:fixed; top:16px; right:24px; color:#d4a843; font-size:28px; cursor:pointer; z-index:1001; background:none; border:none; }
+  #lb-label { position:fixed; bottom:16px; left:50%; transform:translateX(-50%); color:#a88a4a; font-size:11px; letter-spacing:2px; }
+</style>
+</head>
+<body>
+
+<nav>
+  <h1>VOID YIELD — DESIGN MOCKS</h1>
+  <span class="badge">v0.5 · 68 SCREENS</span>
+  <div class="links">
+    <a href="#legacy">SYSTEM DIAGRAMS</a>
+    <a href="#menus">MENUS</a>
+    <a href="#hud">HUD &amp; OVERLAYS</a>
+    <a href="#panels">PANELS</a>
+    <a href="#galaxy">GALAXY</a>
+    <a href="#early">EARLY GAME</a>
+    <a href="#mid">MID GAME</a>
+    <a href="#colony">COLONY &amp; TRAVEL</a>
+    <a href="#endgame">ENDGAME</a>
+  </div>
+</nav>
+
+<main>
+
+<!-- ─── LEGACY: SYSTEM DIAGRAMS ─────────────────────────────── -->
+<h2 class="group" id="legacy">// SYSTEM DIAGRAMS &amp; FLOW <span>v0.1 originals</span></h2>
+<div class="grid">
+  <div class="card" onclick="lb(this,'01 — SURVEY FLOW')"><div class="card-label">01 — SURVEY FLOW</div><object data="01_survey_flow.svg" type="image/svg+xml"></object></div>
+  <div class="card" onclick="lb(this,'02 — HARVESTER GAS LOOP')"><div class="card-label">02 — HARVESTER GAS LOOP</div><object data="02_harvester_gas_loop.svg" type="image/svg+xml"></object></div>
+  <div class="card" onclick="lb(this,'03 — DRONE SWARM OVERVIEW')"><div class="card-label">03 — DRONE SWARM OVERVIEW</div><object data="03_drone_swarm_overview.svg" type="image/svg+xml"></object></div>
+  <div class="card" onclick="lb(this,'04 — CRAFTING &amp; QUALITY SCREEN')"><div class="card-label">04 — CRAFTING &amp; QUALITY SCREEN</div><object data="04_crafting_quality_screen.svg" type="image/svg+xml"></object></div>
+  <div class="card" onclick="lb(this,'05 — ROCKET ASSEMBLY SEQUENCE')"><div class="card-label">05 — ROCKET ASSEMBLY SEQUENCE</div><object data="05_rocket_assembly_sequence.svg" type="image/svg+xml"></object></div>
+  <div class="card" onclick="lb(this,'06 — VEHICLE ROSTER')"><div class="card-label">06 — VEHICLE ROSTER</div><object data="06_vehicle_roster.svg" type="image/svg+xml"></object></div>
+  <div class="card" onclick="lb(this,'07 — PLANET STRANDING LOOP')"><div class="card-label">07 — PLANET STRANDING LOOP</div><object data="07_planet_stranding_loop.svg" type="image/svg+xml"></object></div>
+  <div class="card" onclick="lb(this,'08 — SURVEY QUALITY REPORT')"><div class="card-label">08 — SURVEY QUALITY REPORT</div><object data="08_survey_quality_report.svg" type="image/svg+xml"></object></div>
+  <div class="card" onclick="lb(this,'09 — LOGISTICS ROUTE')"><div class="card-label">09 — LOGISTICS ROUTE</div><object data="09_logistics_route.svg" type="image/svg+xml"></object></div>
+  <div class="card" onclick="lb(this,'10 — PLANET COMPARISON')"><div class="card-label">10 — PLANET COMPARISON</div><object data="10_planet_comparison.svg" type="image/svg+xml"></object></div>
+  <div class="card" onclick="lb(this,'11 — HUD (DESKTOP)')"><div class="card-label">11 — HUD (DESKTOP) · multi-resource rail</div><object data="11_hud_desktop.svg" type="image/svg+xml"></object></div>
+  <div class="card" onclick="lb(this,'12 — HUD (MOBILE)')"><div class="card-label">12 — HUD (MOBILE)</div><object data="12_hud_mobile.svg" type="image/svg+xml"></object></div>
+  <div class="card" onclick="lb(this,'13 — SHOP PANEL')"><div class="card-label">13 — SHOP PANEL</div><object data="13_shop_panel.svg" type="image/svg+xml"></object></div>
+  <div class="card" onclick="lb(this,'14 — SELL TERMINAL')"><div class="card-label">14 — SELL TERMINAL</div><object data="14_sell_terminal.svg" type="image/svg+xml"></object></div>
+  <div class="card" onclick="lb(this,'15 — STORAGE DEPOT')"><div class="card-label">15 — STORAGE DEPOT</div><object data="15_storage_depot.svg" type="image/svg+xml"></object></div>
+  <div class="card" onclick="lb(this,'16 — INTERACTION PROMPTS')"><div class="card-label">16 — INTERACTION PROMPTS</div><object data="16_interaction_prompts.svg" type="image/svg+xml"></object></div>
+  <div class="card" onclick="lb(this,'17 — PAUSE / SETTINGS')"><div class="card-label">17 — PAUSE / SETTINGS</div><object data="17_pause_settings.svg" type="image/svg+xml"></object></div>
+  <div class="card" onclick="lb(this,'18 — MAIN MENU')"><div class="card-label">18 — MAIN MENU</div><object data="18_main_menu.svg" type="image/svg+xml"></object></div>
+  <div class="card" onclick="lb(this,'19 — SHIP BAY')"><div class="card-label">19 — SHIP BAY</div><object data="19_ship_bay.svg" type="image/svg+xml"></object></div>
+  <div class="card" onclick="lb(this,'20 — GALAXY MAP')"><div class="card-label">20 — GALAXY MAP</div><object data="20_galaxy_map.svg" type="image/svg+xml"></object></div>
+  <div class="card" onclick="lb(this,'21 — CARGO DOCK')"><div class="card-label">21 — CARGO DOCK</div><object data="21_cargo_dock.svg" type="image/svg+xml"></object></div>
+  <div class="card" onclick="lb(this,'22 — ASTEROID B WORLD LAYOUT')"><div class="card-label">22 — ASTEROID B WORLD LAYOUT</div><object data="22_asteroid_b_world.svg" type="image/svg+xml"></object></div>
+  <div class="card" onclick="lb(this,'23 — RELAY STATION PANEL')"><div class="card-label">23 — RELAY STATION PANEL</div><object data="23_relay_station_panel.svg" type="image/svg+xml"></object></div>
+  <div class="card" onclick="lb(this,'24 — LAUNCH / TRAVEL TRANSITION')"><div class="card-label">24 — LAUNCH / TRAVEL TRANSITION</div><object data="24_launch_transition.svg" type="image/svg+xml"></object></div>
+  <div class="card" onclick="lb(this,'25 — BOOT / SPLASH SCREEN')"><div class="card-label">25 — BOOT / SPLASH SCREEN</div><object data="25_boot_splash.svg" type="image/svg+xml"></object></div>
+  <div class="card" onclick="lb(this,'26 — FACTORY FLOOR')"><div class="card-label">26 — FACTORY FLOOR</div><object data="26_factory_floor.svg" type="image/svg+xml"></object></div>
+  <div class="card" onclick="lb(this,'27 — PRODUCTION DASHBOARD')"><div class="card-label">27 — PRODUCTION DASHBOARD</div><object data="27_production_dashboard.svg" type="image/svg+xml"></object></div>
+  <div class="card" onclick="lb(this,'28 — OFFLINE EVENT LOG')"><div class="card-label">28 — OFFLINE EVENT LOG</div><object data="28_offline_event_log.svg" type="image/svg+xml"></object></div>
+</div>
+
+<!-- ─── MENUS ────────────────────────────────────────────────── -->
+<h2 class="group" id="menus">// MENUS &amp; NAVIGATION</h2>
+<div class="grid">
+  <div class="card" onclick="lb(this,'MAIN MENU')"><div class="card-label">MAIN MENU</div><object data="ui/main_menu.svg" type="image/svg+xml"></object></div>
+  <div class="card" onclick="lb(this,'SETTINGS MENU')"><div class="card-label">SETTINGS MENU</div><object data="ui/settings_menu.svg" type="image/svg+xml"></object></div>
+  <div class="card" onclick="lb(this,'PAUSE MENU')"><div class="card-label">PAUSE MENU</div><object data="ui/pause_menu.svg" type="image/svg+xml"></object></div>
+  <div class="card" onclick="lb(this,'SAVE / LOAD SCREEN')"><div class="card-label">SAVE / LOAD SCREEN</div><object data="ui/save_load_screen.svg" type="image/svg+xml"></object></div>
+</div>
+
+<!-- ─── HUD & OVERLAYS ───────────────────────────────────────── -->
+<h2 class="group" id="hud">// HUD &amp; IN-GAME OVERLAYS</h2>
+<div class="grid wide">
+  <div class="card" onclick="lb(this,'HUD — GAMEPLAY')"><div class="card-label">HUD — GAMEPLAY</div><object data="ui/hud_gameplay.svg" type="image/svg+xml"></object></div>
+  <div class="card" onclick="lb(this,'PRODUCTION OVERLAY [O]')"><div class="card-label">PRODUCTION OVERLAY [O]</div><object data="ui/production_overlay.svg" type="image/svg+xml"></object></div>
+  <div class="card" onclick="lb(this,'COVERAGE OVERLAY [B]')"><div class="card-label">COVERAGE OVERLAY [B] · drone radius zones</div><object data="ui/coverage_overlay.svg" type="image/svg+xml"></object></div>
+</div>
+
+<!-- ─── PANELS ───────────────────────────────────────────────── -->
+<h2 class="group" id="panels">// PANELS &amp; MANAGEMENT SCREENS</h2>
+<div class="grid">
+  <div class="card" onclick="lb(this,'INVENTORY PANEL [I]')"><div class="card-label">INVENTORY PANEL [I] · ore quality badges</div><object data="ui/inventory_panel.svg" type="image/svg+xml"></object></div>
+  <div class="card" onclick="lb(this,'SURVEY TOOL UI [Q]')"><div class="card-label">SURVEY TOOL UI [Q] · 4-stage scan</div><object data="ui/survey_tool_ui.svg" type="image/svg+xml"></object></div>
+  <div class="card" onclick="lb(this,'PRODUCTION DASHBOARD [P]')"><div class="card-label">PRODUCTION DASHBOARD [P]</div><object data="ui/production_dashboard.svg" type="image/svg+xml"></object></div>
+  <div class="card" onclick="lb(this,'TECH TREE PANEL')"><div class="card-label">TECH TREE PANEL · RP gates</div><object data="ui/tech_tree_panel.svg" type="image/svg+xml"></object></div>
+  <div class="card" onclick="lb(this,'FLEET PANEL [T]')"><div class="card-label">FLEET PANEL [T] · cargo ships</div><object data="ui/fleet_panel.svg" type="image/svg+xml"></object></div>
+  <div class="card" onclick="lb(this,'DRONE BAY PANEL')"><div class="card-label">DRONE BAY PANEL · roster + task assignment</div><object data="ui/drone_bay_panel.svg" type="image/svg+xml"></object></div>
+  <div class="card" onclick="lb(this,'RESOURCE QUALITY INSPECTOR')"><div class="card-label">RESOURCE QUALITY INSPECTOR · SWG attributes</div><object data="ui/resource_quality_inspector.svg" type="image/svg+xml"></object></div>
+  <div class="card" onclick="lb(this,'EVENT LOG [L]')"><div class="card-label">EVENT LOG [L]</div><object data="ui/event_log_panel.svg" type="image/svg+xml"></object></div>
+</div>
+
+<!-- ─── GALAXY ───────────────────────────────────────────────── -->
+<h2 class="group" id="galaxy">// GALAXY MAP &amp; PLANET VIEWS</h2>
+<div class="grid wide">
+  <div class="card" onclick="lb(this,'GALAXY MAP [M]')"><div class="card-label">GALAXY MAP [M] · A1 / A2 / B / C / A3</div><object data="ui/galaxy_map.svg" type="image/svg+xml"></object></div>
+  <div class="card" onclick="lb(this,'PLANET SELECT TOOLTIP')"><div class="card-label">PLANET SELECT TOOLTIP</div><object data="ui/planet_select_tooltip.svg" type="image/svg+xml"></object></div>
+</div>
+
+<!-- ─── EARLY GAME ───────────────────────────────────────────── -->
+<h2 class="group" id="early">// GAMEPLAY — EARLY GAME <span>M1 – M4 · manual mining → first drone</span></h2>
+<div class="grid wide">
+  <div class="card" onclick="lb(this,'A1 START STATE · 150 CR · no drones')"><div class="card-label">A1 START STATE · 150 CR · no drones yet</div><object data="ui/gameplay_a1_start.svg" type="image/svg+xml"></object></div>
+  <div class="card" onclick="lb(this,'FIRST HARVESTER · hopper filling')"><div class="card-label">FIRST HARVESTER · hopper filling · fuel 80%</div><object data="ui/gameplay_first_harvester.svg" type="image/svg+xml"></object></div>
+  <div class="card" onclick="lb(this,'MANUAL SELLING · Sell Terminal')"><div class="card-label">MANUAL SELLING · Sell Terminal</div><object data="ui/gameplay_manual_selling.svg" type="image/svg+xml"></object></div>
+  <div class="card" onclick="lb(this,'SURVEY ACTIVE · scan ring · deposit glow')"><div class="card-label">SURVEY ACTIVE · scan ring · deposit glow</div><object data="ui/gameplay_survey_active.svg" type="image/svg+xml"></object></div>
+  <div class="card" onclick="lb(this,'DEPOSIT FOUND · quality reveal popup')"><div class="card-label">DEPOSIT FOUND · quality reveal popup</div><object data="ui/gameplay_deposit_found.svg" type="image/svg+xml"></object></div>
+  <div class="card" onclick="lb(this,'DRONE V1 · single haul loop')"><div class="card-label">DRONE V1 · single Cargo Drone haul loop</div><object data="ui/gameplay_drone_v1.svg" type="image/svg+xml"></object></div>
+</div>
+
+<!-- ─── MID GAME ────────────────────────────────────────────── -->
+<h2 class="group" id="mid">// GAMEPLAY — MID GAME <span>M5 – M9 · factory chain · full drone network</span></h2>
+<div class="grid wide">
+  <div class="card" onclick="lb(this,'MINING OPERATION · harvesters + drones')"><div class="card-label">MINING OPERATION · 3 harvesters · 6 drones</div><object data="ui/gameplay_mining_operation.svg" type="image/svg+xml"></object></div>
+  <div class="card" onclick="lb(this,'DRONE V2 NETWORK · 8 typed drones')"><div class="card-label">DRONE V2 NETWORK · 8 typed drones · task sidebar</div><object data="ui/gameplay_drone_v2_network.svg" type="image/svg+xml"></object></div>
+  <div class="card" onclick="lb(this,'REPAIR DRONE · harvester repair in progress')"><div class="card-label">REPAIR DRONE · harvester repair in progress</div><object data="ui/gameplay_repair_drone.svg" type="image/svg+xml"></object></div>
+  <div class="card" onclick="lb(this,'PROCESSING PLANT · ore → ingots')"><div class="card-label">PROCESSING PLANT · ore → ingots · efficiency %</div><object data="ui/gameplay_processing_plant.svg" type="image/svg+xml"></object></div>
+  <div class="card" onclick="lb(this,'CRAFTING CHAIN · 3-tier factory flow')"><div class="card-label">CRAFTING CHAIN · Processing → Fabricator → Assembly</div><object data="ui/gameplay_crafting_chain.svg" type="image/svg+xml"></object></div>
+  <div class="card" onclick="lb(this,'QUALITY CRAFTING · ore quality → item quality')"><div class="card-label">QUALITY CRAFTING · Crystal Drill · ER avg → output grade</div><object data="ui/gameplay_quality_crafting.svg" type="image/svg+xml"></object></div>
+  <div class="card" onclick="lb(this,'FACTORY COMPLEX · Industrial Site')"><div class="card-label">FACTORY COMPLEX · Industrial Site · slot usage</div><object data="ui/gameplay_factory_complex.svg" type="image/svg+xml"></object></div>
+  <div class="card" onclick="lb(this,'DRONE SWARM · 20+ drones · motherlode')"><div class="card-label">DRONE SWARM · 20+ drones · motherlode deposit</div><object data="ui/gameplay_drone_swarm.svg" type="image/svg+xml"></object></div>
+</div>
+
+<!-- ─── COLONY & TRAVEL ─────────────────────────────────────── -->
+<h2 class="group" id="colony">// GAMEPLAY — COLONY &amp; INTERPLANETARY TRAVEL <span>M7 – M11</span></h2>
+<div class="grid wide">
+  <div class="card" onclick="lb(this,'COLONY — EARLY · 4 Pioneers · needs met')"><div class="card-label">COLONY — EARLY · 4 Pioneers · growth timer</div><object data="ui/gameplay_colony_early.svg" type="image/svg+xml"></object></div>
+  <div class="card" onclick="lb(this,'COLONY — CRISIS · Water critical · morale drop')"><div class="card-label">COLONY CRISIS · Water CRITICAL · Pioneer exodus</div><object data="ui/gameplay_colony_crisis.svg" type="image/svg+xml"></object></div>
+  <div class="card" onclick="lb(this,'LAUNCHPAD BUILD · rocket checklist 68%')"><div class="card-label">LAUNCHPAD BUILD · rocket checklist · 68% ready</div><object data="ui/gameplay_launchpad_building.svg" type="image/svg+xml"></object></div>
+  <div class="card" onclick="lb(this,'ROCKET ASSEMBLY · components + Launchpad')"><div class="card-label">ROCKET ASSEMBLY · component parts + Launchpad</div><object data="ui/gameplay_rocket_assembly.svg" type="image/svg+xml"></object></div>
+  <div class="card" onclick="lb(this,'PLANET B LANDING · return fuel 0% warning')"><div class="card-label">PLANET B LANDING · stranding · return fuel 0%</div><object data="ui/gameplay_planet_b_landing.svg" type="image/svg+xml"></object></div>
+  <div class="card" onclick="lb(this,'PLANET B SURFACE · crystal terrain · survival')"><div class="card-label">PLANET B SURFACE · blue-grey crystals · alien ores</div><object data="ui/gameplay_planet_b_surface.svg" type="image/svg+xml"></object></div>
+</div>
+
+<!-- ─── ENDGAME ──────────────────────────────────────────────── -->
+<h2 class="group" id="endgame">// GAMEPLAY — ENDGAME &amp; PRESTIGE <span>M12 – M14</span></h2>
+<div class="grid wide">
+  <div class="card" onclick="lb(this,'INTERPLANETARY LOGISTICS · ship routes')"><div class="card-label">INTERPLANETARY LOGISTICS · active ship routes</div><object data="ui/gameplay_interplanetary_logistics.svg" type="image/svg+xml"></object></div>
+  <div class="card" onclick="lb(this,'WARP GATE CONSTRUCTION · 43% · scaffolding')"><div class="card-label">WARP GATE CONSTRUCTION · 43% · Assembly Complexes feeding it</div><object data="ui/gameplay_warp_gate_construction.svg" type="image/svg+xml"></object></div>
+  <div class="card" onclick="lb(this,'PRESTIGE SCREEN · new cycle · carry-overs')"><div class="card-label">PRESTIGE SCREEN · what carries over vs resets</div><object data="ui/gameplay_prestige_screen.svg" type="image/svg+xml"></object></div>
+</div>
+
+</main>
+
+<!-- LIGHTBOX -->
+<div id="lb" onclick="closeLb()">
+  <button id="lb-close" onclick="closeLb()">✕</button>
+  <object id="lb-obj" type="image/svg+xml"></object>
+  <div id="lb-label"></div>
+</div>
+
+<script>
+function lb(card, label) {
+  var obj = card.querySelector('object');
+  document.getElementById('lb-obj').data = obj.data;
+  document.getElementById('lb-label').textContent = label;
+  document.getElementById('lb').classList.add('open');
+}
+function closeLb() {
+  document.getElementById('lb').classList.remove('open');
+  document.getElementById('lb-obj').data = '';
+}
+document.addEventListener('keydown', function(e) {
+  if (e.key === 'Escape') closeLb();
+});
+</script>
+
+</body>
+</html>

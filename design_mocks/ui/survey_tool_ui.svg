@@ -1,0 +1,226 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 540" width="960" height="540" font-family="'Courier New', monospace">
+  <defs>
+    <radialGradient id="skyGrad" cx="50%" cy="30%" r="70%">
+      <stop offset="0%" stop-color="#0a0f1e"/>
+      <stop offset="100%" stop-color="#020408"/>
+    </radialGradient>
+    <linearGradient id="groundGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#141a0e"/>
+      <stop offset="100%" stop-color="#0c1008"/>
+    </linearGradient>
+    <radialGradient id="scanRing1" cx="50%" cy="50%" r="50%">
+      <stop offset="60%" stop-color="#4a9fd4" stop-opacity="0"/>
+      <stop offset="85%" stop-color="#4a9fd4" stop-opacity="0.08"/>
+      <stop offset="100%" stop-color="#4a9fd4" stop-opacity="0"/>
+    </radialGradient>
+    <radialGradient id="scanRing2" cx="50%" cy="50%" r="50%">
+      <stop offset="70%" stop-color="#4a9fd4" stop-opacity="0"/>
+      <stop offset="90%" stop-color="#4a9fd4" stop-opacity="0.15"/>
+      <stop offset="100%" stop-color="#4a9fd4" stop-opacity="0"/>
+    </radialGradient>
+    <filter id="glowBlue">
+      <feGaussianBlur stdDeviation="3" result="blur"/>
+      <feFlood flood-color="#4a9fd4" flood-opacity="0.7" result="color"/>
+      <feComposite in="color" in2="blur" operator="in" result="shadow"/>
+      <feMerge><feMergeNode in="shadow"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+    <filter id="glowGold">
+      <feGaussianBlur stdDeviation="4" result="blur"/>
+      <feFlood flood-color="#ffd700" flood-opacity="0.7" result="color"/>
+      <feComposite in="color" in2="blur" operator="in" result="shadow"/>
+      <feMerge><feMergeNode in="shadow"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+    <filter id="glowAmber">
+      <feGaussianBlur stdDeviation="2" result="blur"/>
+      <feFlood flood-color="#f5a623" flood-opacity="0.5" result="color"/>
+      <feComposite in="color" in2="blur" operator="in" result="shadow"/>
+      <feMerge><feMergeNode in="shadow"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+    <linearGradient id="barGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#2a6090"/>
+      <stop offset="100%" stop-color="#4a9fd4"/>
+    </linearGradient>
+  </defs>
+
+  <!-- World -->
+  <rect width="960" height="270" fill="url(#skyGrad)"/>
+  <g opacity="0.6">
+    <circle cx="45" cy="23" r="0.8" fill="#ffffff"/>
+    <circle cx="120" cy="67" r="0.5" fill="#e0e0ff"/>
+    <circle cx="234" cy="14" r="1.0" fill="#ffffff"/>
+    <circle cx="698" cy="18" r="1.0" fill="#e0ffff"/>
+    <circle cx="812" cy="72" r="0.7" fill="#ffffff"/>
+  </g>
+  <rect x="0" y="270" width="960" height="270" fill="url(#groundGrad)"/>
+  <g stroke="#1a2010" stroke-width="0.5" opacity="0.6">
+    <line x1="0" y1="310" x2="960" y2="310"/>
+    <line x1="0" y1="350" x2="960" y2="350"/>
+    <line x1="0" y1="390" x2="960" y2="390"/>
+    <line x1="0" y1="430" x2="960" y2="430"/>
+    <line x1="80" y1="270" x2="80" y2="510"/>
+    <line x1="160" y1="270" x2="160" y2="510"/>
+    <line x1="240" y1="270" x2="240" y2="510"/>
+    <line x1="320" y1="270" x2="320" y2="510"/>
+    <line x1="400" y1="270" x2="400" y2="510"/>
+    <line x1="480" y1="270" x2="480" y2="510"/>
+    <line x1="560" y1="270" x2="560" y2="510"/>
+    <line x1="640" y1="270" x2="640" y2="510"/>
+    <line x1="720" y1="270" x2="720" y2="510"/>
+    <line x1="800" y1="270" x2="800" y2="510"/>
+  </g>
+
+  <!-- Scan rings emanating from player (center ~400,380) -->
+  <!-- Outer scan ring (largest) -->
+  <circle cx="400" cy="380" r="200" fill="none" stroke="#4a9fd4" stroke-width="1" stroke-dasharray="4,6" opacity="0.3"/>
+  <!-- Mid ring -->
+  <circle cx="400" cy="380" r="145" fill="none" stroke="#4a9fd4" stroke-width="1.5" stroke-dasharray="6,4" opacity="0.5"/>
+  <!-- Near ring (bright, "active" pulse) -->
+  <circle cx="400" cy="380" r="90" fill="url(#scanRing2)" stroke="#4a9fd4" stroke-width="2" stroke-dasharray="8,3" opacity="0.8" filter="url(#glowBlue)"/>
+  <!-- Innermost -->
+  <circle cx="400" cy="380" r="40" fill="url(#scanRing1)" stroke="#4a9fd4" stroke-width="2.5" opacity="0.9"/>
+
+  <!-- Cross-hairs on player -->
+  <line x1="400" y1="355" x2="400" y2="370" stroke="#4a9fd4" stroke-width="1" opacity="0.7"/>
+  <line x1="400" y1="390" x2="400" y2="405" stroke="#4a9fd4" stroke-width="1" opacity="0.7"/>
+  <line x1="375" y1="380" x2="390" y2="380" stroke="#4a9fd4" stroke-width="1" opacity="0.7"/>
+  <line x1="410" y1="380" x2="425" y2="380" stroke="#4a9fd4" stroke-width="1" opacity="0.7"/>
+  <circle cx="400" cy="380" r="5" fill="none" stroke="#4a9fd4" stroke-width="1.5" opacity="0.9"/>
+
+  <!-- Player character -->
+  <circle cx="400" cy="373" r="6" fill="#e8d0a0"/>
+  <rect x="395" y="375" width="10" height="14" rx="1" fill="#2a4070"/>
+
+  <!-- Deposit node A (Grade A — gold glow) -->
+  <circle cx="270" cy="320" r="14" fill="#2a1a08" stroke="#ffd700" stroke-width="2" filter="url(#glowGold)"/>
+  <text x="270" y="325" font-size="10" text-anchor="middle" fill="#ffd700">⬡</text>
+  <rect x="242" y="300" width="56" height="16" rx="2" fill="#1a1200" stroke="#ffd700" stroke-width="1" opacity="0.9"/>
+  <text x="270" y="311" font-size="8" text-anchor="middle" fill="#ffd700">GRADE A ★</text>
+  <text x="270" y="348" font-size="7" text-anchor="middle" fill="#c0a030">Krysite • Large</text>
+
+  <!-- Deposit node B (Grade B — amber) -->
+  <circle cx="530" cy="350" r="11" fill="#1a1a08" stroke="#f5a623" stroke-width="1.5" filter="url(#glowAmber)"/>
+  <text x="530" y="355" font-size="9" text-anchor="middle" fill="#f5a623">⬡</text>
+  <rect x="504" y="332" width="52" height="16" rx="2" fill="#120e00" stroke="#f5a623" stroke-width="1" opacity="0.9"/>
+  <text x="530" y="343" font-size="8" text-anchor="middle" fill="#f5a623">GRADE B</text>
+  <text x="530" y="375" font-size="7" text-anchor="middle" fill="#a07020">Voidstone • Med</text>
+
+  <!-- Deposit node C (Grade C — dim, just discovered) -->
+  <circle cx="310" cy="440" r="9" fill="#0a1208" stroke="#4a6040" stroke-width="1" opacity="0.7"/>
+  <text x="310" y="444" font-size="8" text-anchor="middle" fill="#4a6040">⬡</text>
+  <rect x="287" y="424" width="46" height="14" rx="2" fill="#080e08" stroke="#4a6040" stroke-width="1" opacity="0.8"/>
+  <text x="310" y="434" font-size="7" text-anchor="middle" fill="#4a6040">GRADE C</text>
+  <text x="310" y="462" font-size="7" text-anchor="middle" fill="#3a4a30">Copper • Sm</text>
+
+  <!-- Undiscovered node (faint) -->
+  <circle cx="480" cy="450" r="7" fill="#0a0808" stroke="#2a2020" stroke-width="1" opacity="0.4"/>
+  <text x="480" y="454" font-size="8" text-anchor="middle" fill="#2a2020" opacity="0.5">?</text>
+
+  <!-- HUD top bar -->
+  <rect x="0" y="0" width="960" height="32" fill="#050d20" opacity="0.92"/>
+  <line x1="0" y1="32" x2="960" y2="32" stroke="#4a9fd4" stroke-width="1" opacity="0.6"/>
+  <text x="14" y="21" font-size="14" font-weight="bold" fill="#4a9fd4" letter-spacing="3" filter="url(#glowBlue)">⊕  SURVEY MODE</text>
+  <text x="480" y="21" font-size="11" text-anchor="middle" fill="#8a9ab0" letter-spacing="2">DEEP SCAN — STAGE 3/4</text>
+  <text x="946" y="21" font-size="11" text-anchor="end" fill="#4a9fd4">A1 — VOIDSTONE PRIME</text>
+
+  <!-- ═══ SURVEY PANEL (right side) ═══ -->
+  <rect x="688" y="40" width="264" height="440" rx="3" fill="#05080f" stroke="#4a9fd4" stroke-width="1.5" opacity="0.95"/>
+  <rect x="688" y="40" width="264" height="40" rx="3" fill="#0d1e38"/>
+  <rect x="688" y="67" width="264" height="13" fill="#0d1e38"/>
+  <line x1="688" y1="80" x2="952" y2="80" stroke="#4a9fd4" stroke-width="1" opacity="0.7"/>
+  <text x="820" y="65" font-size="13" font-weight="bold" text-anchor="middle" fill="#4a9fd4" letter-spacing="2">SCAN ANALYSIS</text>
+
+  <!-- Target deposit info -->
+  <text x="700" y="96" font-size="10" fill="#8a9ab0" letter-spacing="1">TARGET</text>
+  <text x="700" y="112" font-size="14" font-weight="bold" fill="#ffd700">Krysite Deposit #12</text>
+  <text x="700" y="127" font-size="10" fill="#4a9fd4">Grade A  ·  Large  ·  High Concentration</text>
+
+  <line x1="696" y1="133" x2="944" y2="133" stroke="#1a2a40" stroke-width="0.5"/>
+
+  <!-- Scan stage progress -->
+  <text x="700" y="148" font-size="10" fill="#8a9ab0" letter-spacing="1">SCAN PROGRESS</text>
+  <!-- 4 stage pills -->
+  <g font-size="9">
+    <rect x="700" y="154" width="58" height="16" rx="2" fill="#0d3a0d"/>
+    <text x="729" y="165" text-anchor="middle" fill="#4caf7d">Quick Read</text>
+    <rect x="762" y="154" width="50" height="16" rx="2" fill="#0d3a0d"/>
+    <text x="787" y="165" text-anchor="middle" fill="#4caf7d">Spectral</text>
+    <rect x="816" y="154" width="54" height="16" rx="2" fill="#1a2848" stroke="#4a9fd4" stroke-width="1"/>
+    <text x="843" y="165" text-anchor="middle" fill="#4a9fd4">Deep Scan</text>
+    <rect x="874" y="154" width="60" height="16" rx="2" fill="#0a0e18" stroke="#2a3a50" stroke-width="1"/>
+    <text x="904" y="165" text-anchor="middle" fill="#4a5060">Core Sample</text>
+  </g>
+
+  <!-- Deep Scan progress bar -->
+  <text x="700" y="186" font-size="10" fill="#4a9fd4">Deep Scan: 6.2s remaining</text>
+  <rect x="700" y="190" width="240" height="8" rx="2" fill="#0a1428"/>
+  <rect x="700" y="190" width="172" height="8" rx="2" fill="url(#barGrad)" opacity="0.9"/>
+  <text x="820" y="212" font-size="10" text-anchor="middle" fill="#8a9ab0">72% complete</text>
+
+  <line x1="696" y1="220" x2="944" y2="220" stroke="#1a2a40" stroke-width="0.5"/>
+
+  <!-- Attribute readout (partial — some locked at stage 3) -->
+  <text x="700" y="234" font-size="10" fill="#8a9ab0" letter-spacing="1">ATTRIBUTES</text>
+
+  <g font-size="10">
+    <!-- ER -->
+    <text x="700" y="252" fill="#e8d0a0">ER</text>
+    <rect x="720" y="244" width="160" height="8" rx="2" fill="#0a1428"/>
+    <rect x="720" y="244" width="135" height="8" rx="2" fill="#4a9fd4" opacity="0.8"/>
+    <text x="888" y="252" text-anchor="end" fill="#4a9fd4">847</text>
+
+    <!-- CR -->
+    <text x="700" y="270" fill="#e8d0a0">CR</text>
+    <rect x="720" y="262" width="160" height="8" rx="2" fill="#0a1428"/>
+    <rect x="720" y="262" width="98" height="8" rx="2" fill="#4a9fd4" opacity="0.8"/>
+    <text x="888" y="270" text-anchor="end" fill="#4a9fd4">612</text>
+
+    <!-- CD -->
+    <text x="700" y="288" fill="#e8d0a0">CD</text>
+    <rect x="720" y="280" width="160" height="8" rx="2" fill="#0a1428"/>
+    <rect x="720" y="280" width="37" height="8" rx="2" fill="#4a9fd4" opacity="0.8"/>
+    <text x="888" y="288" text-anchor="end" fill="#4a9fd4">234</text>
+
+    <!-- DR — locked -->
+    <text x="700" y="306" fill="#4a5a70">DR</text>
+    <rect x="720" y="298" width="160" height="8" rx="2" fill="#0a1028" stroke="#1a2038" stroke-width="0.5"/>
+    <text x="820" y="306" text-anchor="middle" fill="#3a4a60" font-size="8">[ Core Sample Required ]</text>
+
+    <!-- FL — locked -->
+    <text x="700" y="324" fill="#4a5a70">FL</text>
+    <rect x="720" y="316" width="160" height="8" rx="2" fill="#0a1028" stroke="#1a2038" stroke-width="0.5"/>
+    <text x="820" y="324" text-anchor="middle" fill="#3a4a60" font-size="8">[ Core Sample Required ]</text>
+  </g>
+
+  <line x1="696" y1="334" x2="944" y2="334" stroke="#1a2a40" stroke-width="0.5"/>
+
+  <!-- Richness meter -->
+  <text x="700" y="350" font-size="10" fill="#8a9ab0" letter-spacing="1">DEPOSIT RICHNESS</text>
+  <text x="944" y="350" font-size="12" text-anchor="end" fill="#ffd700" font-weight="bold">HIGH</text>
+  <rect x="700" y="355" width="240" height="12" rx="3" fill="#0a1428"/>
+  <rect x="700" y="355" width="195" height="12" rx="3" fill="#ffd700" opacity="0.7"/>
+  <!-- Tick marks -->
+  <line x1="760" y1="355" x2="760" y2="367" stroke="#050d20" stroke-width="1"/>
+  <line x1="820" y1="355" x2="820" y2="367" stroke="#050d20" stroke-width="1"/>
+  <line x1="880" y1="355" x2="880" y2="367" stroke="#050d20" stroke-width="1"/>
+
+  <!-- Size estimate -->
+  <text x="700" y="388" font-size="10" fill="#8a9ab0">Estimated reserves:</text>
+  <text x="944" y="388" font-size="10" text-anchor="end" fill="#e8d0a0">~12,400 units</text>
+  <text x="700" y="404" font-size="10" fill="#8a9ab0">Depletion time @ 12/s:</text>
+  <text x="944" y="404" font-size="10" text-anchor="end" fill="#e8d0a0">~17 min</text>
+
+  <line x1="696" y1="414" x2="944" y2="414" stroke="#1a2a40" stroke-width="0.5"/>
+
+  <!-- Action buttons -->
+  <rect x="700" y="422" width="112" height="28" rx="2" fill="#0d1428" stroke="#3a4a60" stroke-width="1"/>
+  <text x="756" y="440" font-size="10" text-anchor="middle" fill="#8a9ab0">MARK ON MAP</text>
+  <rect x="820" y="422" width="120" height="28" rx="2" fill="#1a2848" stroke="#4a9fd4" stroke-width="1"/>
+  <text x="880" y="440" font-size="10" text-anchor="middle" fill="#4a9fd4">PLACE WAYPOINT</text>
+
+  <text x="820" y="466" font-size="9" text-anchor="middle" fill="#4a5060">[Q] EXIT SURVEY MODE</text>
+
+  <!-- Bottom bar -->
+  <rect x="0" y="506" width="960" height="34" fill="#050d20" opacity="0.92"/>
+  <line x1="0" y1="506" x2="960" y2="506" stroke="#4a9fd4" stroke-width="0.8" opacity="0.6"/>
+  <text x="480" y="527" font-size="11" text-anchor="middle" fill="#4a9fd4" letter-spacing="2">SURVEY TOOL  ·  DEPOSITS FOUND: 3  ·  HOLD [F] TO FAST-SCAN  ·  [E] INSPECT NODE</text>
+</svg>

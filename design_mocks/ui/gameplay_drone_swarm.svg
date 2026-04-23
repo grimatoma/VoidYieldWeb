@@ -1,0 +1,201 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 540" width="960" height="540" font-family="'Courier New', monospace">
+  <defs>
+    <radialGradient id="skyGrad" cx="50%" cy="30%" r="70%">
+      <stop offset="0%" stop-color="#0a0f1e"/>
+      <stop offset="100%" stop-color="#020408"/>
+    </radialGradient>
+    <linearGradient id="groundGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#141a0e"/>
+      <stop offset="100%" stop-color="#0c1008"/>
+    </linearGradient>
+    <linearGradient id="hudBarGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#0d1e38" stop-opacity="0.95"/>
+      <stop offset="100%" stop-color="#080e20" stop-opacity="0.95"/>
+    </linearGradient>
+    <radialGradient id="deposGlow" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#ffd700" stop-opacity="0.2"/>
+      <stop offset="100%" stop-color="#ffd700" stop-opacity="0"/>
+    </radialGradient>
+    <filter id="glowAmber">
+      <feGaussianBlur stdDeviation="4" result="blur"/>
+      <feFlood flood-color="#ffd700" flood-opacity="0.6" result="color"/>
+      <feComposite in="color" in2="blur" operator="in" result="shadow"/>
+      <feMerge><feMergeNode in="shadow"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+    <filter id="glowBlue">
+      <feGaussianBlur stdDeviation="2" result="blur"/>
+      <feFlood flood-color="#4a9fd4" flood-opacity="0.5" result="color"/>
+      <feComposite in="color" in2="blur" operator="in" result="shadow"/>
+      <feMerge><feMergeNode in="shadow"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+    <radialGradient id="coverageZone" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#4a9fd4" stop-opacity="0.06"/>
+      <stop offset="85%" stop-color="#4a9fd4" stop-opacity="0.04"/>
+      <stop offset="100%" stop-color="#4a9fd4" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+
+  <!-- World -->
+  <rect width="960" height="255" fill="url(#skyGrad)"/>
+  <g opacity="0.6">
+    <circle cx="45" cy="23" r="0.8" fill="#fff"/><circle cx="234" cy="14" r="1.0" fill="#fff"/>
+    <circle cx="698" cy="18" r="1.0" fill="#e0ffff"/><circle cx="812" cy="72" r="0.7" fill="#fff"/>
+    <circle cx="445" cy="31" r="0.8" fill="#fff"/><circle cx="120" cy="67" r="0.5" fill="#e0e0ff"/>
+    <circle cx="567" cy="55" r="0.5" fill="#fff"/><circle cx="356" cy="112" r="0.5" fill="#fff"/>
+  </g>
+  <rect x="0" y="255" width="960" height="285" fill="url(#groundGrad)"/>
+  <g stroke="#1a2010" stroke-width="0.5" opacity="0.5">
+    <line x1="0" y1="295" x2="960" y2="295"/>
+    <line x1="0" y1="335" x2="960" y2="335"/>
+    <line x1="0" y1="375" x2="960" y2="375"/>
+    <line x1="0" y1="415" x2="960" y2="415"/>
+    <line x1="0" y1="455" x2="960" y2="455"/>
+    <line x1="0" y1="495" x2="960" y2="495"/>
+    <line x1="80" y1="255" x2="80" y2="540"/>
+    <line x1="160" y1="255" x2="160" y2="540"/>
+    <line x1="240" y1="255" x2="240" y2="540"/>
+    <line x1="320" y1="255" x2="320" y2="540"/>
+    <line x1="400" y1="255" x2="400" y2="540"/>
+    <line x1="480" y1="255" x2="480" y2="540"/>
+    <line x1="560" y1="255" x2="560" y2="540"/>
+    <line x1="640" y1="255" x2="640" y2="540"/>
+    <line x1="720" y1="255" x2="720" y2="540"/>
+    <line x1="800" y1="255" x2="800" y2="540"/>
+    <line x1="880" y1="255" x2="880" y2="540"/>
+  </g>
+  <line x1="0" y1="255" x2="960" y2="255" stroke="#2a3820" stroke-width="1"/>
+
+  <!-- Coverage zones -->
+  <circle cx="480" cy="380" r="230" fill="url(#coverageZone)"/>
+  <circle cx="480" cy="380" r="230" fill="none" stroke="#4a9fd4" stroke-width="1" stroke-dasharray="6,8" opacity="0.35"/>
+  <circle cx="480" cy="380" r="150" fill="none" stroke="#4a9fd4" stroke-width="0.8" stroke-dasharray="4,6" opacity="0.2"/>
+
+  <!-- ═══ MOTHERLODE DEPOSIT (center) ═══ -->
+  <circle cx="480" cy="390" r="60" fill="url(#deposGlow)"/>
+  <ellipse cx="480" cy="390" rx="55" ry="28" fill="#2a1508" stroke="#8a5020" stroke-width="2" opacity="0.9" filter="url(#glowAmber)"/>
+  <circle cx="460" cy="382" r="12" fill="#5a3010" opacity="0.9"/>
+  <circle cx="480" cy="374" r="14" fill="#7a4020" opacity="0.9"/>
+  <circle cx="502" cy="380" r="11" fill="#5a3010" opacity="0.9"/>
+  <circle cx="472" cy="396" r="10" fill="#4a2808" opacity="0.9"/>
+  <circle cx="495" cy="398" r="8" fill="#6a3818" opacity="0.9"/>
+  <circle cx="455" cy="400" r="9" fill="#5a3010" opacity="0.9"/>
+  <!-- Grade indicator -->
+  <rect x="432" y="350" width="96" height="20" rx="2" fill="#0d0800" stroke="#ffd700" stroke-width="2" filter="url(#glowAmber)"/>
+  <text x="480" y="360" font-size="9" text-anchor="middle" fill="#ffd700" font-weight="bold">A+ MOTHERLODE</text>
+  <text x="480" y="368" font-size="7" text-anchor="middle" fill="#ffd700">Krysite · 48,200 units · +34.8/s</text>
+
+  <!-- 3 harvesters on deposit -->
+  <rect x="436" y="412" width="38" height="28" rx="2" fill="#2a3848" stroke="#4a6880" stroke-width="1.5"/>
+  <circle cx="455" cy="426" r="3.5" fill="#ffd700" opacity="0.9"/>
+  <rect x="479" y="416" width="38" height="28" rx="2" fill="#2a3848" stroke="#4a6880" stroke-width="1.5"/>
+  <circle cx="498" cy="430" r="3.5" fill="#ffd700" opacity="0.9"/>
+  <rect x="456" y="434" width="38" height="26" rx="2" fill="#2a3848" stroke="#ffd700" stroke-width="1.5"/>
+  <circle cx="475" cy="447" r="3.5" fill="#ffd700"/>
+
+  <!-- ═══ 20+ CARGO DRONES SWARMING ═══ -->
+  <g fill="#3a5060" stroke="#5a7080" stroke-width="0.5">
+    <!-- Drones converging from all directions -->
+    <rect x="370" y="318" width="12" height="7" rx="1"/>
+    <rect x="400" y="300" width="12" height="7" rx="1"/>
+    <rect x="438" y="292" width="12" height="7" rx="1"/>
+    <rect x="475" y="288" width="12" height="7" rx="1"/>
+    <rect x="514" y="295" width="12" height="7" rx="1"/>
+    <rect x="548" y="308" width="12" height="7" rx="1"/>
+    <rect x="572" y="328" width="12" height="7" rx="1"/>
+    <rect x="580" y="360" width="12" height="7" rx="1"/>
+    <rect x="572" y="400" width="12" height="7" rx="1"/>
+    <rect x="550" y="440" width="12" height="7" rx="1"/>
+    <rect x="408" y="445" width="12" height="7" rx="1"/>
+    <rect x="374" y="426" width="12" height="7" rx="1"/>
+    <rect x="350" y="400" width="12" height="7" rx="1"/>
+    <rect x="343" y="362" width="12" height="7" rx="1"/>
+    <!-- Farther out drones -->
+    <rect x="295" y="320" width="12" height="7" rx="1" opacity="0.7"/>
+    <rect x="280" y="360" width="12" height="7" rx="1" opacity="0.7"/>
+    <rect x="288" y="420" width="12" height="7" rx="1" opacity="0.7"/>
+    <rect x="640" y="330" width="12" height="7" rx="1" opacity="0.7"/>
+    <rect x="655" y="380" width="12" height="7" rx="1" opacity="0.7"/>
+    <rect x="628" y="430" width="12" height="7" rx="1" opacity="0.7"/>
+    <!-- Even farther -->
+    <rect x="220" y="340" width="12" height="7" rx="1" opacity="0.5"/>
+    <rect x="700" y="350" width="12" height="7" rx="1" opacity="0.5"/>
+    <rect x="460" y="265" width="12" height="7" rx="1" opacity="0.5"/>
+    <rect x="480" y="460" width="12" height="7" rx="1" opacity="0.5"/>
+  </g>
+
+  <!-- Drone thrust sparks (cargo loaded) -->
+  <g fill="#f5a623" opacity="0.5">
+    <circle cx="376" cy="328" r="1.5"/>
+    <circle cx="383" cy="328" r="1.5"/>
+    <circle cx="446" cy="301" r="1.5"/>
+    <circle cx="453" cy="301" r="1.5"/>
+    <circle cx="586" cy="338" r="1.5"/>
+    <circle cx="593" cy="338" r="1.5"/>
+    <circle cx="558" cy="448" r="1.5"/>
+    <circle cx="565" cy="448" r="1.5"/>
+  </g>
+
+  <!-- Flight trail lines -->
+  <g stroke="#4a9fd4" stroke-width="0.5" opacity="0.2" stroke-dasharray="3,4">
+    <line x1="376" y1="322" x2="440" y2="395"/>
+    <line x1="406" y1="304" x2="450" y2="388"/>
+    <line x1="554" y1="312" x2="510" y2="390"/>
+    <line x1="578" y1="364" x2="530" y2="392"/>
+    <line x1="554" y1="444" x2="502" y2="418"/>
+    <line x1="412" y1="449" x2="458" y2="418"/>
+    <line x1="348" y1="404" x2="432" y2="398"/>
+    <line x1="299" y1="324" x2="380" y2="345"/>
+    <line x1="644" y1="334" x2="574" y2="348"/>
+  </g>
+
+  <!-- ═══ REPAIR DRONE attending damaged harvester ═══ -->
+  <!-- Damaged harvester (left side, sparking) -->
+  <rect x="138" y="380" width="44" height="32" rx="2" fill="#2a2020" stroke="#e05555" stroke-width="1.5"/>
+  <circle cx="160" cy="396" r="3.5" fill="#e05555" opacity="0.7"/>
+  <!-- Damage sparks -->
+  <text x="160" y="372" font-size="14" fill="#f5a623" opacity="0.8">✦</text>
+  <!-- Repair drone hovering over it -->
+  <rect x="148" y="358" width="14" height="8" rx="1" fill="#6040b0" stroke="#c070e0" stroke-width="1"/>
+  <rect x="150" y="352" width="10" height="5" rx="1" fill="#7050c0"/>
+  <!-- Wrench icon -->
+  <text x="155" y="360" font-size="8" fill="#c070e0">⚒</text>
+  <!-- Repair progress bar -->
+  <rect x="126" y="420" width="70" height="8" rx="2" fill="#0a0818"/>
+  <rect x="126" y="420" width="47" height="8" rx="2" fill="#c070e0" opacity="0.7"/>
+  <text x="161" y="416" font-size="7" text-anchor="middle" fill="#c070e0">REPAIR 67%</text>
+  <!-- Health bar -->
+  <rect x="138" y="374" width="44" height="5" rx="1" fill="#1a0808"/>
+  <rect x="138" y="374" width="30" height="5" rx="1" fill="#e05555" opacity="0.7"/>
+  <text x="160" y="372" font-size="6" text-anchor="middle" fill="#e05555">67%</text>
+
+  <!-- Storage silo (right side, drones heading there) -->
+  <rect x="790" y="350" width="70" height="60" rx="2" fill="#1e2e1a" stroke="#4caf7d" stroke-width="2"/>
+  <rect x="795" y="344" width="60" height="10" fill="#253520"/>
+  <text x="825" y="378" font-size="7" text-anchor="middle" fill="#4caf7d">STORAGE</text>
+  <rect x="800" y="385" width="60" height="8" rx="1" fill="#0d1808"/>
+  <rect x="800" y="385" width="38" height="8" rx="1" fill="#4caf7d" opacity="0.7"/>
+  <text x="825" y="396" font-size="6" text-anchor="middle" fill="#4caf7d">63% · 6,300u</text>
+
+  <!-- HUD top bar -->
+  <rect x="0" y="0" width="960" height="32" fill="url(#hudBarGrad)"/>
+  <line x1="0" y1="32" x2="960" y2="32" stroke="#f5a623" stroke-width="0.8" opacity="0.6"/>
+  <text x="14" y="20" font-size="14" font-weight="bold" fill="#ffd700">◈ 48,320</text>
+  <text x="480" y="20" font-size="12" text-anchor="middle" fill="#e8d0a0">A1 — Motherlode Sector</text>
+  <text x="946" y="20" font-size="14" text-anchor="end" fill="#e8d0a0">02:14:37</text>
+
+  <!-- Drone count overlay -->
+  <rect x="10" y="40" width="165" height="54" rx="2" fill="#05080f" stroke="#4a9fd4" stroke-width="1" opacity="0.9"/>
+  <text x="22" y="56" font-size="9" fill="#4a9fd4" letter-spacing="1">DRONE STATUS</text>
+  <text x="22" y="72" font-size="12" font-weight="bold" fill="#e8d0a0">22 active drones</text>
+  <text x="22" y="85" font-size="9" fill="#8a9ab0">18 CARGO · 3 SCOUT · 1 REPAIR</text>
+
+  <!-- Production rate -->
+  <rect x="10" y="100" width="165" height="40" rx="2" fill="#05080f" stroke="#ffd700" stroke-width="1" opacity="0.9"/>
+  <text x="22" y="116" font-size="9" fill="#f5a623">THROUGHPUT</text>
+  <text x="22" y="132" font-size="13" font-weight="bold" fill="#ffd700">+34.8 Krysite/s</text>
+
+  <!-- Bottom bar -->
+  <rect x="0" y="506" width="960" height="34" fill="url(#hudBarGrad)"/>
+  <line x1="0" y1="506" x2="960" y2="506" stroke="#f5a623" stroke-width="0.8" opacity="0.6"/>
+  <text x="480" y="527" font-size="10" text-anchor="middle" fill="#8a9ab0" letter-spacing="2">COVERAGE RADIUS: 230u  ·  DAMAGED HARVESTERS: 1 (REPAIR IN PROGRESS)  ·  DRONES: 22/24</text>
+</svg>

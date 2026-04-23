@@ -1,0 +1,151 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 540" width="960" height="540" font-family="'Courier New', monospace">
+  <defs>
+    <radialGradient id="bgGrad" cx="50%" cy="50%" r="70%">
+      <stop offset="0%" stop-color="#0a0f1e"/>
+      <stop offset="100%" stop-color="#020408"/>
+    </radialGradient>
+    <linearGradient id="panelGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#0e1a2e"/>
+      <stop offset="100%" stop-color="#080e1c"/>
+    </linearGradient>
+    <filter id="glowGold">
+      <feGaussianBlur stdDeviation="3" result="blur"/>
+      <feFlood flood-color="#ffd700" flood-opacity="0.6" result="color"/>
+      <feComposite in="color" in2="blur" operator="in" result="shadow"/>
+      <feMerge><feMergeNode in="shadow"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+    <filter id="glowAmber">
+      <feGaussianBlur stdDeviation="2" result="blur"/>
+      <feFlood flood-color="#f5a623" flood-opacity="0.5" result="color"/>
+      <feComposite in="color" in2="blur" operator="in" result="shadow"/>
+      <feMerge><feMergeNode in="shadow"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+    <linearGradient id="hudBarGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#0d1e38" stop-opacity="0.95"/>
+      <stop offset="100%" stop-color="#080e20" stop-opacity="0.95"/>
+    </linearGradient>
+  </defs>
+
+  <!-- World background (blurred — player at terminal) -->
+  <rect width="960" height="540" fill="url(#bgGrad)"/>
+  <g opacity="0.3">
+    <circle cx="45" cy="23" r="0.8" fill="#fff"/><circle cx="234" cy="14" r="1.0" fill="#fff"/>
+    <circle cx="698" cy="18" r="1.0" fill="#e0ffff"/><circle cx="812" cy="72" r="0.7" fill="#fff"/>
+  </g>
+  <!-- Dark overlay (interacting with terminal) -->
+  <rect width="960" height="540" fill="#000010" opacity="0.4"/>
+
+  <!-- Sell Terminal world object visible behind UI -->
+  <rect x="460" y="380" width="60" height="50" rx="2" fill="#1a1828" stroke="#9060e0" stroke-width="1.5" opacity="0.7"/>
+  <rect x="465" y="373" width="50" height="10" fill="#201838" opacity="0.7"/>
+  <text x="490" y="406" font-size="8" text-anchor="middle" fill="#c090ff" opacity="0.6">SELL TERMINAL</text>
+  <!-- Player interacting -->
+  <circle cx="430" cy="408" r="6" fill="#e8d0a0" opacity="0.7"/>
+  <rect x="425" y="410" width="10" height="14" rx="1" fill="#2a4070" opacity="0.7"/>
+
+  <!-- HUD top bar -->
+  <rect x="0" y="0" width="960" height="32" fill="url(#hudBarGrad)"/>
+  <line x1="0" y1="32" x2="960" y2="32" stroke="#f5a623" stroke-width="0.8" opacity="0.6"/>
+  <text x="14" y="11" font-size="9" fill="#f5a623" opacity="0.7">CREDITS</text>
+  <text x="14" y="26" font-size="14" font-weight="bold" fill="#ffd700">◈ 1,240</text>
+  <text x="480" y="20" font-size="12" text-anchor="middle" fill="#e8d0a0">A1 — Sell Terminal</text>
+  <text x="946" y="20" font-size="14" text-anchor="end" fill="#e8d0a0">00:22:15</text>
+
+  <!-- ═══ SELL TERMINAL PANEL ═══ -->
+  <rect x="80" y="45" width="800" height="440" rx="4" fill="url(#panelGrad)" stroke="#9060e0" stroke-width="2"/>
+  <rect x="80" y="45" width="800" height="50" rx="4" fill="#180820"/>
+  <rect x="80" y="82" width="800" height="13" fill="#180820"/>
+  <line x1="80" y1="95" x2="880" y2="95" stroke="#9060e0" stroke-width="1.5" opacity="0.8"/>
+  <text x="480" y="77" font-size="18" font-weight="bold" text-anchor="middle" fill="#c090ff" letter-spacing="4">◈  SELL TERMINAL</text>
+  <text x="860" y="77" font-size="11" text-anchor="end" fill="#8a9ab0">[ E ] CLOSE</text>
+
+  <!-- Market prices header -->
+  <rect x="96" y="102" width="768" height="28" rx="2" fill="#100818" stroke="#5a3a80" stroke-width="0.5"/>
+  <text x="480" y="120" font-size="10" text-anchor="middle" fill="#c090ff" letter-spacing="2">CURRENT MARKET PRICES — A1 VOIDSTONE PRIME</text>
+
+  <!-- Column headers -->
+  <rect x="96" y="136" width="768" height="20" fill="#0a0818"/>
+  <line x1="96" y1="156" x2="864" y2="156" stroke="#2a1a40" stroke-width="0.5"/>
+  <g font-size="9" fill="#6a5a90" letter-spacing="1">
+    <text x="112" y="150">ITEM</text>
+    <text x="310" y="150">QUALITY</text>
+    <text x="420" y="150">QTY IN BAG</text>
+    <text x="540" y="150">PRICE / UNIT</text>
+    <text x="660" y="150">TOTAL VALUE</text>
+    <text x="780" y="150">ACTION</text>
+  </g>
+
+  <!-- Row 1: Krysite Ore Grade A (highlighted sell box) -->
+  <rect x="96" y="156" width="768" height="54" fill="#12081e" stroke="#ffd700" stroke-width="1.5"/>
+  <!-- Item icon -->
+  <polygon points="132,176 143,182 143,194 132,200 121,194 121,182" fill="#1a3a60" stroke="#3a7aaa" stroke-width="1"/>
+  <text x="132" y="194" font-size="9" text-anchor="middle" fill="#4a9fd4">⬡</text>
+  <text x="155" y="176" font-size="11" fill="#e8d0a0" font-weight="bold">Krysite Ore</text>
+  <text x="155" y="190" font-size="9" fill="#4a6080">Raw ore — can be processed</text>
+  <rect x="310" y="164" width="40" height="16" rx="2" fill="#0d3a0d"/>
+  <text x="330" y="175" font-size="9" text-anchor="middle" fill="#4caf7d" font-weight="bold">A</text>
+  <text x="330" y="187" font-size="7" text-anchor="middle" fill="#4caf7d">847 qual</text>
+  <text x="430" y="183" font-size="14" font-weight="bold" fill="#e8d0a0">×48</text>
+  <text x="555" y="180" font-size="13" fill="#ffd700">◈ 4.20</text>
+  <text x="555" y="196" font-size="8" fill="#6a5a20">Grade A bonus: +40%</text>
+  <text x="660" y="183" font-size="14" font-weight="bold" fill="#ffd700" filter="url(#glowGold)">◈ 201.60</text>
+  <rect x="775" y="163" width="84" height="30" rx="2" fill="#1a2848" stroke="#ffd700" stroke-width="1.5" filter="url(#glowAmber)"/>
+  <text x="817" y="182" font-size="11" text-anchor="middle" fill="#ffd700">SELL</text>
+
+  <!-- Row 2: Voidstone Ore Grade B -->
+  <rect x="96" y="210" width="768" height="54" fill="#0a0818"/>
+  <line x1="96" y1="264" x2="864" y2="264" stroke="#1a1030" stroke-width="0.5"/>
+  <polygon points="132,228 143,234 143,246 132,252 121,246 121,234" fill="#2a2010" stroke="#6a5020" stroke-width="1"/>
+  <text x="132" y="246" font-size="9" text-anchor="middle" fill="#c08040">⬡</text>
+  <text x="155" y="228" font-size="11" fill="#e8d0a0" font-weight="bold">Voidstone Ore</text>
+  <text x="155" y="242" font-size="9" fill="#4a6080">Raw ore — specialty processing</text>
+  <rect x="310" y="218" width="40" height="16" rx="2" fill="#2a1a08"/>
+  <text x="330" y="229" font-size="9" text-anchor="middle" fill="#c08040" font-weight="bold">B</text>
+  <text x="330" y="241" font-size="7" text-anchor="middle" fill="#c08040">610 qual</text>
+  <text x="430" y="237" font-size="14" font-weight="bold" fill="#e8d0a0">×185</text>
+  <text x="555" y="235" font-size="13" fill="#ffd700">◈ 2.85</text>
+  <text x="660" y="237" font-size="14" font-weight="bold" fill="#ffd700">◈ 527.25</text>
+  <rect x="775" y="217" width="84" height="30" rx="2" fill="#0d1428" stroke="#3a4a60" stroke-width="1"/>
+  <text x="817" y="236" font-size="11" text-anchor="middle" fill="#8a9ab0">SELL</text>
+
+  <!-- Row 3: Copper Ore Grade C -->
+  <rect x="96" y="264" width="768" height="54" fill="#0a0818"/>
+  <line x1="96" y1="318" x2="864" y2="318" stroke="#1a1030" stroke-width="0.5"/>
+  <polygon points="132,282 143,288 143,300 132,306 121,300 121,288" fill="#2a1a0a" stroke="#7a4020" stroke-width="1"/>
+  <text x="132" y="300" font-size="9" text-anchor="middle" fill="#c06020">⬡</text>
+  <text x="155" y="282" font-size="11" fill="#e8d0a0" font-weight="bold">Copper Ore</text>
+  <text x="155" y="296" font-size="9" fill="#4a6080">Common ore — low value</text>
+  <rect x="310" y="272" width="40" height="16" rx="2" fill="#181008"/>
+  <text x="330" y="283" font-size="9" text-anchor="middle" fill="#c06020" font-weight="bold">C</text>
+  <text x="330" y="295" font-size="7" text-anchor="middle" fill="#c06020">312 qual</text>
+  <text x="430" y="291" font-size="14" font-weight="bold" fill="#e8d0a0">×46</text>
+  <text x="555" y="289" font-size="13" fill="#ffd700">◈ 0.95</text>
+  <text x="660" y="289" font-size="14" font-weight="bold" fill="#ffd700">◈ 43.70</text>
+  <rect x="775" y="271" width="84" height="30" rx="2" fill="#0d1428" stroke="#3a4a60" stroke-width="1"/>
+  <text x="817" y="290" font-size="11" text-anchor="middle" fill="#8a9ab0">SELL</text>
+
+  <!-- Total summary bar -->
+  <rect x="96" y="326" width="768" height="55" rx="2" fill="#100828" stroke="#9060e0" stroke-width="1"/>
+  <text x="112" y="346" font-size="10" fill="#8a9ab0">TOTAL VALUE (all items):</text>
+  <text x="530" y="346" font-size="16" font-weight="bold" text-anchor="middle" fill="#ffd700" filter="url(#glowGold)">◈ 772.55</text>
+  <text x="112" y="370" font-size="10" fill="#8a9ab0">Credits after sale:</text>
+  <text x="530" y="370" font-size="14" text-anchor="middle" fill="#4caf7d">◈ 2,012.55</text>
+  <!-- Sell All highlighted button -->
+  <rect x="688" y="330" width="170" height="44" rx="3" fill="#1a2848" stroke="#ffd700" stroke-width="2" filter="url(#glowAmber)"/>
+  <text x="773" y="349" font-size="10" text-anchor="middle" fill="#6a7a90">◈ +772.55</text>
+  <text x="773" y="366" font-size="15" font-weight="bold" text-anchor="middle" fill="#ffd700">SELL ALL</text>
+
+  <!-- Tips -->
+  <rect x="96" y="390" width="768" height="80" rx="2" fill="#08080f" stroke="#2a2a40" stroke-width="0.5"/>
+  <text x="112" y="408" font-size="9" fill="#f5a623" letter-spacing="2">💡 MARKET TIPS</text>
+  <g font-size="9" fill="#8a9ab0">
+    <text x="112" y="424">• Grade A ore sells for 40% more than base price. Survey deposits before placing harvesters!</text>
+    <text x="112" y="440">• Processed ingots sell for 3× the raw ore price. Build a Processing Plant to multiply earnings.</text>
+    <text x="112" y="456">• Cargo Drones can auto-haul ore to this terminal. No more manual carrying!</text>
+  </g>
+
+  <!-- Bottom bar -->
+  <rect x="0" y="506" width="960" height="34" fill="url(#hudBarGrad)"/>
+  <line x1="0" y1="506" x2="960" y2="506" stroke="#f5a623" stroke-width="0.8" opacity="0.6"/>
+  <text x="480" y="527" font-size="10" text-anchor="middle" fill="#8a9ab0">[ E ] CLOSE TERMINAL  ·  SELL ALL: ◈ +772.55  ·  BALANCE AFTER: ◈ 2,012.55</text>
+</svg>

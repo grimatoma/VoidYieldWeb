@@ -1,0 +1,183 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 540" width="960" height="540" font-family="'Courier New', monospace">
+  <defs>
+    <radialGradient id="spaceGrad" cx="50%" cy="50%" r="70%">
+      <stop offset="0%" stop-color="#050a1a"/>
+      <stop offset="100%" stop-color="#010205"/>
+    </radialGradient>
+    <radialGradient id="nebulaGrad" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#1a0a2a" stop-opacity="0.4"/>
+      <stop offset="100%" stop-color="#050510" stop-opacity="0"/>
+    </radialGradient>
+    <radialGradient id="starA1" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#ffffff"/>
+      <stop offset="40%" stop-color="#ffe0a0"/>
+      <stop offset="100%" stop-color="#f5a62300"/>
+    </radialGradient>
+    <filter id="glowAmber">
+      <feGaussianBlur stdDeviation="3" result="blur"/>
+      <feFlood flood-color="#f5a623" flood-opacity="0.6" result="color"/>
+      <feComposite in="color" in2="blur" operator="in" result="shadow"/>
+      <feMerge><feMergeNode in="shadow"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+    <filter id="glowBlue">
+      <feGaussianBlur stdDeviation="3" result="blur"/>
+      <feFlood flood-color="#4a9fd4" flood-opacity="0.6" result="color"/>
+      <feComposite in="color" in2="blur" operator="in" result="shadow"/>
+      <feMerge><feMergeNode in="shadow"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+    <filter id="starGlow">
+      <feGaussianBlur stdDeviation="5" result="blur"/>
+      <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+    <filter id="lockedFilter">
+      <feColorMatrix type="saturate" values="0.1"/>
+    </filter>
+  </defs>
+
+  <!-- Space background -->
+  <rect width="960" height="540" fill="url(#spaceGrad)"/>
+
+  <!-- Nebula cloud -->
+  <ellipse cx="600" cy="200" rx="300" ry="180" fill="url(#nebulaGrad)"/>
+  <ellipse cx="200" cy="380" rx="200" ry="120" fill="#0a1a2a" opacity="0.2"/>
+
+  <!-- Dense star field -->
+  <g opacity="0.7">
+    <circle cx="23" cy="45" r="0.6" fill="#fff"/><circle cx="67" cy="12" r="0.9" fill="#fff"/>
+    <circle cx="134" cy="78" r="0.5" fill="#ffe0a0"/><circle cx="189" cy="23" r="0.7" fill="#fff"/>
+    <circle cx="245" cy="156" r="0.4" fill="#fff"/><circle cx="312" cy="34" r="0.8" fill="#e0e0ff"/>
+    <circle cx="378" cy="89" r="0.5" fill="#fff"/><circle cx="423" cy="167" r="0.6" fill="#fff"/>
+    <circle cx="489" cy="23" r="0.9" fill="#fff"/><circle cx="534" cy="112" r="0.4" fill="#ffe0a0"/>
+    <circle cx="601" cy="56" r="0.7" fill="#fff"/><circle cx="645" cy="145" r="0.5" fill="#e0ffff"/>
+    <circle cx="712" cy="34" r="0.8" fill="#fff"/><circle cx="767" cy="78" r="0.6" fill="#fff"/>
+    <circle cx="823" cy="23" r="0.5" fill="#ffe0a0"/><circle cx="878" cy="112" r="0.7" fill="#fff"/>
+    <circle cx="934" cy="45" r="0.9" fill="#fff"/><circle cx="56" cy="234" r="0.5" fill="#fff"/>
+    <circle cx="112" cy="289" r="0.7" fill="#fff"/><circle cx="167" cy="345" r="0.4" fill="#fff"/>
+    <circle cx="223" cy="267" r="0.8" fill="#ffe0a0"/><circle cx="290" cy="412" r="0.6" fill="#fff"/>
+    <circle cx="345" cy="356" r="0.5" fill="#e0e0ff"/><circle cx="412" cy="289" r="0.9" fill="#fff"/>
+    <circle cx="467" cy="423" r="0.4" fill="#fff"/><circle cx="545" cy="378" r="0.7" fill="#ffe0a0"/>
+    <circle cx="612" cy="289" r="0.5" fill="#fff"/><circle cx="678" cy="423" r="0.6" fill="#e0ffff"/>
+    <circle cx="734" cy="312" r="0.8" fill="#fff"/><circle cx="801" cy="456" r="0.5" fill="#fff"/>
+    <circle cx="856" cy="389" r="0.7" fill="#fff"/><circle cx="923" cy="312" r="0.4" fill="#fff"/>
+    <circle cx="34" cy="456" r="0.6" fill="#fff"/><circle cx="89" cy="512" r="0.8" fill="#fff"/>
+    <circle cx="156" cy="478" r="0.5" fill="#ffe0a0"/><circle cx="234" cy="512" r="0.7" fill="#fff"/>
+    <circle cx="478" cy="512" r="0.4" fill="#fff"/><circle cx="634" cy="501" r="0.6" fill="#fff"/>
+    <circle cx="756" cy="523" r="0.8" fill="#fff"/><circle cx="890" cy="512" r="0.5" fill="#fff"/>
+  </g>
+
+  <!-- ═══ WARP LINES (connection routes) ═══ -->
+  <!-- A1 → A2 (active route, solid) -->
+  <line x1="280" y1="300" x2="490" y2="180" stroke="#4a9fd4" stroke-width="1.5" stroke-dasharray="8,5" opacity="0.6"/>
+  <!-- A2 → Planet B (active) -->
+  <line x1="490" y1="180" x2="660" y2="300" stroke="#4a9fd4" stroke-width="1.5" stroke-dasharray="8,5" opacity="0.6"/>
+  <!-- A1 → Planet C (active) -->
+  <line x1="280" y1="300" x2="480" y2="400" stroke="#4caf7d" stroke-width="1" stroke-dasharray="6,6" opacity="0.4"/>
+  <!-- A2 → A3 (locked, dim) -->
+  <line x1="490" y1="180" x2="700" y2="120" stroke="#3a4060" stroke-width="1" stroke-dasharray="4,8" opacity="0.3"/>
+
+  <!-- Route labels -->
+  <text x="385" y="232" font-size="9" text-anchor="middle" fill="#4a9fd4" opacity="0.7" transform="rotate(-28,385,232)">Warp Lane α</text>
+  <text x="575" y="235" font-size="9" text-anchor="middle" fill="#4a9fd4" opacity="0.7" transform="rotate(28,575,235)">Warp Lane β</text>
+
+  <!-- Ship in transit (dot on route) -->
+  <circle cx="385" cy="241" r="4" fill="#4a9fd4" opacity="0.9"/>
+  <circle cx="385" cy="241" r="7" fill="none" stroke="#4a9fd4" stroke-width="1" opacity="0.4"/>
+  <text x="395" y="237" font-size="7" fill="#4a9fd4">Voidrunner-1</text>
+
+  <!-- ═══ STAR / HOME (A1 — Voidstone Prime) ═══ -->
+  <circle cx="280" cy="300" r="40" fill="url(#starA1)" opacity="0.15" filter="url(#starGlow)"/>
+  <circle cx="280" cy="300" r="14" fill="#ffe0a0" filter="url(#starGlow)"/>
+  <circle cx="280" cy="300" r="10" fill="#ffffff"/>
+  <!-- Planet A1 orbiting star -->
+  <ellipse cx="280" cy="300" rx="55" ry="16" fill="none" stroke="#3a5070" stroke-width="0.5" opacity="0.4" transform="rotate(-20,280,300)"/>
+  <circle cx="315" cy="285" r="9" fill="#1a2845" stroke="#4a6090" stroke-width="1"/>
+  <circle cx="315" cy="285" r="9" fill="#2a3855" opacity="0.5"/>
+  <!-- A1 ring -->
+  <ellipse cx="315" cy="285" rx="14" ry="4" fill="none" stroke="#4a6090" stroke-width="0.8" opacity="0.5" transform="rotate(-10,315,285)"/>
+  <!-- A1 label -->
+  <rect x="234" y="318" width="92" height="32" rx="2" fill="#08121e" stroke="#f5a623" stroke-width="1.5" filter="url(#glowAmber)"/>
+  <text x="280" y="330" font-size="9" text-anchor="middle" fill="#ffd700" font-weight="bold">A1 — Voidstone Prime</text>
+  <text x="280" y="343" font-size="8" text-anchor="middle" fill="#f5a623">◉ CURRENT LOCATION</text>
+
+  <!-- ═══ A2 ASTEROID BELT ═══ -->
+  <circle cx="490" cy="180" r="6" fill="#6a6a7a"/>
+  <circle cx="503" cy="172" r="4" fill="#5a5a6a"/>
+  <circle cx="477" cy="173" r="5" fill="#6a6a7a"/>
+  <circle cx="497" cy="190" r="3" fill="#5a5a6a"/>
+  <circle cx="480" cy="189" r="4" fill="#4a4a5a"/>
+  <rect x="430" y="152" width="120" height="42" rx="2" fill="#08121e" stroke="#4a9fd4" stroke-width="1"/>
+  <text x="490" y="168" font-size="9" text-anchor="middle" fill="#4a9fd4" font-weight="bold">A2 — Transit Asteroid</text>
+  <text x="490" y="181" font-size="8" text-anchor="middle" fill="#8a9ab0">Trading Post · Fuel Depot</text>
+  <text x="490" y="192" font-size="7" text-anchor="middle" fill="#4caf7d">✓ Accessible</text>
+
+  <!-- ═══ PLANET B ═══ -->
+  <circle cx="660" cy="300" r="22" fill="#1a2a3a" stroke="#4a7090" stroke-width="1.5"/>
+  <circle cx="660" cy="300" r="22" fill="#2a4455" opacity="0.4"/>
+  <!-- Crystal surface highlights -->
+  <ellipse cx="650" cy="290" rx="10" ry="6" fill="#2a5070" opacity="0.5"/>
+  <ellipse cx="668" cy="308" rx="8" ry="5" fill="#204060" opacity="0.5"/>
+  <rect x="598" y="318" width="124" height="42" rx="2" fill="#08121e" stroke="#4a9fd4" stroke-width="1"/>
+  <text x="660" y="334" font-size="9" text-anchor="middle" fill="#4a9fd4" font-weight="bold">Planet B — Crystalis</text>
+  <text x="660" y="347" font-size="8" text-anchor="middle" fill="#8a9ab0">Xenite · Crystal  ·  Med. Difficulty</text>
+  <text x="660" y="357" font-size="7" text-anchor="middle" fill="#4caf7d">✓ Accessible</text>
+
+  <!-- ═══ PLANET C ═══ -->
+  <circle cx="480" cy="400" r="18" fill="#1a2a1a" stroke="#3a6a3a" stroke-width="1"/>
+  <circle cx="480" cy="400" r="18" fill="#2a4a2a" opacity="0.4"/>
+  <rect x="420" y="416" width="120" height="38" rx="2" fill="#08121e" stroke="#3a5a30" stroke-width="1"/>
+  <text x="480" y="430" font-size="9" text-anchor="middle" fill="#6ab06a" font-weight="bold">Planet C — Verdania</text>
+  <text x="480" y="443" font-size="8" text-anchor="middle" fill="#8a9ab0">Organic · Fuel  ·  Easy</text>
+  <text x="480" y="453" font-size="7" text-anchor="middle" fill="#4caf7d">✓ Survey complete</text>
+
+  <!-- ═══ A3 (LOCKED) ═══ -->
+  <g filter="url(#lockedFilter)" opacity="0.4">
+    <circle cx="700" cy="120" r="8" fill="#4a4a5a" stroke="#6a6a7a" stroke-width="1"/>
+    <rect x="650" y="98" width="100" height="28" rx="2" fill="#08121e" stroke="#3a3a50" stroke-width="1"/>
+    <text x="700" y="112" font-size="9" text-anchor="middle" fill="#6a6a80" font-weight="bold">A3 — Unknown</text>
+    <text x="700" y="123" font-size="8" text-anchor="middle" fill="#4a4a60">🔒 Warp Key Required</text>
+  </g>
+
+  <!-- HUD top -->
+  <rect x="0" y="0" width="960" height="32" fill="#050d20" opacity="0.92"/>
+  <line x1="0" y1="32" x2="960" y2="32" stroke="#f5a623" stroke-width="0.8" opacity="0.6"/>
+  <text x="14" y="21" font-size="14" font-weight="bold" fill="#ffd700" letter-spacing="3" filter="url(#glowAmber)">★  GALAXY MAP</text>
+  <text x="480" y="21" font-size="11" text-anchor="middle" fill="#8a9ab0" letter-spacing="2">VOIDYIELD STAR SYSTEM</text>
+  <text x="946" y="21" font-size="11" text-anchor="end" fill="#f5a623">[ M ] CLOSE</text>
+
+  <!-- Legend -->
+  <rect x="8" y="40" width="170" height="120" rx="2" fill="#05080f" stroke="#2a3a50" stroke-width="1" opacity="0.92"/>
+  <text x="20" y="56" font-size="9" fill="#f5a623" letter-spacing="2">LEGEND</text>
+  <line x1="16" y1="60" x2="170" y2="60" stroke="#2a3a50" stroke-width="0.5"/>
+  <circle cx="24" cy="74" r="5" fill="#ffe0a0"/>
+  <text x="36" y="78" font-size="9" fill="#e8d0a0">Home Star</text>
+  <circle cx="24" cy="92" r="5" fill="#1a2845" stroke="#4a6090" stroke-width="1"/>
+  <text x="36" y="96" font-size="9" fill="#e8d0a0">Planet (accessible)</text>
+  <circle cx="24" cy="110" r="5" fill="#4a4a5a" opacity="0.4"/>
+  <text x="36" y="114" font-size="9" fill="#6a7a90">Locked zone</text>
+  <line x1="16" y1="122" x2="60" y2="122" stroke="#4a9fd4" stroke-width="1.5" stroke-dasharray="4,3"/>
+  <text x="68" y="126" font-size="9" fill="#4a9fd4">Warp lane</text>
+  <circle cx="24" cy="140" r="4" fill="#4a9fd4"/>
+  <text x="36" y="144" font-size="9" fill="#4a9fd4">Ship in transit</text>
+  <circle cx="24" cy="158" r="3" fill="#f5a623"/>
+  <text x="36" y="162" font-size="9" fill="#f5a623">Current position</text>
+
+  <!-- Fleet status sidebar -->
+  <rect x="782" y="40" width="170" height="100" rx="2" fill="#05080f" stroke="#2a3a50" stroke-width="1" opacity="0.92"/>
+  <text x="795" y="56" font-size="9" fill="#f5a623" letter-spacing="1">ACTIVE FLEET</text>
+  <line x1="790" y1="60" x2="944" y2="60" stroke="#2a3a50" stroke-width="0.5"/>
+  <g font-size="9">
+    <circle cx="798" cy="74" r="3" fill="#4a9fd4"/>
+    <text x="808" y="78" fill="#4a9fd4">Voidrunner-1 → B</text>
+    <text x="808" y="90" fill="#6a7a90">  ETA 14m 22s</text>
+    <circle cx="798" cy="102" r="3" fill="#f5a623"/>
+    <text x="808" y="106" fill="#f5a623">Dawnfreighter  Loading</text>
+    <text x="808" y="118" fill="#6a7a90">  Departs in 2m</text>
+    <circle cx="798" cy="130" r="3" fill="#4caf7d"/>
+    <text x="808" y="134" fill="#4caf7d">Starcutter  Docked A1</text>
+  </g>
+
+  <!-- Bottom bar -->
+  <rect x="0" y="506" width="960" height="34" fill="#050d20" opacity="0.92"/>
+  <line x1="0" y1="506" x2="960" y2="506" stroke="#f5a623" stroke-width="0.8" opacity="0.6"/>
+  <text x="480" y="527" font-size="11" text-anchor="middle" fill="#f5a623" letter-spacing="2">[ M ] CLOSE  ·  [ CLICK ] INSPECT  ·  [ T ] FLEET  ·  WARP KEYS: 0</text>
+</svg>

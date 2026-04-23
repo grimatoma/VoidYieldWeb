@@ -1,0 +1,200 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 540" width="960" height="540" font-family="'Courier New', monospace">
+  <defs>
+    <radialGradient id="skyGrad" cx="50%" cy="30%" r="70%">
+      <stop offset="0%" stop-color="#0a0f1e"/>
+      <stop offset="100%" stop-color="#020408"/>
+    </radialGradient>
+    <linearGradient id="groundGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#141a0e"/>
+      <stop offset="100%" stop-color="#0c1008"/>
+    </linearGradient>
+    <linearGradient id="hudBarGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#0d1e38" stop-opacity="0.95"/>
+      <stop offset="100%" stop-color="#080e20" stop-opacity="0.95"/>
+    </linearGradient>
+    <filter id="glowPurple">
+      <feGaussianBlur stdDeviation="4" result="blur"/>
+      <feFlood flood-color="#c070e0" flood-opacity="0.7" result="color"/>
+      <feComposite in="color" in2="blur" operator="in" result="shadow"/>
+      <feMerge><feMergeNode in="shadow"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+    <filter id="glowRed">
+      <feGaussianBlur stdDeviation="3" result="blur"/>
+      <feFlood flood-color="#e05555" flood-opacity="0.7" result="color"/>
+      <feComposite in="color" in2="blur" operator="in" result="shadow"/>
+      <feMerge><feMergeNode in="shadow"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+    <filter id="glowGreen">
+      <feGaussianBlur stdDeviation="2" result="blur"/>
+      <feFlood flood-color="#4caf7d" flood-opacity="0.5" result="color"/>
+      <feComposite in="color" in2="blur" operator="in" result="shadow"/>
+      <feMerge><feMergeNode in="shadow"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+    <radialGradient id="repairAura" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#c070e0" stop-opacity="0.15"/>
+      <stop offset="100%" stop-color="#c070e0" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+
+  <!-- World -->
+  <rect width="960" height="270" fill="url(#skyGrad)"/>
+  <g opacity="0.5">
+    <circle cx="45" cy="23" r="0.8" fill="#fff"/><circle cx="234" cy="14" r="1.0" fill="#fff"/>
+    <circle cx="698" cy="18" r="1.0" fill="#e0ffff"/><circle cx="812" cy="72" r="0.7" fill="#fff"/>
+    <circle cx="445" cy="31" r="0.8" fill="#fff"/>
+  </g>
+  <rect x="0" y="270" width="960" height="270" fill="url(#groundGrad)"/>
+  <g stroke="#1a2010" stroke-width="0.5" opacity="0.3">
+    <line x1="0" y1="310" x2="960" y2="310"/><line x1="0" y1="350" x2="960" y2="350"/>
+    <line x1="0" y1="390" x2="960" y2="390"/><line x1="0" y1="430" x2="960" y2="430"/>
+    <line x1="80" y1="270" x2="80" y2="540"/><line x1="240" y1="270" x2="240" y2="540"/>
+    <line x1="400" y1="270" x2="400" y2="540"/><line x1="560" y1="270" x2="560" y2="540"/>
+    <line x1="720" y1="270" x2="720" y2="540"/>
+  </g>
+  <line x1="0" y1="270" x2="960" y2="270" stroke="#2a3820" stroke-width="1"/>
+
+  <!-- Ore deposit -->
+  <ellipse cx="400" cy="420" rx="36" ry="16" fill="#2a1a08" stroke="#6a4020" stroke-width="1.5" opacity="0.9"/>
+  <circle cx="388" cy="413" r="9" fill="#4a2a10" opacity="0.9"/>
+  <circle cx="405" cy="407" r="8" fill="#6a4020" opacity="0.9"/>
+
+  <!-- ═══ DAMAGED HARVESTER ═══ -->
+  <!-- Harvester body — damaged look (cracked stroke, dim color) -->
+  <rect x="358" y="358" width="64" height="46" rx="3" fill="#1e2830" stroke="#e05555" stroke-width="2" filter="url(#glowRed)"/>
+  <rect x="363" y="352" width="54" height="10" rx="1" fill="#2a3040" stroke="#5a3838" stroke-width="0.5"/>
+  <!-- Damage cracks on body -->
+  <line x1="368" y1="365" x2="378" y2="380" stroke="#e05555" stroke-width="1" opacity="0.5"/>
+  <line x1="395" y1="360" x2="400" y2="372" stroke="#e05555" stroke-width="0.8" opacity="0.4"/>
+  <!-- Mining arm (bent/damaged) -->
+  <line x1="390" y1="380" x2="392" y2="398" stroke="#6a5a50" stroke-width="3"/>
+  <circle cx="392" cy="398" r="4" fill="#5a4a40" stroke="#8a6a60" stroke-width="1"/>
+  <!-- Status light — red/blinking -->
+  <circle cx="390" cy="366" r="5" fill="#e05555" opacity="0.9" filter="url(#glowRed)"/>
+  <circle cx="390" cy="366" r="8" fill="none" stroke="#e05555" stroke-width="1" opacity="0.4"/>
+  <!-- DAMAGED label -->
+  <rect x="358" y="398" width="64" height="10" rx="2" fill="#200808"/>
+  <text x="390" y="407" font-size="7" text-anchor="middle" fill="#e05555">⚠ DAMAGED</text>
+
+  <!-- Health bar above harvester -->
+  <rect x="340" y="334" width="100" height="18" rx="2" fill="#05080f" stroke="#e05555" stroke-width="1.5"/>
+  <text x="390" y="342" font-size="7" text-anchor="middle" fill="#8a9ab0">HEALTH</text>
+  <rect x="344" y="344" width="92" height="6" rx="2" fill="#0a1020"/>
+  <rect x="344" y="344" width="31" height="6" rx="2" fill="#e05555" opacity="0.85"/>
+  <text x="390" y="350" font-size="6" text-anchor="middle" fill="#e05555">34%  (critical)</text>
+
+  <!-- Repair aura around harvester -->
+  <circle cx="390" cy="390" r="70" fill="url(#repairAura)" opacity="0.8"/>
+
+  <!-- ═══ REPAIR DRONE ═══ (hovering above harvester) -->
+  <g filter="url(#glowPurple)">
+    <!-- Main body -->
+    <rect x="376" y="310" width="28" height="16" rx="3" fill="#280838" stroke="#c070e0" stroke-width="1.5"/>
+    <!-- Arms -->
+    <line x1="376" y1="314" x2="362" y2="306" stroke="#401058" stroke-width="2"/>
+    <line x1="404" y1="314" x2="418" y2="306" stroke="#401058" stroke-width="2"/>
+    <line x1="376" y1="322" x2="362" y2="330" stroke="#401058" stroke-width="2"/>
+    <line x1="404" y1="322" x2="418" y2="330" stroke="#401058" stroke-width="2"/>
+    <!-- Rotors -->
+    <circle cx="360" cy="305" r="5" fill="none" stroke="#c070e0" stroke-width="1.5" opacity="0.9"/>
+    <circle cx="420" cy="305" r="5" fill="none" stroke="#c070e0" stroke-width="1.5" opacity="0.9"/>
+    <circle cx="360" cy="331" r="5" fill="none" stroke="#c070e0" stroke-width="1.5" opacity="0.9"/>
+    <circle cx="420" cy="331" r="5" fill="none" stroke="#c070e0" stroke-width="1.5" opacity="0.9"/>
+    <!-- Repair tool extending downward -->
+    <line x1="390" y1="326" x2="390" y2="345" stroke="#c070e0" stroke-width="2"/>
+    <polygon points="390,348 385,340 395,340" fill="#c070e0" opacity="0.9"/>
+    <!-- Status light -->
+    <circle cx="390" cy="316" r="3" fill="#c070e0" opacity="0.9"/>
+  </g>
+  <!-- Rotor spin trails -->
+  <circle cx="360" cy="305" r="7" fill="none" stroke="#c070e0" stroke-width="0.5" stroke-dasharray="2,2" opacity="0.4"/>
+  <circle cx="420" cy="305" r="7" fill="none" stroke="#c070e0" stroke-width="0.5" stroke-dasharray="2,2" opacity="0.4"/>
+  <circle cx="360" cy="331" r="7" fill="none" stroke="#c070e0" stroke-width="0.5" stroke-dasharray="2,2" opacity="0.4"/>
+  <circle cx="420" cy="331" r="7" fill="none" stroke="#c070e0" stroke-width="0.5" stroke-dasharray="2,2" opacity="0.4"/>
+
+  <!-- Repair sparks/effect -->
+  <circle cx="386" cy="353" r="2" fill="#c070e0" opacity="0.8"/>
+  <circle cx="393" cy="349" r="1.5" fill="#e090ff" opacity="0.7"/>
+  <circle cx="388" cy="345" r="1" fill="#c070e0" opacity="0.6"/>
+  <line x1="385" y1="352" x2="380" y2="356" stroke="#c070e0" stroke-width="1" opacity="0.5"/>
+  <line x1="394" y1="350" x2="399" y2="354" stroke="#c070e0" stroke-width="1" opacity="0.5"/>
+
+  <!-- Repair progress bar floating above drone -->
+  <rect x="348" y="280" width="84" height="28" rx="2" fill="#05080f" stroke="#c070e0" stroke-width="1.5" opacity="0.95"/>
+  <text x="390" y="291" font-size="7" text-anchor="middle" fill="#c070e0">REPAIR-01</text>
+  <rect x="353" y="294" width="74" height="6" rx="2" fill="#0a1020"/>
+  <rect x="353" y="294" width="50" height="6" rx="2" fill="#c070e0" opacity="0.8"/>
+  <text x="390" y="300" font-size="6" text-anchor="middle" fill="#c070e0">67%  (~24s)</text>
+
+  <!-- Other working harvester (right, healthy) -->
+  <rect x="580" y="368" width="54" height="38" rx="3" fill="#2a3848" stroke="#4caf7d" stroke-width="1.5"/>
+  <rect x="585" y="363" width="44" height="8" rx="1" fill="#3a4858"/>
+  <line x1="607" y1="382" x2="607" y2="398" stroke="#6a8a90" stroke-width="2.5"/>
+  <circle cx="607" cy="398" r="4" fill="#8aaa90" stroke="#4caf7d" stroke-width="1"/>
+  <circle cx="607" cy="375" r="4" fill="#4caf7d" opacity="0.85"/>
+  <ellipse cx="607" cy="408" rx="26" ry="10" fill="#2a1a08" stroke="#6a4020" stroke-width="1" opacity="0.8"/>
+  <text x="607" y="415" font-size="6" text-anchor="middle" fill="#4caf7d">H2 — OK</text>
+
+  <!-- Player character standing nearby watching -->
+  <circle cx="470" cy="395" r="6" fill="#e8d0a0"/>
+  <rect x="465" y="397" width="10" height="14" rx="1" fill="#2a4070"/>
+
+  <!-- Repair Hub in background -->
+  <rect x="720" y="380" width="55" height="42" rx="2" fill="#1a1428" stroke="#c070e0" stroke-width="1.5"/>
+  <text x="747" y="398" font-size="7" text-anchor="middle" fill="#c070e0">REPAIR</text>
+  <text x="747" y="408" font-size="7" text-anchor="middle" fill="#c070e0">HUB</text>
+  <!-- Path from repair hub to drone -->
+  <path d="M 720 395 Q 580 350 420 325" fill="none" stroke="#c070e0" stroke-width="1" stroke-dasharray="5,4" opacity="0.3"/>
+
+  <!-- ═══ REPAIR DETAIL PANEL ═══ (right side) -->
+  <rect x="660" y="40" width="292" height="240" rx="3" fill="#05080f" stroke="#c070e0" stroke-width="1.5" opacity="0.96"/>
+  <rect x="660" y="40" width="292" height="36" rx="3" fill="#180828"/>
+  <line x1="660" y1="76" x2="952" y2="76" stroke="#c070e0" stroke-width="1" opacity="0.7"/>
+  <text x="806" y="62" font-size="12" font-weight="bold" text-anchor="middle" fill="#c070e0">REPAIR DRONE</text>
+
+  <g font-size="9">
+    <text x="674" y="92" fill="#8a9ab0">Unit:</text>
+    <text x="940" y="92" text-anchor="end" fill="#c070e0" font-weight="bold">REPAIR-01</text>
+    <text x="674" y="108" fill="#8a9ab0">Target:</text>
+    <text x="940" y="108" text-anchor="end" fill="#e8d0a0">Harvester 1</text>
+    <text x="674" y="124" fill="#8a9ab0">Damage type:</text>
+    <text x="940" y="124" text-anchor="end" fill="#e05555">Mechanical wear + impact</text>
+
+    <line x1="668" y1="130" x2="944" y2="130" stroke="#2a1840" stroke-width="0.5"/>
+
+    <text x="674" y="146" fill="#8a9ab0">Repair Progress:</text>
+    <rect x="674" y="150" width="260" height="12" rx="2" fill="#0a1020"/>
+    <rect x="674" y="150" width="174" height="12" rx="2" fill="#c070e0" opacity="0.8"/>
+    <text x="804" y="160" font-size="8" text-anchor="middle" fill="#fff">67%</text>
+    <text x="940" y="162" text-anchor="end" fill="#c070e0" font-size="8">~24s remaining</text>
+
+    <text x="674" y="180" fill="#8a9ab0">Health after repair:</text>
+    <text x="940" y="180" text-anchor="end" fill="#4caf7d">100%  (full restore)</text>
+    <text x="674" y="196" fill="#8a9ab0">Parts consumed:</text>
+    <text x="940" y="196" text-anchor="end" fill="#e8d0a0">Repair Kit ×2  (6 remaining)</text>
+    <text x="674" y="212" fill="#8a9ab0">Drone battery:</text>
+    <rect x="770" y="205" width="120" height="7" rx="2" fill="#0a1020"/>
+    <rect x="770" y="205" width="94" height="7" rx="2" fill="#c070e0" opacity="0.75"/>
+    <text x="940" y="212" text-anchor="end" fill="#c070e0">78%</text>
+
+    <line x1="668" y1="220" x2="944" y2="220" stroke="#2a1840" stroke-width="0.5"/>
+    <text x="674" y="235" fill="#f5a623">⚠ Harvester 1 offline during repair</text>
+    <text x="674" y="249" fill="#3a4a60">H2 covering  ·  Output −18 Krysite/min</text>
+    <text x="674" y="263" fill="#3a4a60">[ E ] Override — resume at 34% health</text>
+  </g>
+
+  <!-- HUD top bar -->
+  <rect x="0" y="0" width="960" height="32" fill="url(#hudBarGrad)"/>
+  <line x1="0" y1="32" x2="960" y2="32" stroke="#f5a623" stroke-width="0.8" opacity="0.6"/>
+  <text x="14" y="11" font-size="9" fill="#f5a623" opacity="0.7">CREDITS</text>
+  <text x="14" y="26" font-size="14" font-weight="bold" fill="#ffd700">◈ 8,640</text>
+  <line x1="100" y1="5" x2="100" y2="28" stroke="#2a3a50" stroke-width="0.5"/>
+  <text x="113" y="11" font-size="9" fill="#9090f0" opacity="0.7">RESEARCH</text>
+  <text x="113" y="26" font-size="14" font-weight="bold" fill="#a0a8f8">⬡ 480</text>
+  <text x="480" y="20" font-size="12" text-anchor="middle" fill="#c070e0">A1 — REPAIR IN PROGRESS</text>
+  <text x="946" y="20" font-size="14" text-anchor="end" fill="#e8d0a0">00:55:44</text>
+
+  <!-- Bottom bar -->
+  <rect x="0" y="506" width="960" height="34" fill="url(#hudBarGrad)"/>
+  <line x1="0" y1="506" x2="960" y2="506" stroke="#f5a623" stroke-width="0.8" opacity="0.6"/>
+  <text x="480" y="527" font-size="10" text-anchor="middle" fill="#c070e0">[D] DRONE BAY  ·  [E] OVERRIDE REPAIR  ·  REPAIR-01 WORKING  ·  67% — ~24s</text>
+</svg>

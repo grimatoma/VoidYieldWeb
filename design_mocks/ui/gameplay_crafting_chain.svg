@@ -1,0 +1,212 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 540" width="960" height="540" font-family="'Courier New', monospace">
+  <defs>
+    <radialGradient id="skyGrad" cx="50%" cy="30%" r="70%">
+      <stop offset="0%" stop-color="#0a0f1e"/>
+      <stop offset="100%" stop-color="#020408"/>
+    </radialGradient>
+    <linearGradient id="groundGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#141a0e"/>
+      <stop offset="100%" stop-color="#0c1008"/>
+    </linearGradient>
+    <linearGradient id="hudBarGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#0d1e38" stop-opacity="0.95"/>
+      <stop offset="100%" stop-color="#080e20" stop-opacity="0.95"/>
+    </linearGradient>
+    <filter id="glowAmber">
+      <feGaussianBlur stdDeviation="2" result="blur"/>
+      <feFlood flood-color="#f5a623" flood-opacity="0.5" result="color"/>
+      <feComposite in="color" in2="blur" operator="in" result="shadow"/>
+      <feMerge><feMergeNode in="shadow"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+    <filter id="glowGreen">
+      <feGaussianBlur stdDeviation="2" result="blur"/>
+      <feFlood flood-color="#4caf7d" flood-opacity="0.5" result="color"/>
+      <feComposite in="color" in2="blur" operator="in" result="shadow"/>
+      <feMerge><feMergeNode in="shadow"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+    <filter id="glowGold">
+      <feGaussianBlur stdDeviation="3" result="blur"/>
+      <feFlood flood-color="#ffd700" flood-opacity="0.6" result="color"/>
+      <feComposite in="color" in2="blur" operator="in" result="shadow"/>
+      <feMerge><feMergeNode in="shadow"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+    <filter id="glowBlue">
+      <feGaussianBlur stdDeviation="2" result="blur"/>
+      <feFlood flood-color="#4a9fd4" flood-opacity="0.5" result="color"/>
+      <feComposite in="color" in2="blur" operator="in" result="shadow"/>
+      <feMerge><feMergeNode in="shadow"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+  </defs>
+
+  <!-- World -->
+  <rect width="960" height="260" fill="url(#skyGrad)"/>
+  <g opacity="0.4">
+    <circle cx="45" cy="23" r="0.8" fill="#fff"/><circle cx="234" cy="14" r="1.0" fill="#fff"/>
+    <circle cx="698" cy="18" r="1.0" fill="#e0ffff"/><circle cx="812" cy="72" r="0.7" fill="#fff"/>
+  </g>
+  <rect x="0" y="260" width="960" height="280" fill="url(#groundGrad)"/>
+  <g stroke="#1a2010" stroke-width="0.5" opacity="0.25">
+    <line x1="0" y1="300" x2="960" y2="300"/><line x1="0" y1="340" x2="960" y2="340"/>
+    <line x1="0" y1="380" x2="960" y2="380"/><line x1="0" y1="420" x2="960" y2="420"/>
+    <line x1="80" y1="260" x2="80" y2="540"/><line x1="200" y1="260" x2="200" y2="540"/>
+    <line x1="320" y1="260" x2="320" y2="540"/><line x1="440" y1="260" x2="440" y2="540"/>
+    <line x1="560" y1="260" x2="560" y2="540"/><line x1="680" y1="260" x2="680" y2="540"/>
+    <line x1="800" y1="260" x2="800" y2="540"/>
+  </g>
+  <line x1="0" y1="260" x2="960" y2="260" stroke="#2a3820" stroke-width="1"/>
+
+  <!-- ═══ FACTORY CHAIN (left to right) ═══ -->
+
+  <!-- STAGE 0: Ore Silo (far left) -->
+  <rect x="20" y="320" width="60" height="90" rx="2" fill="#1a2030" stroke="#3a5070" stroke-width="1.5"/>
+  <rect x="26" y="315" width="48" height="8" rx="1" fill="#252e3a"/>
+  <rect x="30" y="330" width="40" height="70" rx="1" fill="#101828"/>
+  <rect x="34" y="355" width="32" height="45" rx="1" fill="#4a9fd4" opacity="0.45"/>
+  <text x="50" y="334" font-size="6" text-anchor="middle" fill="#4a9fd4">ORE</text>
+  <text x="50" y="383" font-size="7" text-anchor="middle" fill="#4a9fd4">340</text>
+  <!-- Label below -->
+  <text x="50" y="424" font-size="7" text-anchor="middle" fill="#6a7a90">Krysite</text>
+  <text x="50" y="434" font-size="7" text-anchor="middle" fill="#6a7a90">Ore</text>
+
+  <!-- Conveyor 0→1 (ore) -->
+  <rect x="80" y="373" width="90" height="8" rx="2" fill="#1a2030" stroke="#3a4a50" stroke-width="0.8"/>
+  <circle cx="95" cy="377" r="3" fill="#4a9fd4" opacity="0.7"/>
+  <circle cx="115" cy="377" r="3" fill="#4a9fd4" opacity="0.6"/>
+  <circle cx="135" cy="377" r="3" fill="#4a9fd4" opacity="0.5"/>
+  <circle cx="155" cy="377" r="3" fill="#4a9fd4" opacity="0.4"/>
+  <polygon points="168,374 176,377 168,380" fill="#3a5070"/>
+  <text x="125" y="366" font-size="6" text-anchor="middle" fill="#4a6080">+36.5/min</text>
+
+  <!-- STAGE 1: Processing Plant -->
+  <rect x="170" y="305" width="110" height="90" rx="3" fill="#1a2838" stroke="#f5a623" stroke-width="2" filter="url(#glowAmber)"/>
+  <rect x="170" y="305" width="110" height="24" rx="3" fill="#1a1000"/>
+  <text x="225" y="321" font-size="8" text-anchor="middle" fill="#f5a623" font-weight="bold">PROCESSING</text>
+  <text x="225" y="331" font-size="7" text-anchor="middle" fill="#f5a623">PLANT</text>
+  <!-- Chimneys -->
+  <rect x="184" y="288" width="8" height="18" rx="1" fill="#252e3a"/>
+  <rect x="198" y="282" width="8" height="24" rx="1" fill="#252e3a"/>
+  <circle cx="188" cy="285" r="5" fill="#2a3040" opacity="0.5"/>
+  <circle cx="202" cy="279" r="6" fill="#2a3040" opacity="0.4"/>
+  <!-- Status -->
+  <circle cx="225" cy="318" r="4" fill="#4caf7d" opacity="0.9"/>
+  <text x="225" y="358" font-size="7" text-anchor="middle" fill="#8a9ab0">5 ore → 1 ingot</text>
+  <text x="225" y="370" font-size="7" text-anchor="middle" fill="#4caf7d">Eff: 87%</text>
+  <text x="225" y="386" font-size="6" text-anchor="middle" fill="#8a9ab0">+7.3 ingots/min</text>
+
+  <!-- Conveyor 1→2 (ingots) -->
+  <rect x="280" y="373" width="90" height="8" rx="2" fill="#1a2030" stroke="#3a4a50" stroke-width="0.8"/>
+  <circle cx="295" cy="377" r="3" fill="#ffd700" opacity="0.8"/>
+  <circle cx="315" cy="377" r="3" fill="#ffd700" opacity="0.7"/>
+  <circle cx="335" cy="377" r="3" fill="#ffd700" opacity="0.6"/>
+  <circle cx="355" cy="377" r="3" fill="#ffd700" opacity="0.5"/>
+  <polygon points="368,374 376,377 368,380" fill="#5a5020"/>
+  <text x="325" y="366" font-size="6" text-anchor="middle" fill="#8a6020">+7.3/min</text>
+
+  <!-- Drone lane (cargo drones above conveyor 1→2) -->
+  <line x1="285" y1="355" x2="375" y2="355" stroke="#4a9fd4" stroke-width="0.8" stroke-dasharray="4,3" opacity="0.4"/>
+  <!-- Mini drone -->
+  <rect x="320" y="348" width="12" height="7" rx="1" fill="#1a3050" stroke="#4a9fd4" stroke-width="0.8"/>
+  <line x1="320" y1="350" x2="314" y2="346" stroke="#2a4060" stroke-width="1"/>
+  <line x1="332" y1="350" x2="338" y2="346" stroke="#2a4060" stroke-width="1"/>
+
+  <!-- STAGE 2: Fabricator -->
+  <rect x="370" y="298" width="110" height="98" rx="3" fill="#1a2838" stroke="#4a9fd4" stroke-width="2" filter="url(#glowBlue)"/>
+  <rect x="370" y="298" width="110" height="24" rx="3" fill="#080e20"/>
+  <text x="425" y="314" font-size="8" text-anchor="middle" fill="#4a9fd4" font-weight="bold">FABRICATOR</text>
+  <text x="425" y="325" font-size="7" text-anchor="middle" fill="#4a9fd4">MK II</text>
+  <!-- Antenna -->
+  <line x1="448" y1="285" x2="448" y2="298" stroke="#3a5070" stroke-width="1.5"/>
+  <circle cx="448" cy="283" r="3" fill="#4a9fd4" opacity="0.8"/>
+  <!-- Status -->
+  <circle cx="425" cy="312" r="4" fill="#4caf7d" opacity="0.9"/>
+  <text x="425" y="352" font-size="7" text-anchor="middle" fill="#8a9ab0">2 ingot + 1 crystal</text>
+  <text x="425" y="362" font-size="7" text-anchor="middle" fill="#8a9ab0">→ 1 Component</text>
+  <text x="425" y="374" font-size="7" text-anchor="middle" fill="#4caf7d">Eff: 92%</text>
+  <text x="425" y="386" font-size="6" text-anchor="middle" fill="#8a9ab0">+3.1 comp/min</text>
+
+  <!-- Crystal input (from above, secondary feed) -->
+  <rect x="395" y="268" width="60" height="30" rx="2" fill="#1a1a28" stroke="#9060e0" stroke-width="1"/>
+  <text x="425" y="280" font-size="6" text-anchor="middle" fill="#9060e0">CRYSTAL</text>
+  <text x="425" y="290" font-size="6" text-anchor="middle" fill="#9060e0">SHARD ×62</text>
+  <line x1="425" y1="298" x2="425" y2="298" stroke="#9060e0" stroke-width="1" stroke-dasharray="3,2" opacity="0.6"/>
+
+  <!-- Conveyor 2→3 (components) -->
+  <rect x="480" y="373" width="90" height="8" rx="2" fill="#1a2030" stroke="#3a4a50" stroke-width="0.8"/>
+  <circle cx="495" cy="377" r="3" fill="#a0c0ff" opacity="0.8"/>
+  <circle cx="515" cy="377" r="3" fill="#a0c0ff" opacity="0.7"/>
+  <circle cx="535" cy="377" r="3" fill="#a0c0ff" opacity="0.6"/>
+  <circle cx="555" cy="377" r="3" fill="#a0c0ff" opacity="0.5"/>
+  <polygon points="568,374 576,377 568,380" fill="#3a4060"/>
+  <text x="525" y="366" font-size="6" text-anchor="middle" fill="#4a6080">+3.1/min</text>
+
+  <!-- Drone lane 2→3 -->
+  <line x1="485" y1="355" x2="575" y2="355" stroke="#4a9fd4" stroke-width="0.8" stroke-dasharray="4,3" opacity="0.4"/>
+  <rect x="520" y="348" width="12" height="7" rx="1" fill="#1a3050" stroke="#4a9fd4" stroke-width="0.8"/>
+  <line x1="520" y1="350" x2="514" y2="346" stroke="#2a4060" stroke-width="1"/>
+  <line x1="532" y1="350" x2="538" y2="346" stroke="#2a4060" stroke-width="1"/>
+
+  <!-- STAGE 3: Assembly Complex -->
+  <rect x="570" y="290" width="120" height="106" rx="3" fill="#1a2020" stroke="#4caf7d" stroke-width="2" filter="url(#glowGreen)"/>
+  <rect x="570" y="290" width="120" height="24" rx="3" fill="#081808"/>
+  <text x="630" y="306" font-size="8" text-anchor="middle" fill="#4caf7d" font-weight="bold">ASSEMBLY</text>
+  <text x="630" y="316" font-size="7" text-anchor="middle" fill="#4caf7d">COMPLEX</text>
+  <!-- Towers -->
+  <rect x="580" y="272" width="8" height="20" rx="1" fill="#1a2820"/>
+  <rect x="702" y="268" width="8" height="24" rx="1" fill="#1a2820"/>
+  <!-- Status -->
+  <circle cx="630" cy="304" r="4" fill="#4caf7d" opacity="0.9"/>
+  <text x="630" y="348" font-size="7" text-anchor="middle" fill="#8a9ab0">4 comp + 1 fuel cell</text>
+  <text x="630" y="358" font-size="7" text-anchor="middle" fill="#8a9ab0">→ 1 Advanced Part</text>
+  <text x="630" y="370" font-size="7" text-anchor="middle" fill="#4caf7d">Eff: 78%</text>
+  <text x="630" y="382" font-size="6" text-anchor="middle" fill="#8a9ab0">+0.6 parts/min</text>
+  <!-- Queue indicator -->
+  <rect x="578" y="388" width="104" height="5" rx="2" fill="#0a1020"/>
+  <rect x="578" y="388" width="65" height="5" rx="2" fill="#4caf7d" opacity="0.7"/>
+  <text x="630" y="398" font-size="6" text-anchor="middle" fill="#4caf7d">Queue: 4 batches</text>
+
+  <!-- Output crates (far right) -->
+  <rect x="700" y="350" width="55" height="50" rx="2" fill="#1a2030" stroke="#4caf7d" stroke-width="1.5"/>
+  <text x="727" y="370" font-size="6" text-anchor="middle" fill="#4caf7d">OUTPUT</text>
+  <text x="727" y="382" font-size="6" text-anchor="middle" fill="#ffd700">Adv. Parts</text>
+  <text x="727" y="394" font-size="7" text-anchor="middle" fill="#ffd700">×24</text>
+  <!-- Conveyor 3→output -->
+  <rect x="690" y="373" width="12" height="8" rx="1" fill="#1a2030" stroke="#3a4a50" stroke-width="0.8"/>
+
+  <!-- Net output panel -->
+  <rect x="760" y="290" width="192" height="115" rx="3" fill="#05080f" stroke="#ffd700" stroke-width="1.5" filter="url(#glowGold)" opacity="0.96"/>
+  <text x="856" y="308" font-size="9" font-weight="bold" text-anchor="middle" fill="#ffd700">NET OUTPUT</text>
+  <line x1="768" y1="312" x2="944" y2="312" stroke="#2a2a10" stroke-width="0.5"/>
+  <g font-size="8">
+    <text x="772" y="327" fill="#6a7a90">Krysite Ingot:</text>
+    <text x="944" y="327" text-anchor="end" fill="#ffd700">+7.3 / min</text>
+    <text x="772" y="341" fill="#6a7a90">Components:</text>
+    <text x="944" y="341" text-anchor="end" fill="#a0c0ff">+3.1 / min</text>
+    <text x="772" y="355" fill="#6a7a90">Adv. Parts:</text>
+    <text x="944" y="355" text-anchor="end" fill="#4caf7d">+0.6 / min</text>
+    <line x1="768" y1="360" x2="944" y2="360" stroke="#2a2a10" stroke-width="0.5"/>
+    <text x="772" y="374" fill="#6a7a90">Sell value/min:</text>
+    <text x="944" y="374" text-anchor="end" fill="#ffd700">◈ +284 / min</text>
+    <text x="772" y="388" fill="#4caf7d" font-weight="bold">vs. raw ore:</text>
+    <text x="944" y="388" text-anchor="end" fill="#4caf7d" font-weight="bold">×6.8 multiplier</text>
+  </g>
+
+  <!-- Player -->
+  <circle cx="760" cy="395" r="6" fill="#e8d0a0"/>
+  <rect x="755" y="397" width="10" height="14" rx="1" fill="#2a4070"/>
+
+  <!-- HUD top bar -->
+  <rect x="0" y="0" width="960" height="32" fill="url(#hudBarGrad)"/>
+  <line x1="0" y1="32" x2="960" y2="32" stroke="#f5a623" stroke-width="0.8" opacity="0.6"/>
+  <text x="14" y="11" font-size="9" fill="#f5a623" opacity="0.7">CREDITS</text>
+  <text x="14" y="26" font-size="14" font-weight="bold" fill="#ffd700">◈ 18,240</text>
+  <line x1="100" y1="5" x2="100" y2="28" stroke="#2a3a50" stroke-width="0.5"/>
+  <text x="113" y="11" font-size="9" fill="#9090f0" opacity="0.7">RESEARCH</text>
+  <text x="113" y="26" font-size="14" font-weight="bold" fill="#a0a8f8">⬡ 1,240</text>
+  <text x="480" y="20" font-size="12" text-anchor="middle" fill="#e8d0a0">A1 — Full Factory Chain Active</text>
+  <text x="946" y="20" font-size="14" text-anchor="end" fill="#e8d0a0">01:44:02</text>
+
+  <!-- Bottom bar -->
+  <rect x="0" y="506" width="960" height="34" fill="url(#hudBarGrad)"/>
+  <line x1="0" y1="506" x2="960" y2="506" stroke="#f5a623" stroke-width="0.8" opacity="0.6"/>
+  <text x="480" y="527" font-size="10" text-anchor="middle" fill="#8a9ab0">[P] PRODUCTION DASHBOARD  ·  3 FACTORIES ACTIVE  ·  ×6.8 value chain  ·  ◈ +284/min</text>
+</svg>

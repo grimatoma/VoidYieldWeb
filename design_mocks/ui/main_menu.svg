@@ -1,0 +1,169 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 540" width="960" height="540" font-family="'Courier New', monospace">
+  <defs>
+    <radialGradient id="bgGrad" cx="50%" cy="50%" r="70%">
+      <stop offset="0%" stop-color="#0d1428"/>
+      <stop offset="100%" stop-color="#020408"/>
+    </radialGradient>
+    <radialGradient id="logoGlow" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#f5a623" stop-opacity="0.3"/>
+      <stop offset="100%" stop-color="#f5a623" stop-opacity="0"/>
+    </radialGradient>
+    <filter id="glow">
+      <feGaussianBlur stdDeviation="3" result="blur"/>
+      <feComposite in="SourceGraphic" in2="blur" operator="over"/>
+    </filter>
+    <filter id="strongGlow">
+      <feGaussianBlur stdDeviation="6" result="blur"/>
+      <feFlood flood-color="#f5a623" flood-opacity="0.6" result="color"/>
+      <feComposite in="color" in2="blur" operator="in" result="shadow"/>
+      <feMerge><feMergeNode in="shadow"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+    <filter id="btnGlow">
+      <feGaussianBlur stdDeviation="2" result="blur"/>
+      <feFlood flood-color="#f5a623" flood-opacity="0.4" result="color"/>
+      <feComposite in="color" in2="blur" operator="in" result="shadow"/>
+      <feMerge><feMergeNode in="shadow"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+    <linearGradient id="btnGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#1e2a40"/>
+      <stop offset="100%" stop-color="#0d1628"/>
+    </linearGradient>
+    <linearGradient id="btnGradHover" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#2a3a54"/>
+      <stop offset="100%" stop-color="#1a2440"/>
+    </linearGradient>
+  </defs>
+
+  <!-- Background -->
+  <rect width="960" height="540" fill="url(#bgGrad)"/>
+
+  <!-- Star field -->
+  <g opacity="0.8">
+    <circle cx="45" cy="23" r="0.8" fill="#ffffff"/>
+    <circle cx="120" cy="67" r="0.5" fill="#e0e0ff"/>
+    <circle cx="234" cy="14" r="1.0" fill="#ffffff"/>
+    <circle cx="312" cy="89" r="0.6" fill="#ffe0a0"/>
+    <circle cx="445" cy="31" r="0.8" fill="#ffffff"/>
+    <circle cx="567" cy="55" r="0.5" fill="#ffffff"/>
+    <circle cx="698" cy="18" r="1.0" fill="#e0ffff"/>
+    <circle cx="812" cy="72" r="0.7" fill="#ffffff"/>
+    <circle cx="920" cy="40" r="0.9" fill="#ffffff"/>
+    <circle cx="78" cy="145" r="0.6" fill="#ffffff"/>
+    <circle cx="189" cy="178" r="0.8" fill="#ffe0a0"/>
+    <circle cx="356" cy="112" r="0.5" fill="#ffffff"/>
+    <circle cx="478" cy="134" r="0.7" fill="#ffffff"/>
+    <circle cx="634" cy="98" r="0.9" fill="#e0e0ff"/>
+    <circle cx="745" cy="167" r="0.6" fill="#ffffff"/>
+    <circle cx="867" cy="123" r="0.5" fill="#ffffff"/>
+    <circle cx="34" cy="267" r="0.7" fill="#ffffff"/>
+    <circle cx="156" cy="312" r="0.8" fill="#ffffff"/>
+    <circle cx="267" cy="245" r="0.5" fill="#ffe0a0"/>
+    <circle cx="389" cy="289" r="0.6" fill="#ffffff"/>
+    <circle cx="523" cy="234" r="1.0" fill="#e0ffff"/>
+    <circle cx="645" cy="278" r="0.7" fill="#ffffff"/>
+    <circle cx="756" cy="245" r="0.5" fill="#ffffff"/>
+    <circle cx="889" cy="312" r="0.8" fill="#ffffff"/>
+    <circle cx="23" cy="412" r="0.6" fill="#ffffff"/>
+    <circle cx="134" cy="467" r="0.5" fill="#ffe0a0"/>
+    <circle cx="289" cy="423" r="0.8" fill="#ffffff"/>
+    <circle cx="423" cy="489" r="0.7" fill="#ffffff"/>
+    <circle cx="556" cy="434" r="0.9" fill="#e0e0ff"/>
+    <circle cx="678" cy="478" r="0.5" fill="#ffffff"/>
+    <circle cx="812" cy="445" r="0.6" fill="#ffffff"/>
+    <circle cx="934" cy="412" r="0.8" fill="#ffffff"/>
+    <circle cx="90" cy="512" r="0.7" fill="#ffffff"/>
+    <circle cx="201" cy="534" r="0.5" fill="#ffffff"/>
+    <circle cx="712" cy="523" r="0.6" fill="#ffe0a0"/>
+    <circle cx="845" cy="509" r="0.8" fill="#ffffff"/>
+    <circle cx="167" cy="56" r="0.4" fill="#ffffff"/>
+    <circle cx="590" cy="190" r="0.6" fill="#ffffff"/>
+    <circle cx="730" cy="340" r="0.5" fill="#e0e0ff"/>
+    <circle cx="112" cy="398" r="0.7" fill="#ffffff"/>
+    <circle cx="920" cy="234" r="0.4" fill="#ffffff"/>
+  </g>
+
+  <!-- Asteroids (background decorations) -->
+  <g opacity="0.25">
+    <polygon points="82,78 95,65 115,70 110,90 90,95 75,85" fill="#3a3a4a" stroke="#4a4a5a" stroke-width="1"/>
+    <polygon points="840,45 860,38 875,55 865,70 845,68 832,58" fill="#2a2a3a" stroke="#3a3a4a" stroke-width="1"/>
+    <polygon points="890,380 915,368 932,385 925,405 900,408 885,395" fill="#3a3a4a" stroke="#4a4a5a" stroke-width="1"/>
+    <polygon points="45,420 68,412 78,430 70,450 48,452 35,438" fill="#2a2a3a" stroke="#3a3a4a" stroke-width="1"/>
+    <polygon points="200,490 225,478 240,492 235,512 210,515 195,502" fill="#3a3a4a" stroke="#4a4a5a" stroke-width="1"/>
+    <polygon points="720,490 745,480 758,496 750,515 725,517 712,503" fill="#2a2a3a" stroke="#3a3a4a" stroke-width="1"/>
+  </g>
+
+  <!-- Logo glow halo -->
+  <ellipse cx="480" cy="185" rx="280" ry="90" fill="url(#logoGlow)"/>
+
+  <!-- Decorative circuit lines -->
+  <g stroke="#f5a623" stroke-width="0.5" opacity="0.2">
+    <line x1="0" y1="270" x2="200" y2="270"/>
+    <line x1="200" y1="270" x2="220" y2="250"/>
+    <line x1="220" y1="250" x2="260" y2="250"/>
+    <line x1="760" y1="270" x2="960" y2="270"/>
+    <line x1="760" y1="270" x2="740" y2="250"/>
+    <line x1="740" y1="250" x2="700" y2="250"/>
+    <circle cx="260" cy="250" r="3" fill="#f5a623"/>
+    <circle cx="700" cy="250" r="3" fill="#f5a623"/>
+  </g>
+
+  <!-- Horizontal rule top -->
+  <line x1="160" y1="140" x2="800" y2="140" stroke="#f5a623" stroke-width="0.5" opacity="0.4"/>
+  <line x1="160" y1="141" x2="800" y2="141" stroke="#f5a623" stroke-width="0.3" opacity="0.2"/>
+
+  <!-- Main title - shadow/glow layers -->
+  <text x="480" y="195" font-family="'Courier New', monospace" font-size="78" font-weight="bold" text-anchor="middle" fill="#f5a623" opacity="0.15" filter="url(#strongGlow)">VOIDYIELD</text>
+  <text x="480" y="195" font-family="'Courier New', monospace" font-size="78" font-weight="bold" text-anchor="middle" fill="#ffd700" filter="url(#strongGlow)">VOIDYIELD</text>
+
+  <!-- Title separator dots -->
+  <circle cx="480" cy="215" r="2" fill="#f5a623"/>
+  <circle cx="460" cy="215" r="1.5" fill="#f5a623" opacity="0.6"/>
+  <circle cx="500" cy="215" r="1.5" fill="#f5a623" opacity="0.6"/>
+  <circle cx="440" cy="215" r="1" fill="#f5a623" opacity="0.3"/>
+  <circle cx="520" cy="215" r="1" fill="#f5a623" opacity="0.3"/>
+
+  <!-- Subtitle -->
+  <text x="480" y="238" font-family="'Courier New', monospace" font-size="14" text-anchor="middle" fill="#e8d0a0" letter-spacing="6" opacity="0.85">AN AUTOMATION IDLE GAME</text>
+
+  <!-- Horizontal rule bottom of title area -->
+  <line x1="160" y1="256" x2="800" y2="256" stroke="#f5a623" stroke-width="0.5" opacity="0.4"/>
+
+  <!-- Buttons -->
+  <!-- PLAY GAME -->
+  <g filter="url(#btnGlow)">
+    <rect x="360" y="278" width="240" height="44" rx="3" fill="url(#btnGradHover)" stroke="#f5a623" stroke-width="1.5"/>
+    <line x1="364" y1="282" x2="596" y2="282" stroke="#ffd700" stroke-width="0.5" opacity="0.4"/>
+    <text x="480" y="306" font-family="'Courier New', monospace" font-size="16" font-weight="bold" text-anchor="middle" fill="#ffd700" letter-spacing="3">▶  PLAY GAME</text>
+  </g>
+
+  <!-- LOAD GAME -->
+  <rect x="360" y="332" width="240" height="44" rx="3" fill="url(#btnGrad)" stroke="#f5a623" stroke-width="1" opacity="0.9"/>
+  <line x1="364" y1="336" x2="596" y2="336" stroke="#ffd700" stroke-width="0.5" opacity="0.3"/>
+  <text x="480" y="360" font-family="'Courier New', monospace" font-size="16" text-anchor="middle" fill="#e8d0a0" letter-spacing="3">  LOAD GAME</text>
+
+  <!-- SETTINGS -->
+  <rect x="360" y="386" width="240" height="44" rx="3" fill="url(#btnGrad)" stroke="#f5a623" stroke-width="1" opacity="0.9"/>
+  <line x1="364" y1="390" x2="596" y2="390" stroke="#ffd700" stroke-width="0.5" opacity="0.3"/>
+  <text x="480" y="414" font-family="'Courier New', monospace" font-size="16" text-anchor="middle" fill="#e8d0a0" letter-spacing="3">  SETTINGS</text>
+
+  <!-- QUIT -->
+  <rect x="360" y="440" width="240" height="44" rx="3" fill="url(#btnGrad)" stroke="#8a5a5a" stroke-width="1" opacity="0.9"/>
+  <text x="480" y="468" font-family="'Courier New', monospace" font-size="16" text-anchor="middle" fill="#c07070" letter-spacing="3">  QUIT</text>
+
+  <!-- Version -->
+  <text x="940" y="530" font-family="'Courier New', monospace" font-size="10" text-anchor="end" fill="#4a5060" opacity="0.8">v0.4.2-alpha</text>
+
+  <!-- Corner decorations -->
+  <g stroke="#f5a623" stroke-width="1" fill="none" opacity="0.3">
+    <path d="M 20 20 L 20 50 L 50 50"/>
+    <path d="M 940 20 L 940 50 L 910 50"/>
+    <path d="M 20 520 L 20 490 L 50 490"/>
+    <path d="M 940 520 L 940 490 L 910 490"/>
+  </g>
+
+  <!-- Small planet in upper right -->
+  <circle cx="870" cy="90" r="35" fill="#1a2845" stroke="#2a3855" stroke-width="1" opacity="0.6"/>
+  <circle cx="870" cy="90" r="35" fill="none" stroke="#4a6090" stroke-width="0.5" opacity="0.4"/>
+  <ellipse cx="870" cy="90" rx="55" ry="12" fill="none" stroke="#4a6090" stroke-width="1" opacity="0.35" transform="rotate(-15,870,90)"/>
+  <text x="870" y="94" font-family="'Courier New', monospace" font-size="8" text-anchor="middle" fill="#4a7090" opacity="0.7">A1</text>
+</svg>

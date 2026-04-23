@@ -1,0 +1,223 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 540" width="960" height="540" font-family="'Courier New', monospace">
+  <defs>
+    <radialGradient id="skyGrad" cx="50%" cy="30%" r="70%">
+      <stop offset="0%" stop-color="#0a0f1e"/>
+      <stop offset="100%" stop-color="#020408"/>
+    </radialGradient>
+    <linearGradient id="groundGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#141a0e"/>
+      <stop offset="100%" stop-color="#0c1008"/>
+    </linearGradient>
+    <linearGradient id="hudBarGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#0d1e38" stop-opacity="0.95"/>
+      <stop offset="100%" stop-color="#080e20" stop-opacity="0.95"/>
+    </linearGradient>
+    <filter id="glowAmber">
+      <feGaussianBlur stdDeviation="3" result="blur"/>
+      <feFlood flood-color="#f5a623" flood-opacity="0.5" result="color"/>
+      <feComposite in="color" in2="blur" operator="in" result="shadow"/>
+      <feMerge><feMergeNode in="shadow"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+    <linearGradient id="rocketBody" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#2a3848"/>
+      <stop offset="50%" stop-color="#3a4858"/>
+      <stop offset="100%" stop-color="#2a3848"/>
+    </linearGradient>
+    <linearGradient id="progressGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#2a5080"/>
+      <stop offset="100%" stop-color="#f5a623"/>
+    </linearGradient>
+  </defs>
+
+  <!-- World -->
+  <rect width="960" height="270" fill="url(#skyGrad)"/>
+  <g opacity="0.6">
+    <circle cx="45" cy="23" r="0.8" fill="#fff"/><circle cx="234" cy="14" r="1.0" fill="#fff"/>
+    <circle cx="698" cy="18" r="1.0" fill="#e0ffff"/><circle cx="812" cy="72" r="0.7" fill="#fff"/>
+    <circle cx="445" cy="31" r="0.8" fill="#fff"/><circle cx="120" cy="67" r="0.5" fill="#e0e0ff"/>
+    <circle cx="567" cy="55" r="0.5" fill="#fff"/><circle cx="920" cy="40" r="0.9" fill="#fff"/>
+  </g>
+  <rect x="0" y="270" width="960" height="270" fill="url(#groundGrad)"/>
+  <g stroke="#1a2010" stroke-width="0.5" opacity="0.5">
+    <line x1="0" y1="310" x2="960" y2="310"/>
+    <line x1="0" y1="350" x2="960" y2="350"/>
+    <line x1="0" y1="390" x2="960" y2="390"/>
+    <line x1="0" y1="430" x2="960" y2="430"/>
+    <line x1="0" y1="470" x2="960" y2="470"/>
+    <line x1="80" y1="270" x2="80" y2="540"/>
+    <line x1="160" y1="270" x2="160" y2="540"/>
+    <line x1="240" y1="270" x2="240" y2="540"/>
+    <line x1="320" y1="270" x2="320" y2="540"/>
+    <line x1="400" y1="270" x2="400" y2="540"/>
+    <line x1="480" y1="270" x2="480" y2="540"/>
+    <line x1="560" y1="270" x2="560" y2="540"/>
+    <line x1="640" y1="270" x2="640" y2="540"/>
+    <line x1="720" y1="270" x2="720" y2="540"/>
+    <line x1="800" y1="270" x2="800" y2="540"/>
+  </g>
+  <line x1="0" y1="270" x2="960" y2="270" stroke="#2a3820" stroke-width="1"/>
+
+  <!-- Launchpad base -->
+  <rect x="290" y="460" width="200" height="30" rx="2" fill="#2a2820" stroke="#4a4830" stroke-width="2"/>
+  <rect x="300" y="455" width="180" height="10" fill="#1a1818"/>
+  <!-- Launch rails -->
+  <line x1="340" y1="460" x2="340" y2="280" stroke="#3a3828" stroke-width="3"/>
+  <line x1="445" y1="460" x2="445" y2="280" stroke="#3a3828" stroke-width="3"/>
+  <!-- Cross braces -->
+  <line x1="340" y1="420" x2="445" y2="400" stroke="#3a3828" stroke-width="1.5" opacity="0.6"/>
+  <line x1="340" y1="380" x2="445" y2="360" stroke="#3a3828" stroke-width="1.5" opacity="0.6"/>
+  <line x1="340" y1="340" x2="445" y2="320" stroke="#3a3828" stroke-width="1.5" opacity="0.6"/>
+
+  <!-- ═══ ROCKET UNDER CONSTRUCTION ═══ -->
+  <!-- Rocket nozzle/engine (bottom — ASSEMBLED) -->
+  <ellipse cx="392" cy="462" rx="30" ry="10" fill="#2a3848" stroke="#4a6880" stroke-width="1.5"/>
+  <rect x="370" y="440" width="44" height="24" rx="1" fill="url(#rocketBody)" stroke="#4a6880" stroke-width="1"/>
+  <!-- Engine nozzle bells -->
+  <ellipse cx="382" cy="464" rx="8" ry="4" fill="#1a2030" stroke="#3a5070" stroke-width="1"/>
+  <ellipse cx="402" cy="464" rx="8" ry="4" fill="#1a2030" stroke="#3a5070" stroke-width="1"/>
+  <text x="392" y="458" font-size="7" text-anchor="middle" fill="#4caf7d">ENGINE ✓</text>
+
+  <!-- Fuel tank section (PARTIAL - 2/3) -->
+  <rect x="366" y="350" width="52" height="90" rx="2" fill="url(#rocketBody)" stroke="#f5a623" stroke-width="1.5"/>
+  <!-- Fuel tank fill indicator -->
+  <rect x="370" y="354" width="44" height="82" rx="1" fill="#0a1020"/>
+  <rect x="370" y="384" width="44" height="52" rx="1" fill="#1a4060" opacity="0.7"/>
+  <text x="392" y="380" font-size="6" text-anchor="middle" fill="#f5a623">FUEL TANK</text>
+  <text x="392" y="392" font-size="6" text-anchor="middle" fill="#f5a623">2/3 filled</text>
+  <text x="392" y="404" font-size="6" text-anchor="middle" fill="#4a9fd4">FC: 200 / 300</text>
+
+  <!-- Cargo bay (NOT assembled — scaffolding) -->
+  <rect x="366" y="278" width="52" height="72" rx="2" fill="#1a2030" stroke="#e05555" stroke-width="1.5" stroke-dasharray="6,4"/>
+  <text x="392" y="310" font-size="7" text-anchor="middle" fill="#e05555">CARGO BAY</text>
+  <text x="392" y="322" font-size="6" text-anchor="middle" fill="#e05555">NOT FITTED</text>
+  <text x="392" y="334" font-size="6" text-anchor="middle" fill="#e05555">⚠ Required</text>
+
+  <!-- Nose cone (partial assembly) -->
+  <polygon points="392,225 366,278 418,278" fill="url(#rocketBody)" stroke="#f5a623" stroke-width="1.5" opacity="0.7"/>
+  <text x="392" y="258" font-size="7" text-anchor="middle" fill="#f5a623">NOSECONE</text>
+  <text x="392" y="268" font-size="7" text-anchor="middle" fill="#f5a623">partial ⚠</text>
+
+  <!-- Scaffolding around rocket -->
+  <g stroke="#3a3020" stroke-width="1" opacity="0.8">
+    <rect x="280" y="230" width="20" height="240" rx="0" fill="none" stroke="#2a2818" stroke-width="2"/>
+    <rect x="485" y="230" width="20" height="240" rx="0" fill="none" stroke="#2a2818" stroke-width="2"/>
+    <line x1="280" y1="260" x2="300" y2="260"/>
+    <line x1="280" y1="300" x2="300" y2="300"/>
+    <line x1="280" y1="340" x2="300" y2="340"/>
+    <line x1="280" y1="380" x2="300" y2="380"/>
+    <line x1="280" y1="420" x2="300" y2="420"/>
+    <line x1="485" y1="260" x2="505" y2="260"/>
+    <line x1="485" y1="300" x2="505" y2="300"/>
+    <line x1="485" y1="340" x2="505" y2="340"/>
+    <line x1="485" y1="380" x2="505" y2="380"/>
+    <line x1="485" y1="420" x2="505" y2="420"/>
+  </g>
+
+  <!-- Assembly Complexes feeding the rocket -->
+  <rect x="80" y="350" width="80" height="70" rx="2" fill="#1e2838" stroke="#6a60a0" stroke-width="1.5"/>
+  <text x="120" y="382" font-size="7" text-anchor="middle" fill="#9060e0">ASSEMBLY</text>
+  <text x="120" y="393" font-size="7" text-anchor="middle" fill="#9060e0">COMPLEX</text>
+  <text x="120" y="404" font-size="6" text-anchor="middle" fill="#ffd700">Cargo Bay</text>
+  <line x1="160" y1="385" x2="280" y2="390" stroke="#9060e0" stroke-width="1.5" stroke-dasharray="4,3" opacity="0.7"/>
+
+  <rect x="100" y="440" width="80" height="55" rx="2" fill="#1e2e1a" stroke="#4a7090" stroke-width="1.5"/>
+  <text x="140" y="462" font-size="7" text-anchor="middle" fill="#4a9fd4">FUEL PLANT</text>
+  <text x="140" y="474" font-size="6" text-anchor="middle" fill="#4a9fd4">+FC 1.2/s</text>
+  <line x1="180" y1="462" x2="366" y2="422" stroke="#4a9fd4" stroke-width="1" stroke-dasharray="3,3" opacity="0.6"/>
+
+  <!-- Drone carrying component -->
+  <rect x="228" y="352" width="14" height="8" rx="1" fill="#3a5060" stroke="#5a7080" stroke-width="0.5"/>
+  <rect x="230" y="346" width="10" height="5" rx="1" fill="#9060e0"/>
+  <circle cx="232" cy="362" r="2" fill="#9060e0" opacity="0.7"/>
+
+  <!-- ═══ RIGHT SIDE: MATERIAL CHECKLIST PANEL ═══ -->
+  <rect x="550" y="40" width="400" height="460" rx="3" fill="#05080f" stroke="#f5a623" stroke-width="1.5" opacity="0.96"/>
+  <rect x="550" y="40" width="400" height="44" rx="3" fill="#0d1e38"/>
+  <rect x="550" y="71" width="400" height="13" fill="#0d1e38"/>
+  <line x1="550" y1="84" x2="950" y2="84" stroke="#f5a623" stroke-width="1.5" opacity="0.7"/>
+  <text x="750" y="67" font-size="15" font-weight="bold" text-anchor="middle" fill="#ffd700" filter="url(#glowAmber)">▲  ROCKET ASSEMBLY</text>
+
+  <!-- Overall progress -->
+  <text x="566" y="102" font-size="10" fill="#8a9ab0" letter-spacing="1">READINESS</text>
+  <text x="942" y="102" font-size="16" font-weight="bold" text-anchor="end" fill="#f5a623">68%</text>
+  <rect x="566" y="106" width="376" height="14" rx="3" fill="#0a1020"/>
+  <rect x="566" y="106" width="256" height="14" rx="3" fill="url(#progressGrad)" opacity="0.8"/>
+  <text x="750" y="117" font-size="7" text-anchor="middle" fill="#e8d0a0">Est. launch: 4h 22m</text>
+
+  <line x1="558" y1="128" x2="942" y2="128" stroke="#1a2a40" stroke-width="0.5"/>
+
+  <!-- Component list -->
+  <text x="566" y="146" font-size="10" fill="#f5a623" letter-spacing="2">COMPONENTS</text>
+
+  <g font-size="10">
+    <!-- Engine Assembly — DONE -->
+    <rect x="566" y="152" width="376" height="34" rx="2" fill="#0d2010"/>
+    <text x="584" y="166" fill="#4caf7d">✓</text>
+    <text x="600" y="166" fill="#e8d0a0" font-weight="bold">Engine Assembly</text>
+    <text x="942" y="166" text-anchor="end" fill="#4caf7d">Complete</text>
+    <text x="600" y="180" fill="#6ab080" font-size="9">2× Ion Drive Mk.II  +  Thrust Controller</text>
+
+    <!-- Fuel Tank — PARTIAL -->
+    <rect x="566" y="190" width="376" height="42" rx="2" fill="#1a1200"/>
+    <text x="584" y="204" fill="#f5a623">◑</text>
+    <text x="600" y="204" fill="#e8d0a0" font-weight="bold">Fuel Tank</text>
+    <text x="942" y="204" text-anchor="end" fill="#f5a623">200 / 300 FC</text>
+    <rect x="600" y="207" width="330" height="8" rx="2" fill="#0a1020"/>
+    <rect x="600" y="207" width="220" height="8" rx="2" fill="#f5a623" opacity="0.7"/>
+    <text x="766" y="225" font-size="9" text-anchor="middle" fill="#f5a623">Need 100 more Fuel Cells — 83 seconds</text>
+
+    <!-- Cargo Bay — MISSING -->
+    <rect x="566" y="236" width="376" height="40" rx="2" fill="#1a0808"/>
+    <text x="584" y="250" fill="#e05555">✖</text>
+    <text x="600" y="250" fill="#e8d0a0" font-weight="bold">Cargo Bay</text>
+    <text x="942" y="250" text-anchor="end" fill="#e05555">NOT BUILT</text>
+    <text x="600" y="264" fill="#c04040" font-size="9">Req: 80 Krysite Ingot + 40 Circuit + 12 Crystal Drill</text>
+    <text x="942" y="264" text-anchor="end" fill="#e05555" font-size="9">⚠ BLOCKING</text>
+
+    <!-- Navigation Core — DONE -->
+    <rect x="566" y="280" width="376" height="34" rx="2" fill="#0d2010"/>
+    <text x="584" y="294" fill="#4caf7d">✓</text>
+    <text x="600" y="294" fill="#e8d0a0" font-weight="bold">Navigation Core</text>
+    <text x="942" y="294" text-anchor="end" fill="#4caf7d">Complete</text>
+    <text x="600" y="308" fill="#6ab080" font-size="9">Star Chart: A1-B loaded  ·  Return route: computed</text>
+
+    <!-- Life Support — PARTIAL -->
+    <rect x="566" y="318" width="376" height="40" rx="2" fill="#1a1200"/>
+    <text x="584" y="332" fill="#f5a623">◑</text>
+    <text x="600" y="332" fill="#e8d0a0" font-weight="bold">Life Support Module</text>
+    <text x="942" y="332" text-anchor="end" fill="#f5a623">4 / 6 units</text>
+    <rect x="600" y="335" width="330" height="8" rx="2" fill="#0a1020"/>
+    <rect x="600" y="335" width="220" height="8" rx="2" fill="#f5a623" opacity="0.7"/>
+    <text x="600" y="356" fill="#a07020" font-size="9">2 more O₂ Canisters required — Craft from Copper + Xenite</text>
+
+    <!-- Payload (optional) -->
+    <rect x="566" y="362" width="376" height="34" rx="2" fill="#0a1020" stroke="#2a3a50" stroke-width="0.5"/>
+    <text x="584" y="376" fill="#4a9fd4">○</text>
+    <text x="600" y="376" fill="#8a9ab0" font-weight="bold">Cargo Payload  (optional)</text>
+    <text x="942" y="376" text-anchor="end" fill="#4a9fd4">340 / 500 units</text>
+    <text x="600" y="390" fill="#4a6080" font-size="9">Krysite Ingot × 340 loaded — add more before launch?</text>
+  </g>
+
+  <line x1="558" y1="404" x2="942" y2="404" stroke="#1a2a40" stroke-width="0.5"/>
+
+  <!-- Launch button area -->
+  <rect x="566" y="412" width="376" height="74" rx="3" fill="#0a1020"/>
+  <text x="750" y="432" font-size="11" text-anchor="middle" fill="#8a9ab0">LAUNCH READINESS: 68%</text>
+  <rect x="566" y="438" width="376" height="10" rx="3" fill="#0a1428"/>
+  <rect x="566" y="438" width="256" height="10" rx="3" fill="url(#progressGrad)" opacity="0.8"/>
+  <text x="750" y="462" font-size="10" text-anchor="middle" fill="#e05555">⚠  Fix Cargo Bay before launch is possible</text>
+  <rect x="640" y="468" width="220" height="30" rx="3" fill="#1a1010" stroke="#5a3535" stroke-width="1.5"/>
+  <text x="750" y="488" font-size="13" font-weight="bold" text-anchor="middle" fill="#6a4040">LAUNCH  (blocked)</text>
+
+  <!-- HUD top bar -->
+  <rect x="0" y="0" width="960" height="32" fill="url(#hudBarGrad)"/>
+  <line x1="0" y1="32" x2="960" y2="32" stroke="#f5a623" stroke-width="0.8" opacity="0.6"/>
+  <text x="14" y="20" font-size="14" font-weight="bold" fill="#ffd700">◈ 48,320</text>
+  <text x="480" y="20" font-size="12" text-anchor="middle" fill="#e8d0a0">A1 — Launchpad Zone</text>
+  <text x="946" y="20" font-size="14" text-anchor="end" fill="#e8d0a0">02:14:37</text>
+
+  <!-- Bottom bar -->
+  <rect x="0" y="506" width="960" height="34" fill="url(#hudBarGrad)"/>
+  <line x1="0" y1="506" x2="960" y2="506" stroke="#f5a623" stroke-width="0.8" opacity="0.6"/>
+  <text x="480" y="527" font-size="10" text-anchor="middle" fill="#8a9ab0">LAUNCHPAD  ·  BUILD CARGO BAY TO UNLOCK LAUNCH  ·  CREDITS TO BUY COMPONENTS: ◈ 48,320</text>
+</svg>

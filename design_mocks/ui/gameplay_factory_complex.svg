@@ -1,0 +1,212 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 540" width="960" height="540" font-family="'Courier New', monospace">
+  <defs>
+    <radialGradient id="skyGrad" cx="50%" cy="30%" r="70%">
+      <stop offset="0%" stop-color="#0a0f1e"/>
+      <stop offset="100%" stop-color="#020408"/>
+    </radialGradient>
+    <linearGradient id="groundGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#141a0e"/>
+      <stop offset="100%" stop-color="#0c1008"/>
+    </linearGradient>
+    <linearGradient id="hudBarGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#0d1e38" stop-opacity="0.95"/>
+      <stop offset="100%" stop-color="#080e20" stop-opacity="0.95"/>
+    </linearGradient>
+    <filter id="glowAmber">
+      <feGaussianBlur stdDeviation="2" result="blur"/>
+      <feFlood flood-color="#f5a623" flood-opacity="0.5" result="color"/>
+      <feComposite in="color" in2="blur" operator="in" result="shadow"/>
+      <feMerge><feMergeNode in="shadow"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+    <filter id="greenGlow">
+      <feGaussianBlur stdDeviation="2" result="blur"/>
+      <feFlood flood-color="#4caf7d" flood-opacity="0.4" result="color"/>
+      <feComposite in="color" in2="blur" operator="in" result="shadow"/>
+      <feMerge><feMergeNode in="shadow"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+  </defs>
+
+  <!-- World -->
+  <rect width="960" height="250" fill="url(#skyGrad)"/>
+  <g opacity="0.5">
+    <circle cx="45" cy="23" r="0.8" fill="#fff"/><circle cx="234" cy="14" r="1.0" fill="#fff"/>
+    <circle cx="698" cy="18" r="1.0" fill="#e0ffff"/><circle cx="812" cy="72" r="0.7" fill="#fff"/>
+    <circle cx="445" cy="31" r="0.8" fill="#fff"/><circle cx="120" cy="67" r="0.5" fill="#e0e0ff"/>
+  </g>
+  <rect x="0" y="250" width="960" height="290" fill="url(#groundGrad)"/>
+  <!-- Industrial zone ground — slightly different tone -->
+  <rect x="120" y="270" width="720" height="220" fill="#111810" opacity="0.5"/>
+  <g stroke="#181e10" stroke-width="0.5" opacity="0.7">
+    <line x1="0" y1="290" x2="960" y2="290"/>
+    <line x1="0" y1="330" x2="960" y2="330"/>
+    <line x1="0" y1="370" x2="960" y2="370"/>
+    <line x1="0" y1="410" x2="960" y2="410"/>
+    <line x1="0" y1="450" x2="960" y2="450"/>
+    <line x1="0" y1="490" x2="960" y2="490"/>
+    <line x1="80" y1="250" x2="80" y2="540"/>
+    <line x1="160" y1="250" x2="160" y2="540"/>
+    <line x1="240" y1="250" x2="240" y2="540"/>
+    <line x1="320" y1="250" x2="320" y2="540"/>
+    <line x1="400" y1="250" x2="400" y2="540"/>
+    <line x1="480" y1="250" x2="480" y2="540"/>
+    <line x1="560" y1="250" x2="560" y2="540"/>
+    <line x1="640" y1="250" x2="640" y2="540"/>
+    <line x1="720" y1="250" x2="720" y2="540"/>
+    <line x1="800" y1="250" x2="800" y2="540"/>
+    <line x1="880" y1="250" x2="880" y2="540"/>
+  </g>
+  <line x1="0" y1="250" x2="960" y2="250" stroke="#2a3820" stroke-width="1"/>
+
+  <!-- ═══ FACTORY COMPLEX ═══ -->
+
+  <!-- Input storage silo (far left) -->
+  <rect x="130" y="310" width="65" height="55" rx="2" fill="#1e2e1a" stroke="#3a5030" stroke-width="2"/>
+  <rect x="135" y="304" width="55" height="10" fill="#253520"/>
+  <rect x="142" y="362" width="10" height="6" fill="#1a2018"/>
+  <rect x="158" y="362" width="10" height="6" fill="#1a2018"/>
+  <text x="163" y="336" font-size="7" text-anchor="middle" fill="#4caf7d">ORE IN</text>
+  <!-- Fill bar -->
+  <rect x="135" y="345" width="55" height="8" rx="1" fill="#0d1808"/>
+  <rect x="135" y="345" width="50" height="8" rx="1" fill="#4caf7d" opacity="0.7"/>
+  <text x="163" y="353" font-size="6" text-anchor="middle" fill="#4caf7d">90%</text>
+
+  <!-- Conveyor arrow: Storage → Processing -->
+  <line x1="196" y1="338" x2="226" y2="338" stroke="#f5a623" stroke-width="2" marker-end="url(#arrow)"/>
+  <text x="211" y="330" font-size="7" text-anchor="middle" fill="#f5a623">11.2/s</text>
+  <rect x="198" y="334" width="26" height="8" rx="1" fill="#1a1000"/>
+  <!-- Conveyor effect: ore dots moving -->
+  <circle cx="202" cy="338" r="2" fill="#6a4020" opacity="0.7"/>
+  <circle cx="210" cy="338" r="2" fill="#5a3818" opacity="0.6"/>
+  <circle cx="218" cy="338" r="2" fill="#6a4020" opacity="0.7"/>
+  <polygon points="224,334 224,342 228,338" fill="#f5a623" opacity="0.8"/>
+
+  <!-- Processing Plant (large) -->
+  <rect x="230" y="280" width="110" height="100" rx="3" fill="#1e2e3a" stroke="#4a7090" stroke-width="2" filter="url(#greenGlow)"/>
+  <rect x="235" y="274" width="100" height="12" fill="#253040"/>
+  <!-- Chimney/exhaust -->
+  <rect x="252" y="258" width="10" height="20" fill="#253040"/>
+  <rect x="274" y="262" width="8" height="16" fill="#253040"/>
+  <!-- Animated indicator circles -->
+  <circle cx="285" cy="320" r="10" fill="#1a3048" stroke="#4a7090" stroke-width="1"/>
+  <circle cx="285" cy="320" r="6" fill="#4caf7d" opacity="0.4"/>
+  <circle cx="285" cy="320" r="3" fill="#4caf7d"/>
+  <!-- Exhaust particles (small circles) -->
+  <circle cx="257" cy="255" r="3" fill="#2a3a4a" opacity="0.4"/>
+  <circle cx="260" cy="248" r="2" fill="#2a3a4a" opacity="0.3"/>
+  <circle cx="278" cy="260" r="2" fill="#2a3a4a" opacity="0.3"/>
+  <text x="285" y="296" font-size="7" text-anchor="middle" fill="#4caf7d">PROCESSING</text>
+  <text x="285" y="307" font-size="7" text-anchor="middle" fill="#8ab0c0">PLANT</text>
+  <!-- Efficiency badge -->
+  <rect x="236" y="355" width="100" height="16" rx="2" fill="#0d2010"/>
+  <text x="286" y="367" font-size="7" text-anchor="middle" fill="#4caf7d">89% eff. · +8.0 Ingot/s</text>
+  <!-- Input/output slots -->
+  <rect x="234" y="374" width="100" height="5" rx="1" fill="#0a1428"/>
+  <rect x="234" y="374" width="76" height="5" rx="1" fill="#4caf7d" opacity="0.5"/>
+
+  <!-- Arrow: Processing → Fabricator -->
+  <text x="388" y="310" font-size="7" text-anchor="middle" fill="#4caf7d">8.0/s</text>
+  <rect x="344" y="328" width="40" height="8" rx="1" fill="#0a1020"/>
+  <circle cx="346" cy="332" r="2" fill="#4a8aaa" opacity="0.8"/>
+  <circle cx="354" cy="332" r="2" fill="#4a8aaa" opacity="0.7"/>
+  <circle cx="362" cy="332" r="2" fill="#4a8aaa" opacity="0.8"/>
+  <circle cx="370" cy="332" r="2" fill="#4a8aaa" opacity="0.6"/>
+  <circle cx="378" cy="332" r="2" fill="#4a8aaa" opacity="0.8"/>
+  <polygon points="382,328 382,336 386,332" fill="#4caf7d" opacity="0.8"/>
+
+  <!-- Fabricator (medium) -->
+  <rect x="390" y="295" width="90" height="80" rx="3" fill="#1e2e3a" stroke="#4a7090" stroke-width="1.5"/>
+  <rect x="395" y="289" width="80" height="10" fill="#253040"/>
+  <circle cx="435" cy="335" r="8" fill="#1a3048" stroke="#4a7090" stroke-width="1"/>
+  <circle cx="435" cy="335" r="4" fill="#f5a623" opacity="0.5"/>
+  <text x="435" y="316" font-size="7" text-anchor="middle" fill="#4a9fd4">FABRI-</text>
+  <text x="435" y="326" font-size="7" text-anchor="middle" fill="#4a9fd4">CATOR</text>
+  <!-- Input/output panel -->
+  <rect x="394" y="352" width="88" height="16" rx="2" fill="#0d1428"/>
+  <text x="438" y="364" font-size="6" text-anchor="middle" fill="#4a9fd4">In: 8 Ki · Out: 2 Drill/s</text>
+  <rect x="394" y="370" width="88" height="5" rx="1" fill="#0a1428"/>
+  <rect x="394" y="370" width="78" height="5" rx="1" fill="#4a9fd4" opacity="0.5"/>
+
+  <!-- Arrow: Fabricator → Assembly -->
+  <text x="524" y="320" font-size="7" text-anchor="middle" fill="#4a9fd4">2.0/s</text>
+  <rect x="484" y="328" width="38" height="8" rx="1" fill="#0a1020"/>
+  <circle cx="488" cy="332" r="2" fill="#9060e0" opacity="0.8"/>
+  <circle cx="497" cy="332" r="2" fill="#9060e0" opacity="0.7"/>
+  <circle cx="506" cy="332" r="2" fill="#9060e0" opacity="0.8"/>
+  <circle cx="515" cy="332" r="2" fill="#9060e0" opacity="0.6"/>
+  <polygon points="520,328 520,336 524,332" fill="#4a9fd4" opacity="0.8"/>
+
+  <!-- Assembly Complex (biggest) -->
+  <rect x="528" y="268" width="130" height="120" rx="3" fill="#1e2838" stroke="#6a60a0" stroke-width="2" filter="url(#glowAmber)"/>
+  <rect x="533" y="262" width="120" height="10" fill="#252840"/>
+  <!-- Multiple exhaust stacks -->
+  <rect x="545" y="245" width="10" height="20" fill="#252840"/>
+  <rect x="562" y="250" width="8" height="16" fill="#252840"/>
+  <rect x="610" y="248" width="10" height="18" fill="#252840"/>
+  <circle cx="550" cy="243" r="4" fill="#252840" opacity="0.5"/>
+  <circle cx="553" cy="238" r="3" fill="#252840" opacity="0.3"/>
+  <circle cx="615" cy="245" r="3" fill="#252840" opacity="0.4"/>
+  <!-- Main console -->
+  <rect x="545" y="285" width="100" height="50" rx="2" fill="#0d1428"/>
+  <circle cx="580" cy="310" r="8" fill="#1a2040" stroke="#6060c0" stroke-width="1"/>
+  <circle cx="580" cy="310" r="4" fill="#9060e0" opacity="0.5"/>
+  <circle cx="605" cy="305" r="5" fill="#1a2040" stroke="#4060c0" stroke-width="1"/>
+  <circle cx="620" cy="315" r="4" fill="#1a2040" stroke="#4060c0" stroke-width="1"/>
+  <text x="593" y="294" font-size="7" text-anchor="middle" fill="#9060e0">ASSEMBLY</text>
+  <text x="593" y="304" font-size="7" text-anchor="middle" fill="#9060e0">COMPLEX</text>
+  <!-- Output label -->
+  <rect x="533" y="370" width="120" height="10" rx="2" fill="#0d0a28"/>
+  <text x="593" y="379" font-size="6" text-anchor="middle" fill="#c090ff">Out: Crystal Drill (Q:820) 0.8/s</text>
+  <!-- Slot usage -->
+  <rect x="533" y="382" width="120" height="5" rx="1" fill="#0a0818"/>
+  <rect x="533" y="382" width="96" height="5" rx="1" fill="#9060e0" opacity="0.5"/>
+  <text x="593" y="396" font-size="6" text-anchor="middle" fill="#9060e0">Slot 3/4 active</text>
+
+  <!-- Output crates piling up (right side of assembly) -->
+  <rect x="680" y="340" width="22" height="18" rx="1" fill="#2a1a48" stroke="#6040a0" stroke-width="1"/>
+  <rect x="706" y="344" width="22" height="18" rx="1" fill="#2a1a48" stroke="#6040a0" stroke-width="1"/>
+  <rect x="732" y="340" width="22" height="18" rx="1" fill="#2a1a48" stroke="#6040a0" stroke-width="1"/>
+  <rect x="680" y="320" width="22" height="18" rx="1" fill="#2a1a48" stroke="#6040a0" stroke-width="1" opacity="0.7"/>
+  <rect x="706" y="320" width="22" height="18" rx="1" fill="#2a1a48" stroke="#6040a0" stroke-width="1" opacity="0.7"/>
+  <text x="712" y="310" font-size="7" text-anchor="middle" fill="#9060e0">OUTPUT</text>
+  <text x="712" y="320" font-size="6" text-anchor="middle" fill="#9060e0">5 crates</text>
+
+  <!-- Drone carrying item from assembly to storage -->
+  <rect x="680" y="282" width="14" height="8" rx="1" fill="#3a5060" stroke="#5a7080" stroke-width="0.5"/>
+  <rect x="682" y="276" width="10" height="5" rx="1" fill="#4a6070"/>
+  <circle cx="684" cy="292" r="2" fill="#9060e0" opacity="0.7"/>
+  <circle cx="691" cy="292" r="2" fill="#9060e0" opacity="0.7"/>
+  <line x1="658" y1="290" x2="680" y2="286" stroke="#4a5060" stroke-width="0.5" stroke-dasharray="2,2" opacity="0.4"/>
+
+  <!-- Sell terminal (far right) -->
+  <rect x="790" y="330" width="60" height="50" rx="2" fill="#1a1420" stroke="#a080e0" stroke-width="1.5"/>
+  <rect x="795" y="325" width="50" height="8" fill="#201828"/>
+  <text x="820" y="352" font-size="7" text-anchor="middle" fill="#c090ff">SELL</text>
+  <text x="820" y="362" font-size="7" text-anchor="middle" fill="#c090ff">TERMINAL</text>
+  <text x="820" y="374" font-size="6" text-anchor="middle" fill="#ffd700">◈ 2,100/unit</text>
+
+  <!-- Arrow to sell terminal -->
+  <line x1="754" y1="352" x2="788" y2="352" stroke="#c090ff" stroke-width="1" stroke-dasharray="3,3" opacity="0.5"/>
+
+  <!-- Flow labels above -->
+  <text x="163" y="295" font-size="8" text-anchor="middle" fill="#4caf7d">1,240 Fe</text>
+  <text x="285" y="275" font-size="8" text-anchor="middle" fill="#4caf7d">PROCESSING</text>
+  <text x="435" y="280" font-size="8" text-anchor="middle" fill="#4a9fd4">FABRICATOR</text>
+  <text x="593" y="255" font-size="8" text-anchor="middle" fill="#9060e0">ASSEMBLY COMPLEX</text>
+
+  <!-- HUD top bar -->
+  <rect x="0" y="0" width="960" height="32" fill="url(#hudBarGrad)"/>
+  <line x1="0" y1="32" x2="960" y2="32" stroke="#f5a623" stroke-width="0.8" opacity="0.6"/>
+  <text x="14" y="20" font-size="14" font-weight="bold" fill="#ffd700">◈ 48,320</text>
+  <text x="480" y="20" font-size="12" text-anchor="middle" fill="#e8d0a0">A1 — Industrial District</text>
+  <text x="946" y="20" font-size="14" text-anchor="end" fill="#e8d0a0">02:14:37</text>
+
+  <!-- Bottom hotbar -->
+  <rect x="0" y="506" width="960" height="34" fill="url(#hudBarGrad)"/>
+  <line x1="0" y1="506" x2="960" y2="506" stroke="#f5a623" stroke-width="0.8" opacity="0.6"/>
+  <text x="480" y="527" font-size="10" text-anchor="middle" fill="#8a9ab0" letter-spacing="2">[Q] SURVEY  [B] BUILD  [D] DRONES  [I] INVENTORY  [P] PRODUCTION  [M] MAP</text>
+
+  <!-- Net output indicator -->
+  <rect x="760" y="460" width="190" height="40" rx="2" fill="#05080f" stroke="#f5a623" stroke-width="1" opacity="0.9"/>
+  <text x="855" y="476" font-size="9" text-anchor="middle" fill="#8a9ab0">NET OUTPUT</text>
+  <text x="855" y="492" font-size="13" font-weight="bold" text-anchor="middle" fill="#4caf7d">+0.8 Crystal Drill/s</text>
+</svg>

@@ -1,0 +1,167 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 540" width="960" height="540" font-family="'Courier New', monospace">
+  <defs>
+    <radialGradient id="skyGrad" cx="50%" cy="30%" r="70%">
+      <stop offset="0%" stop-color="#0a0f1e"/>
+      <stop offset="100%" stop-color="#020408"/>
+    </radialGradient>
+    <linearGradient id="groundGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#141a0e"/>
+      <stop offset="100%" stop-color="#0c1008"/>
+    </linearGradient>
+    <linearGradient id="hudBarGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#0d1e38" stop-opacity="0.95"/>
+      <stop offset="100%" stop-color="#080e20" stop-opacity="0.95"/>
+    </linearGradient>
+    <linearGradient id="panelGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#0e1a2e"/>
+      <stop offset="100%" stop-color="#080e1c"/>
+    </linearGradient>
+    <filter id="glowGold">
+      <feGaussianBlur stdDeviation="4" result="blur"/>
+      <feFlood flood-color="#ffd700" flood-opacity="0.7" result="color"/>
+      <feComposite in="color" in2="blur" operator="in" result="shadow"/>
+      <feMerge><feMergeNode in="shadow"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+    <filter id="glowBlue">
+      <feGaussianBlur stdDeviation="3" result="blur"/>
+      <feFlood flood-color="#4a9fd4" flood-opacity="0.6" result="color"/>
+      <feComposite in="color" in2="blur" operator="in" result="shadow"/>
+      <feMerge><feMergeNode in="shadow"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+    <radialGradient id="depositGlow" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#ffd700" stop-opacity="0.3"/>
+      <stop offset="100%" stop-color="#ffd700" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+
+  <!-- World -->
+  <rect width="960" height="270" fill="url(#skyGrad)"/>
+  <g opacity="0.5">
+    <circle cx="45" cy="23" r="0.8" fill="#fff"/><circle cx="234" cy="14" r="1.0" fill="#fff"/>
+    <circle cx="698" cy="18" r="1.0" fill="#e0ffff"/><circle cx="812" cy="72" r="0.7" fill="#fff"/>
+  </g>
+  <rect x="0" y="270" width="960" height="270" fill="url(#groundGrad)"/>
+  <g stroke="#1a2010" stroke-width="0.5" opacity="0.3">
+    <line x1="0" y1="310" x2="960" y2="310"/><line x1="0" y1="350" x2="960" y2="350"/>
+    <line x1="0" y1="390" x2="960" y2="390"/><line x1="0" y1="430" x2="960" y2="430"/>
+    <line x1="80" y1="270" x2="80" y2="540"/><line x1="240" y1="270" x2="240" y2="540"/>
+    <line x1="400" y1="270" x2="400" y2="540"/><line x1="560" y1="270" x2="560" y2="540"/>
+    <line x1="720" y1="270" x2="720" y2="540"/>
+  </g>
+  <line x1="0" y1="270" x2="960" y2="270" stroke="#2a3820" stroke-width="1"/>
+
+  <!-- Dark world tint (focus on popup) -->
+  <rect width="960" height="540" fill="#000008" opacity="0.35"/>
+
+  <!-- The discovered deposit — glowing prominently -->
+  <circle cx="340" cy="390" r="70" fill="url(#depositGlow)" opacity="0.8"/>
+  <ellipse cx="340" cy="395" rx="38" ry="17" fill="#2a1a08" stroke="#ffd700" stroke-width="2.5" filter="url(#glowGold)" opacity="0.95"/>
+  <circle cx="325" cy="388" r="10" fill="#4a2a10" opacity="0.95"/>
+  <circle cx="344" cy="381" r="9" fill="#6a4020" opacity="0.95"/>
+  <circle cx="358" cy="390" r="8" fill="#4a2a10" opacity="0.95"/>
+  <!-- Scan ring on deposit -->
+  <circle cx="340" cy="390" r="55" fill="none" stroke="#ffd700" stroke-width="1.5" stroke-dasharray="6,3" opacity="0.5"/>
+  <circle cx="340" cy="390" r="38" fill="none" stroke="#ffd700" stroke-width="1" stroke-dasharray="4,4" opacity="0.35"/>
+
+  <!-- Player nearby -->
+  <circle cx="270" cy="400" r="6" fill="#e8d0a0"/>
+  <rect x="265" y="402" width="10" height="14" rx="1" fill="#2a4070"/>
+  <!-- Survey tool -->
+  <rect x="276" y="399" width="16" height="5" rx="1" fill="#3a6080" stroke="#4a9fd4" stroke-width="0.8"/>
+
+  <!-- Discovery line from deposit to popup -->
+  <line x1="380" y1="385" x2="480" y2="280" stroke="#ffd700" stroke-width="1" stroke-dasharray="5,4" opacity="0.5"/>
+
+  <!-- ═══ DISCOVERY POPUP ═══ -->
+  <rect x="480" y="60" width="440" height="400" rx="4" fill="url(#panelGrad)" stroke="#ffd700" stroke-width="2" filter="url(#glowGold)" opacity="0.97"/>
+  <rect x="480" y="60" width="440" height="52" rx="4" fill="#1a0c00"/>
+  <rect x="480" y="99" width="440" height="13" fill="#1a0c00"/>
+  <line x1="480" y1="112" x2="920" y2="112" stroke="#ffd700" stroke-width="1.5" opacity="0.8"/>
+  <text x="700" y="82" font-size="11" text-anchor="middle" fill="#ffd700" letter-spacing="3">◈  NEW DEPOSIT DISCOVERED</text>
+  <text x="700" y="100" font-size="9" text-anchor="middle" fill="#8a6020">Survey scan complete — Grade A found</text>
+
+  <!-- Deposit name and icon -->
+  <polygon points="514,138 527,145 527,159 514,166 501,159 501,145" fill="#1a3a60" stroke="#4a9fd4" stroke-width="1.5"/>
+  <text x="514" y="158" font-size="10" text-anchor="middle" fill="#4a9fd4">⬡</text>
+  <text x="544" y="138" font-size="16" font-weight="bold" fill="#ffd700">Krysite Ore</text>
+  <text x="544" y="155" font-size="9" fill="#8a9ab0">Raw ore — high extraction rate</text>
+  <rect x="544" y="160" width="48" height="18" rx="2" fill="#0d3a0d" stroke="#ffd700" stroke-width="1.5"/>
+  <text x="568" y="173" font-size="10" text-anchor="middle" fill="#ffd700" font-weight="bold">GRADE A</text>
+
+  <!-- Deposit stats -->
+  <line x1="488" y1="184" x2="912" y2="184" stroke="#1a2a40" stroke-width="0.5"/>
+  <g font-size="9">
+    <text x="496" y="200" fill="#6a7a90">Deposit Size</text>
+    <text x="910" y="200" text-anchor="end" fill="#e8d0a0" font-weight="bold">Rich  (~320 units)</text>
+    <text x="496" y="218" fill="#6a7a90">Richness Index</text>
+    <rect x="620" y="210" width="200" height="8" rx="2" fill="#0a1020"/>
+    <rect x="620" y="210" width="170" height="8" rx="2" fill="#ffd700" opacity="0.8"/>
+    <text x="910" y="218" text-anchor="end" fill="#ffd700">85%</text>
+    <text x="496" y="236" fill="#6a7a90">Depth</text>
+    <text x="910" y="236" text-anchor="end" fill="#e8d0a0">Surface accessible</text>
+  </g>
+
+  <!-- Attribute bars (partial reveal) -->
+  <line x1="488" y1="244" x2="912" y2="244" stroke="#1a2a40" stroke-width="0.5"/>
+  <text x="496" y="258" font-size="9" fill="#8a9ab0" letter-spacing="1">QUALITY ATTRIBUTES</text>
+
+  <g font-size="8">
+    <!-- ER -->
+    <text x="496" y="273" fill="#6a7a90">ER</text>
+    <rect x="518" y="266" width="200" height="7" rx="2" fill="#0a1020"/>
+    <rect x="518" y="266" width="170" height="7" rx="2" fill="#4a9fd4" opacity="0.85"/>
+    <text x="728" y="273" fill="#4a9fd4" font-size="8"> 847</text>
+    <text x="780" y="273" fill="#4caf7d" font-size="7">Exceptional</text>
+
+    <!-- CR -->
+    <text x="496" y="288" fill="#6a7a90">CR</text>
+    <rect x="518" y="281" width="200" height="7" rx="2" fill="#0a1020"/>
+    <rect x="518" y="281" width="120" height="7" rx="2" fill="#4a9fd4" opacity="0.7"/>
+    <text x="728" y="288" fill="#4a9fd4" font-size="8"> 612</text>
+    <text x="780" y="288" fill="#8a9ab0" font-size="7">Good</text>
+
+    <!-- CD — locked -->
+    <text x="496" y="303" fill="#3a4a60">CD</text>
+    <rect x="518" y="296" width="200" height="7" rx="2" fill="#0a0a10"/>
+    <rect x="518" y="296" width="60" height="7" rx="2" fill="#2a2a40" opacity="0.5"/>
+    <text x="728" y="303" fill="#2a3a50" font-size="8"> ???</text>
+    <text x="780" y="303" fill="#2a3a50" font-size="7">🔒 Upgrade survey</text>
+
+    <!-- DR — locked -->
+    <text x="496" y="318" fill="#3a4a60">DR</text>
+    <rect x="518" y="311" width="200" height="7" rx="2" fill="#0a0a10"/>
+    <rect x="518" y="311" width="40" height="7" rx="2" fill="#2a2a40" opacity="0.4"/>
+    <text x="728" y="318" fill="#2a3a50" font-size="8"> ???</text>
+    <text x="780" y="318" fill="#2a3a50" font-size="7">🔒 Upgrade survey</text>
+  </g>
+
+  <!-- Unlock note -->
+  <rect x="490" y="328" width="420" height="24" rx="2" fill="#0d1828" stroke="#2a3a50" stroke-width="0.5"/>
+  <text x="700" y="344" font-size="8" text-anchor="middle" fill="#4a6080">💡 Upgrade Survey Tool to Tier 2 to reveal all 10 attributes</text>
+
+  <!-- Action buttons -->
+  <line x1="488" y1="360" x2="912" y2="360" stroke="#1a2a40" stroke-width="0.5"/>
+  <!-- Mark on Map -->
+  <rect x="496" y="368" width="170" height="36" rx="2" fill="#1a2848" stroke="#4a9fd4" stroke-width="1.5" filter="url(#glowBlue)"/>
+  <text x="581" y="384" font-size="10" text-anchor="middle" fill="#4a9fd4">[ M ]</text>
+  <text x="581" y="398" font-size="9" text-anchor="middle" fill="#4a9fd4">Mark on Map</text>
+  <!-- Place Harvester -->
+  <rect x="676" y="368" width="170" height="36" rx="2" fill="#1a3808" stroke="#4caf7d" stroke-width="1.5"/>
+  <text x="761" y="384" font-size="10" text-anchor="middle" fill="#4caf7d">[ B ]</text>
+  <text x="761" y="398" font-size="9" text-anchor="middle" fill="#4caf7d">Place Harvester</text>
+  <!-- Close -->
+  <text x="908" y="445" font-size="9" text-anchor="end" fill="#4a5a70">[ E ] CLOSE</text>
+
+  <!-- HUD top bar -->
+  <rect x="0" y="0" width="960" height="32" fill="url(#hudBarGrad)"/>
+  <line x1="0" y1="32" x2="960" y2="32" stroke="#ffd700" stroke-width="0.8" opacity="0.6"/>
+  <text x="14" y="11" font-size="9" fill="#f5a623" opacity="0.7">CREDITS</text>
+  <text x="14" y="26" font-size="14" font-weight="bold" fill="#ffd700">◈ 3,820</text>
+  <text x="480" y="20" font-size="12" text-anchor="middle" fill="#ffd700" filter="url(#glowGold)">◈  DEPOSIT DISCOVERED!</text>
+  <text x="946" y="20" font-size="14" text-anchor="end" fill="#e8d0a0">00:31:52</text>
+
+  <!-- Bottom bar -->
+  <rect x="0" y="506" width="960" height="34" fill="url(#hudBarGrad)"/>
+  <line x1="0" y1="506" x2="960" y2="506" stroke="#ffd700" stroke-width="0.8" opacity="0.6"/>
+  <text x="480" y="527" font-size="10" text-anchor="middle" fill="#ffd700">[ M ] MARK ON MAP  ·  [ B ] PLACE HARVESTER  ·  [ E ] CLOSE  ·  GRADE A KRYSITE FOUND!</text>
+</svg>

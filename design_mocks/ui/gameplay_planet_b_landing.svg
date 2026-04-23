@@ -1,0 +1,196 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 540" width="960" height="540" font-family="'Courier New', monospace">
+  <defs>
+    <radialGradient id="alienSkyGrad" cx="50%" cy="20%" r="80%">
+      <stop offset="0%" stop-color="#0a1428"/>
+      <stop offset="60%" stop-color="#050818"/>
+      <stop offset="100%" stop-color="#020408"/>
+    </radialGradient>
+    <linearGradient id="crystalGround" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#0e1a28"/>
+      <stop offset="100%" stop-color="#080e18"/>
+    </linearGradient>
+    <linearGradient id="hudBarGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#0d1e38" stop-opacity="0.95"/>
+      <stop offset="100%" stop-color="#080e20" stop-opacity="0.95"/>
+    </linearGradient>
+    <filter id="crystalGlow">
+      <feGaussianBlur stdDeviation="3" result="blur"/>
+      <feFlood flood-color="#3a7aaa" flood-opacity="0.5" result="color"/>
+      <feComposite in="color" in2="blur" operator="in" result="shadow"/>
+      <feMerge><feMergeNode in="shadow"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+    <filter id="warningGlow">
+      <feGaussianBlur stdDeviation="3" result="blur"/>
+      <feFlood flood-color="#e05555" flood-opacity="0.7" result="color"/>
+      <feComposite in="color" in2="blur" operator="in" result="shadow"/>
+      <feMerge><feMergeNode in="shadow"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+    <radialGradient id="atmosphereHaze" cx="50%" cy="30%" r="60%">
+      <stop offset="0%" stop-color="#1a3a5a" stop-opacity="0.15"/>
+      <stop offset="100%" stop-color="#1a3a5a" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+
+  <!-- Alien sky — blue-tinted -->
+  <rect width="960" height="280" fill="url(#alienSkyGrad)"/>
+  <!-- Atmospheric haze -->
+  <ellipse cx="480" cy="100" rx="600" ry="200" fill="url(#atmosphereHaze)"/>
+
+  <!-- Foreign stars (denser, different colors) -->
+  <g opacity="0.7">
+    <circle cx="45" cy="23" r="0.8" fill="#a0c0ff"/><circle cx="120" cy="67" r="0.5" fill="#c0a0ff"/>
+    <circle cx="234" cy="14" r="1.0" fill="#ffffff"/><circle cx="312" cy="89" r="0.6" fill="#a0e0ff"/>
+    <circle cx="445" cy="31" r="0.8" fill="#ffffff"/><circle cx="567" cy="55" r="0.5" fill="#c0c0ff"/>
+    <circle cx="698" cy="18" r="1.0" fill="#a0c0ff"/><circle cx="812" cy="72" r="0.7" fill="#ffffff"/>
+    <circle cx="920" cy="40" r="0.9" fill="#c0a0ff"/><circle cx="78" cy="145" r="0.6" fill="#ffffff"/>
+    <circle cx="189" cy="178" r="0.8" fill="#a0c0ff"/><circle cx="356" cy="112" r="0.5" fill="#ffffff"/>
+    <circle cx="634" cy="98" r="0.9" fill="#c0c0ff"/><circle cx="745" cy="167" r="0.6" fill="#ffffff"/>
+    <circle cx="867" cy="123" r="0.5" fill="#a0e0ff"/>
+  </g>
+
+  <!-- Home star A (small, distant) in alien sky -->
+  <circle cx="120" cy="60" r="3" fill="#ffe0a0" opacity="0.6"/>
+  <circle cx="120" cy="60" r="6" fill="#ffe0a000" opacity="0.0"/>
+  <text x="132" y="64" font-size="7" fill="#c0a060" opacity="0.6">Sol A1 (distant)</text>
+
+  <!-- Crystal ground -->
+  <rect x="0" y="280" width="960" height="260" fill="url(#crystalGround)"/>
+
+  <!-- Crystal terrain features -->
+  <!-- Large crystal formations -->
+  <g filter="url(#crystalGlow)">
+    <!-- Left crystal cluster -->
+    <polygon points="80,280 92,230 104,280" fill="#1a3a5a" stroke="#3a7aaa" stroke-width="1"/>
+    <polygon points="95,280 108,218 121,280" fill="#1e3e5e" stroke="#4a8aba" stroke-width="1"/>
+    <polygon points="110,280 125,240 140,280" fill="#1a3a5a" stroke="#3a7aaa" stroke-width="1"/>
+    <!-- Right crystal cluster -->
+    <polygon points="780,280 795,220 810,280" fill="#1a3a5a" stroke="#3a7aaa" stroke-width="1"/>
+    <polygon points="800,280 818,208 836,280" fill="#1e3e5e" stroke="#4a8aba" stroke-width="1"/>
+    <polygon points="825,280 840,235 855,280" fill="#1a3a5a" stroke="#3a7aaa" stroke-width="1"/>
+    <!-- Background crystals -->
+    <polygon points="200,280 210,255 220,280" fill="#12283e" stroke="#2a5a7a" stroke-width="0.5" opacity="0.7"/>
+    <polygon points="640,280 652,248 664,280" fill="#12283e" stroke="#2a5a7a" stroke-width="0.5" opacity="0.7"/>
+    <polygon points="700,280 715,235 730,280" fill="#12283e" stroke="#2a5a7a" stroke-width="0.5" opacity="0.7"/>
+  </g>
+
+  <!-- Ground texture: cracks/crystals embedded -->
+  <g stroke="#2a4a6a" stroke-width="0.5" opacity="0.5">
+    <line x1="150" y1="290" x2="180" y2="310"/>
+    <line x1="180" y1="310" x2="200" y2="295"/>
+    <line x1="300" y1="300" x2="340" y2="320"/>
+    <line x1="420" y1="295" x2="450" y2="315"/>
+    <line x1="550" y1="310" x2="590" y2="295"/>
+    <line x1="650" y1="300" x2="680" y2="318"/>
+    <line x1="750" y1="295" x2="775" y2="310"/>
+  </g>
+
+  <!-- Alien ore deposits — glowing blue-purple -->
+  <ellipse cx="310" cy="370" rx="32" ry="14" fill="#1a1a38" stroke="#6040c0" stroke-width="1.5" opacity="0.9"/>
+  <circle cx="298" cy="364" r="8" fill="#2a2050" opacity="0.9"/>
+  <circle cx="315" cy="358" r="7" fill="#3a3060" opacity="0.9"/>
+  <circle cx="328" cy="366" r="6" fill="#2a2050" opacity="0.9"/>
+  <rect x="282" y="342" width="56" height="16" rx="2" fill="#0a0820" stroke="#9060e0" stroke-width="1.5"/>
+  <text x="310" y="352" font-size="7" text-anchor="middle" fill="#9060e0">XENITE ORE</text>
+  <text x="310" y="360" font-size="6" text-anchor="middle" fill="#7040b0">B · Unknown qty</text>
+
+  <ellipse cx="620" cy="400" rx="28" ry="12" fill="#1a1a38" stroke="#5050d0" stroke-width="1" opacity="0.8"/>
+  <rect x="596" y="380" width="48" height="14" rx="2" fill="#0a0820" stroke="#6060d0" stroke-width="1"/>
+  <text x="620" y="390" font-size="7" text-anchor="middle" fill="#6060d0">VOIDFROST GAS</text>
+
+  <!-- Crystal Shard deposit (glowing) -->
+  <polygon points="500,380 506,358 512,380" fill="#1a3060" stroke="#4a7aff" stroke-width="1.5"/>
+  <polygon points="508,382 516,355 524,382" fill="#1a3060" stroke="#4a7aff" stroke-width="1.5"/>
+  <polygon points="504,383 510,362 516,383" fill="#1e3468" stroke="#5a8aff" stroke-width="1"/>
+  <text x="512" y="350" font-size="7" text-anchor="middle" fill="#4a7aff">CRYSTAL</text>
+  <text x="512" y="359" font-size="6" text-anchor="middle" fill="#4a7aff">SHARDS</text>
+
+  <!-- Player's landing pod -->
+  <g>
+    <!-- Landed pod body -->
+    <ellipse cx="200" cy="350" rx="30" ry="14" fill="#1a2030" stroke="#4a6080" stroke-width="1.5"/>
+    <rect x="175" y="330" width="50" height="24" rx="3" fill="#1a2838" stroke="#4a7090" stroke-width="1.5"/>
+    <rect x="180" y="326" width="40" height="8" rx="2" fill="#253040"/>
+    <!-- Landing legs -->
+    <line x1="176" y1="350" x2="162" y2="364" stroke="#3a5070" stroke-width="2"/>
+    <line x1="224" y1="350" x2="238" y2="364" stroke="#3a5070" stroke-width="2"/>
+    <line x1="176" y1="364" x2="152" y2="366" stroke="#3a5070" stroke-width="1.5"/>
+    <line x1="238" y1="364" x2="252" y2="366" stroke="#3a5070" stroke-width="1.5"/>
+    <!-- Pod window -->
+    <circle cx="200" cy="338" r="8" fill="#0a1828" stroke="#4a8aaa" stroke-width="1"/>
+    <circle cx="198" cy="336" r="3" fill="#2a5070" opacity="0.6"/>
+    <!-- Exhaust marks on ground -->
+    <ellipse cx="200" cy="366" rx="28" ry="8" fill="#1a1810" opacity="0.7"/>
+    <text x="200" y="318" font-size="7" text-anchor="middle" fill="#4a7090">LANDING POD</text>
+    <text x="200" y="308" font-size="6" text-anchor="middle" fill="#6a8ab0">SURVIVAL CRAFT</text>
+  </g>
+
+  <!-- Player character (just landed) -->
+  <circle cx="248" cy="368" r="6" fill="#e8d0a0"/>
+  <rect x="243" y="370" width="10" height="14" rx="1" fill="#1a3040"/>
+  <!-- Suit helmet tint -->
+  <circle cx="248" cy="368" r="6" fill="#4a8aaa" opacity="0.2"/>
+
+  <!-- HUD top bar -->
+  <rect x="0" y="0" width="960" height="32" fill="url(#hudBarGrad)"/>
+  <line x1="0" y1="32" x2="960" y2="32" stroke="#4a9fd4" stroke-width="1" opacity="0.6"/>
+  <text x="14" y="20" font-size="14" font-weight="bold" fill="#4a9fd4">◈ 12,080</text>
+  <text x="480" y="20" font-size="12" text-anchor="middle" fill="#4a9fd4">PLANET B — Crystalis Surface</text>
+  <text x="946" y="20" font-size="14" text-anchor="end" fill="#e8d0a0">00:45:12</text>
+
+  <!-- ═══ SURVIVAL STATUS PANEL ═══ -->
+  <rect x="660" y="40" width="292" height="220" rx="3" fill="#05080f" stroke="#e05555" stroke-width="2" filter="url(#warningGlow)" opacity="0.95"/>
+  <rect x="660" y="40" width="292" height="40" rx="3" fill="#200808"/>
+  <rect x="660" y="67" width="292" height="13" fill="#200808"/>
+  <line x1="660" y1="80" x2="952" y2="80" stroke="#e05555" stroke-width="1.5" opacity="0.8"/>
+  <text x="806" y="64" font-size="13" font-weight="bold" text-anchor="middle" fill="#e05555">⚠  SURVIVAL STATUS</text>
+
+  <g font-size="10">
+    <!-- Return Fuel -->
+    <text x="674" y="98" fill="#e05555" font-weight="bold">RETURN FUEL</text>
+    <rect x="674" y="102" width="264" height="14" rx="2" fill="#1a0808"/>
+    <rect x="674" y="102" width="0" height="14" rx="2" fill="#e05555"/>
+    <text x="806" y="114" text-anchor="middle" font-size="9" fill="#e05555" font-weight="bold">0%  —  CANNOT RETURN</text>
+
+    <!-- Xenite needed -->
+    <text x="674" y="132" fill="#f5a623">XENITE TO CRAFT FUEL:</text>
+    <text x="948" y="132" text-anchor="end" fill="#f5a623">0 / 120 needed</text>
+    <rect x="674" y="135" width="264" height="8" rx="2" fill="#1a1000"/>
+    <text x="806" y="157" text-anchor="middle" font-size="9" fill="#f5a623">Mine Xenite Ore → Craft Return Fuel</text>
+
+    <!-- Life support -->
+    <text x="674" y="174" fill="#8a9ab0">SUIT POWER:</text>
+    <rect x="754" y="166" width="190" height="8" rx="2" fill="#0a1428"/>
+    <rect x="754" y="166" width="142" height="8" rx="2" fill="#4caf7d" opacity="0.8"/>
+    <text x="948" y="174" text-anchor="end" fill="#4caf7d">75%  (3h 12m)</text>
+
+    <!-- Temperature warning -->
+    <text x="674" y="194" fill="#4a9fd4">SURFACE TEMP:</text>
+    <text x="948" y="194" text-anchor="end" fill="#4a9fd4">−140°C  ⚠ COLD</text>
+
+    <!-- Supplies -->
+    <text x="674" y="214" fill="#8a9ab0">SUPPLIES:</text>
+    <text x="948" y="214" text-anchor="end" fill="#e8d0a0">Food 12  ·  Water 8  ·  FC 4</text>
+  </g>
+
+  <!-- Warning banner -->
+  <rect x="0" y="464" width="960" height="36" fill="#1a0808" stroke="#e05555" stroke-width="1" opacity="0.9"/>
+  <text x="480" y="486" font-size="13" font-weight="bold" text-anchor="middle" fill="#e05555" filter="url(#warningGlow)">⚠  RETURN FUEL: 0%  —  MINE XENITE ORE AND CRAFT RETURN FUEL TO ESCAPE  ⚠</text>
+
+  <!-- Corner supplies (top left) -->
+  <rect x="8" y="40" width="200" height="80" rx="2" fill="#05080f" stroke="#2a3a50" stroke-width="1" opacity="0.92"/>
+  <text x="20" y="56" font-size="9" fill="#f5a623" letter-spacing="2">LANDING SUPPLIES</text>
+  <g font-size="10">
+    <text x="20" y="73" fill="#e8d0a0">Survey Tool</text>
+    <text x="200" y="73" text-anchor="end" fill="#4caf7d">✓</text>
+    <text x="20" y="89" fill="#e8d0a0">Portable Crafter</text>
+    <text x="200" y="89" text-anchor="end" fill="#4caf7d">✓</text>
+    <text x="20" y="105" fill="#e8d0a0">Return Fuel Recipe</text>
+    <text x="200" y="105" text-anchor="end" fill="#4caf7d">✓</text>
+    <text x="20" y="113" fill="#6a7a90" font-size="8">Need: 120 Xenite to craft fuel</text>
+  </g>
+
+  <!-- Bottom bar -->
+  <rect x="0" y="506" width="960" height="34" fill="url(#hudBarGrad)"/>
+  <line x1="0" y1="506" x2="960" y2="506" stroke="#4a9fd4" stroke-width="0.8" opacity="0.6"/>
+  <text x="480" y="527" font-size="10" text-anchor="middle" fill="#4a9fd4" letter-spacing="1">[Q] SURVEY  [E] INSPECT  [C] CRAFT  [I] INVENTORY  ·  PLANET B SURFACE</text>
+</svg>

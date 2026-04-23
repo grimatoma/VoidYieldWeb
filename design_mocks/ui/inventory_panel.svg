@@ -1,0 +1,239 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 540" width="960" height="540" font-family="'Courier New', monospace">
+  <defs>
+    <radialGradient id="bgGrad" cx="50%" cy="50%" r="70%">
+      <stop offset="0%" stop-color="#0d1428"/>
+      <stop offset="100%" stop-color="#020408"/>
+    </radialGradient>
+    <linearGradient id="panelGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#0e1a2e"/>
+      <stop offset="100%" stop-color="#080e1c"/>
+    </linearGradient>
+    <linearGradient id="slotGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#121e30"/>
+      <stop offset="100%" stop-color="#0a1420"/>
+    </linearGradient>
+    <filter id="glowAmber">
+      <feGaussianBlur stdDeviation="2" result="blur"/>
+      <feFlood flood-color="#f5a623" flood-opacity="0.5" result="color"/>
+      <feComposite in="color" in2="blur" operator="in" result="shadow"/>
+      <feMerge><feMergeNode in="shadow"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+    <filter id="tooltipShadow">
+      <feDropShadow dx="2" dy="2" stdDeviation="5" flood-color="#f5a623" flood-opacity="0.2"/>
+    </filter>
+  </defs>
+
+  <rect width="960" height="540" fill="url(#bgGrad)"/>
+  <g opacity="0.3">
+    <circle cx="45" cy="23" r="0.8" fill="#ffffff"/>
+    <circle cx="234" cy="14" r="1.0" fill="#ffffff"/>
+    <circle cx="812" cy="72" r="0.7" fill="#ffffff"/>
+    <circle cx="920" cy="40" r="0.9" fill="#ffffff"/>
+  </g>
+
+  <!-- Main inventory panel -->
+  <rect x="30" y="45" width="560" height="480" rx="4" fill="url(#panelGrad)" stroke="#f5a623" stroke-width="1.5"/>
+  <!-- Header -->
+  <rect x="30" y="45" width="560" height="48" rx="4" fill="#0d1e38"/>
+  <rect x="30" y="80" width="560" height="13" fill="#0d1e38"/>
+  <line x1="30" y1="93" x2="590" y2="93" stroke="#f5a623" stroke-width="1.5" opacity="0.8"/>
+  <text x="310" y="75" font-size="17" font-weight="bold" text-anchor="middle" fill="#ffd700" letter-spacing="4" filter="url(#glowAmber)">☰  INVENTORY</text>
+  <text x="572" y="75" font-size="11" text-anchor="end" fill="#8a9ab0">48 / 120 slots</text>
+
+  <!-- Tabs -->
+  <rect x="44" y="100" width="80" height="24" rx="2" fill="#1a2848" stroke="#f5a623" stroke-width="1"/>
+  <text x="84" y="116" font-size="10" text-anchor="middle" fill="#ffd700">ALL</text>
+  <rect x="130" y="100" width="80" height="24" rx="2" fill="#0d1428" stroke="#2a3a50" stroke-width="1"/>
+  <text x="170" y="116" font-size="10" text-anchor="middle" fill="#8a9ab0">ORE</text>
+  <rect x="216" y="100" width="80" height="24" rx="2" fill="#0d1428" stroke="#2a3a50" stroke-width="1"/>
+  <text x="256" y="116" font-size="10" text-anchor="middle" fill="#8a9ab0">REFINED</text>
+  <rect x="302" y="100" width="80" height="24" rx="2" fill="#0d1428" stroke="#2a3a50" stroke-width="1"/>
+  <text x="342" y="116" font-size="10" text-anchor="middle" fill="#8a9ab0">ITEMS</text>
+  <rect x="388" y="100" width="80" height="24" rx="2" fill="#0d1428" stroke="#2a3a50" stroke-width="1"/>
+  <text x="428" y="116" font-size="10" text-anchor="middle" fill="#8a9ab0">FUEL</text>
+
+  <!-- Grid of inventory slots: 8 cols x 5 rows -->
+  <!-- Row 1 -->
+  <!-- Slot with Krysite Ore Grade A (highlighted/selected) -->
+  <rect x="44" y="133" width="62" height="62" rx="2" fill="#1a2848" stroke="#f5a623" stroke-width="2"/>
+  <rect x="46" y="135" width="58" height="58" rx="1" fill="#0d1828"/>
+  <!-- Ore icon: hexagon -->
+  <polygon points="75,148 86,154 86,166 75,172 64,166 64,154" fill="#1a3a60" stroke="#3a7aaa" stroke-width="1"/>
+  <text x="75" y="165" font-size="9" text-anchor="middle" fill="#4a9fd4">⬡</text>
+  <text x="75" y="176" font-size="7" text-anchor="middle" fill="#8abadf">Krysite</text>
+  <text x="97" y="190" font-size="8" text-anchor="end" fill="#e8d0a0">×240</text>
+  <rect x="44" y="186" width="15" height="9" rx="1" fill="#0d3a0d"/>
+  <text x="51" y="194" font-size="6" text-anchor="middle" fill="#4caf7d">A</text>
+
+  <!-- Slot: Voidstone Ore Grade B -->
+  <rect x="112" y="133" width="62" height="62" rx="2" fill="url(#slotGrad)" stroke="#3a4a60" stroke-width="1"/>
+  <polygon points="143,148 154,154 154,166 143,172 132,166 132,154" fill="#2a2010" stroke="#6a5020" stroke-width="1"/>
+  <text x="143" y="165" font-size="9" text-anchor="middle" fill="#c08040">⬡</text>
+  <text x="143" y="176" font-size="7" text-anchor="middle" fill="#a06030">Voidstone</text>
+  <text x="165" y="190" font-size="8" text-anchor="end" fill="#e8d0a0">×185</text>
+  <rect x="112" y="186" width="15" height="9" rx="1" fill="#2a1a0d"/>
+  <text x="119" y="194" font-size="6" text-anchor="middle" fill="#c08040">B</text>
+
+  <!-- Slot: Xenite Ore Grade C -->
+  <rect x="180" y="133" width="62" height="62" rx="2" fill="url(#slotGrad)" stroke="#3a4a60" stroke-width="1"/>
+  <polygon points="211,148 222,154 222,166 211,172 200,166 200,154" fill="#1a0a2a" stroke="#5a3070" stroke-width="1"/>
+  <text x="211" y="165" font-size="9" text-anchor="middle" fill="#9060c0">⬡</text>
+  <text x="211" y="176" font-size="7" text-anchor="middle" fill="#7040a0">Xenite</text>
+  <text x="233" y="190" font-size="8" text-anchor="end" fill="#e8d0a0">×47</text>
+  <rect x="180" y="186" width="15" height="9" rx="1" fill="#180a20"/>
+  <text x="187" y="194" font-size="6" text-anchor="middle" fill="#8060b0">C</text>
+
+  <!-- Slot: Copper Ore Grade B -->
+  <rect x="248" y="133" width="62" height="62" rx="2" fill="url(#slotGrad)" stroke="#3a4a60" stroke-width="1"/>
+  <polygon points="279,148 290,154 290,166 279,172 268,166 268,154" fill="#2a1a0a" stroke="#7a4020" stroke-width="1"/>
+  <text x="279" y="165" font-size="9" text-anchor="middle" fill="#c06020">⬡</text>
+  <text x="279" y="176" font-size="7" text-anchor="middle" fill="#a04010">Copper Ore</text>
+  <text x="301" y="190" font-size="8" text-anchor="end" fill="#e8d0a0">×912</text>
+  <rect x="248" y="186" width="15" height="9" rx="1" fill="#201008"/>
+  <text x="255" y="194" font-size="6" text-anchor="middle" fill="#c06020">B</text>
+
+  <!-- Slot: Krysite Ingot -->
+  <rect x="316" y="133" width="62" height="62" rx="2" fill="url(#slotGrad)" stroke="#3a4a60" stroke-width="1"/>
+  <rect x="328" y="150" width="38" height="28" rx="2" fill="#1a2848" stroke="#4a8aaa" stroke-width="1"/>
+  <text x="347" y="168" font-size="8" text-anchor="middle" fill="#6ab0d4">INGOT</text>
+  <text x="347" y="176" font-size="6" text-anchor="middle" fill="#4a8aaa">Ky.</text>
+  <text x="369" y="190" font-size="8" text-anchor="end" fill="#e8d0a0">×64</text>
+
+  <!-- Slot: Fuel Cell -->
+  <rect x="384" y="133" width="62" height="62" rx="2" fill="url(#slotGrad)" stroke="#3a4a60" stroke-width="1"/>
+  <rect x="400" y="148" width="14" height="30" rx="2" fill="#1a3020" stroke="#3a7040" stroke-width="1"/>
+  <rect x="400" y="168" width="14" height="10" rx="1" fill="#4caf7d" opacity="0.6"/>
+  <text x="414" y="148" font-size="16" fill="#4caf7d">⚡</text>
+  <text x="437" y="190" font-size="8" text-anchor="end" fill="#e8d0a0">×8</text>
+
+  <!-- Slot: Crystal Drill (item) -->
+  <rect x="452" y="133" width="62" height="62" rx="2" fill="#1a1028" stroke="#9060e0" stroke-width="1.5"/>
+  <text x="483" y="162" font-size="22" text-anchor="middle" fill="#9060e0">⛏</text>
+  <text x="505" y="190" font-size="8" text-anchor="end" fill="#e8d0a0">×1</text>
+  <rect x="452" y="186" width="26" height="9" rx="1" fill="#280a40"/>
+  <text x="465" y="194" font-size="6" text-anchor="middle" fill="#c090ff">EPIC</text>
+
+  <!-- Empty slots row 1 -->
+  <rect x="520" y="133" width="62" height="62" rx="2" fill="#080e18" stroke="#1a2030" stroke-width="1"/>
+
+  <!-- Row 2 -->
+  <rect x="44" y="201" width="62" height="62" rx="2" fill="url(#slotGrad)" stroke="#3a4a60" stroke-width="1"/>
+  <polygon points="75,216 86,222 86,234 75,240 64,234 64,222" fill="#1a3a60" stroke="#3a7aaa" stroke-width="1"/>
+  <text x="75" y="233" font-size="9" text-anchor="middle" fill="#4a9fd4">⬡</text>
+  <text x="75" y="244" font-size="7" text-anchor="middle" fill="#8abadf">Krysite</text>
+  <text x="97" y="258" font-size="8" text-anchor="end" fill="#e8d0a0">×120</text>
+  <rect x="44" y="254" width="15" height="9" rx="1" fill="#0d3a0d"/>
+  <text x="51" y="262" font-size="6" text-anchor="middle" fill="#4caf7d">A</text>
+
+  <rect x="112" y="201" width="62" height="62" rx="2" fill="url(#slotGrad)" stroke="#3a4a60" stroke-width="1"/>
+  <rect x="180" y="201" width="62" height="62" rx="2" fill="url(#slotGrad)" stroke="#3a4a60" stroke-width="1"/>
+  <polygon points="211,216 222,222 222,234 211,240 200,234 200,222" fill="#2a2010" stroke="#6a5020" stroke-width="1"/>
+  <text x="211" y="233" font-size="9" text-anchor="middle" fill="#c08040">⬡</text>
+  <text x="211" y="244" font-size="7" text-anchor="middle" fill="#a06030">Voidstone</text>
+  <text x="233" y="258" font-size="8" text-anchor="end" fill="#e8d0a0">×89</text>
+  <rect x="248" y="201" width="62" height="62" rx="2" fill="#080e18" stroke="#1a2030" stroke-width="1"/>
+  <rect x="316" y="201" width="62" height="62" rx="2" fill="#080e18" stroke="#1a2030" stroke-width="1"/>
+  <rect x="384" y="201" width="62" height="62" rx="2" fill="#080e18" stroke="#1a2030" stroke-width="1"/>
+  <rect x="452" y="201" width="62" height="62" rx="2" fill="#080e18" stroke="#1a2030" stroke-width="1"/>
+  <rect x="520" y="201" width="62" height="62" rx="2" fill="#080e18" stroke="#1a2030" stroke-width="1"/>
+
+  <!-- Rows 3-5 (mostly empty) -->
+  <g stroke="#1a2030" stroke-width="1" fill="#080e18">
+    <rect x="44" y="269" width="62" height="62" rx="2"/>
+    <rect x="112" y="269" width="62" height="62" rx="2"/>
+    <rect x="180" y="269" width="62" height="62" rx="2"/>
+    <rect x="248" y="269" width="62" height="62" rx="2"/>
+    <rect x="316" y="269" width="62" height="62" rx="2"/>
+    <rect x="384" y="269" width="62" height="62" rx="2"/>
+    <rect x="452" y="269" width="62" height="62" rx="2"/>
+    <rect x="520" y="269" width="62" height="62" rx="2"/>
+
+    <rect x="44" y="337" width="62" height="62" rx="2"/>
+    <rect x="112" y="337" width="62" height="62" rx="2"/>
+    <rect x="180" y="337" width="62" height="62" rx="2"/>
+    <rect x="248" y="337" width="62" height="62" rx="2"/>
+    <rect x="316" y="337" width="62" height="62" rx="2"/>
+    <rect x="384" y="337" width="62" height="62" rx="2"/>
+    <rect x="452" y="337" width="62" height="62" rx="2"/>
+    <rect x="520" y="337" width="62" height="62" rx="2"/>
+
+    <rect x="44" y="405" width="62" height="62" rx="2"/>
+    <rect x="112" y="405" width="62" height="62" rx="2"/>
+    <rect x="180" y="405" width="62" height="62" rx="2"/>
+    <rect x="248" y="405" width="62" height="62" rx="2"/>
+    <rect x="316" y="405" width="62" height="62" rx="2"/>
+    <rect x="384" y="405" width="62" height="62" rx="2"/>
+    <rect x="452" y="405" width="62" height="62" rx="2"/>
+    <rect x="520" y="405" width="62" height="62" rx="2"/>
+  </g>
+
+  <!-- Capacity bar at bottom of panel -->
+  <rect x="44" y="478" width="538" height="10" rx="2" fill="#0a1020"/>
+  <rect x="44" y="478" width="215" height="10" rx="2" fill="#f5a623" opacity="0.7"/>
+  <text x="310" y="488" font-size="8" text-anchor="middle" fill="#8a9ab0">40% capacity used</text>
+
+  <!-- Actions bar -->
+  <rect x="44" y="494" width="110" height="24" rx="2" fill="#0d1428" stroke="#3a4a60" stroke-width="1"/>
+  <text x="99" y="510" font-size="10" text-anchor="middle" fill="#8a9ab0">SORT</text>
+  <rect x="162" y="494" width="110" height="24" rx="2" fill="#0d1428" stroke="#3a4a60" stroke-width="1"/>
+  <text x="217" y="510" font-size="10" text-anchor="middle" fill="#8a9ab0">FILTER</text>
+  <rect x="280" y="494" width="110" height="24" rx="2" fill="#1a2848" stroke="#f5a623" stroke-width="1"/>
+  <text x="335" y="510" font-size="10" text-anchor="middle" fill="#ffd700">SELL ALL</text>
+  <rect x="398" y="494" width="120" height="24" rx="2" fill="#0d1428" stroke="#3a4a60" stroke-width="1"/>
+  <text x="458" y="510" font-size="10" text-anchor="middle" fill="#8a9ab0">DROP SELECTED</text>
+
+  <!-- ═══ TOOLTIP for Krysite Ore ═══ -->
+  <rect x="605" y="120" width="330" height="250" rx="3" fill="#08121e" stroke="#f5a623" stroke-width="1.5" filter="url(#tooltipShadow)"/>
+  <rect x="605" y="120" width="330" height="40" rx="3" fill="#0d1e38"/>
+  <rect x="605" y="147" width="330" height="13" fill="#0d1e38"/>
+  <line x1="605" y1="160" x2="935" y2="160" stroke="#f5a623" stroke-width="1" opacity="0.6"/>
+
+  <text x="770" y="142" font-size="15" font-weight="bold" text-anchor="middle" fill="#4a9fd4">Krysite Ore</text>
+  <rect x="614" y="124" width="40" height="16" rx="2" fill="#0d3a0d"/>
+  <text x="634" y="136" font-size="10" text-anchor="middle" fill="#4caf7d" font-weight="bold">GRADE A</text>
+
+  <text x="620" y="178" font-size="10" fill="#8a9ab0">Quality Score:</text>
+  <text x="930" y="178" font-size="10" text-anchor="end" fill="#ffd700" font-weight="bold">847 / 1000</text>
+  <rect x="620" y="182" width="306" height="6" rx="2" fill="#1a2035"/>
+  <rect x="620" y="182" width="259" height="6" rx="2" fill="#4a9fd4" opacity="0.8"/>
+
+  <line x1="614" y1="196" x2="926" y2="196" stroke="#1a2a40" stroke-width="0.5"/>
+
+  <g font-size="10">
+    <text x="620" y="212" fill="#8a9ab0">ER (Energy Resistance)</text>
+    <text x="930" y="212" text-anchor="end" fill="#e8d0a0">847</text>
+    <text x="620" y="228" fill="#8a9ab0">CR (Cold Resistance)</text>
+    <text x="930" y="228" text-anchor="end" fill="#e8d0a0">612</text>
+    <text x="620" y="244" fill="#8a9ab0">CD (Conductivity)</text>
+    <text x="930" y="244" text-anchor="end" fill="#e8d0a0">234</text>
+    <text x="620" y="260" fill="#8a9ab0">DR (Decay Resistance)</text>
+    <text x="930" y="260" text-anchor="end" fill="#e8d0a0">180</text>
+    <text x="620" y="276" fill="#8a9ab0">FL (Flexibility)</text>
+    <text x="930" y="276" text-anchor="end" fill="#e8d0a0">95</text>
+  </g>
+
+  <line x1="614" y1="284" x2="926" y2="284" stroke="#1a2a40" stroke-width="0.5"/>
+  <text x="620" y="300" font-size="10" fill="#8a9ab0">Stack size:</text>
+  <text x="930" y="300" font-size="10" text-anchor="end" fill="#e8d0a0">240 / 500</text>
+  <text x="620" y="316" font-size="10" fill="#8a9ab0">Sell value:</text>
+  <text x="930" y="316" font-size="10" text-anchor="end" fill="#ffd700">◈ 4.20 / unit</text>
+  <text x="620" y="332" font-size="10" fill="#8a9ab0">Total stack value:</text>
+  <text x="930" y="332" font-size="10" text-anchor="end" fill="#ffd700">◈ 1,008</text>
+
+  <!-- Tooltip action buttons -->
+  <rect x="614" y="344" width="140" height="20" rx="2" fill="#0d1428" stroke="#3a4a60" stroke-width="1"/>
+  <text x="684" y="357" font-size="9" text-anchor="middle" fill="#8a9ab0">MOVE TO SELL BOX</text>
+  <rect x="760" y="344" width="160" height="20" rx="2" fill="#1a2848" stroke="#f5a623" stroke-width="1"/>
+  <text x="840" y="357" font-size="9" text-anchor="middle" fill="#ffd700">SELL STACK (◈1,008)</text>
+
+  <!-- Corner decorations -->
+  <g stroke="#f5a623" stroke-width="1" fill="none" opacity="0.25">
+    <path d="M 20 20 L 20 42 L 42 42"/>
+    <path d="M 940 20 L 940 42 L 918 42"/>
+    <path d="M 20 520 L 20 498 L 42 498"/>
+    <path d="M 940 520 L 940 498 L 918 498"/>
+  </g>
+
+  <!-- Hint -->
+  <text x="480" y="530" font-size="9" text-anchor="middle" fill="#4a5a70" letter-spacing="2">[I] CLOSE  ·  [SHIFT+CLICK] MULTI-SELECT  ·  [R-CLICK] CONTEXT MENU</text>
+</svg>
