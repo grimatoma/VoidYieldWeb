@@ -200,8 +200,8 @@ Snapshot of which Phase 1 pillars are already live in the codebase vs. still to 
 | Logistics drone primitives | `ZoneManager` CARRY tasks + `RefineryDrone` stub (needs rewire to in-base routes) |
 | Marketplace sell/buy | `MarketplaceService` — `sell()` at fixed prices, `buy()` at 1.5× markup |
 | Fabricator engine | Two-input recipe machine with input/output depots and state machine |
-| Plate Press (proto-furnace) | `ProcessingPlant` schematic: steel_bars → steel_plates |
-| Perimeter walls block movement | `ObstacleManager` + `PlanetA1Scene` gate routing |
+| Smelting mechanic (via `ProcessingPlant`) | Two schematics today: `ore_smelter` (vorax → steel_bars) and `plate_press` (steel_bars → steel_plates). The smelting pattern already works — Phase 1 needs new ore/bar types and schematics, not a new entity class. |
+| Perimeter walls block movement | `ObstacleManager` + `PlanetA1Scene` gate routing (walls do not yet gate *placement*) |
 | Tap-to-move + touch controls | Mobile-ready input layer |
 
 ### Still to build for Phase 1
@@ -213,8 +213,8 @@ Snapshot of which Phase 1 pillars are already live in the codebase vs. still to 
 | Perimeter as a *placement* boundary | Walls block movement today; need to also block building placement outside them |
 | `DroneRole` enum | Explicit miner / logistics role on `DroneBase`, UI toggle in `DroneBayPanel` |
 | Logistics drone in-base routes | Rewire existing CARRY primitives to Storage ↔ Furnace ↔ Fabricator ↔ Market on roads |
-| Iron ore + copper ore resources | `OreType` entries, `deposits_a1.ts` (or new file) places 3 spread deposits |
-| `Furnace` entity | New building: iron_ore → iron_bars, copper_ore → copper_bars |
+| Iron ore + copper ore + iron_bars + copper_bars resources | New `OreType` entries + Phase 1 deposit data placing 3 spread deposits |
+| Phase 1 smelting schematics | `iron_ore → iron_bars` and `copper_ore → copper_bars` via existing `ProcessingPlant` pattern (reskinned/renamed as "Furnace" in UI — per decision #16, a new entity if the visual/behavioral feel needs it, otherwise a new schematic on the existing class) |
 | Phase 1 Fabricator recipes | Drone Bay, Road (batch), Marketplace, Storage expansion (future) |
 | Rocket-launch Phase 1 terminus | Wire existing Launchpad + hydrolox fuel chain as the Phase 1 "you win" moment |
 | Water → hydrolox chain | Electrolysis building + hydrolox as a new `OreType` |
