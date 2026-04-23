@@ -1,0 +1,295 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Mock 05 — Drone Bay Panel</title>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { background: #060e1e; color: #E8E4D0; font-family: 'Courier New', monospace; display: flex; flex-direction: column; align-items: center; padding: 20px; gap: 16px; }
+h2 { color: #D4A843; font-size: 14px; letter-spacing: 3px; text-transform: uppercase; }
+.ref { color: #00B8D4; font-size: 11px; }
+.row { display: flex; gap: 20px; width: 960px; }
+.section-label { font-size: 11px; color: #666; margin-bottom: 6px; }
+
+.screen { background: #0D1B3E; border: 2px solid #D4A843; position: relative; image-rendering: pixelated; overflow: hidden; }
+
+.panel { background: #07122a; border: 1px solid #8040c0; }
+.panel-title { background: #1a0a2a; color: #cc88ff; padding: 8px 14px; font-size: 12px; font-weight: bold; border-bottom: 1px solid #8040c0; display: flex; justify-content: space-between; align-items: center; }
+.panel-section { padding: 10px 14px; border-bottom: 1px solid #1a0a2a; }
+.section-hdr { font-size: 10px; color: #8040c0; letter-spacing: 1px; text-transform: uppercase; margin-bottom: 8px; }
+
+/* allocation bar */
+.alloc-bar { height: 16px; display: flex; border: 1px solid #2a1a3a; overflow: hidden; border-radius: 2px; margin-bottom: 6px; }
+.alloc-miner { background: linear-gradient(90deg, #8040c0, #6030a0); display: flex; align-items: center; justify-content: center; font-size: 9px; color: #fff; font-weight: bold; transition: width 0.3s; }
+.alloc-logi  { background: linear-gradient(90deg, #204080, #2060c0); display: flex; align-items: center; justify-content: center; font-size: 9px; color: #fff; font-weight: bold; transition: width 0.3s; }
+.alloc-idle  { background: #1a1a2a; display: flex; align-items: center; justify-content: center; font-size: 9px; color: #4a4a6a; }
+
+/* slider */
+.slider-row { display: flex; align-items: center; gap: 8px; margin: 4px 0 10px; }
+.slider-row .lbl { font-size: 10px; color: #888; width: 60px; }
+.slider-row .lbl-right { width: 60px; text-align: right; }
+.slider-track { flex: 1; height: 6px; background: #1a1a3a; border: 1px solid #3a2a5a; border-radius: 3px; position: relative; cursor: pointer; }
+.slider-fill-m { position: absolute; left: 0; height: 100%; background: #8040c0; border-radius: 3px; }
+.slider-thumb { position: absolute; width: 12px; height: 12px; background: #D4A843; border-radius: 50%; top: -3px; transform: translateX(-50%); cursor: grab; border: 1px solid #fff; }
+
+/* throughput */
+.tput-row { display: flex; justify-content: space-between; align-items: center; font-size: 11px; margin-bottom: 5px; }
+.tput-label { color: #888; }
+.tput-val   { color: #E8E4D0; }
+.tput-good  { color: #4ade80; }
+.tput-warn  { color: #fbbf24; }
+.tput-bad   { color: #f87171; }
+.alert-box { background: #1a2a0a; border: 1px solid #4ade80; padding: 6px 10px; font-size: 10px; color: #86efac; margin: 6px 0; }
+.warn-box  { background: #2a1a0a; border: 1px solid #fbbf24; padding: 6px 10px; font-size: 10px; color: #fde68a; margin: 6px 0; }
+
+/* drone list */
+.drone-row { display: flex; align-items: center; gap: 8px; padding: 5px 0; border-bottom: 1px solid #0f1a2a; font-size: 11px; }
+.drone-id  { color: #8040c0; width: 36px; font-weight: bold; flex-shrink: 0; }
+.role-badge { padding: 2px 7px; font-size: 10px; font-weight: bold; border-radius: 2px; flex-shrink: 0; width: 72px; text-align: center; }
+.role-miner { background: #2a0a4a; color: #cc88ff; border: 1px solid #8040c0; }
+.role-logi  { background: #0a1a4a; color: #88aaff; border: 1px solid #2040c0; }
+.role-idle  { background: #1a1a2a; color: #4a4a6a; border: 1px solid #2a2a4a; }
+.drone-status { color: #4ade80; flex: 1; font-size: 10px; }
+.drone-status.warn { color: #fbbf24; }
+.drone-status.idle { color: #4a4a6a; }
+.role-toggle { display: flex; gap: 4px; margin-left: auto; }
+.toggle-btn { padding: 2px 7px; font-family: 'Courier New', monospace; font-size: 10px; cursor: pointer; border: none; }
+.toggle-active { background: #8040c0; color: #fff; }
+.toggle-inactive { background: #1a0a2a; color: #8040c0; border: 1px solid #4a2a6a; }
+
+/* bar */
+.bar-row { display: flex; align-items: center; gap: 8px; font-size: 11px; margin-bottom: 5px; }
+.bar-row .lbl { color: #888; width: 80px; }
+.bar-track { flex: 1; height: 6px; background: #1a1a3a; border: 1px solid #2a2a5a; }
+.bar-fill { height: 100%; }
+
+.btn { padding: 5px 12px; font-family: 'Courier New', monospace; font-size: 11px; cursor: pointer; border: none; }
+.btn-primary   { background: #D4A843; color: #0D1B3E; font-weight: bold; }
+.btn-secondary { background: #1a3060; color: #E8E4D0; border: 1px solid #3a5a8a; }
+.btn-warn      { background: #7c2d12; color: #fed7aa; border: 1px solid #ea580c; }
+
+.world-bg { position: absolute; inset: 0; background: #0a1628; }
+.perimeter { position: absolute; border: 2px solid #3a5a9a; }
+.bld { position: absolute; display: flex; align-items: center; justify-content: center; flex-direction: column; gap: 1px; font-size: 9px; font-weight: bold; }
+.bld-bay { background: #1a0a2a; border: 2px solid #cc88ff; color: #cc88ff; }
+.bld-storage { background: #1a3a6a; border: 1px solid #4a7abf; color: #7ab4ff; }
+.bld-furnace  { background: #2a1a0a; border: 1px solid #c06020; color: #ff8844; }
+.road-h { position: absolute; background: #2a4a2a; border-top: 1px solid #3a6a3a; border-bottom: 1px solid #3a6a3a; height: 5px; }
+.road-v { position: absolute; background: #2a4a2a; border-left: 1px solid #3a6a3a; border-right: 1px solid #3a6a3a; width: 5px; }
+.deposit-iron { position: absolute; border-radius: 50%; background: radial-gradient(circle,#8b4513,#4a2008); border: 2px solid #cd6020; color: #ffaa44; width: 22px; height: 22px; display: flex; align-items: center; justify-content: center; font-size: 8px; font-weight: bold; }
+
+/* drone dot on map */
+.drone-dot { position: absolute; width: 8px; height: 8px; border-radius: 2px; border: 1px solid; }
+.drone-miner-dot { background: #4a1a7a; border-color: #cc88ff; }
+.drone-logi-dot  { background: #1a2a7a; border-color: #88aaff; }
+.drone-trail-dot { position: absolute; width: 3px; height: 3px; border-radius: 50%; opacity: 0.5; }
+
+.divider { border: none; border-top: 1px solid #1a0a2a; margin: 2px 0; }
+</style>
+</head>
+<body>
+
+<h2>Mock 05 — Drone Bay Panel & Allocation</h2>
+<div class="ref">TDD §3.8 §3.9 · SSD §4.4 §4.6 — Role slider, throughput feedback, individual drone control</div>
+
+<div class="row">
+
+  <!-- Left: world context showing drone movement -->
+  <div style="width:300px;flex-shrink:0;">
+    <div class="section-label">World view — drones animating on roads</div>
+    <div class="screen" style="width:300px;height:580px;">
+      <div class="world-bg"></div>
+
+      <!-- Perimeter -->
+      <div class="perimeter" style="left:30px;top:80px;width:240px;height:200px;"></div>
+
+      <!-- Interior roads -->
+      <div class="road-h" style="left:60px;top:167px;width:180px;"></div>
+      <div class="road-v" style="left:155px;top:100px;height:140px;"></div>
+
+      <!-- Road to iron deposit -->
+      <div class="road-v" style="left:155px;top:30px;height:50px;"></div>
+
+      <!-- Iron deposit -->
+      <div class="deposit-iron" style="left:144px;top:4px;">Fe</div>
+
+      <!-- Buildings -->
+      <div class="bld bld-storage" style="left:46px;top:100px;width:52px;height:52px;"><div>■■</div><div>■■</div><div style="font-size:7px;color:#4a7abf;">DEPOT</div></div>
+      <div class="bld bld-furnace"  style="left:152px;top:100px;width:52px;height:52px;"><div>▣▣</div><div>▣▣</div><div style="font-size:7px;color:#c06020;">FURNACE</div></div>
+
+      <!-- Drone Bay (highlighted / selected) -->
+      <div class="bld bld-bay" style="left:200px;top:155px;width:52px;height:52px;box-shadow:0 0 8px #cc88ff;"><div>⬡⬡</div><div>⬡⬡</div><div style="font-size:7px;color:#cc88ff;">DRONE BAY</div></div>
+
+      <!-- D-01 MINER: on road heading to deposit -->
+      <div class="drone-dot drone-miner-dot" style="left:151px;top:52px;"></div>
+      <div class="drone-trail-dot" style="left:153px;top:62px;background:#cc88ff;"></div>
+      <div class="drone-trail-dot" style="left:153px;top:72px;background:#cc88ff;opacity:.3;"></div>
+      <div style="position:absolute;left:162px;top:50px;font-size:8px;color:#cc88ff;">D-01</div>
+
+      <!-- D-02 LOGISTICS: heading from storage to furnace along interior road -->
+      <div class="drone-dot drone-logi-dot" style="left:108px;top:163px;"></div>
+      <div class="drone-trail-dot" style="left:98px;top:165px;background:#88aaff;"></div>
+      <div class="drone-trail-dot" style="left:88px;top:165px;background:#88aaff;opacity:.3;"></div>
+      <div style="position:absolute;left:110px;top:153px;font-size:8px;color:#88aaff;">D-02</div>
+
+      <!-- D-03 LOGISTICS: heading back from furnace to storage -->
+      <div class="drone-dot drone-logi-dot" style="left:128px;top:163px;animation:pulse3 1s ease-in-out infinite;"></div>
+      <style>@keyframes pulse3{0%,100%{opacity:1}50%{opacity:0.4}}</style>
+      <div style="position:absolute;left:128px;top:153px;font-size:8px;color:#88aaff;">D-03</div>
+
+      <!-- D-04 IDLE: parked at bay -->
+      <div class="drone-dot" style="left:208px;top:190px;background:#1a1a2a;border-color:#4a4a6a;"></div>
+      <div style="position:absolute;left:220px;top:188px;font-size:8px;color:#4a4a6a;">D-04 idle</div>
+
+      <!-- Label arrows -->
+      <div style="position:absolute;left:4px;top:40px;font-size:9px;color:#cd6020;">Fe deposit</div>
+      <div style="position:absolute;left:4px;top:52px;font-size:9px;color:#888;">↑ outside fence</div>
+
+      <!-- Panel open indicator -->
+      <div style="position:absolute;left:200px;top:210px;width:52px;font-size:8px;color:#cc88ff;text-align:center;">[E] open</div>
+
+      <div style="position:absolute;bottom:0;left:0;right:0;height:22px;background:#050e1e;border-top:1px solid #1a3060;display:flex;align-items:center;padding:0 8px;font-size:9px;color:#666;">Purple=miner · Blue=logistics · Grey=idle</div>
+    </div>
+  </div>
+
+  <!-- Right: full panel -->
+  <div style="flex:1;">
+    <div class="section-label">Drone Bay panel — [E] on Drone Bay · allocation slider · live throughput</div>
+    <div class="panel" style="width:100%;">
+      <div class="panel-title">
+        ⬡ DRONE BAY #1
+        <span style="font-size:10px;color:#888;">4 drones · 3 active · 1 idle</span>
+      </div>
+
+      <!-- ALLOCATION SECTION -->
+      <div class="panel-section">
+        <div class="section-hdr">Role Allocation</div>
+
+        <!-- Visual allocation bar -->
+        <div class="alloc-bar">
+          <div class="alloc-miner" style="width:50%;">MINERS ×2</div>
+          <div class="alloc-logi"  style="width:25%;">LOGI ×1</div>
+          <div class="alloc-idle"  style="width:25%;">IDLE ×1</div>
+        </div>
+
+        <!-- Slider -->
+        <div class="slider-row">
+          <span class="lbl" style="color:#cc88ff;">⬡ MINERS</span>
+          <div class="slider-track">
+            <div class="slider-fill-m" style="width:50%;"></div>
+            <div class="slider-thumb" style="left:50%;"></div>
+          </div>
+          <span class="lbl lbl-right" style="color:#88aaff;">LOGI ⬡</span>
+        </div>
+        <div style="display:flex;justify-content:space-between;font-size:10px;color:#666;padding:0 2px;margin-bottom:8px;">
+          <span>← more mining throughput</span>
+          <span>more logistics capacity →</span>
+        </div>
+        <div style="font-size:10px;color:#666;">Drag slider or use [−][+] buttons. Role changes take effect after current task completes.</div>
+      </div>
+
+      <!-- THROUGHPUT SECTION -->
+      <div class="panel-section">
+        <div class="section-hdr">Live Throughput Estimate</div>
+
+        <div class="tput-row"><span class="tput-label">Ore intake rate</span><span class="tput-val">~9.6 ore/min <span style="color:#666;font-size:10px;">(2 miners × 4.8)</span></span></div>
+        <div class="tput-row"><span class="tput-label">Logistics capacity</span><span class="tput-warn">~6 units/min <span style="color:#666;font-size:10px;">(1 drone, 8-tile circuit)</span></span></div>
+        <div class="tput-row"><span class="tput-label">Furnace demand</span><span class="tput-val">8 ore/min <span style="color:#666;font-size:10px;">(recipe ×2 ore/bar)</span></span></div>
+
+        <div class="warn-box">⚠ BOTTLENECK: Logistics — ore backing up at Storage faster than Furnace consumes it.<br>Suggestion: move 1 drone from Miner → Logistics.</div>
+
+        <div class="tput-row" style="margin-top:4px;"><span class="tput-label">If you add 1 Logistics</span><span class="tput-good">Capacity: ~12 units/min ✓ balanced</span></div>
+      </div>
+
+      <!-- INDIVIDUAL DRONES -->
+      <div class="panel-section">
+        <div class="section-hdr">Individual Drones</div>
+
+        <div class="drone-row">
+          <span class="drone-id">D-01</span>
+          <span class="role-badge role-miner">MINER</span>
+          <span class="drone-status">▶ Mining Iron Deposit (road: 8 tiles)</span>
+          <div class="role-toggle">
+            <button class="toggle-btn toggle-active">M</button>
+            <button class="toggle-btn toggle-inactive">L</button>
+          </div>
+        </div>
+
+        <div class="drone-row">
+          <span class="drone-id">D-02</span>
+          <span class="role-badge role-logi">LOGISTICS</span>
+          <span class="drone-status">▶ Hauling Storage → Furnace (14 ore)</span>
+          <div class="role-toggle">
+            <button class="toggle-btn toggle-inactive">M</button>
+            <button class="toggle-btn toggle-active">L</button>
+          </div>
+        </div>
+
+        <div class="drone-row">
+          <span class="drone-id">D-03</span>
+          <span class="role-badge role-logi">LOGISTICS</span>
+          <span class="drone-status warn">⚠ No path — road removed, re-routing…</span>
+          <div class="role-toggle">
+            <button class="toggle-btn toggle-inactive">M</button>
+            <button class="toggle-btn toggle-active">L</button>
+          </div>
+        </div>
+
+        <div class="drone-row" style="border-bottom:none;">
+          <span class="drone-id">D-04</span>
+          <span class="role-badge role-idle">IDLE</span>
+          <span class="drone-status idle">── not assigned</span>
+          <div class="role-toggle">
+            <button class="toggle-btn toggle-inactive">M</button>
+            <button class="toggle-btn toggle-inactive">L</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- BATTERY (for context — not in Phase 1 but shown dimmed) -->
+      <div class="panel-section" style="opacity:0.4;">
+        <div class="section-hdr">Battery (Phase 2)</div>
+        <div style="font-size:10px;color:#666;">Battery drain and charging bays not active in Phase 1.</div>
+      </div>
+
+      <!-- ACTIONS -->
+      <div class="panel-section" style="border-bottom:none;">
+        <div style="display:flex;gap:8px;flex-wrap:wrap;">
+          <button class="btn btn-secondary">PICK UP BAY</button>
+          <button class="btn btn-warn">RECALL ALL DRONES</button>
+          <button class="btn btn-secondary">CLOSE</button>
+        </div>
+        <div style="margin-top:8px;font-size:10px;color:#666;">Pick Up: pauses all drones; enters placement mode. Full tile refund. Drones resume after re-placement.</div>
+      </div>
+
+    </div><!-- end panel -->
+
+    <!-- Role toggle legend -->
+    <div style="display:flex;gap:14px;font-size:10px;color:#888;margin-top:8px;padding:6px 10px;background:#07122a;border:1px solid #1a0a2a;">
+      <span>[M] button = set Miner role</span>
+      <span>[L] button = set Logistics role</span>
+      <span>Active role highlighted in purple/blue</span>
+      <span>Changes take effect after current task</span>
+    </div>
+  </div>
+
+</div>
+
+<!-- SCENARIO: After moving slider right (1 miner → 1 more logistics) -->
+<div style="width:960px;">
+  <div class="section-label" style="margin-top:4px;">After player drags slider right — 1 Miner reassigned to Logistics → bottleneck cleared</div>
+  <div style="background:#07122a;border:1px solid #14532d;padding:10px 14px;display:flex;gap:20px;align-items:center;font-size:11px;">
+    <div class="alloc-bar" style="width:200px;margin-bottom:0;">
+      <div class="alloc-miner" style="width:25%;">M×1</div>
+      <div class="alloc-logi"  style="width:50%;">LOGI ×2</div>
+      <div class="alloc-idle"  style="width:25%;">IDLE ×1</div>
+    </div>
+    <div style="color:#888;">Ore intake: <span style="color:#E8E4D0;">4.8/min</span></div>
+    <div style="color:#888;">Logistics: <span style="color:#4ade80;">12 units/min ✓</span></div>
+    <div style="color:#888;">Furnace demand: <span style="color:#E8E4D0;">8/min</span></div>
+    <div class="alert-box" style="margin:0;padding:4px 10px;">✓ BALANCED — no bottleneck detected</div>
+  </div>
+</div>
+
+</body>
+</html>

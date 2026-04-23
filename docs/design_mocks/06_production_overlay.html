@@ -1,0 +1,288 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Mock 06 — Production Status Overlay</title>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { background: #060e1e; color: #E8E4D0; font-family: 'Courier New', monospace; display: flex; flex-direction: column; align-items: center; padding: 20px; gap: 16px; }
+h2 { color: #D4A843; font-size: 14px; letter-spacing: 3px; text-transform: uppercase; }
+.ref { color: #00B8D4; font-size: 11px; }
+.row { display: flex; gap: 20px; width: 960px; }
+.section-label { font-size: 11px; color: #666; margin-bottom: 6px; }
+.screen { background: #0D1B3E; border: 2px solid #D4A843; position: relative; image-rendering: pixelated; overflow: hidden; }
+
+.world-bg { position: absolute; inset: 0; background: #0a1628; }
+.perimeter { position: absolute; border: 2px solid #3a5a9a; }
+
+/* terrain rocks */
+.rock { position: absolute; background: #0f2040; border: 1px solid #1a3060; }
+
+/* roads */
+.road-h { position: absolute; background: #2a4a2a; border-top: 1px solid #3a6a3a; border-bottom: 1px solid #3a6a3a; height: 5px; }
+.road-v { position: absolute; background: #2a4a2a; border-left: 1px solid #3a6a3a; border-right: 1px solid #3a6a3a; width: 5px; }
+
+/* buildings base */
+.bld { position: absolute; display: flex; align-items: center; justify-content: center; flex-direction: column; gap: 1px; font-size: 8px; font-weight: bold; }
+
+/* overlay status tints */
+.bld-running  { border-width: 2px; border-style: solid; border-color: #22c55e; box-shadow: 0 0 6px rgba(34,197,94,0.5); }
+.bld-stalled  { border-width: 2px; border-style: solid; border-color: #f97316; box-shadow: 0 0 6px rgba(249,115,22,0.5); }
+.bld-idle     { border-width: 2px; border-style: solid; border-color: #475569; box-shadow: none; opacity: 0.7; }
+
+/* status dot (corner indicator) */
+.status-dot { position: absolute; top: -4px; right: -4px; width: 8px; height: 8px; border-radius: 50%; border: 1px solid rgba(0,0,0,0.4); z-index: 2; }
+.dot-running { background: #4ade80; }
+.dot-stalled { background: #fb923c; animation: blink-dot 0.8s ease-in-out infinite; }
+.dot-idle    { background: #475569; }
+@keyframes blink-dot { 0%,100%{opacity:1} 50%{opacity:0.3} }
+
+/* deposits */
+.deposit { position: absolute; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 9px; font-weight: bold; }
+.dep-iron   { background: radial-gradient(circle,#8b4513,#4a2008); border: 2px solid #cd6020; color: #ffaa44; width: 26px; height: 26px; }
+.dep-copper { background: radial-gradient(circle,#8b6513,#4a3008); border: 2px solid #cdaa20; color: #ffdd44; width: 26px; height: 26px; }
+.dep-water  { background: radial-gradient(circle,#134a8b,#082048); border: 2px solid #2080cd; color: #44aaff; width: 26px; height: 26px; }
+
+/* player */
+.player { position: absolute; width: 12px; height: 15px; background: #D4A843; clip-path: polygon(50% 0%,80% 30%,100% 60%,80% 100%,20% 100%,0% 60%,20% 30%); }
+
+/* drone dots */
+.drone { position: absolute; width: 7px; height: 7px; border-radius: 2px; border: 1px solid; }
+.drone-m { background: #4a1a7a; border-color: #cc88ff; }
+.drone-l { background: #1a2a7a; border-color: #88aaff; }
+
+/* overlay banner */
+.overlay-banner { position: absolute; top: 0; left: 0; right: 0; height: 22px; background: rgba(5,14,30,0.9); border-bottom: 1px solid #1a3060; display: flex; align-items: center; padding: 0 10px; gap: 12px; font-size: 10px; z-index: 10; }
+.legend-item { display: flex; align-items: center; gap: 4px; }
+.legend-dot { width: 8px; height: 8px; border-radius: 50%; border: 1px solid rgba(0,0,0,0.3); }
+
+/* tooltip */
+.tooltip { position: absolute; background: rgba(5,14,30,0.97); border: 1px solid #D4A843; padding: 5px 9px; font-size: 10px; pointer-events: none; z-index: 20; min-width: 180px; line-height: 1.5; }
+.tooltip-title { color: #D4A843; font-weight: bold; margin-bottom: 3px; }
+.tooltip-line  { color: #888; }
+.tooltip-line .v { color: #E8E4D0; }
+.tooltip-line .g { color: #4ade80; }
+.tooltip-line .w { color: #fbbf24; }
+.tooltip-line .r { color: #f87171; }
+
+/* key hint */
+.key { background: #1a2a4a; border: 1px solid #3a5a8a; padding: 1px 5px; color: #D4A843; border-radius: 2px; }
+
+/* alert strip */
+.alert-strip { position: absolute; bottom: 24px; left: 0; right: 0; background: rgba(124,45,18,0.85); border-top: 1px solid #ea580c; border-bottom: 1px solid #ea580c; padding: 4px 12px; font-size: 10px; color: #fed7aa; display: flex; gap: 16px; align-items: center; }
+.alert-go { background: #ea580c; color: #fff; font-family: 'Courier New', monospace; font-size: 10px; padding: 2px 8px; border: none; cursor: pointer; }
+
+/* key hints bottom */
+.key-hints { position: absolute; bottom: 0; left: 0; right: 0; height: 24px; background: #050e1e; border-top: 1px solid #1a3060; display: flex; align-items: center; padding: 0 10px; gap: 14px; font-size: 10px; }
+</style>
+</head>
+<body>
+
+<h2>Mock 06 — Production Status Overlay [O]</h2>
+<div class="ref">TDD §3.10 · SSD §4.6 — Color-coded building status on live map · hover tooltip · click to open panel</div>
+
+<!-- MAIN SCREEN: Overlay active -->
+<div class="section-label">Overlay ON — press [O] to toggle. Game runs normally. Hover any building for one-line status.</div>
+<div class="screen" style="width:960px;height:480px;">
+  <div class="world-bg"></div>
+
+  <!-- Rocks / terrain -->
+  <div class="rock" style="left:30px;top:50px;width:10px;height:6px;opacity:.5;"></div>
+  <div class="rock" style="left:840px;top:80px;width:14px;height:7px;opacity:.4;"></div>
+  <div class="rock" style="left:70px;top:360px;width:8px;height:5px;opacity:.4;"></div>
+  <div class="rock" style="left:880px;top:320px;width:12px;height:6px;opacity:.3;"></div>
+  <div class="rock" style="left:500px;top:30px;width:9px;height:5px;opacity:.3;"></div>
+
+  <!-- Perimeter -->
+  <div class="perimeter" style="left:200px;top:80px;width:520px;height:320px;"></div>
+
+  <!-- Roads -->
+  <div class="road-v" style="left:310px;top:24px;height:56px;"></div>     <!-- to iron -->
+  <div class="road-h" style="left:720px;top:232px;width:160px;"></div>   <!-- to copper -->
+  <div class="road-v" style="left:460px;top:400px;height:60px;"></div>   <!-- to water -->
+  <div class="road-h" style="left:260px;top:232px;width:200px;"></div>   <!-- interior h -->
+  <div class="road-v" style="left:380px;top:120px;height:200px;"></div>  <!-- interior v -->
+
+  <!-- Deposits -->
+  <div class="deposit dep-iron"   style="left:297px;top:0px;"></div>
+  <div class="deposit dep-copper" style="left:892px;top:218px;"></div>
+  <div class="deposit dep-water"  style="left:447px;top:432px;"></div>
+  <div style="position:absolute;left:292px;top:28px;font-size:8px;color:#888;">Fe</div>
+  <div style="position:absolute;left:888px;top:246px;font-size:8px;color:#888;">Cu</div>
+  <div style="position:absolute;left:443px;top:460px;font-size:8px;color:#888;">H₂O</div>
+
+  <!-- ═══════════════════════════════════ -->
+  <!-- BUILDINGS with overlay status tints -->
+  <!-- ═══════════════════════════════════ -->
+
+  <!-- Storage Depot — RUNNING (green) -->
+  <div class="bld bld-running" style="left:224px;top:120px;width:56px;height:56px;background:#1a3a6a;color:#7ab4ff;">
+    <div>■■</div><div>■■</div>
+    <div style="font-size:7px;color:#4a7abf;margin-top:1px;">STORAGE</div>
+    <div class="status-dot dot-running"></div>
+  </div>
+
+  <!-- Furnace — RUNNING (green) -->
+  <div class="bld bld-running" style="left:340px;top:120px;width:56px;height:56px;background:#2a1a0a;color:#ff8844;">
+    <div>▣▣</div><div>▣▣</div>
+    <div style="font-size:7px;color:#c06020;margin-top:1px;">FURNACE</div>
+    <div class="status-dot dot-running"></div>
+  </div>
+
+  <!-- Fabricator — STALLED (orange, blinking dot) -->
+  <div class="bld bld-stalled" style="left:224px;top:196px;width:56px;height:88px;background:#0a2a1a;color:#44ff88;">
+    <div>✦✦</div><div>✦✦</div><div>✦✦</div>
+    <div style="font-size:7px;color:#20a060;margin-top:1px;">FABRICATOR</div>
+    <div class="status-dot dot-stalled"></div>
+  </div>
+
+  <!-- Drone Bay — RUNNING (green) -->
+  <div class="bld bld-running" style="left:460px;top:120px;width:56px;height:56px;background:#1a0a2a;color:#cc88ff;">
+    <div>⬡⬡</div><div>⬡⬡</div>
+    <div style="font-size:7px;color:#8040c0;margin-top:1px;">DRONE BAY</div>
+    <div class="status-dot dot-running"></div>
+  </div>
+
+  <!-- Storage Depot #2 — IDLE (grey) -->
+  <div class="bld bld-idle" style="left:560px;top:260px;width:56px;height:56px;background:#0f1e38;color:#475569;">
+    <div>■■</div><div>■■</div>
+    <div style="font-size:7px;color:#3a5069;margin-top:1px;">STORAGE</div>
+    <div class="status-dot dot-idle"></div>
+  </div>
+
+  <!-- Marketplace — STALLED (orange) -->
+  <div class="bld bld-stalled" style="left:440px;top:260px;width:56px;height:56px;background:#1a2a0a;color:#ccff44;">
+    <div>$$</div><div>$$</div>
+    <div style="font-size:7px;color:#80a020;margin-top:1px;">MARKET</div>
+    <div class="status-dot dot-stalled"></div>
+  </div>
+
+  <!-- Processing Plant — IDLE (grey) -->
+  <div class="bld bld-idle" style="left:340px;top:260px;width:56px;height:56px;background:#0f1e38;color:#475569;">
+    <div>▤▤</div><div>▤▤</div>
+    <div style="font-size:7px;color:#3a5069;margin-top:1px;">PROCESSING</div>
+    <div class="status-dot dot-idle"></div>
+  </div>
+
+  <!-- Player -->
+  <div class="player" style="left:406px;top:228px;"></div>
+
+  <!-- Drones -->
+  <div class="drone drone-m" style="left:314px;top:46px;"></div>
+  <div class="drone drone-l" style="left:298px;top:230px;"></div>
+  <div class="drone drone-l" style="left:360px;top:230px;"></div>
+
+  <!-- OVERLAY BANNER -->
+  <div class="overlay-banner">
+    <span style="color:#D4A843;font-weight:bold;">[O] OVERLAY</span>
+    <div class="legend-item"><div class="legend-dot" style="background:#4ade80;"></div><span style="color:#4ade80;">RUNNING</span></div>
+    <div class="legend-item"><div class="legend-dot" style="background:#fb923c;animation:blink-dot 0.8s ease-in-out infinite;"></div><span style="color:#fb923c;">STALLED</span></div>
+    <div class="legend-item"><div class="legend-dot" style="background:#475569;"></div><span style="color:#475569;">IDLE</span></div>
+    <span style="color:#666;margin-left:auto;">Hover building for details · Click to open panel</span>
+    <span class="key">O</span><span style="color:#666;">toggle off</span>
+  </div>
+
+  <!-- TOOLTIP (hover on Fabricator) -->
+  <div class="tooltip" style="left:290px;top:200px;">
+    <div class="tooltip-title">✦ FABRICATOR</div>
+    <div class="tooltip-line">Status: <span class="w">STALLED — output full</span></div>
+    <div class="tooltip-line">Output buffer: <span class="r">20/20 (full)</span></div>
+    <div class="tooltip-line">Fix: <span class="v">collect output or add Logistics drone</span></div>
+    <div style="margin-top:4px;color:#666;font-size:9px;">Click to open Fabricator panel</div>
+  </div>
+
+  <!-- ALERT STRIP -->
+  <div class="alert-strip">
+    <span style="color:#fb923c;font-weight:bold;">⚠ 2 ALERTS</span>
+    <span>Fabricator stalled — output full</span>
+    <button class="alert-go">GO</button>
+    <span style="color:#888;">│</span>
+    <span>Marketplace stalled — no seller assigned</span>
+    <button class="alert-go">GO</button>
+  </div>
+
+  <!-- KEY HINTS -->
+  <div class="key-hints">
+    <span class="key">O</span><span style="color:#666;">toggle overlay</span>
+    <span class="key">E</span><span style="color:#666;">open building panel</span>
+    <span style="color:#666;margin-left:auto;font-size:10px;">TDD §3.10 · game continues while overlay active</span>
+  </div>
+</div>
+
+<!-- COMPARISON: overlay OFF vs ON -->
+<div class="row">
+  <div style="flex:1;">
+    <div class="section-label">Overlay OFF — normal world view</div>
+    <div class="screen" style="width:100%;height:200px;">
+      <div class="world-bg"></div>
+      <div class="perimeter" style="left:40px;top:20px;width:300px;height:160px;"></div>
+      <div class="road-h" style="left:60px;top:115px;width:160px;"></div>
+
+      <!-- Buildings without any status tint -->
+      <div class="bld" style="left:56px;top:40px;width:48px;height:48px;background:#1a3a6a;border:1px solid #4a7abf;color:#7ab4ff;"><div>■■</div><div>■■</div><div style="font-size:7px;color:#4a7abf;">STORAGE</div></div>
+      <div class="bld" style="left:124px;top:40px;width:48px;height:48px;background:#2a1a0a;border:1px solid #c06020;color:#ff8844;"><div>▣▣</div><div>▣▣</div><div style="font-size:7px;color:#c06020;">FURNACE</div></div>
+      <div class="bld" style="left:56px;top:100px;width:48px;height:80px;background:#0a2a1a;border:1px solid #20a060;color:#44ff88;"><div>✦✦</div><div>✦✦</div><div>✦✦</div><div style="font-size:7px;color:#20a060;">FAB</div></div>
+      <div class="bld" style="left:196px;top:40px;width:48px;height:48px;background:#1a0a2a;border:1px solid #8040c0;color:#cc88ff;"><div>⬡⬡</div><div>⬡⬡</div><div style="font-size:7px;color:#8040c0;">BAY</div></div>
+      <div style="position:absolute;bottom:0;left:0;right:0;height:20px;background:#050e1e;border-top:1px solid #1a3060;display:flex;align-items:center;padding:0 10px;font-size:10px;color:#666;">Normal view — no status indication; press [O] to activate</div>
+    </div>
+  </div>
+
+  <div style="flex:1;">
+    <div class="section-label">Overlay ON — same view, status tints applied</div>
+    <div class="screen" style="width:100%;height:200px;">
+      <div class="world-bg"></div>
+      <div class="perimeter" style="left:40px;top:20px;width:300px;height:160px;"></div>
+      <div class="road-h" style="left:60px;top:115px;width:160px;"></div>
+
+      <!-- Buildings WITH status tints -->
+      <div class="bld bld-running" style="left:56px;top:40px;width:48px;height:48px;background:#1a3a6a;color:#7ab4ff;"><div>■■</div><div>■■</div><div style="font-size:7px;color:#4a7abf;">STORAGE</div><div class="status-dot dot-running"></div></div>
+      <div class="bld bld-running" style="left:124px;top:40px;width:48px;height:48px;background:#2a1a0a;color:#ff8844;"><div>▣▣</div><div>▣▣</div><div style="font-size:7px;color:#c06020;">FURNACE</div><div class="status-dot dot-running"></div></div>
+      <div class="bld bld-stalled" style="left:56px;top:100px;width:48px;height:80px;background:#0a2a1a;color:#44ff88;"><div>✦✦</div><div>✦✦</div><div>✦✦</div><div style="font-size:7px;color:#20a060;">FAB</div><div class="status-dot dot-stalled"></div></div>
+      <div class="bld bld-running" style="left:196px;top:40px;width:48px;height:48px;background:#1a0a2a;color:#cc88ff;"><div>⬡⬡</div><div>⬡⬡</div><div style="font-size:7px;color:#8040c0;">BAY</div><div class="status-dot dot-running"></div></div>
+
+      <!-- Mini legend -->
+      <div style="position:absolute;right:10px;top:24px;background:rgba(5,14,30,0.9);border:1px solid #1a3060;padding:4px 8px;font-size:9px;line-height:1.6;">
+        <div style="color:#4ade80;">● Running (2)</div>
+        <div style="color:#fb923c;">● Stalled (1)</div>
+        <div style="color:#475569;">● Idle (0)</div>
+      </div>
+
+      <div style="position:absolute;bottom:0;left:0;right:0;height:20px;background:#050e1e;border-top:1px solid #1a3060;display:flex;align-items:center;padding:0 10px;font-size:10px;color:#666;">Overlay ON — green glow + dot = running · orange pulse = stalled · grey = idle</div>
+    </div>
+  </div>
+
+  <!-- Click behavior -->
+  <div style="flex:1;">
+    <div class="section-label">Click building while overlay active → opens panel</div>
+    <div class="screen" style="width:100%;height:200px;">
+      <div class="world-bg"></div>
+      <div class="perimeter" style="left:20px;top:20px;width:180px;height:160px;"></div>
+
+      <!-- Furnace being clicked -->
+      <div class="bld bld-running" style="left:36px;top:40px;width:48px;height:48px;background:#2a1a0a;color:#ff8844;cursor:pointer;outline:2px solid #fff;">
+        <div>▣▣</div><div>▣▣</div>
+        <div style="font-size:7px;color:#c06020;">FURNACE</div>
+        <div class="status-dot dot-running"></div>
+      </div>
+      <!-- Click cursor -->
+      <div style="position:absolute;left:72px;top:76px;font-size:14px;cursor:pointer;">↖</div>
+
+      <!-- Mini panel that opens -->
+      <div style="position:absolute;left:100px;top:20px;right:10px;bottom:10px;background:#07122a;border:1px solid #D4A843;">
+        <div style="background:#1a2d5a;padding:5px 8px;font-size:10px;color:#D4A843;font-weight:bold;border-bottom:1px solid #D4A843;">▣ FURNACE <span style="float:right;font-size:9px;background:#14532d;color:#4ade80;padding:1px 4px;border-radius:2px;">RUNNING</span></div>
+        <div style="padding:8px;font-size:10px;color:#888;line-height:1.6;">
+          Recipe: Iron Ore → Bar<br>
+          Rate: 0.25 bars/min<br>
+          Input: 14/20<br>
+          Output: 3/20<br>
+          <span style="color:#666;">Full panel opens on click</span>
+        </div>
+      </div>
+
+      <div style="position:absolute;bottom:0;left:0;right:0;height:20px;background:#050e1e;border-top:1px solid #1a3060;display:flex;align-items:center;padding:0 10px;font-size:10px;color:#666;">Click any building → opens its full info panel (§3.8)</div>
+    </div>
+  </div>
+</div>
+
+</body>
+</html>

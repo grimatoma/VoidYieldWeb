@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Mock 04 — Building & Road Placement</title>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { background: #060e1e; color: #E8E4D0; font-family: 'Courier New', monospace; display: flex; flex-direction: column; align-items: center; padding: 20px; gap: 16px; }
+h2 { color: #D4A843; font-size: 14px; letter-spacing: 3px; text-transform: uppercase; }
+.ref { color: #00B8D4; font-size: 11px; }
+.row { display: flex; gap: 20px; width: 960px; }
+.section-label { font-size: 11px; color: #666; margin-bottom: 6px; }
+.screen { background: #0D1B3E; border: 2px solid #D4A843; position: relative; image-rendering: pixelated; overflow: hidden; }
+
+/* WORLD */
+.world-bg { position: absolute; inset: 0; background: #0a1628; }
+.perimeter { position: absolute; border: 2px solid #3a5a9a; background: rgba(13,27,62,0.5); }
+.tile { position: absolute; }
+.tile-road { background: #2a4a2a; border: 1px solid #3a6a3a; }
+
+/* ghost states */
+.ghost-valid { background: rgba(212,168,67,0.25); border: 2px dashed #D4A843; }
+.ghost-invalid { background: rgba(239,68,68,0.2); border: 2px dashed #ef4444; }
+.ghost-road-req { background: rgba(251,191,36,0.2); border: 2px dashed #fbbf24; }
+
+/* existing buildings */
+.bld { position: absolute; display: flex; align-items: center; justify-content: center; flex-direction: column; gap: 1px; font-size: 9px; font-weight: bold; }
+.bld-storage { background: #1a3a6a; border: 1px solid #4a7abf; color: #7ab4ff; }
+.bld-furnace  { background: #2a1a0a; border: 1px solid #c06020; color: #ff8844; }
+.bld-fab      { background: #0a2a1a; border: 1px solid #20a060; color: #44ff88; }
+
+/* Deposit */
+.deposit { position: absolute; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 10px; font-weight: bold; }
+.deposit-iron { background: radial-gradient(circle,#8b4513,#4a2008); border: 2px solid #cd6020; color: #ffaa44; width: 30px; height: 30px; }
+
+/* Road preview tiles */
+.road-preview { background: rgba(0,184,212,0.3); border: 1px dashed #00B8D4; }
+
+/* Mode banner */
+.mode-banner { position: absolute; top: 0; left: 0; right: 0; height: 26px; display: flex; align-items: center; padding: 0 10px; gap: 10px; font-size: 10px; z-index: 10; }
+.mode-build { background: rgba(212,168,67,0.15); border-bottom: 1px solid #D4A843; }
+.mode-road  { background: rgba(0,184,212,0.12); border-bottom: 1px solid #00B8D4; }
+
+.key { background: #1a2a4a; border: 1px solid #3a5a8a; padding: 1px 5px; color: #D4A843; border-radius: 2px; }
+.key-teal { background: #0a2030; border: 1px solid #00B8D4; color: #00B8D4; border-radius: 2px; padding: 1px 5px; }
+
+/* Tooltip */
+.tooltip { position: absolute; background: rgba(5,14,30,0.95); border: 1px solid #D4A843; padding: 4px 8px; font-size: 10px; color: #E8E4D0; pointer-events: none; white-space: nowrap; }
+.tooltip-invalid { border-color: #ef4444; color: #fca5a5; }
+.tooltip-roadreq { border-color: #fbbf24; color: #fde68a; }
+
+/* Road budget panel */
+.budget-panel { position: absolute; bottom: 10px; left: 50%; transform: translateX(-50%); background: #07122a; border: 1px solid #00B8D4; padding: 8px 14px; display: flex; gap: 16px; align-items: center; font-size: 11px; white-space: nowrap; }
+
+/* Annotation */
+.ann { position: absolute; font-size: 10px; color: #00B8D4; pointer-events: none; }
+
+/* cursor crosshair */
+.cursor { position: absolute; width: 8px; height: 8px; border: 2px solid white; border-radius: 50%; transform: translate(-50%,-50%); pointer-events: none; }
+
+/* Legend */
+.legend { display: flex; gap: 16px; font-size: 10px; padding: 6px 10px; background: #07122a; border: 1px solid #1a3060; }
+.legend-item { display: flex; align-items: center; gap: 5px; }
+.legend-swatch { width: 14px; height: 14px; border: 2px dashed; }
+</style>
+</head>
+<body>
+
+<h2>Mock 04 — Building & Road Placement</h2>
+<div class="ref">TDD §3.6 §3.7 · SSD §4.3 §4.5 — Ghost placement, perimeter enforcement, road paint</div>
+
+<!-- TOP ROW: Build mode with 3 ghost states -->
+<div class="row">
+
+  <!-- STATE A: Valid placement -->
+  <div style="flex:1;">
+    <div class="section-label">BUILD MODE — Valid: inside perimeter, tiles free, touches road</div>
+    <div class="screen" style="width:100%;height:280px;">
+      <div class="world-bg"></div>
+      <div class="mode-banner mode-build">
+        <span style="color:#D4A843;font-weight:bold;">▣ BUILD MODE</span>
+        <span style="color:#888;">Drone Bay (2×2)</span>
+        <span style="margin-left:auto;color:#666;"><span class="key">ESC</span> cancel</span>
+      </div>
+      <div class="perimeter" style="left:40px;top:40px;width:240px;height:220px;"></div>
+
+      <!-- Roads inside perimeter -->
+      <div class="tile tile-road" style="left:89px;top:150px;width:140px;height:6px;"></div>
+
+      <!-- Existing buildings -->
+      <div class="bld bld-storage" style="left:60px;top:70px;width:52px;height:52px;"><div>■■</div><div>■■</div><div style="font-size:7px;color:#4a7abf;">DEPOT</div></div>
+      <div class="bld bld-furnace" style="left:128px;top:70px;width:52px;height:52px;"><div>▣▣</div><div>▣▣</div><div style="font-size:7px;color:#c06020;">FURNACE</div></div>
+
+      <!-- VALID ghost (yellow) — touching road, inside perimeter -->
+      <div class="ghost-valid" style="position:absolute;left:196px;top:116px;width:52px;height:52px;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:1px;font-size:9px;color:#D4A843;">
+        <div>⬡⬡</div><div>⬡⬡</div>
+        <div style="font-size:7px;margin-top:2px;">DRONE BAY</div>
+      </div>
+      <div class="cursor" style="left:222px;top:142px;"></div>
+      <div class="tooltip" style="left:254px;top:118px;">✓ Valid — click to place</div>
+
+      <div style="position:absolute;bottom:0;left:0;right:0;height:22px;background:#050e1e;border-top:1px solid #1a3060;display:flex;align-items:center;padding:0 10px;font-size:10px;color:#4ade80;">✓ Yellow ghost = valid placement → click to confirm</div>
+    </div>
+  </div>
+
+  <!-- STATE B: Outside perimeter -->
+  <div style="flex:1;">
+    <div class="section-label">BUILD MODE — Invalid: outside perimeter fence</div>
+    <div class="screen" style="width:100%;height:280px;">
+      <div class="world-bg"></div>
+      <div class="mode-banner mode-build">
+        <span style="color:#D4A843;font-weight:bold;">▣ BUILD MODE</span>
+        <span style="color:#888;">Drone Bay (2×2)</span>
+        <span style="margin-left:auto;color:#666;"><span class="key">ESC</span> cancel</span>
+      </div>
+      <div class="perimeter" style="left:80px;top:40px;width:200px;height:200px;"></div>
+
+      <!-- Existing building inside -->
+      <div class="bld bld-storage" style="left:96px;top:60px;width:52px;height:52px;"><div>■■</div><div>■■</div><div style="font-size:7px;color:#4a7abf;">DEPOT</div></div>
+
+      <!-- INVALID ghost (red) — outside perimeter -->
+      <div class="ghost-invalid" style="position:absolute;left:306px;top:100px;width:52px;height:52px;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:1px;font-size:9px;color:#ef4444;">
+        <div>⬡⬡</div><div>⬡⬡</div>
+        <div style="font-size:7px;margin-top:2px;">DRONE BAY</div>
+      </div>
+      <div class="cursor" style="left:332px;top:126px;"></div>
+      <div class="tooltip tooltip-invalid" style="left:228px;top:90px;max-width:200px;white-space:normal;">✗ Outside perimeter<br>Buildings must be inside the fence</div>
+
+      <!-- Arrow pointing at fence -->
+      <div class="ann" style="left:280px;top:148px;">◀─ fence</div>
+
+      <div style="position:absolute;bottom:0;left:0;right:0;height:22px;background:#050e1e;border-top:1px solid #1a3060;display:flex;align-items:center;padding:0 10px;font-size:10px;color:#ef4444;">✗ Red ghost = invalid → cannot place</div>
+    </div>
+  </div>
+
+  <!-- STATE C: No road touch (Drone Bay rule) -->
+  <div style="flex:1;">
+    <div class="section-label">BUILD MODE — Invalid: Drone Bay not touching road</div>
+    <div class="screen" style="width:100%;height:280px;">
+      <div class="world-bg"></div>
+      <div class="mode-banner mode-build">
+        <span style="color:#D4A843;font-weight:bold;">▣ BUILD MODE</span>
+        <span style="color:#888;">Drone Bay (2×2)</span>
+        <span style="margin-left:auto;color:#666;"><span class="key">ESC</span> cancel</span>
+      </div>
+      <div class="perimeter" style="left:40px;top:40px;width:240px;height:220px;"></div>
+
+      <!-- Existing buildings -->
+      <div class="bld bld-storage" style="left:56px;top:60px;width:52px;height:52px;"><div>■■</div><div>■■</div><div style="font-size:7px;color:#4a7abf;">DEPOT</div></div>
+      <!-- Road far from ghost -->
+      <div class="tile tile-road" style="left:56px;top:176px;width:80px;height:6px;"></div>
+
+      <!-- ROAD-REQUIRED ghost (amber dashed) — no road adjacency -->
+      <div class="ghost-road-req" style="position:absolute;left:180px;top:70px;width:52px;height:52px;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:1px;font-size:9px;color:#fbbf24;">
+        <div>⬡⬡</div><div>⬡⬡</div>
+        <div style="font-size:7px;margin-top:2px;">DRONE BAY</div>
+      </div>
+      <div class="cursor" style="left:206px;top:96px;"></div>
+      <div class="tooltip tooltip-roadreq" style="left:106px;top:50px;max-width:180px;white-space:normal;">⚠ Drone Bay must touch a road tile</div>
+      <div class="ann" style="left:56px;top:186px;">─ road (far away)</div>
+
+      <div style="position:absolute;bottom:0;left:0;right:0;height:22px;background:#050e1e;border-top:1px solid #1a3060;display:flex;align-items:center;padding:0 10px;font-size:10px;color:#fbbf24;">⚠ Amber = needs road adjacency to be valid</div>
+    </div>
+  </div>
+
+</div>
+
+<!-- BOTTOM ROW: Road placement mode -->
+<div style="width:960px;">
+  <div class="section-label">ROAD MODE [R] — Drag to paint; each tile costs 1 iron bar; roads extend outside perimeter to deposits</div>
+  <div class="screen" style="width:960px;height:300px;">
+    <div class="world-bg"></div>
+    <div class="mode-banner mode-road">
+      <span class="key-teal">R</span>
+      <span style="color:#00B8D4;font-weight:bold;">ROAD MODE</span>
+      <span style="color:#888;font-size:10px;">Click + drag to paint · 1 iron bar / tile · Shift+click to remove (refund 1 bar)</span>
+      <span style="margin-left:auto;color:#666;"><span class="key">R</span> or <span class="key">ESC</span> exit</span>
+    </div>
+
+    <!-- Perimeter -->
+    <div class="perimeter" style="left:300px;top:35px;width:320px;height:240px;"></div>
+
+    <!-- Existing buildings inside -->
+    <div class="bld bld-storage" style="left:320px;top:60px;width:52px;height:52px;"><div>■■</div><div>■■</div><div style="font-size:7px;color:#4a7abf;">DEPOT</div></div>
+    <div class="bld bld-furnace" style="left:400px;top:60px;width:52px;height:52px;"><div>▣▣</div><div>▣▣</div><div style="font-size:7px;color:#c06020;">FURNACE</div></div>
+
+    <!-- EXISTING roads (placed, solid green) -->
+    <div class="tile tile-road" style="left:346px;top:112px;width:6px;height:80px;"></div><!-- vertical inside -->
+    <div class="tile tile-road" style="left:346px;top:36px;height:6px;width:6px;"></div>
+    <div class="tile tile-road" style="left:346px;top:42px;height:6px;width:6px;"></div><!-- stub going up -->
+
+    <!-- ROAD PREVIEW (teal dashed) — player is painting path to iron deposit -->
+    <div class="road-preview" style="position:absolute;left:346px;top:30px;width:6px;height:6px;"></div>
+    <div class="road-preview" style="position:absolute;left:346px;top:24px;width:6px;height:6px;"></div>
+    <div class="road-preview" style="position:absolute;left:346px;top:18px;width:6px;height:6px;"></div>
+    <div class="road-preview" style="position:absolute;left:340px;top:12px;width:6px;height:6px;"></div>
+    <div class="road-preview" style="position:absolute;left:334px;top:6px;width:6px;height:6px;"></div>
+    <div class="road-preview" style="position:absolute;left:322px;top:6px;width:6px;height:6px;"></div>
+    <div class="road-preview" style="position:absolute;left:310px;top:6px;width:6px;height:6px;"></div>
+    <div class="road-preview" style="position:absolute;left:298px;top:6px;width:6px;height:6px;"></div>
+    <div class="road-preview" style="position:absolute;left:286px;top:6px;width:6px;height:6px;"></div>
+
+    <!-- Iron deposit at end of preview path -->
+    <div class="deposit deposit-iron" style="left:248px;top:0px;width:30px;height:30px;font-size:9px;">Fe</div>
+    <div style="position:absolute;left:242px;top:32px;font-size:9px;color:#aaa;">IRON ORE</div>
+
+    <!-- Road going right to copper deposit -->
+    <div class="tile tile-road" style="left:620px;top:154px;height:6px;width:100px;"></div>
+    <div class="tile tile-road" style="left:720px;top:154px;height:6px;width:60px;"></div>
+    <!-- Copper deposit -->
+    <div class="deposit" style="left:790px;top:138px;width:30px;height:30px;background:radial-gradient(circle,#8b6513,#4a3008);border:2px solid #cdaa20;color:#ffdd44;font-size:9px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:bold;">Cu</div>
+
+    <!-- Player cursor at end of preview -->
+    <div class="cursor" style="left:352px;top:30px;border-color:#00B8D4;"></div>
+
+    <!-- Budget panel -->
+    <div class="budget-panel">
+      <span style="color:#888;">Iron Bars:</span>
+      <span style="color:#D4A843;font-weight:bold;">8 available</span>
+      <span style="color:#888;">│</span>
+      <span style="color:#888;">Preview:</span>
+      <span style="color:#00B8D4;">9 tiles</span>
+      <span style="color:#888;">│</span>
+      <span style="color:#888;">Cost:</span>
+      <span style="color:#f87171;font-weight:bold;">9 bars (need 1 more)</span>
+      <span style="color:#888;">│</span>
+      <button style="background:#0f1e38;color:#3a5a8a;border:1px solid #1a3060;font-family:'Courier New',monospace;font-size:10px;padding:3px 8px;cursor:default;">CONFIRM (insufficient)</button>
+      <button style="background:#1a3060;color:#E8E4D0;border:1px solid #3a5a8a;font-family:'Courier New',monospace;font-size:10px;padding:3px 8px;cursor:pointer;">CANCEL</button>
+    </div>
+
+    <!-- Annotations -->
+    <div class="ann" style="left:172px;top:6px;">← teal dashed = road preview (not yet placed)</div>
+    <div class="ann" style="left:354px;top:112px;color:#3a6a3a;">▲ solid green = placed roads</div>
+    <div class="ann" style="left:630px;top:130px;color:#3a6a3a;">→ placed road to copper</div>
+
+    <div style="position:absolute;bottom:0;left:0;right:0;height:22px;background:#050e1e;border-top:1px solid #1a3060;display:flex;align-items:center;padding:0 10px;font-size:10px;color:#666;">Road mode: teal dashed = preview · green solid = placed · budget panel shows cost vs available bars · Shift+click removes</div>
+  </div>
+</div>
+
+<!-- LEGEND -->
+<div style="width:960px;">
+  <div class="legend">
+    <div class="legend-item"><div class="legend-swatch" style="background:rgba(212,168,67,0.25);border-color:#D4A843;"></div><span>Valid ghost (yellow dashed)</span></div>
+    <div class="legend-item"><div class="legend-swatch" style="background:rgba(239,68,68,0.2);border-color:#ef4444;"></div><span>Invalid ghost (red dashed)</span></div>
+    <div class="legend-item"><div class="legend-swatch" style="background:rgba(251,191,36,0.2);border-color:#fbbf24;"></div><span>Road required (amber dashed)</span></div>
+    <div class="legend-item"><div class="legend-swatch" style="background:rgba(0,184,212,0.3);border-color:#00B8D4;"></div><span>Road preview (teal dashed)</span></div>
+    <div class="legend-item"><div class="legend-swatch" style="background:#2a4a2a;border-color:#3a6a3a;border-style:solid;"></div><span>Placed road (solid green)</span></div>
+  </div>
+</div>
+
+</body>
+</html>

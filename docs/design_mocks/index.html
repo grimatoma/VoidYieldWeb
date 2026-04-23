@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>VoidYield — Design Mocks Index</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: #0D1B3E; color: #E8E4D0; font-family: 'Courier New', monospace; padding: 40px; }
+  h1 { color: #D4A843; font-size: 28px; margin-bottom: 8px; letter-spacing: 4px; text-transform: uppercase; }
+  .subtitle { color: #00B8D4; font-size: 13px; margin-bottom: 40px; }
+  .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 20px; }
+  .card { border: 1px solid #D4A843; padding: 20px; text-decoration: none; color: inherit; display: block; transition: background 0.1s; }
+  .card:hover { background: rgba(212,168,67,0.1); }
+  .card-num { color: #00B8D4; font-size: 11px; margin-bottom: 6px; }
+  .card-title { color: #D4A843; font-size: 16px; margin-bottom: 8px; }
+  .card-desc { color: #A8A4A0; font-size: 12px; line-height: 1.5; }
+  .ssd-ref { color: #888; font-size: 11px; margin-top: 8px; border-top: 1px solid #1a2d5a; padding-top: 8px; }
+  hr { border: none; border-top: 1px solid #1a2d5a; margin: 40px 0; }
+  .note { color: #666; font-size: 12px; font-style: italic; }
+</style>
+</head>
+<body>
+
+<h1>VoidYield</h1>
+<div class="subtitle">Design Mocks — Phase 1 Core Loop — TDD+SSD v1.1</div>
+<div class="note">These mocks correspond directly to §3 (Screens) and §4 (SSDs) of docs/CORE_LOOP_TDD_SSD.md</div>
+
+<hr>
+
+<div class="grid">
+
+  <a class="card" href="01_outpost_surface.html">
+    <div class="card-num">MOCK 01</div>
+    <div class="card-title">Outpost Surface — Base HUD</div>
+    <div class="card-desc">Full asteroid view with tile grid, perimeter fence, pre-placed buildings, deposits outside fence, road network, player character, and HUD bars.</div>
+    <div class="ssd-ref">TDD §3.2 · SSD §4.1</div>
+  </a>
+
+  <a class="card" href="02_deposit_interaction.html">
+    <div class="card-num">MOCK 02</div>
+    <div class="card-title">Deposit Interaction Panel</div>
+    <div class="card-desc">Panel that opens when player presses [E] near a deposit. Shows hand-mine action, deposit stock, road access status, and assigned drone info.</div>
+    <div class="ssd-ref">TDD §3.3 · SSD §4.2</div>
+  </a>
+
+  <a class="card" href="03_furnace_fabricator.html">
+    <div class="card-num">MOCK 03</div>
+    <div class="card-title">Furnace & Fabricator Panels</div>
+    <div class="card-desc">Both key production interfaces side by side: Furnace smelting recipes, input/output buffers; Fabricator crafting menu with bar costs and availability.</div>
+    <div class="ssd-ref">TDD §3.4 §3.5 · SSD §4.2 §4.3</div>
+  </a>
+
+  <a class="card" href="04_building_road_placement.html">
+    <div class="card-num">MOCK 04</div>
+    <div class="card-title">Building & Road Placement</div>
+    <div class="card-desc">Ghost-placement mode for buildings (valid/invalid states) and road paint mode with tile budget preview. Shows perimeter enforcement visually.</div>
+    <div class="ssd-ref">TDD §3.6 §3.7 · SSD §4.3</div>
+  </a>
+
+  <a class="card" href="05_drone_bay_panel.html">
+    <div class="card-num">MOCK 05</div>
+    <div class="card-title">Drone Bay Panel & Allocation</div>
+    <div class="card-desc">Drone role allocation interface: Miner vs Logistics slider, live throughput estimates, bottleneck warning, individual drone status rows.</div>
+    <div class="ssd-ref">TDD §3.9 · SSD §4.4 §4.6</div>
+  </a>
+
+  <a class="card" href="06_production_overlay.html">
+    <div class="card-num">MOCK 06</div>
+    <div class="card-title">Production Status Overlay</div>
+    <div class="card-desc">Map overlay showing all buildings color-coded: green (running), yellow (stalled), grey (idle). Hover tooltip and click-to-panel behavior illustrated.</div>
+    <div class="ssd-ref">TDD §3.10 · SSD §4.6</div>
+  </a>
+
+</div>
+
+<hr>
+<div class="note">All mocks use the locked palette: #0D1B3E navy · #D4A843 amber · #00B8D4 teal · 960×540 base resolution · pixel-art rendering (image-rendering: pixelated)</div>
+
+</body>
+</html>

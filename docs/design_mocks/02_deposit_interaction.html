@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Mock 02 — Deposit Interaction</title>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { background: #060e1e; color: #E8E4D0; font-family: 'Courier New', monospace; display: flex; flex-direction: column; align-items: center; padding: 20px; gap: 20px; }
+h2 { color: #D4A843; font-size: 14px; letter-spacing: 3px; text-transform: uppercase; }
+.ref { color: #00B8D4; font-size: 11px; }
+.row { display: flex; gap: 20px; width: 960px; }
+
+.screen { background: #0D1B3E; border: 2px solid #D4A843; position: relative; image-rendering: pixelated; }
+.screen-full { width: 960px; height: 540px; }
+.screen-half { width: 470px; height: 400px; }
+
+/* shared panel styles */
+.panel { position: absolute; background: #07122a; border: 1px solid #D4A843; padding: 0; }
+.panel-title { background: #1a2d5a; color: #D4A843; padding: 6px 12px; font-size: 12px; font-weight: bold; border-bottom: 1px solid #D4A843; display: flex; justify-content: space-between; align-items: center; }
+.panel-title .status-badge { font-size: 10px; padding: 2px 8px; border-radius: 2px; }
+.status-running { background: #14532d; color: #4ade80; border: 1px solid #22c55e; }
+.status-stalled { background: #422006; color: #fb923c; border: 1px solid #f97316; }
+.status-idle    { background: #1e2030; color: #94a3b8; border: 1px solid #475569; }
+.panel-body { padding: 12px; }
+.panel-row { display: flex; justify-content: space-between; align-items: center; font-size: 11px; margin-bottom: 8px; }
+.panel-row .lbl { color: #888; }
+.panel-row .val { color: #E8E4D0; }
+.panel-row .val.good { color: #4ade80; }
+.panel-row .val.warn { color: #fbbf24; }
+.panel-row .val.none { color: #475569; }
+.divider { border: none; border-top: 1px solid #1a3060; margin: 8px 0; }
+
+/* bar */
+.bar-row { display: flex; align-items: center; gap: 8px; font-size: 11px; margin-bottom: 8px; }
+.bar-row .lbl { color: #888; width: 90px; flex-shrink: 0; }
+.bar-track { flex: 1; height: 8px; background: #1a3060; border: 1px solid #2a4080; }
+.bar-fill { height: 100%; }
+.bar-row .num { color: #E8E4D0; font-size: 10px; width: 60px; text-align: right; }
+
+/* buttons */
+.btn-row { display: flex; gap: 8px; margin-top: 10px; flex-wrap: wrap; }
+.btn { padding: 5px 12px; font-family: 'Courier New', monospace; font-size: 11px; cursor: pointer; border: none; }
+.btn-primary { background: #D4A843; color: #0D1B3E; font-weight: bold; }
+.btn-secondary { background: #1a3060; color: #E8E4D0; border: 1px solid #3a5a8a; }
+.btn-warn { background: #7c2d12; color: #fed7aa; border: 1px solid #ea580c; }
+.btn-disabled { background: #0f1e38; color: #3a5a8a; border: 1px solid #1a3060; cursor: default; }
+
+/* World background for context */
+.world-bg { position: absolute; inset: 0; background: #0a1628; }
+.deposit-node { position: absolute; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 13px; font-weight: bold; }
+.deposit-iron { background: radial-gradient(circle, #8b4513, #4a2008); border: 2px solid #cd6020; color: #ffaa44; width: 40px; height: 40px; }
+.player-sprite { position: absolute; width: 14px; height: 18px; background: #D4A843; clip-path: polygon(50% 0%, 80% 30%, 100% 60%, 80% 100%, 20% 100%, 0% 60%, 20% 30%); }
+.mine-anim { position: absolute; font-size: 18px; animation: swing 0.4s ease-in-out infinite alternate; }
+@keyframes swing { from{transform:rotate(-30deg)} to{transform:rotate(20deg)} }
+.ore-float { position: absolute; font-size: 11px; color: #ffaa44; animation: floatUp 1s ease-out infinite; }
+@keyframes floatUp { 0%{opacity:1;transform:translateY(0)} 100%{opacity:0;transform:translateY(-30px)} }
+.carry-label { position: absolute; font-size: 9px; color: #D4A843; background: rgba(0,0,0,0.7); padding: 2px 5px; border: 1px solid #D4A843; }
+.e-prompt { position: absolute; font-size: 10px; color: #00B8D4; background: rgba(0,0,0,0.8); border: 1px solid #00B8D4; padding: 2px 6px; animation: blink 1.2s ease-in-out infinite; }
+@keyframes blink { 0%,100%{opacity:1} 50%{opacity:0.4} }
+.road-tile { position: absolute; background: #2a4a2a; border-top: 1px solid #3a6a3a; border-bottom: 1px solid #3a6a3a; }
+
+/* annotation arrows */
+.ann { position: absolute; font-size: 10px; color: #00B8D4; pointer-events: none; }
+
+.section-label { font-size: 11px; color: #666; margin-top: 4px; }
+</style>
+</head>
+<body>
+
+<h2>Mock 02 — Deposit Interaction Panel</h2>
+<div class="ref">TDD §3.3 · SSD §4.2 — [E] near deposit opens panel; hand-mine and drone-info states</div>
+
+<!-- ROW 1: Scene + Panel (empty deposit / no drone) -->
+<div style="width:960px;">
+  <div class="section-label">STATE A — No drone assigned, deposit unvisited. Player holds [E] to hand-mine.</div>
+</div>
+<div class="screen screen-full">
+  <div class="world-bg"></div>
+
+  <!-- Road to deposit -->
+  <div class="road-tile" style="left:310px;top:206px;height:6px;width:120px;"></div>
+
+  <!-- Deposit -->
+  <div class="deposit-node deposit-iron" style="left:160px; top:186px;"></div>
+  <div style="position:absolute;left:155px;top:232px;font-size:9px;color:#aaa;text-align:center;width:50px;">IRON ORE</div>
+
+  <!-- Player (mining) -->
+  <div class="player-sprite" style="left:254px; top:198px;"></div>
+  <div class="mine-anim" style="left:240px; top:185px;">⛏</div>
+
+  <!-- Floating ore particles -->
+  <div class="ore-float" style="left:222px; top:186px;">+4</div>
+
+  <!-- Carry indicator -->
+  <div class="carry-label" style="left:246px; top:224px;">CARRY 4/12</div>
+
+  <!-- Panel — NO DRONE state -->
+  <div class="panel" style="right: 40px; top: 60px; width: 320px;">
+    <div class="panel-title">
+      ◉ IRON ORE DEPOSIT
+      <span class="status-badge status-idle">UNMINED</span>
+    </div>
+    <div class="panel-body">
+      <div class="bar-row">
+        <span class="lbl">Remaining</span>
+        <div class="bar-track"><div class="bar-fill" style="width:78%;background:#cd6020;"></div></div>
+        <span class="num">~640 ore</span>
+      </div>
+      <hr class="divider">
+      <div class="panel-row"><span class="lbl">Road access</span><span class="val good">✓ Connected</span></div>
+      <div class="panel-row"><span class="lbl">Drone miner</span><span class="val none">None assigned</span></div>
+      <div class="panel-row"><span class="lbl">Hand-mine yield</span><span class="val">3–5 ore / swing</span></div>
+      <div class="panel-row"><span class="lbl">Swing interval</span><span class="val">0.8 sec (hold E)</span></div>
+      <hr class="divider">
+      <div class="btn-row">
+        <button class="btn btn-primary">⛏ HAND MINE (hold E)</button>
+        <button class="btn btn-secondary">CLOSE</button>
+      </div>
+      <div style="margin-top:8px;font-size:10px;color:#666;">Tip: Assign a Miner drone from a Drone Bay to automate this deposit.</div>
+    </div>
+  </div>
+
+  <!-- Annotation arrows -->
+  <div class="ann" style="left:200px;top:192px;">─ ─ ─ player (hold E) ──▶</div>
+  <div class="ann" style="right:360px;top:44px;color:#D4A843;">▼ panel opens on [E]</div>
+
+  <!-- Key hint bottom -->
+  <div style="position:absolute;bottom:0;left:0;right:0;height:24px;background:#050e1e;border-top:1px solid #1a3060;display:flex;align-items:center;padding:0 12px;gap:16px;font-size:10px;">
+    <span style="background:#1a2a4a;border:1px solid #3a5a8a;padding:1px 5px;color:#D4A843;border-radius:2px;">E</span>
+    <span style="color:#666;">Hold to mine</span>
+    <span style="background:#1a2a4a;border:1px solid #3a5a8a;padding:1px 5px;color:#D4A843;border-radius:2px;">ESC</span>
+    <span style="color:#666;">Close panel</span>
+    <div style="margin-left:auto;color:#1a3060;font-size:10px;">TDD §3.3</div>
+  </div>
+</div>
+
+<!-- ROW 2: Two half-screens - drone assigned + carry full -->
+<div class="row">
+
+  <!-- State B: Drone assigned -->
+  <div>
+    <div class="section-label">STATE B — Miner drone assigned. Panel shows live drone status.</div>
+    <div class="screen screen-half" style="margin-top:6px;">
+      <div class="world-bg"></div>
+      <div class="deposit-node deposit-iron" style="left:60px;top:80px;"></div>
+      <!-- Drone (at deposit, mining) -->
+      <div style="position:absolute;left:90px;top:88px;width:10px;height:10px;background:#8040c0;border:1px solid #cc88ff;border-radius:2px;animation:pulse2 1s ease-in-out infinite;"></div>
+      <style>@keyframes pulse2{0%,100%{opacity:1}50%{opacity:0.5}}</style>
+      <!-- Road trail back to perimeter -->
+      <div class="road-tile" style="left:100px;top:96px;height:6px;width:120px;"></div>
+      <!-- Drone trail -->
+      <div style="position:absolute;left:108px;top:97px;width:4px;height:4px;background:rgba(128,64,192,0.5);border-radius:50%;"></div>
+
+      <div class="panel" style="left:200px;top:30px;width:250px;">
+        <div class="panel-title">
+          ◉ IRON ORE DEPOSIT
+          <span class="status-badge status-running">MINING</span>
+        </div>
+        <div class="panel-body">
+          <div class="bar-row">
+            <span class="lbl">Remaining</span>
+            <div class="bar-track"><div class="bar-fill" style="width:60%;background:#cd6020;"></div></div>
+            <span class="num">~490 ore</span>
+          </div>
+          <hr class="divider">
+          <div class="panel-row"><span class="lbl">Drone</span><span class="val good">D-01 ▶ MINING</span></div>
+          <div class="panel-row"><span class="lbl">Road length</span><span class="val">8 tiles (8 bars)</span></div>
+          <div class="panel-row"><span class="lbl">Output rate</span><span class="val">4.8 ore/min</span></div>
+          <div class="panel-row"><span class="lbl">Haul ETA</span><span class="val">~12 sec</span></div>
+          <hr class="divider">
+          <div class="btn-row">
+            <button class="btn btn-warn">RECALL DRONE</button>
+            <button class="btn btn-secondary">CLOSE</button>
+          </div>
+        </div>
+      </div>
+      <div style="position:absolute;bottom:0;left:0;right:0;height:22px;background:#050e1e;border-top:1px solid #1a3060;display:flex;align-items:center;padding:0 10px;font-size:10px;color:#666;">State B: Drone active → rate shown, recall available</div>
+    </div>
+  </div>
+
+  <!-- State C: Carry full warning -->
+  <div>
+    <div class="section-label">STATE C — Player carry full. Mining stops; must deposit first.</div>
+    <div class="screen screen-half" style="margin-top:6px;">
+      <div class="world-bg"></div>
+      <div class="deposit-node deposit-iron" style="left:100px;top:120px;"></div>
+      <div class="player-sprite" style="left:160px;top:132px;"></div>
+
+      <!-- CARRY FULL float text -->
+      <div style="position:absolute;left:144px;top:108px;font-size:12px;color:#f87171;font-weight:bold;background:rgba(0,0,0,0.8);border:1px solid #f87171;padding:3px 8px;animation:blink2 0.8s ease-in-out infinite;">
+        CARRY FULL
+      </div>
+      <style>@keyframes blink2{0%,100%{opacity:1}50%{opacity:0.5}}</style>
+
+      <div class="panel" style="right:20px;top:30px;width:240px;">
+        <div class="panel-title">
+          ◉ IRON ORE DEPOSIT
+          <span class="status-badge status-stalled">BLOCKED</span>
+        </div>
+        <div class="panel-body">
+          <div style="background:#2d1a0a;border:1px solid #ea580c;padding:8px;font-size:11px;color:#fed7aa;margin-bottom:8px;">
+            ⚠ Carry full (12/12)<br>Deposit items to continue mining.
+          </div>
+          <div class="panel-row"><span class="lbl">Carry</span><span class="val warn">12 / 12 (full)</span></div>
+          <div class="panel-row"><span class="lbl">Nearest depot</span><span class="val">38 tiles away</span></div>
+          <hr class="divider">
+          <div class="btn-row">
+            <button class="btn btn-disabled">⛏ HAND MINE (carry full)</button>
+          </div>
+          <div style="margin-top:8px;font-size:10px;color:#666;">Walk to Storage Depot and [E] to deposit carry.</div>
+        </div>
+      </div>
+      <div style="position:absolute;bottom:0;left:0;right:0;height:22px;background:#050e1e;border-top:1px solid #1a3060;display:flex;align-items:center;padding:0 10px;font-size:10px;color:#666;">State C: Carry full → mining locked → must deposit</div>
+    </div>
+  </div>
+
+</div>
+
+</body>
+</html>
