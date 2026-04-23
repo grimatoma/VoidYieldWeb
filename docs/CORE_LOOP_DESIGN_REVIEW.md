@@ -95,106 +95,48 @@ This preserves the cramped-puzzle feel across the whole game instead of letting 
 
 ---
 
-## 4. Open Questions (reply inline)
-
-> Answer these and the spec is writable. Add your thoughts directly under each question.
+## 4. Answered Questions
 
 ### Q1 — Outpost grid size
-Proposed: **20×15 interior tiles**, inside a 1-tile perimeter fence, on a ~40×30 asteroid surface. Deposits hand-placed at 3 fixed spots outside the fence.
-
-- Is that tight enough to bite but roomy enough for a 30-minute Phase 1?
-- Should the 3 deposits be close together or spread out to force road sprawl?
-
-**Your reply:**
-
----
+**Locked.** 20×15 interior tiles inside a 1-tile perimeter fence, on a ~40×30 asteroid surface. 3 deposits placed at spread corners/edges of the asteroid (iron, copper, water) to force road sprawl and create a "which deposit first" decision.
 
 ### Q2 — Building footprints
-Proposed:
+**Locked.** Sizes as proposed. Roads connect on any adjacent side — no specific I/O tiles in Phase 1.
 
-| Building | Footprint | Notes |
-|---|---|---|
-| Storage | 2×2 | Expandable via add-on tiles? |
-| Furnace | 2×2 | |
-| Fabricator | 2×3 | Bigger because it's the crafter |
-| Drone bay | 2×2 | Holds 4 drones |
-| Marketplace | 2×2 | |
-| Road | 1×1 | |
-
-- Do the sizes feel right?
-- Should multi-tile buildings have a specific input/output tile (belt-style), or accept connections on any side?
-
-**Your reply:**
-
----
+| Building | Footprint |
+|---|---|
+| Storage | 2×2 |
+| Furnace | 2×2 |
+| Fabricator | 2×3 |
+| Drone Bay | 2×2 |
+| Marketplace | 2×2 |
+| Road | 1×1 |
 
 ### Q3 — Drone count gating
-At game start, how many drones does the initial drone bay give you? Proposal: the first bay gives **2 drones** (one miner + one logistics, or both of one type at the player's choice). Subsequent bays give 4.
-
-- Feel right?
-- Should the player *choose* each drone's role at bay purchase, or swap freely?
-
-**Your reply:**
-
----
+**Locked.** First Drone Bay spawns **4 drones**. Subsequent bays also spawn 4. Player can swap each drone's role (miner ↔ logistics) freely at any time — no purchase-time commitment.
 
 ### Q4 — Road rules
-Proposed:
+**Locked.** Single road type. Flat cost: **1 iron bar per tile**. Drones move at 1 tile/sec on roads and cannot leave road tiles. A* pathfinding over the road graph. No dirt/paved tier split in Phase 1.
 
-- One road type in Phase 1. Flat cost per tile (e.g. 1 iron bar).
-- Drones travel at 1 tile/sec on road, cannot leave road.
-- Roads may be placed inside and outside the perimeter.
-- No intersections logic — just "is this tile a road tile." Pathfinding is A* over road tiles.
+### Q5 — Phase 1 win condition
+**Locked.** Both beats:
 
-- Agree, or do we want a cheap-dirt / fast-paved tier split even in Phase 1?
+- **Graduation feel:** base runs 60–120s unattended with net credit surplus at the market.
+- **Content gate:** player builds a rocket using hydrolox fuel and launches to Phase 2.
 
-**Your reply:**
-
----
-
-### Q5 — Win condition for Phase 1
-What makes the player feel "done" with Phase 1? Proposals:
-
-- **A)** Base runs autonomously for 2 minutes producing net credit surplus at the market.
-- **B)** Player builds a rocket (requires hydrolox fuel) and launches to Phase 2.
-- **C)** Both: (A) is the graduation feel, (B) is the content gate.
-
-**Your reply:**
-
----
-
-### Q6 — What happens when the player picks up a building?
-Repositioning is a stated pillar. Details:
-
-- Does the building work while being moved, or does it pause?
-- Does moving it cost resources (partial refund / full refund)?
-- Can logistics drones re-path mid-trip if a road moves, or do they stall?
-
-**Your reply:**
-
----
+### Q6 — Picking up a building
+**Locked.** Moving a building pauses production, returns its tiles to the empty pool, and grants a **full refund** of any tile resources. Drones in transit **re-path** using the current road network.
 
 ### Q7 — Perimeter expansion
-How does the player grow the fence?
+**Locked.** Perimeter is fixed in Phase 1. Phase 2's "second outpost on a new asteroid" is the expansion answer — fresh perimeter, fresh drones — not fence extension on the starting asteroid.
 
-- Triggered by fabricator-crafted "perimeter segment" items?
-- Costs a ramp of resources per expansion?
-- Any cap in Phase 1, or is it unlocked only in Phase 2?
+### Q8 (reposed) — Remaining work priority
+**Locked.** The original phrasing (reuse vs. dormant) was stale because significant Phase 1 mechanics are already shipped (see §7). Reposed answers:
 
-**Your reply:**
-
----
-
-### Q8 — Existing services to reuse vs. rewrite
-Current codebase has `FleetManager`, `LogisticsManager`, `HarvesterManager`, `MiningService`, `SectorManager`, a tech tree, and save/load. For Phase 1, proposal:
-
-- **Reuse:** `GameState`, `SaveManager`, `SettingsManager`, `EventBus`, `InputManager`, `MiningService` (simplify), `LogisticsManager` (rewire around roads).
-- **New:** `BaseGrid` / `PlacementService` (tile grid, building footprints, fence), `RoadNetwork` (connectivity + pathfinding), `DroneAllocator` (caps, role split).
-- **Dormant:** `HarvesterManager`, `SectorManager`, `TechTree`, `ConsumptionManager`, `StrandingManager` — kept in repo, not wired into the new Phase 1 scene.
-
-Agree with that split, or do you want a harder reset?
-
-**Your reply:**
+- **Priority:** build the **tile grid + `PlacementService`** first. It's the foundation that unblocks roads, logistics routing between buildings, and pickup/move. Nothing else lands cleanly without it.
+- **Drone role model:** add an explicit `DroneRole = 'miner' | 'logistics'` field on `DroneBase`, decoupled from `droneType` (scout / heavy / etc.). Future tiers can then have "elite logistics" or "elite miner" without conflating role and type.
+- **Furnace:** build a new `Furnace` entity alongside the existing `ProcessingPlant` / Plate Press. Furnace handles iron_ore → iron_bars and copper_ore → copper_bars. Plate Press stays for the later bars → plates chain.
+- **Logistics drone behavior** already exists in the codebase (`ZoneManager` CARRY tasks, `RefineryDrone` stub wiring) — Phase 1 wires it to intra-base shuttling between Storage, Furnace, Fabricator, and Marketplace on the new road network rather than to harvester fuel/empty circuits.
 
 ---
 
@@ -220,19 +162,63 @@ Not in the slice: water use, tech tree, multiple drone tiers, building upgrades,
 
 ## 6. Decision Log
 
-*Fill in as we converge. Each decision here becomes binding for the spec.*
+*All decisions below are binding for `docs/specs/18_core_loop.md`.*
 
 | # | Decision | Status |
 |---|---|---|
 | 1 | Squares, not hexes | **Locked** |
 | 2 | Everything requires roads | **Locked** |
-| 3 | Deposits outside the perimeter | Proposed |
-| 4 | Hard split: miners leave perimeter, logistics stay inside | Proposed |
-| 5 | Drone bay 2×2, 4 drones, must touch road | Proposed |
-| 6 | Bars are building currency; market is overflow sink | Proposed |
-| 7 | Phase 1 ends at rocket launch; Phase 2 = second outpost | Proposed |
-| 8 | Harvester buildings deferred to post-Phase-1 | Proposed |
+| 3 | Deposits outside the perimeter | **Locked** |
+| 4 | Hard split: miners leave perimeter, logistics stay inside | **Locked** |
+| 5 | Drone Bay 2×2, 4 drones per bay, must touch road | **Locked** |
+| 6 | Bars are building currency; market is overflow sink | **Locked** |
+| 7 | Phase 1 ends at rocket launch + 60–120s autonomy beat | **Locked** |
+| 8 | Harvester buildings deferred to post-Phase-1 | **Locked** |
+| 9 | 20×15 interior, deposits spread on ~40×30 asteroid | **Locked** |
+| 10 | Footprints: Storage/Furnace/Drone Bay/Market 2×2, Fabricator 2×3, Road 1×1; any-side connect | **Locked** |
+| 11 | First Drone Bay spawns 4 drones; roles swappable freely | **Locked** |
+| 12 | Single road tier: 1 iron bar/tile, 1 tile/sec, A* pathfinding | **Locked** |
+| 13 | Picking up a building: pause + full refund + drones re-path | **Locked** |
+| 14 | Perimeter fixed in Phase 1; Phase 2 expansion = second outpost | **Locked** |
+| 15 | Drone role = explicit `DroneRole` enum on `DroneBase`, decoupled from `droneType` | **Locked** |
+| 16 | New `Furnace` entity alongside existing Plate Press (ProcessingPlant) | **Locked** |
+| 17 | Next engineering priority: tile grid + `PlacementService` | **Locked** |
 
 ---
 
-*When the Open Questions are answered and the Decision Log is fully locked, this doc becomes `docs/specs/18_core_loop.md` with the discussion prose trimmed out.*
+## 7. Current Implementation Status (as of 2026-04-23)
+
+Snapshot of which Phase 1 pillars are already live in the codebase vs. still to build. Correcting earlier reviews that undercounted recent work.
+
+### Already shipped
+
+| Pillar | Evidence |
+|---|---|
+| Miner drone behavior | `MiningCircuitManager` — IDLE → find deposit → MINE → CARRY → deposit → loop |
+| Drone Bay as a building with roster + cap | `src/entities/DroneBay.ts`, `DroneBayPanel` shows IDLE / MINING / HAULING / RETURNING / OFF |
+| Bay-slot cap events | `fleet:roster_changed`, `drone:bay_cap_changed` |
+| Logistics drone primitives | `ZoneManager` CARRY tasks + `RefineryDrone` stub (needs rewire to in-base routes) |
+| Marketplace sell/buy | `MarketplaceService` — `sell()` at fixed prices, `buy()` at 1.5× markup |
+| Fabricator engine | Two-input recipe machine with input/output depots and state machine |
+| Plate Press (proto-furnace) | `ProcessingPlant` schematic: steel_bars → steel_plates |
+| Perimeter walls block movement | `ObstacleManager` + `PlanetA1Scene` gate routing |
+| Tap-to-move + touch controls | Mobile-ready input layer |
+
+### Still to build for Phase 1
+
+| Pillar | What's needed |
+|---|---|
+| Tile grid + `PlacementService` | Grid coords, building footprints, perimeter-enforced placement, pickup/move. **Top priority.** |
+| Road entity + `RoadNetwork` service | Road tile, connectivity graph, A* over road tiles for drones |
+| Perimeter as a *placement* boundary | Walls block movement today; need to also block building placement outside them |
+| `DroneRole` enum | Explicit miner / logistics role on `DroneBase`, UI toggle in `DroneBayPanel` |
+| Logistics drone in-base routes | Rewire existing CARRY primitives to Storage ↔ Furnace ↔ Fabricator ↔ Market on roads |
+| Iron ore + copper ore resources | `OreType` entries, `deposits_a1.ts` (or new file) places 3 spread deposits |
+| `Furnace` entity | New building: iron_ore → iron_bars, copper_ore → copper_bars |
+| Phase 1 Fabricator recipes | Drone Bay, Road (batch), Marketplace, Storage expansion (future) |
+| Rocket-launch Phase 1 terminus | Wire existing Launchpad + hydrolox fuel chain as the Phase 1 "you win" moment |
+| Water → hydrolox chain | Electrolysis building + hydrolox as a new `OreType` |
+
+---
+
+*This doc's decisions are now fully locked. Next deliverable: `docs/specs/18_core_loop.md` distilling the decisions above into an implementation spec, then engineering work in priority order per §7.*
