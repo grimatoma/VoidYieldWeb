@@ -82,9 +82,9 @@ export class ProcessingPlant {
       return;
     }
 
-    // When no outputDepot is linked, stall if the internal fallback buffer is full.
+    // Check if output buffer is full
     const maxOutputBuffer = this.schematic.outputQty * 10;
-    if (this.manualOnly && !this.outputDepot && this._outputBuffer >= maxOutputBuffer) {
+    if (this.manualOnly && this._outputBuffer >= maxOutputBuffer) {
       this.state = 'STALLED';
       return;
     }
@@ -115,17 +115,8 @@ export class ProcessingPlant {
 
       if (inputConsumed > 0) {
         if (this.manualOnly) {
-          if (this.outputDepot) {
-            // Deposit directly to the linked depot so drones and players can pick it up.
-            const outputLot: QualityLot = {
-              oreType: this.schematic.outputType as OreType,
-              quantity: this.schematic.outputQty,
-              attributes: {},
-            };
-            this.outputDepot.deposit([outputLot]);
-          } else {
-            this._outputBuffer += this.schematic.outputQty;
-          }
+          // Send output to internal buffer for drone or player pickup.
+          this._outputBuffer += this.schematic.outputQty;
           this.state = 'RUNNING';
         } else {
           // Produce output lot and send to depot

@@ -81,11 +81,11 @@ describe('ProcessingPlant — manualOnly', () => {
     plant.manualOnly = true;
     const accepted = plant.insertBatch('iron_ore', 2);
     expect(accepted).toBe(2);
-    // Trigger a batch — output goes to linked outputDepot directly.
+    // Now trigger a batch — plant should produce without touching depot.
     plant.update(6.1);
     expect(inputDepot.pull).not.toHaveBeenCalled();
-    expect(outputDepot.deposit).toHaveBeenCalled();
-    expect(plant.outputBuffer).toBe(0);
+    expect(outputDepot.deposit).not.toHaveBeenCalled(); // Because it goes to internal output buffer now!
+    expect(plant.outputBuffer).toBe(1);
     expect(plant.state).toBe('RUNNING');
   });
 

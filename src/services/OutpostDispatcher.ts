@@ -153,7 +153,42 @@ export class OutpostDispatcher {
     
     if (idleLogistics.length === 0) return;
 
-    // Input Delivery: If furnace has room and we have idle drones
+    // 1. Output Pickup: Prioritize getting products OUT of the furnace
+    if (furnace.plant.outputBuffer > 0) {
+      for (const drone of idleLogistics) {
+        if (furnace.plant.outputBuffer <= 0) break;
+
+        const takeTask: DroneTask = {
+          type: 'CARRY',
+          targetX: furnace.x,
+          targetY: furnace.y,
+          executeDurationSec: 0.3,
+          onExecute: () => {
+            const lot = furnace.plant.takeOutput();
+            if (lot) {
+              drone.cargo = lot;
+            }
+          },
+        };
+        const deliverTask: DroneTask = {
+          type: 'CARRY',
+          targetX: storage.x,
+          targetY: storage.y,
+          executeDurationSec: 0.3,
+          onExecute: () => {
+            if (drone.cargo) {
+              storage.deposit([drone.cargo]);
+              drone.cargo = null;
+            }
+          },
+        };
+        drone.pushTask(takeTask);
+        drone.pushTask(deliverTask);
+        return; // Only dispatch one drone per tick to avoid piling up
+      }
+    }
+
+    // 2. Input Delivery: If furnace has room and we have idle drones
     if (recipe !== 'off') {
       const recipeData = FURNACE_RECIPES[recipe];
       const inputOre = recipeData.input;
