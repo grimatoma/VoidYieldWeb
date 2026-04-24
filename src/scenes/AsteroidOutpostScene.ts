@@ -93,6 +93,12 @@ export class AsteroidOutpostScene implements Scene {
   // Production overlay legend banner (DOM element shown while overlay is active)
   private _productionLegend: HTMLDivElement | null = null;
 
+  // ── Autonomy win beat (TDD §4.7) ──────────────────────────────────────────
+  private _autonomyTimer = 0;           // seconds since player last moved
+  private _autonomyCreditsStart = 0;    // credits when timer started
+  private _autonomyWinShown = false;    // don't show banner twice per visit
+  private _autonomyBanner: HTMLDivElement | null = null;
+
   async enter(app: Application): Promise<void> {
     this._app = app;
     this._stage = new Container();
@@ -239,6 +245,11 @@ export class AsteroidOutpostScene implements Scene {
         this._droneDepot.restoreBaySlot({ slotId: 'slot_2', droneType: 'refinery', oreType: 'any' }, this._stage!);
       }
     }
+
+    // Autonomy beat: snapshot starting credits and allow the win to fire again
+    this._autonomyCreditsStart = gameState.credits;
+    this._autonomyTimer = 0;
+    this._autonomyWinShown = false;
   }
 
   // -------------------------------------------------------------------------
@@ -600,6 +611,34 @@ export class AsteroidOutpostScene implements Scene {
       if (this._droneDepotOverlay?.isOpen())  { this._droneDepotOverlay.close();  return; }
       if (this._buildMenuOverlay?.isOpen())   { this._buildMenuOverlay.close();   return; }
     }
+
+    // ── Autonomy beat (TDD §4.7) ─────────────────────────────────────────────
+    // Timer ticks while the player is not pressing any movement key.
+    // At 120 s, if credits increased since the timer started, show win banner.
+    const playerMoving =
+      inputManager.isHeld('player_move_up')    ||
+      inputManager.isHeld('player_move_down')  ||
+      inputManager.isHeld('player_move_left')  ||
+      inputManager.isHeld('player_move_right');
+
+    if (playerMoving) {
+      if (this._autonomyTimer > 0) {
+        // Player just started moving again — re-snapshot credits
+        this._autonomyCreditsStart = gameState.credits;
+      }
+      this._autonomyTimer = 0;
+    } else {
+      this._autonomyTimer += delta; // delta is in seconds
+
+      if (!this._autonomyWinShown && this._autonomyTimer >= 120) {
+        const creditsEarned = gameState.credits - this._autonomyCreditsStart;
+        if (creditsEarned > 0) {
+          this._showAutonomyWinBanner();
+          this._autonomyWinShown = true;
+        }
+      }
+    }
+    // ─────────────────────────────────────────────────────────────────────────
 
     this._updateResourceRail();
 
@@ -1040,6 +1079,77 @@ export class AsteroidOutpostScene implements Scene {
     this._productionLegend = null;
   }
 
+  // ── Autonomy win banner (TDD §4.7) ────────────────────────────────────────
+
+  private _showAutonomyWinBanner(): void {
+    if (this._autonomyBanner) return; // already visible
+
+    const uiLayer = document.getElementById('ui-layer') ?? document.body;
+    const banner = document.createElement('div');
+    banner.id = 'autonomy-win-banner';
+    banner.style.cssText = [
+      'position:absolute',
+      'top:50%',
+      'left:50%',
+      'transform:translate(-50%,-50%)',
+      'background:#07122a',
+      'border:2px solid #D4A843',
+      'padding:20px 28px',
+      'font-family:monospace',
+      'color:#E8E4D0',
+      'z-index:200',
+      'min-width:340px',
+      'max-width:420px',
+      'box-shadow:0 0 32px rgba(212,168,67,0.25)',
+      'pointer-events:all',
+    ].join(';');
+
+    banner.innerHTML = [
+      '<div style="color:#D4A843;font-size:14px;font-weight:bold;margin-bottom:8px;">',
+      '  \u2713 OUTPOST SELF-SUSTAINING!',
+      '</div>',
+      '<div style="font-size:11px;color:#B8B4A0;margin-bottom:6px;">',
+      '  The base ran 120s without you.',
+      '</div>',
+      '<div style="font-size:11px;color:#B8B4A0;margin-bottom:16px;">',
+      '  Next: build a rocket to Phase 2.',
+      '</div>',
+      '<div style="text-align:right;">',
+      '  <button id="autonomy-dismiss-btn" style="',
+      '    background:#1a3060;',
+      '    color:#D4A843;',
+      '    border:1px solid #D4A843;',
+      '    font-family:monospace;',
+      '    font-size:11px;',
+      '    padding:4px 12px;',
+      '    cursor:pointer;',
+      '  ">[DISMISS]</button>',
+      '</div>',
+    ].join('');
+
+    uiLayer.appendChild(banner);
+    this._autonomyBanner = banner;
+
+    // Wire dismiss button
+    const btn = banner.querySelector('#autonomy-dismiss-btn') as HTMLButtonElement | null;
+    btn?.addEventListener('click', () => this._hideAutonomyWinBanner());
+
+    // Auto-dismiss after 10 seconds
+    const autoTimer = window.setTimeout(() => this._hideAutonomyWinBanner(), 10_000);
+    // Store timer id on the element so it can be cancelled early if dismissed
+    (banner as any).__autoTimer = autoTimer;
+  }
+
+  private _hideAutonomyWinBanner(): void {
+    if (!this._autonomyBanner) return;
+    const autoTimer = (this._autonomyBanner as any).__autoTimer;
+    if (autoTimer !== undefined) {
+      window.clearTimeout(autoTimer);
+    }
+    this._autonomyBanner.remove();
+    this._autonomyBanner = null;
+  }
+
   private serializeOutpost(): NonNullable<SaveData['outpost']> {
     return {
       grid: buildGrid.serialize(),
@@ -1091,6 +1201,9 @@ export class AsteroidOutpostScene implements Scene {
   }
 
   exit(): void {
+    // Hide autonomy win banner if still visible
+    this._hideAutonomyWinBanner();
+
     // Hide production overlay and remove legend banner
     this._hideProductionLegend();
     this._productionOverlay = null;
