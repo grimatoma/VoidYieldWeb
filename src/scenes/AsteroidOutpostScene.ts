@@ -37,6 +37,7 @@ import { EventBus } from '@services/EventBus';
 import { handleWorldTap } from '@services/TapToMove';
 import { roadNetwork } from '@services/RoadNetwork';
 import { obstacleManager } from '@services/ObstacleManager';
+import type { UILayer } from '@ui/UILayer';
 
 // Built-in RTG provides enough power to run the furnace (3 W draw) without needing solar panels.
 const OUTPOST_REACTOR_POWER = 5;
@@ -233,6 +234,8 @@ export class AsteroidOutpostScene implements Scene {
       }
 
       // Normal tap: close any open overlay, then handle interaction/movement
+      const _tapUi = (window as unknown as { __voidyield_uiLayer?: UILayer }).__voidyield_uiLayer;
+      if (_tapUi?.shopPanel?.visible)           { _tapUi.shopPanel.close();           }
       if (this._furnaceOverlay?.isOpen())       { this._furnaceOverlay.close();       }
       if (this._marketplaceOverlay?.isOpen())   { this._marketplaceOverlay.close();   }
       if (this._droneDepotOverlay?.isOpen())    { this._droneDepotOverlay.close();    }
@@ -954,7 +957,9 @@ export class AsteroidOutpostScene implements Scene {
 
     // Enter road mode on R key (retool_factory) when no ghost and no overlay is open
     if (inputManager.wasJustPressed('retool_factory')) {
+      const _roadUi = (window as unknown as { __voidyield_uiLayer?: UILayer }).__voidyield_uiLayer;
       const anyOverlayOpen =
+        (_roadUi?.shopPanel?.visible ?? false) ||
         (this._furnaceOverlay?.isOpen() ?? false) ||
         (this._marketplaceOverlay?.isOpen() ?? false) ||
         (this._droneDepotOverlay?.isOpen() ?? false) ||
@@ -1406,7 +1411,16 @@ export class AsteroidOutpostScene implements Scene {
       const entry = buildGrid.getBuildingAt(row, col);
       if (entry) {
         if (entry.buildingType === 'furnace')           { this._furnaceOverlay?.open();      return; }
-        if (entry.buildingType === 'marketplace')       { this._marketplaceOverlay?.open();  return; }
+        if (entry.buildingType === 'marketplace') {
+          const ui = (window as unknown as { __voidyield_uiLayer?: UILayer }).__voidyield_uiLayer;
+          if (ui?.shopPanel && this._storage) {
+            ui.shopPanel.setDepot(this._storage);
+            ui.shopPanel.open();
+          } else {
+            this._marketplaceOverlay?.open();
+          }
+          return;
+        }
         if (entry.buildingType === 'drone_depot')       { this._droneDepotOverlay?.open();   return; }
         if (entry.buildingType === 'storage')           { miningService.onInteract(px, py);  return; }
         if (entry.buildingType === 'fabricator')        { this._buildMenuOverlay?.open();    return; }
