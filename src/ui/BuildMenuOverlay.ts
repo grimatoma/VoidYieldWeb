@@ -3,9 +3,10 @@ import type { PlacedEntry } from '@services/BuildGrid';
 
 export interface BuildMenuCallbacks {
   getStorage(): StorageDepot | null;
-  onBuildStart(buildingType: string): void;  // enter placement mode
+  onBuildStart(buildingType: string): void;  // enter ghost placement mode
   onMoveStart(buildingId: string): void;     // pick up existing building
   getPlacedBuildings(): PlacedEntry[];
+  onEnterRoadMode?(): void;                  // open road paint mode directly
 }
 
 interface BuildingDef {
@@ -14,22 +15,46 @@ interface BuildingDef {
   footprintLabel: string;
   ironBarCost: number;
   copperBarCost: number;
+  /** When true, clicking BUILD fires onEnterRoadMode instead of onBuildStart. */
+  isRoadMode?: boolean;
 }
 
 const BUILDABLE: BuildingDef[] = [
   {
-    type: 'marketplace',
-    label: 'Marketplace',
-    footprintLabel: '2×1',
-    ironBarCost: 5,
-    copperBarCost: 3,
+    type: 'drone_depot',
+    label: 'Drone Bay',
+    footprintLabel: '2×2',
+    ironBarCost: 6,
+    copperBarCost: 0,
   },
   {
-    type: 'drone_depot',
-    label: 'Drone Depot',
+    type: 'marketplace',
+    label: 'Marketplace',
     footprintLabel: '2×2',
-    ironBarCost: 10,
-    copperBarCost: 5,
+    ironBarCost: 4,
+    copperBarCost: 2,
+  },
+  {
+    type: 'road_mode',
+    label: 'Road (place tiles)',
+    footprintLabel: '1×1',
+    ironBarCost: 0,
+    copperBarCost: 0,
+    isRoadMode: true,
+  },
+  {
+    type: 'electrolysis_unit',
+    label: 'Electrolysis Unit',
+    footprintLabel: '2×3',
+    ironBarCost: 6,
+    copperBarCost: 4,
+  },
+  {
+    type: 'launchpad',
+    label: 'Launchpad',
+    footprintLabel: '3×3',
+    ironBarCost: 30,
+    copperBarCost: 15,
   },
 ];
 
@@ -132,6 +157,9 @@ export class BuildMenuOverlay {
       const disabledStyle = canAfford
         ? 'cursor:pointer;background:#1A3060;border:1px solid #D4A843;color:#D4A843;'
         : 'cursor:not-allowed;background:#1A1A2A;border:1px solid #444;color:#666;';
+      const costLabel = def.ironBarCost === 0 && def.copperBarCost === 0
+        ? 'free (1 iron bar / tile placed)'
+        : `${def.ironBarCost} iron bar${def.ironBarCost !== 1 ? 's' : ''}${def.copperBarCost > 0 ? ` + ${def.copperBarCost} copper bar${def.copperBarCost !== 1 ? 's' : ''}` : ''}`;
 
       html += `
         <div style="margin-bottom:10px;padding:8px;border:1px solid #2A3A5A;">
@@ -139,14 +167,12 @@ export class BuildMenuOverlay {
             ${def.label}
             <span style="opacity:0.6;font-size:11px;">[${def.footprintLabel}]</span>
           </div>
-          <div style="font-size:11px;opacity:0.7;margin-bottom:6px;">
-            ${def.ironBarCost} IRON BAR + ${def.copperBarCost} COPPER BAR
-          </div>
+          <div style="font-size:11px;opacity:0.7;margin-bottom:6px;">${costLabel}</div>
           <button
             data-build-type="${def.type}"
             ${canAfford ? '' : 'disabled'}
             style="font-family:monospace;font-size:11px;padding:3px 8px;${disabledStyle}"
-          >BUILD ${def.label.toUpperCase()}</button>
+          >${def.isRoadMode ? 'ENTER ROAD MODE' : 'BUILD ' + def.label.toUpperCase()}</button>
         </div>
       `;
     }
@@ -172,7 +198,12 @@ export class BuildMenuOverlay {
     this._root.querySelectorAll<HTMLButtonElement>('button[data-build-type]').forEach(btn => {
       btn.addEventListener('click', () => {
         const buildType = btn.getAttribute('data-build-type');
-        if (buildType && !btn.disabled) {
+        if (!buildType || btn.disabled) return;
+        const def = BUILDABLE.find(d => d.type === buildType);
+        if (def?.isRoadMode) {
+          this._callbacks.onEnterRoadMode?.();
+          this.close();
+        } else {
           this._callbacks.onBuildStart(buildType);
           this.close();
         }
