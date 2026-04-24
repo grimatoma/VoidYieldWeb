@@ -99,6 +99,9 @@ export class AsteroidOutpostScene implements Scene {
   private _autonomyWinShown = false;    // don't show banner twice per visit
   private _autonomyBanner: HTMLDivElement | null = null;
 
+  // Tap highlight for empty grid cells (BUG-3)
+  private _tapHighlight: Graphics | null = null;
+
   async enter(app: Application): Promise<void> {
     this._app = app;
     this._stage = new Container();
@@ -173,6 +176,8 @@ export class AsteroidOutpostScene implements Scene {
           });
           return;
         }
+        // Empty grid cell — flash a highlight so the player gets visual feedback
+        this._flashEmptyCell(row, col);
       }
 
       handleWorldTap(this._player, wx, wy);
@@ -250,6 +255,31 @@ export class AsteroidOutpostScene implements Scene {
     this._autonomyCreditsStart = gameState.credits;
     this._autonomyTimer = 0;
     this._autonomyWinShown = false;
+  }
+
+  // -------------------------------------------------------------------------
+  // Empty-cell tap highlight (BUG-3)
+  // -------------------------------------------------------------------------
+
+  private _flashEmptyCell(row: number, col: number): void {
+    this._tapHighlight?.destroy();
+    this._tapHighlight = null;
+
+    const g = new Graphics();
+    const wx = GRID_ORIGIN.x + col * CELL_SIZE + 2;
+    const wy = GRID_ORIGIN.y + row * CELL_SIZE + 2;
+    const sz = CELL_SIZE - 4;
+    g.rect(wx, wy, sz, sz).stroke({ width: 2, color: 0x00B8D4, alpha: 0.7 });
+    g.alpha = 0.7;
+    this._stage!.addChild(g);
+    this._tapHighlight = g;
+
+    window.setTimeout(() => {
+      if (this._tapHighlight === g) {
+        g.destroy();
+        this._tapHighlight = null;
+      }
+    }, 400);
   }
 
   // -------------------------------------------------------------------------
@@ -1258,6 +1288,12 @@ export class AsteroidOutpostScene implements Scene {
 
     // Cancel any active ghost
     this._cancelGhost();
+
+    // Destroy tap highlight if pending
+    if (this._tapHighlight) {
+      this._tapHighlight.destroy();
+      this._tapHighlight = null;
+    }
 
     // Destroy stage (all children, including _buildingLayer and _roadLayer)
     this._stage?.destroy({ children: true });
