@@ -11,7 +11,7 @@ import { EventBus } from '@services/EventBus';
 import { TRADE_CATALOG } from '@entities/TradeHub';
 import type { TradeHub } from '@entities/TradeHub';
 import type { StorageDepot } from '@entities/StorageDepot';
-import { marketplaceService } from '@services/MarketplaceService';
+import { marketplaceService, FREE_BUY_MODE } from '@services/MarketplaceService';
 import type { OreType } from '@data/types';
 
 type Tab = 'drones' | 'upgrades' | 'market' | 'build';
@@ -155,6 +155,12 @@ export class ShopPanel {
       list.appendChild(note);
       return;
     }
+    if (FREE_BUY_MODE) {
+      const banner = document.createElement('div');
+      banner.className = 'market-free-banner';
+      banner.textContent = 'TEST MODE — All purchases are FREE';
+      list.appendChild(banner);
+    }
     const stockpile = this._depot.getStockpile();
     for (const listing of marketplaceService.getListings()) {
       const ore = listing.oreType as OreType;
@@ -163,13 +169,15 @@ export class ShopPanel {
       const canBuy10 = marketplaceService.canBuy(ore, 10);
       const canSell1 = marketplaceService.canSell(this._depot, ore, 1);
       const canSellAll = pool > 0;
+      const buyPriceText = listing.buyPrice === 0 ? 'FREE' : `${listing.buyPrice} CR`;
+      const sellPriceText = listing.sellPrice > 0 ? `${listing.sellPrice} CR` : 'no value';
       const row = document.createElement('div');
       row.className = 'trade-row market-row';
       row.innerHTML = `
         <div class="trade-row-main">
           <div class="trade-row-name">${listing.displayName}</div>
-          <div class="trade-row-desc">buy ${listing.buyPrice} CR · sell ${listing.sellPrice} CR</div>
-          <div class="trade-row-stock">pool ${pool}</div>
+          <div class="trade-row-desc">buy ${buyPriceText} · sell ${sellPriceText}</div>
+          <div class="trade-row-stock">in depot: ${pool}</div>
         </div>
         <div class="trade-row-buy market-actions">
           <div class="market-btn-group">
