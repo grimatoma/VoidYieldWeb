@@ -36,6 +36,7 @@ const ORE_COLORS: Record<OreType, number> = {
   copper_ore: 0xE07B39,
   iron_bar: 0x78909C,
   copper_bar: 0xBF6030,
+  hydrolox_fuel: 0x00E5FF,
 };
 
 /** Map ore type to the sprite key where legacy assets exist; otherwise null -> color circle fallback. */
