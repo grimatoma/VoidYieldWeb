@@ -28,6 +28,7 @@ import { BuildPromptOverlay } from '@ui/BuildPromptOverlay';
 import { MarketplaceOverlay } from '@ui/MarketplaceOverlay';
 import { ProductionOverlay } from '@ui/ProductionOverlay';
 import type { OutpostBuildingStatus } from '@ui/ProductionOverlay';
+import { DepositPanel } from '@ui/DepositPanel';
 import { powerManager } from '@services/PowerManager';
 import { handleWorldTap } from '@services/TapToMove';
 import { roadNetwork } from '@services/RoadNetwork';
@@ -67,6 +68,7 @@ export class AsteroidOutpostScene implements Scene {
   private _marketplaceOverlay: MarketplaceOverlay | null = null;
   private _productionOverlay: ProductionOverlay | null = null;
   private _productionOverlayActive = false;
+  private _depositPanel: DepositPanel | null = null;
   private _app: Application | null = null;
   private _camera: Camera | null = null;
 
@@ -151,6 +153,7 @@ export class AsteroidOutpostScene implements Scene {
       if (this._marketplaceOverlay?.isOpen()) { this._marketplaceOverlay.close(); }
       if (this._droneDepotOverlay?.isOpen())  { this._droneDepotOverlay.close();  }
       if (this._buildMenuOverlay?.isOpen())   { this._buildMenuOverlay.close();   }
+      if (this._depositPanel?.isOpen())       { this._depositPanel.close();       }
 
       const col = Math.floor((wx - GRID_ORIGIN.x) / CELL_SIZE);
       const row = Math.floor((wy - GRID_ORIGIN.y) / CELL_SIZE);
@@ -197,6 +200,10 @@ export class AsteroidOutpostScene implements Scene {
     // Build prompt overlay
     this._buildPromptOverlay = new BuildPromptOverlay();
     this._buildPromptOverlay.mount();
+
+    // Deposit interaction panel
+    this._depositPanel = new DepositPanel();
+    this._depositPanel.mount();
 
     // Reset module-level depot flag for scene re-entry
     resetDepotBuilt();
@@ -543,7 +550,8 @@ export class AsteroidOutpostScene implements Scene {
         (this._furnaceOverlay?.isOpen() ?? false) ||
         (this._marketplaceOverlay?.isOpen() ?? false) ||
         (this._droneDepotOverlay?.isOpen() ?? false) ||
-        (this._buildMenuOverlay?.isOpen() ?? false);
+        (this._buildMenuOverlay?.isOpen() ?? false) ||
+        (this._depositPanel?.isOpen() ?? false);
       if (!anyOverlayOpen) {
         this._enterRoadMode();
       }
@@ -579,12 +587,14 @@ export class AsteroidOutpostScene implements Scene {
     if (inputManager.wasJustPressed('build_menu')) {
       if (this._furnaceOverlay?.isOpen()) this._furnaceOverlay.close();
       if (this._droneDepotOverlay?.isOpen()) this._droneDepotOverlay.close();
+      if (this._depositPanel?.isOpen()) this._depositPanel.close();
       if (this._roadMode) this._exitRoadMode();
       this._buildMenuOverlay?.toggle();
     }
 
     // Close overlays on ESC (pause_menu action)
     if (inputManager.wasJustPressed('pause_menu')) {
+      if (this._depositPanel?.isOpen())       { this._depositPanel.close();       return; }
       if (this._furnaceOverlay?.isOpen())     { this._furnaceOverlay.close();     return; }
       if (this._marketplaceOverlay?.isOpen()) { this._marketplaceOverlay.close(); return; }
       if (this._droneDepotOverlay?.isOpen())  { this._droneDepotOverlay.close();  return; }
@@ -836,6 +846,14 @@ export class AsteroidOutpostScene implements Scene {
     const px = this._player!.x;
     const py = this._player!.y;
 
+    // If deposit panel is open, pressing E starts hand-mining on the active deposit
+    if (this._depositPanel?.isOpen()) {
+      // E triggers mine action (panel's onHandMine already wired; pressing E while
+      // panel is open starts hold-mining directly too)
+      miningService.onInteract(px, py);
+      return;
+    }
+
     // Close whichever overlay is open and bail
     if (this._furnaceOverlay?.isOpen())     { this._furnaceOverlay.close();     return; }
     if (this._marketplaceOverlay?.isOpen()) { this._marketplaceOverlay.close(); return; }
@@ -860,8 +878,53 @@ export class AsteroidOutpostScene implements Scene {
       return;
     }
 
-    // Outside grid → mine deposit
+    // Outside grid → check for nearby deposit first; show panel, don't mine immediately
+    const nearDeposit = depositMap.getNearestDeposit(px, py, 60);
+    if (nearDeposit) {
+      this._openDepositPanel(nearDeposit);
+      return;
+    }
+
+    // No deposit nearby → fall back (e.g., plain walk area)
     miningService.onInteract(px, py);
+  }
+
+  /** Build and open the deposit interaction panel for a specific deposit. */
+  private _openDepositPanel(deposit: Deposit): void {
+    if (!this._depositPanel) return;
+
+    const oreType = deposit.data.oreType;
+    const oreLabel = _ORE_LABELS[oreType] ?? `${oreType.toUpperCase().replace(/_/g, ' ')} DEPOSIT`;
+    const stockRemaining = deposit.data.yieldRemaining;
+    const stockMax = deposit.initialYield || 820;
+    const roadConnected = roadNetwork.getAll().length > 0;
+    const assignedDroneName = outpostDispatcher.getAssignedDroneForOre(oreType as any);
+
+    // Close other overlays when panel opens
+    this._furnaceOverlay?.close();
+    this._marketplaceOverlay?.close();
+    this._droneDepotOverlay?.close();
+    this._buildMenuOverlay?.close();
+
+    this._depositPanel.open(deposit, {
+      oreLabel,
+      stockRemaining,
+      stockMax,
+      roadConnected,
+      assignedDroneName,
+      onHandMine: () => {
+        // Trigger hold-mining at the deposit location
+        miningService.onInteract(deposit.data.x, deposit.data.y);
+      },
+      onRecall: () => {
+        // Recall all drones and re-render (simplest implementation)
+        this._depositPanel?.close();
+      },
+      onClose: () => {
+        this._depositPanel?.close();
+        miningService.onInteractReleased();
+      },
+    });
   }
 
   private _isPlayerNearGrid(px: number, py: number, radius = 120): boolean {
@@ -1077,6 +1140,8 @@ export class AsteroidOutpostScene implements Scene {
     this._buildMenuOverlay?.unmount();
     this._buildPromptOverlay?.unmount();
     this._droneDepotOverlay?.unmount();
+    this._depositPanel?.unmount();
+    this._depositPanel = null;
 
     // Cancel any active ghost
     this._cancelGhost();
@@ -1104,6 +1169,13 @@ export class AsteroidOutpostScene implements Scene {
 
 // Helper reference for clamping (mirrors BuildGrid statics)
 const BuildGrid = { ROWS: 5, COLS: 5 };
+
+/** Map ore type → user-facing deposit label. */
+const _ORE_LABELS: Record<string, string> = {
+  iron_ore:   'IRON ORE DEPOSIT',
+  copper_ore: 'COPPER ORE DEPOSIT',
+  water:      'WATER DEPOSIT',
+};
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Module-level save state getter and storage accessor

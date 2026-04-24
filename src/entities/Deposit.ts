@@ -74,6 +74,9 @@ export class Deposit {
   get x(): number { return this.data.x; }
   get y(): number { return this.data.y; }
 
+  /** The yield at the time this deposit was created (before any mining). */
+  get initialYield(): number { return this._initialYield; }
+
   get holdProgress(): number { return this._holdProgress; }
   set holdProgress(value: number) {
     this._holdProgress = value;
