@@ -32,9 +32,19 @@ export type AssetKey =
   | 'deposit_voidstone_small'| 'deposit_voidstone_medium'| 'deposit_voidstone_large'
   | 'deposit_gas_small'      | 'deposit_gas_large'
   | 'deposit_dark_gas_geyser' | 'deposit_resonance_crystal' | 'deposit_bio_resin_flora'
+  | 'deposit_iron_ore_small' | 'deposit_iron_ore_medium' | 'deposit_iron_ore_large'
+  | 'deposit_copper_ore_small' | 'deposit_copper_ore_medium' | 'deposit_copper_ore_large'
+  | 'deposit_water_small' | 'deposit_water_medium' | 'deposit_water_large'
   // --- Animated ground tiles ---
   | 'tile_floor_metal' | 'tile_floor_clean' | 'tile_ground_concrete'
-  | 'tile_ground_asteroid_dirt' | 'tile_ground_planet_b_dirt' | 'tile_ground_metal_grating';
+  | 'tile_ground_asteroid_dirt' | 'tile_ground_planet_b_dirt' | 'tile_ground_metal_grating'
+  // --- Road tiles ---
+  | 'tile_road_straight_h' | 'tile_road_straight_v'
+  | 'tile_road_corner_ne' | 'tile_road_corner_nw' | 'tile_road_corner_se' | 'tile_road_corner_sw'
+  | 'tile_road_t_north' | 'tile_road_t_south' | 'tile_road_t_east' | 'tile_road_t_west'
+  | 'tile_road_cross'
+  // --- Phase 1 buildings ---
+  | 'sheet_furnace';
 
 const ASSET_URLS: Record<AssetKey, string> = {
   player_ne: 'sprites/player/player_ne.png',
@@ -103,6 +113,7 @@ const ASSET_URLS: Record<AssetKey, string> = {
   sheet_gas_collector_heavy:        'sprites/buildings/gas_collector_heavy_sheet.png',
   sheet_cave_drill:                 'sprites/buildings/harvester_cave_drill_sheet.png',
   sheet_gas_trap:                   'sprites/buildings/harvester_gas_trap_sheet.png',
+  sheet_furnace:                    'sprites/buildings/furnace_sheet.png',
 
   // Animated deposit sheets
   deposit_vorax_small:        'sprites/deposits/deposit_vorax_small.png',
@@ -122,6 +133,15 @@ const ASSET_URLS: Record<AssetKey, string> = {
   deposit_dark_gas_geyser:    'sprites/deposits/deposit_dark_gas_geyser_sheet.png',
   deposit_resonance_crystal:  'sprites/deposits/deposit_resonance_crystal_sheet.png',
   deposit_bio_resin_flora:    'sprites/deposits/deposit_bio_resin_flora_sheet.png',
+  deposit_iron_ore_small:     'sprites/deposits/deposit_iron_ore_small.png',
+  deposit_iron_ore_medium:    'sprites/deposits/deposit_iron_ore_medium.png',
+  deposit_iron_ore_large:     'sprites/deposits/deposit_iron_ore_large.png',
+  deposit_copper_ore_small:   'sprites/deposits/deposit_copper_ore_small.png',
+  deposit_copper_ore_medium:  'sprites/deposits/deposit_copper_ore_medium.png',
+  deposit_copper_ore_large:   'sprites/deposits/deposit_copper_ore_large.png',
+  deposit_water_small:        'sprites/deposits/deposit_water_small.png',
+  deposit_water_medium:       'sprites/deposits/deposit_water_medium.png',
+  deposit_water_large:        'sprites/deposits/deposit_water_large.png',
 
   // Animated ground tiles
   tile_floor_metal:            'sprites/ground/tile_outpost_floor_metal.png',
@@ -130,6 +150,17 @@ const ASSET_URLS: Record<AssetKey, string> = {
   tile_ground_asteroid_dirt:   'sprites/ground/tile_ground_asteroid_dirt.png',
   tile_ground_planet_b_dirt:   'sprites/ground/tile_ground_planet_b_dirt.png',
   tile_ground_metal_grating:   'sprites/ground/tile_ground_metal_grating.png',
+  tile_road_straight_h:        'sprites/ground/tile_road_straight_h.png',
+  tile_road_straight_v:        'sprites/ground/tile_road_straight_v.png',
+  tile_road_corner_ne:         'sprites/ground/tile_road_corner_ne.png',
+  tile_road_corner_nw:         'sprites/ground/tile_road_corner_nw.png',
+  tile_road_corner_se:         'sprites/ground/tile_road_corner_se.png',
+  tile_road_corner_sw:         'sprites/ground/tile_road_corner_sw.png',
+  tile_road_t_north:           'sprites/ground/tile_road_t_north.png',
+  tile_road_t_south:           'sprites/ground/tile_road_t_south.png',
+  tile_road_t_east:            'sprites/ground/tile_road_t_east.png',
+  tile_road_t_west:            'sprites/ground/tile_road_t_west.png',
+  tile_road_cross:             'sprites/ground/tile_road_cross.png',
 };
 
 /**

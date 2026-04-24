@@ -70,10 +70,13 @@ function depositSheetKey(oreType: OreType, sizeClass: SizeClass): AssetKey | nul
     case 'void_cores':
     case 'void_touched_ore': return `deposit_voidstone_${sizeClass}` as AssetKey;
     case 'gas':       return sizeClass === 'large' ? 'deposit_gas_large' : 'deposit_gas_small';
-    case 'dark_gas':  return 'deposit_dark_gas_geyser';
+    case 'dark_gas':   return 'deposit_dark_gas_geyser';
     case 'resonance_shards': return 'deposit_resonance_crystal';
-    case 'bio_resin': return 'deposit_bio_resin_flora';
-    default:          return null;
+    case 'bio_resin':  return 'deposit_bio_resin_flora';
+    case 'iron_ore':   return `deposit_iron_ore_${sizeClass}` as AssetKey;
+    case 'copper_ore': return `deposit_copper_ore_${sizeClass}` as AssetKey;
+    case 'water':      return `deposit_water_${sizeClass}` as AssetKey;
+    default:           return null;
   }
 }
 
