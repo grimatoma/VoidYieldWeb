@@ -27,7 +27,6 @@ import { FurnaceOverlay } from '@ui/FurnaceOverlay';
 import { BuildMenuOverlay } from '@ui/BuildMenuOverlay';
 import { DroneDepotOverlay } from '@ui/DroneDepotOverlay';
 import { BuildPromptOverlay } from '@ui/BuildPromptOverlay';
-import { MarketplaceOverlay } from '@ui/MarketplaceOverlay';
 import { ProductionOverlay } from '@ui/ProductionOverlay';
 import type { OutpostBuildingStatus } from '@ui/ProductionOverlay';
 import { ElectrolysisOverlay } from '@ui/ElectrolysisOverlay';
@@ -88,7 +87,6 @@ export class AsteroidOutpostScene implements Scene {
   private _buildMenuOverlay: BuildMenuOverlay | null = null;
   private _buildPromptOverlay: BuildPromptOverlay | null = null;
   private _droneDepotOverlay: DroneDepotOverlay | null = null;
-  private _marketplaceOverlay: MarketplaceOverlay | null = null;
   private _productionOverlay: ProductionOverlay | null = null;
   private _productionOverlayActive = false;
   private _electrolysisUnit: ElectrolysisUnit | null = null;
@@ -237,7 +235,6 @@ export class AsteroidOutpostScene implements Scene {
       const _tapUi = (window as unknown as { __voidyield_uiLayer?: UILayer }).__voidyield_uiLayer;
       if (_tapUi?.shopPanel?.visible)           { _tapUi.shopPanel.close();           }
       if (this._furnaceOverlay?.isOpen())       { this._furnaceOverlay.close();       }
-      if (this._marketplaceOverlay?.isOpen())   { this._marketplaceOverlay.close();   }
       if (this._droneDepotOverlay?.isOpen())    { this._droneDepotOverlay.close();    }
       if (this._buildMenuOverlay?.isOpen())     { this._buildMenuOverlay.close();     }
       if (this._depositPanel?.isOpen())         { this._depositPanel.close();         }
@@ -961,7 +958,6 @@ export class AsteroidOutpostScene implements Scene {
       const anyOverlayOpen =
         (_roadUi?.shopPanel?.visible ?? false) ||
         (this._furnaceOverlay?.isOpen() ?? false) ||
-        (this._marketplaceOverlay?.isOpen() ?? false) ||
         (this._droneDepotOverlay?.isOpen() ?? false) ||
         (this._buildMenuOverlay?.isOpen() ?? false) ||
         (this._depositPanel?.isOpen() ?? false) ||
@@ -1011,7 +1007,6 @@ export class AsteroidOutpostScene implements Scene {
     if (inputManager.wasJustPressed('pause_menu')) {
       if (this._depositPanel?.isOpen())        { this._depositPanel.close();        return; }
       if (this._furnaceOverlay?.isOpen())      { this._furnaceOverlay.close();      return; }
-      if (this._marketplaceOverlay?.isOpen())  { this._marketplaceOverlay.close();  return; }
       if (this._droneDepotOverlay?.isOpen())   { this._droneDepotOverlay.close();   return; }
       if (this._buildMenuOverlay?.isOpen())    { this._buildMenuOverlay.close();    return; }
       if (this._electrolysisOverlay?.isOpen()) { this._electrolysisOverlay.close(); return; }
@@ -1128,8 +1123,6 @@ export class AsteroidOutpostScene implements Scene {
     if (buildingId.startsWith('marketplace_') && this._marketplace) {
       this._buildingLayer?.removeChild(this._marketplace.container);
       this._marketplace = null;
-      this._marketplaceOverlay?.unmount();
-      this._marketplaceOverlay = null;
     }
     if (buildingId.startsWith('drone_depot_') && this._droneDepot) {
       this._buildingLayer?.removeChild(this._droneDepot.container);
@@ -1340,9 +1333,6 @@ export class AsteroidOutpostScene implements Scene {
       this._marketplace = market;
       this._buildingLayer!.addChild(market.container);
 
-      this._marketplaceOverlay?.unmount();
-      this._marketplaceOverlay = new MarketplaceOverlay(market, this._storage!);
-      this._marketplaceOverlay.mount();
     } else if (buildingType === 'drone_depot') {
       const depot = new DroneDepot(wx, wy);
       this._droneDepot = depot;
@@ -1416,9 +1406,6 @@ export class AsteroidOutpostScene implements Scene {
           if (ui?.shopPanel && this._storage) {
             ui.shopPanel.setDepot(this._storage);
             ui.shopPanel.open();
-          } else {
-            this._marketplaceOverlay?.open();
-          }
           return;
         }
         if (entry.buildingType === 'drone_depot')       { this._droneDepotOverlay?.open();   return; }
@@ -1908,7 +1895,6 @@ export class AsteroidOutpostScene implements Scene {
 
     // Unmount overlays
     this._furnaceOverlay?.unmount();
-    this._marketplaceOverlay?.unmount();
     this._buildMenuOverlay?.unmount();
     this._buildPromptOverlay?.unmount();
     this._droneDepotOverlay?.unmount();
@@ -1938,7 +1924,6 @@ export class AsteroidOutpostScene implements Scene {
     this._marketplace = null;
     this._droneDepot = null;
     this._furnaceOverlay = null;
-    this._marketplaceOverlay = null;
     this._buildMenuOverlay = null;
     this._buildPromptOverlay = null;
     this._droneDepotOverlay = null;
