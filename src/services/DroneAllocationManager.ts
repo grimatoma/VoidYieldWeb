@@ -38,29 +38,27 @@ class DroneAllocationManager {
       this._minerAlloc.set(ore, newCount);
     }
     EventBus.emit('drone:allocation_changed');
+    this.reconcile();
     return true;
   }
 
-  /** Adjust logistics pool size by delta. Returns false if can't satisfy. */
-  allocateLogistics(delta: number, totalLogistics: number): boolean {
-    const newVal = this._logisticsAlloc + delta;
-    if (newVal < 0 || newVal > totalLogistics) return false;
-    this._logisticsAlloc = newVal;
-    EventBus.emit('drone:allocation_changed');
+  /** @deprecated Logistics drones are always active; kept for save-load compat. */
+  allocateLogistics(_delta: number, _totalLogistics: number): boolean {
     return true;
   }
 
   /**
-   * Reconcile: walk the fleet and set orePreference on miners + enabled on
-   * logistics drones to match the intent stored here.
-   * Called by FleetManager whenever the fleet changes.
+   * Reconcile: walk the fleet and set orePreference on miners.
+   * Logistics drones are always enabled — no quota needed.
+   * Called by FleetManager whenever the fleet changes, and immediately
+   * after allocateMiner() so preferences update without waiting for
+   * the next fleet add/remove.
    */
   reconcile(): void {
     import('./FleetManager').then(({ fleetManager }) => {
       const drones = fleetManager.getDrones();
 
-      const miners = drones.filter(d => MINER_TYPES.has(d.droneType) && !d.disabled);
-      const logistics = drones.filter(d => LOGISTICS_TYPES.has(d.droneType));
+      const miners = drones.filter(d => MINER_TYPES.has(d.droneType));
 
       // Reset all miner ore preferences
       for (const drone of miners) drone.orePreference = null;
@@ -79,19 +77,9 @@ class DroneAllocationManager {
         });
       }
 
-      // Logistics: enable/disable to match _logisticsAlloc (don't abort in-flight)
-      let activeCount = 0;
-      for (const drone of logistics) {
-        if (activeCount < this._logisticsAlloc) {
-          if (drone.disabled) drone.disabled = false;
-          activeCount++;
-        } else {
-          if (!drone.disabled) {
-            drone.clearTasks();
-            drone.cargo = null;
-            drone.disabled = true;
-          }
-        }
+      // Logistics drones are always active
+      for (const drone of drones.filter(d => LOGISTICS_TYPES.has(d.droneType))) {
+        drone.disabled = false;
       }
     });
   }
