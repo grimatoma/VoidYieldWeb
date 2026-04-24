@@ -45,6 +45,7 @@ export const SELL_PRICES: Record<OreType, number> = {
   copper_ore: 2,
   iron_bar: 5,
   copper_bar: 10,
+  hydrolox_fuel: 20,
 };
 
 const BUY_MARKUP = 1.5;
