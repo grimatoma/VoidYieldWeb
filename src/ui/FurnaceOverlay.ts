@@ -3,10 +3,12 @@ import { inventory } from '@services/Inventory';
 import type { Furnace, FurnaceRecipe } from '@entities/Furnace';
 import { FURNACE_RECIPES } from '@entities/Furnace';
 import { SELL_PRICES } from '@services/MarketplaceService';
+import type { OreType } from '@data/types';
 
 export class FurnaceOverlay {
   private _furnace: Furnace;
   private _onInsert: () => void;
+  private _getStorageOre: ((ore: OreType) => number) | null = null;
   private _root: HTMLElement | null = null;
   private _open = false;
   private _pollId: ReturnType<typeof setInterval> | null = null;
@@ -44,9 +46,10 @@ export class FurnaceOverlay {
   private _extractBtn!: HTMLButtonElement;
   private _cargoHintEl!: HTMLElement;
 
-  constructor(furnace: Furnace, onInsert: () => void) {
+  constructor(furnace: Furnace, onInsert: () => void, getStorageOre?: (ore: OreType) => number) {
     this._furnace = furnace;
     this._onInsert = onInsert;
+    this._getStorageOre = getStorageOre ?? null;
   }
 
   mount(): void {
@@ -356,9 +359,10 @@ export class FurnaceOverlay {
     this._outBufEl.textContent = `${plant.outputBuffer}/${maxOut}`;
 
     // ── Insert button ────────────────────────────────────────────────────────
-    const oreName   = r ? r.input.replace(/_/g, ' ') : '';
-    const inCargo   = r ? inventory.getByType(r.input) : 0;
-    const canInsert = r !== null && inCargo > 0 && !isLoaded;
+    const oreName    = r ? r.input.replace(/_/g, ' ') : '';
+    const inCargo    = r ? inventory.getByType(r.input) : 0;
+    const inStorage  = r && this._getStorageOre ? (this._getStorageOre(r.input) ?? 0) : 0;
+    const canInsert  = r !== null && (inCargo > 0 || inStorage > 0) && !isLoaded;
 
     this._insertBtn.textContent = r
       ? `INSERT ${r.input.replace(/_/g, ' ').toUpperCase()}`
@@ -381,8 +385,10 @@ export class FurnaceOverlay {
       this._cargoHintEl.textContent = '';
     } else if (inCargo > 0) {
       this._cargoHintEl.textContent = `Cargo: ${inCargo} ${oreName}`;
+    } else if (inStorage > 0) {
+      this._cargoHintEl.textContent = `Storage: ${inStorage} ${oreName}`;
     } else {
-      this._cargoHintEl.textContent = `No ${oreName} in cargo`;
+      this._cargoHintEl.textContent = `No ${oreName} available`;
     }
   }
 

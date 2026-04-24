@@ -22,8 +22,9 @@ export function resetDepotBuilt(): void {
 
 /**
  * DroneDepot — manages the Drone Bay: three slots, each binding one drone to
- * one ore target. When built (onBuild), disables manual-only furnace mode and
- * starts the OutpostDispatcher.
+ * one ore target. When built (onBuild), starts the OutpostDispatcher.
+ * The furnace stays in manualOnly=true mode; logistics drones deliver ore via
+ * insertBatch() and pick up products via takeOutput().
  */
 export class DroneDepot {
   readonly container: Container;
@@ -76,7 +77,6 @@ export class DroneDepot {
       throw new Error('DroneDepot: only one Drone Depot allowed per outpost.');
     }
     _depotBuilt = true;
-    furnace.manualOnly = false;
     dispatcher.configure(storage, furnace, { x: this.x, y: this.y }, this._baySlots);
     dispatcher.start();
   }

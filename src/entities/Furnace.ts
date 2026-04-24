@@ -29,7 +29,6 @@ export class Furnace {
   private _plant: ProcessingPlant;
   private _outputDepot: StorageDepot;
   private _recipe: FurnaceRecipe = 'off';
-  /** Flipped to false when a DroneDepot is built and auto-feed is enabled. */
   manualOnly = true;
 
   private _lastEmittedState: 'idle' | 'running' | 'output-ready' = 'idle';
