@@ -5,7 +5,7 @@ import { Camera } from '@services/Camera';
 import { Player } from '@entities/Player';
 import { Deposit } from '@entities/Deposit';
 import { StorageDepot } from '@entities/StorageDepot';
-import { Furnace } from '@entities/Furnace';
+import { Furnace, FURNACE_RECIPES } from '@entities/Furnace';
 import { Marketplace } from '@entities/Marketplace';
 import { DroneDepot, resetDepotBuilt } from '@entities/DroneDepot';
 import { PlacedBuilding, CELL_SIZE, GRID_ORIGIN, gridToWorld } from '@entities/PlacedBuilding';
@@ -67,7 +67,7 @@ const BUILD_COSTS: Record<string, { iron_bar: number; copper_bar: number }> = {
 
 // Footprints matching the build menu definitions (TDD §2)
 const BUILD_FOOTPRINTS: Record<string, GridFootprint> = {
-  marketplace:       { rows: 2, cols: 2 },
+  marketplace:       { rows: 1, cols: 2 },
   drone_depot:       { rows: 2, cols: 2 },
   electrolysis_unit: { rows: 3, cols: 2 },
   launchpad:         { rows: 3, cols: 3 },
@@ -263,10 +263,24 @@ export class AsteroidOutpostScene implements Scene {
     miningService.setFurnace(this._furnace!);
 
     // Furnace overlay
-    this._furnaceOverlay = new FurnaceOverlay(this._furnace!, () => {
-      // onInsert: called by the overlay's INSERT ORE button
-      this._furnace!.insertFromInventory();
-    });
+    this._furnaceOverlay = new FurnaceOverlay(
+      this._furnace!,
+      () => {
+        // Try player inventory first, then pull from storage as fallback.
+        if (this._furnace!.insertFromInventory() === 0 && this._storage) {
+          const recipe = this._furnace!.recipe;
+          if (recipe !== 'off') {
+            const r = FURNACE_RECIPES[recipe];
+            const qty = this._storage.getStockpile().get(r.input) ?? 0;
+            if (qty > 0) {
+              const pulled = this._storage.pull(r.input, qty);
+              if (pulled > 0) this._furnace!.insertBatch(r.input, pulled);
+            }
+          }
+        }
+      },
+      (oreType) => this._storage?.getStockpile().get(oreType) ?? 0,
+    );
     this._furnaceOverlay.mount();
 
     // Build menu overlay
@@ -1155,8 +1169,16 @@ export class AsteroidOutpostScene implements Scene {
       <button id="ghost-place-btn" disabled style="font-family:monospace;font-size:12px;padding:6px 16px;border:1px solid #3A5A8A;background:transparent;color:#3A5A8A;cursor:default;min-width:72px;">PLACE</button>
       <button id="ghost-cancel-btn" style="font-family:monospace;font-size:12px;padding:6px 14px;border:1px solid #8A3A3A;background:transparent;color:#E8E4D0;cursor:pointer;">CANCEL</button>
     `;
-    panel.querySelector('#ghost-cancel-btn')?.addEventListener('click', () => this._cancelGhost());
-    panel.querySelector('#ghost-place-btn')?.addEventListener('click', () => {
+    // Stop all pointer/touch events from propagating to the PixiJS canvas below.
+    ['pointerdown', 'pointerup', 'touchstart', 'touchend', 'click'].forEach(evt => {
+      panel.addEventListener(evt, (e) => e.stopPropagation(), { capture: true });
+    });
+    panel.querySelector('#ghost-cancel-btn')?.addEventListener('click', (e) => {
+      e.stopPropagation();
+      this._cancelGhost();
+    });
+    panel.querySelector('#ghost-place-btn')?.addEventListener('click', (e) => {
+      e.stopPropagation();
       if (this._ghostBuilding && this._ghostCurrentlyValid) {
         this._confirmGhostPlacement(this._ghostBuilding.row, this._ghostBuilding.col);
       }
