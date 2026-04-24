@@ -1,8 +1,8 @@
 # VoidYield — Core Loop Technical Design Document & System Sequence Diagrams
 
 **Classification:** TDD + SSD  
-**Version:** 1.2  
-**Date:** 2026-04-23  
+**Version:** 2.0  
+**Date:** 2026-04-24  
 **Based on:** `docs/CORE_LOOP_DESIGN_REVIEW.md` (decisions locked)  
 **Status:** Design spec — see §7 of design review for implementation status  
 
@@ -106,6 +106,14 @@ Storage Depot   Furnace         Fabricator      Drone Bay       Marketplace
   2×2             2×2             └──┘            2×2             2×2
                                   2×3
 
+Electrolysis Unit   Launchpad
+  ┌──┐               ┌───┐
+  │⚗2│               │LP │
+  │⚗2│               │LP │
+  │⚗2│               │LP │
+  └──┘               └───┘
+  2×3                3×3 (OUTSIDE perimeter)
+
 Road
   ┌─┐
   │=│  ← 1 iron bar per tile
@@ -174,7 +182,7 @@ The core game view. The camera shows the 40×30 asteroid surface (scrollable) wi
 ```
 ╔══════════════════════════════════════════════════════════════╗
 ║  ┌──────────────────────────────────────────────────────┐   ║
-║  │  CREDITS: 0  IRON BARS: 0  COPPER BARS: 0  DAY: 1   │   ║ ← top resource bar
+║  │  CR:0  Fe↓:0  Fe■:0  Cu↓:0  Cu■:0  H₂O:0  Fuel:0  DAY:1   │   ║ ← top resource bar
 ║  └──────────────────────────────────────────────────────┘   ║
 ║                                                              ║
 ║  ┌──────────────────────────────────────────────────────┐   ║
@@ -195,7 +203,9 @@ The core game view. The camera shows the 40×30 asteroid surface (scrollable) wi
 ║  │  · · · · · · · · · · · · · · · · · · · · · · · ·    │   ║
 ║  └──────────────────────────────────────────────────────┘   ║
 ║                                                              ║
-║  [WASD] Move  [E] Interact  [B] Build  [R] Roads  [ESC] Menu║ ← key hints
+║  ┌─────────────────────────────────────────────────────────────┐  ║
+║  │ [ROADS]  [OVERLAY]  [COVERAGE]  [DASHBOARD]  [MENU]        │  ║ ← HUD toolbar
+║  └─────────────────────────────────────────────────────────────┘  ║
 ╚══════════════════════════════════════════════════════════════╝
 
 WORLD SYMBOLS:
@@ -212,23 +222,32 @@ WORLD SYMBOLS:
   [$$/$$ ]   = Marketplace (2×2, when crafted + placed)
 
 TOP RESOURCE BAR:
-  CREDITS     → Current credit balance from Marketplace sales
-  IRON ORE    → Iron ore in Storage (all deposits flow here directly)
-  IRON BARS   → Iron bars in Storage (smelted by Furnace)
-  COPPER ORE  → Copper ore in Storage
-  COPPER BARS → Copper bars in Storage
-  DAY         → In-game day counter
+  CR          → Credits: current balance from Marketplace sales
+  Fe↓         → Iron Ore in Storage (all deposits flow here directly)
+  Fe■         → Iron Bars in Storage (smelted by Furnace)
+  Cu↓         → Copper Ore in Storage
+  Cu■         → Copper Bars in Storage
+  H₂O         → Water in Storage (mined from Water deposit; input for Electrolysis)
+  Fuel        → Hydrolox Fuel units in Storage (output of Electrolysis Unit)
+  DAY         → In-game day counter (1 day ≈ 5 real minutes)
 
 NOTE: The player has no personal inventory. All mined ore and produced items
 go directly into Storage. The player is an action-controller, not a carrier.
 Drones are the only entities with inventory — they carry items between buildings.
 
-KEY HINTS BAR:
-  [WASD]  → Move player (or Arrow Keys)
-  [E]     → Context-sensitive interact (deposit, building)
-  [B]     → Open Build placement menu (§3.5)
-  [R]     → Enter Road placement mode (§3.6)
-  [ESC]   → Open pause / settings
+HUD TOOLBAR (bottom strip — tappable on touch, clickable on desktop):
+  [ROADS]      → Enter Road placement mode (§3.7)         keyboard alias: N
+  [OVERLAY]    → Toggle Production Overlay (§3.10)        keyboard alias: O
+  [COVERAGE]   → Toggle Coverage Overlay — Drone Bay radius (§3.12) alias: B
+  [DASHBOARD]  → Open Production Dashboard (§3.15)        keyboard alias: P
+  [MENU]       → Open pause / settings (§3.11)            keyboard alias: ESC
+
+  [E] / INTERACT button (touch) → Context-sensitive action on whatever is in
+    range: mine deposit, open building panel, attach component to Launchpad.
+    This is the ONLY modal action key — all other inputs are toolbar-driven.
+  [WASD] / Arrows → Move player (desktop). On touch: tap-to-move anywhere.
+  [M] → Touch Menu Overlay — full gateway to every panel, overlay, and tool
+    (mirrors the toolbar for players who prefer a radial/list menu).
 ```
 
 ---
@@ -347,10 +366,14 @@ FURNACE STALL CONDITIONS:
 ║  ║  ░ Electrolysis Unit     6 iron bars    (need 6)       ║  ║
 ║  ║    (water → hydrolox)    + 4 copper bars               ║  ║
 ║  ║                                                        ║  ║
+║  ║  ░ Launchpad            30 iron bars   (need 30)       ║  ║
+║  ║    (rocket launch)       + 15 copper bars              ║  ║
+║  ║    [3×3 — place OUTSIDE perimeter; asteroid surface]   ║  ║
+║  ║                                                        ║  ║
 ║  ║  STORAGE (nearby):  Iron Bars ×12 ✓  Copper Bars ×0   ║  ║
 ║  ║                                                        ║  ║
 ║  ║  [CRAFT — Road ×4]     Costs 2 iron bars               ║  ║
-║  ║  Deducted from Storage. Road placement mode opens.     ║  ║
+║  ║  Deducted from Storage. Road placement mode [N] opens.     ║  ║
 ║  ╚════════════════════════════════════════════════════════╝  ║
 ╚══════════════════════════════════════════════════════════════╝
 
@@ -371,12 +394,12 @@ MATERIAL SOURCING:
 
 ---
 
-### 3.6 Building Placement Mode [B]
+### 3.6 Building Placement Mode (auto-opens from Fabricator CRAFT)
 
 ```
 ╔══════════════════════════════════════════════════════════════╗
 ║  ┌──── BUILD MODE ─ press [B] or crafted item auto-opens ──┐  ║
-║  │  [ESC] cancel placement                                  │  ║
+║  │  [ESC] or tap [✕ CANCEL] button to cancel placement      │  ║
 ║  └──────────────────────────────────────────────────────────┘  ║
 ║                                                              ║
 ║  [WORLD VIEW — ghost building follows cursor over tile grid]  ║
@@ -427,11 +450,11 @@ MOVING AN EXISTING BUILDING:
 
 ---
 
-### 3.7 Road Placement Mode [R]
+### 3.7 Road Placement Mode [N]
 
 ```
 ╔══════════════════════════════════════════════════════════════╗
-║  ┌──── ROAD MODE ─ drag to paint, [R] or [ESC] to exit ───┐  ║
+║  ┌──── ROAD MODE ─ tap [ROADS] toolbar button to exit, or [ESC] ───┐  ║
 ║  │  Each tile costs 1 iron bar. Roads extend outside fence.│  ║
 ║  └──────────────────────────────────────────────────────────┘  ║
 ║                                                              ║
@@ -466,9 +489,18 @@ ROAD PREVIEW:
   [CONFIRM] → deducts bars; tiles become permanent roads
   [CANCEL]  → no bars spent; preview cleared
 
+ENTERING ROAD MODE:
+  Tap [ROADS] button in the HUD toolbar     (touch + desktop)
+  OR press [N] on keyboard                  (desktop alias only)
+  Road mode opens; game is NOT paused; player can still move with WASD/arrows.
+
+EXITING ROAD MODE:
+  Tap [ROADS] again, tap [ESC], or click [CANCEL] in the road budget panel.
+
 REMOVING ROADS:
-  Hold [Shift] + click road tile → removes road, refunds 1 bar
-  Drones on removed road segment → re-path or return to bay if no path exists
+  [Shift] + click road tile (desktop) → removes road, refunds 1 bar
+  Long-press road tile (touch) → context menu → "Remove road"
+  Drones on removed segment → re-path or return to bay if no path exists
 ```
 
 ---
@@ -610,10 +642,12 @@ A lightweight toggle that color-codes every building on the map surface.
 ╚══════════════════════════════════════════════════════════════╝
 
 INTERACTIONS:
-  [O]     → Toggle overlay on/off; game continues
-  Hover   → One-line status tooltip on any colored building
-  Click   → Opens Building Info Panel (§3.8)
-  ESC     → Does NOT turn off overlay (only [O] does)
+  Tap [OVERLAY] toolbar button  → Toggle on/off (touch + desktop)
+  OR press [O] on keyboard      → keyboard alias
+  Hover / long-press building   → One-line status tooltip
+  Tap / click building          → Opens Building Info Panel (§3.8)
+  [MENU] / ESC                  → Does NOT turn off overlay; overlay stays
+    active until [OVERLAY] is tapped again
 ```
 
 ---
@@ -651,6 +685,245 @@ INTERACTIONS:
 ║  ╚════════════════════════════════════════════════════════╝   ║
 ╚══════════════════════════════════════════════════════════════╝
 ```
+
+---
+
+### 3.12 Coverage Overlay [B]
+
+Shows Drone Bay service radius circles color-coded by drone load. Toggleable at any time without disrupting play mode.
+
+```
+╔══════════════════════════════════════════════════════════════╗
+║  [WORLD VIEW — coverage overlay active]                      ║
+║                                                              ║
+║  ┌──── COVERAGE OVERLAY [B to toggle] ───────────────────┐  ║
+║  │  ■ GREEN = Bay has idle drones   ■ YELLOW = All active ║  ║
+║  │  ■ RED = Bay overloaded / drones lost   ■ GREY = Empty ║  ║
+║  └──────────────────────────────────────────────────────────┘  ║
+║                                                              ║
+║   ╔══════════════════╗                                       ║
+║   ║  · · · · · · · · ║                                       ║
+║   ║  · · · [⬡⬡] · · ║   ← Drone Bay #1                     ║
+║   ║  · · · [⬡⬡] · · ║     Status: YELLOW (all 4 active)    ║
+║   ║  · · · · · · · · ║     Radius circle: ~5-tile arc        ║
+║   ╚══════════════════╝                                       ║
+║                                                              ║
+║  ╔══ BAY #1 — SUMMARY (hover) ══════════════════════════╗   ║
+║  ║  4 / 4 drones active  (0 idle)                        ║   ║
+║  ║  D-01 MINER   → Iron Deposit (8 tiles out)            ║   ║
+║  ║  D-02 MINER   → Copper Deposit (6 tiles out)          ║   ║
+║  ║  D-03 LOGI    → Storage → Furnace                     ║   ║
+║  ║  D-04 LOGI    → Furnace → Storage                     ║   ║
+║  ║  [OPEN BAY PANEL]                                     ║   ║
+║  ╚═══════════════════════════════════════════════════════╝   ║
+╚══════════════════════════════════════════════════════════════╝
+
+INTERACTIONS:
+  Tap [COVERAGE] toolbar button  → Toggle on/off (touch + desktop)
+  OR press [B] on keyboard       → keyboard alias
+  Hover / long-press bay         → Per-bay summary tooltip (drone count + roles)
+  Tap / click bay                → Opens Drone Bay panel (§3.8 Drone Bay variant)
+```
+
+---
+
+### 3.13 Electrolysis Unit [E near Electrolysis Unit]
+
+Converts Water into Hydrolox Fuel. Input fed by Logistics drones from Storage; output
+hauled to Storage and eventually to the Launchpad fuel gauge.
+
+```
+╔══════════════════════════════════════════════════════════════╗
+║  ╔═════════════════════════════════════════════════════╗     ║
+║  ║  ⚗ ELECTROLYSIS UNIT         STATUS: ▶ RUNNING      ║     ║
+║  ║  ─────────────────────────────────────────────────  ║     ║
+║  ║                                                     ║     ║
+║  ║  RECIPE:  Water × 3  →  Hydrolox Fuel × 1           ║     ║
+║  ║           (cycle: 8 seconds)                        ║     ║
+║  ║                                                     ║     ║
+║  ║  INPUT BUFFER:                                      ║     ║
+║  ║    Water:         ████████░░░  24 / 40              ║     ║
+║  ║    → Logistics drone hauls water from Storage       ║     ║
+║  ║                                                     ║     ║
+║  ║  OUTPUT BUFFER:                                     ║     ║
+║  ║    Hydrolox Fuel: ██░░░░░░░░░   5 / 20              ║     ║
+║  ║    → Logistics drone hauls fuel to Storage          ║     ║
+║  ║    → Or: Logistics fills Launchpad tank directly    ║     ║
+║  ║                                                     ║     ║
+║  ║  RATE:     7.5 Hydrolox/min (with 1 Logi drone)     ║     ║
+║  ║  PROGRESS: ████████░░  6.4s remaining               ║     ║
+║  ║                                                     ║     ║
+║  ║  [CLOSE]                                            ║     ║
+║  ╚═════════════════════════════════════════════════════╝     ║
+╚══════════════════════════════════════════════════════════════╝
+
+ELECTROLYSIS STALL CONDITIONS:
+  Input empty  → STATUS: IDLE (grey); no fuel produced
+               → Fix: assign Logistics drone (Storage → Electrolysis)
+  Output full  → STATUS: STALLED (orange); electrolysis pauses
+               → Fix: assign Logistics drone (Electrolysis → Storage)
+  No water     → ALERT: "No water in Storage — mine Water deposit"
+
+PLAYER ACTIONS:
+  [CLOSE]  → Closes panel; unit keeps running
+  No recipe switching — single conversion only
+```
+
+---
+
+### 3.14 Launchpad [E near Launchpad]
+
+The Launchpad is a 3×3 building placed **outside** the perimeter fence on the open asteroid
+surface. Interacting with it opens the rocket assembly checklist and fuel gauge.
+
+```
+╔══════════════════════════════════════════════════════════════╗
+║  ╔══════════════════ LAUNCHPAD ══════════════════════════╗   ║
+║  ║                                                       ║   ║
+║  ║   🚀  [rocket silhouette — fills as fuel loads]       ║   ║
+║  ║                                                       ║   ║
+║  ╠═══════════════════════════════════════════════════════╣   ║
+║  ║  PRE-LAUNCH CHECKLIST:                                ║   ║
+║  ║                                                       ║   ║
+║  ║  ✓  Launchpad structure .... BUILT                    ║   ║
+║  ║  □  Hydrolox Fuel .......... 43 / 100 units           ║   ║
+║  ║       ████████████░░░░░░░░░░░░░░░░░░░░░░             ║   ║
+║  ║       Filling at ~7.5 units/min (ETA: ~7.6 min)       ║   ║
+║  ║                                                       ║   ║
+║  ║  FUEL SOURCE:                                         ║   ║
+║  ║    → Logistics drone delivers from Storage            ║   ║
+║  ║    → Ensure Electrolysis Unit is running (§3.13)      ║   ║
+║  ║                                                       ║   ║
+║  ║  ░░░ LAUNCH DISABLED — fuel insufficient ░░░          ║   ║
+║  ║  (button activates when Fuel ≥ 100)                   ║   ║
+║  ║                                                       ║   ║
+║  ║  [CLOSE]                                              ║   ║
+║  ╚═══════════════════════════════════════════════════════╝   ║
+╚══════════════════════════════════════════════════════════════╝
+
+WHEN FUEL REACHES 100 UNITS:
+╔══════════════════ LAUNCHPAD (READY) ══════════════════════╗
+║  🚀  ALL SYSTEMS GO                                        ║
+║  ────────────────────────────────────────────────────────  ║
+║  ✓  Launchpad structure .... BUILT                         ║
+║  ✓  Hydrolox Fuel .......... 100 / 100  ██████████████████ ║
+║                                                            ║
+║  DESTINATION: Phase 2 — New Sector (auto-selected)         ║
+║                                                            ║
+║  ┌──────────────────────────────────────────────────────┐  ║
+║  │  ▶ LAUNCH ROCKET                                     │  ║
+║  │  (launches Phase 1 → Phase 2 transition)             │  ║
+║  └──────────────────────────────────────────────────────┘  ║
+║  [CLOSE — come back when ready]                            ║
+╚════════════════════════════════════════════════════════════╝
+
+LAUNCHPAD PLACEMENT RULES:
+  Must be placed OUTSIDE the perimeter fence on asteroid surface
+  Requires 3×3 clear asteroid tiles (no roads, no other buildings)
+  Built from Fabricator just like other buildings (§3.5)
+  Once placed, becomes a permanent landmark visible on the minimap
+```
+
+---
+
+### 3.15 Production Dashboard [P]
+
+Phase 1 form of the Production Dashboard. Shows all resource flows on the current asteroid
+so the player can spot bottlenecks without opening every building.
+
+```
+╔══════════════════════════════════════════════════════════════╗
+║  ╔════════════════ PRODUCTION DASHBOARD [P] ═══════════════╗ ║
+║  ║  Outpost — Asteroid A1                       [CLOSE]    ║ ║
+║  ╠═════════════════════════════════════════════════════════╣ ║
+║  ║                                                         ║ ║
+║  ║  RESOURCE      PRODUCTION    CONSUMPTION    NET / MIN   ║ ║
+║  ║  ──────────────────────────────────────────────────     ║ ║
+║  ║  Iron Ore      +4.8/min      −4.8/min       ±0   🟡     ║ ║
+║  ║                (1 miner)     (Furnace in)               ║ ║
+║  ║  Iron Bars     +0.25/min     −0.02/min      +0.23 🟢    ║ ║
+║  ║                (Furnace)     (road spend)               ║ ║
+║  ║  Copper Ore    0/min         0/min           0    ⚫     ║ ║
+║  ║                (no miner)                               ║ ║
+║  ║  Copper Bars   0/min         0/min           0    ⚫     ║ ║
+║  ║  Water         +3.2/min      −3.0/min       +0.2  🟢    ║ ║
+║  ║                (1 miner)     (Electrolysis)             ║ ║
+║  ║  Hydrolox Fuel +0.75/min     −0/min         +0.75 🟢    ║ ║
+║  ║                (Electrolysis)(Launchpad: 43 stored)     ║ ║
+║  ║  Credits       +5 CR/min     0/min          +5 CR  🟢   ║ ║
+║  ║                (Marketplace)                            ║ ║
+║  ║                                                         ║ ║
+║  ║  LAUNCHPAD: 43 / 100 Hydrolox — ETA to launch: ~7.6 min ║ ║
+║  ║  ████████████░░░░░░░░░░░░░░░░░░░░░░  43%               ║ ║
+║  ║                                                         ║ ║
+║  ╚═════════════════════════════════════════════════════════╝ ║
+╚══════════════════════════════════════════════════════════════╝
+
+COLOR CODE (Net Delta):
+  🟢 Green  = Surplus (producing more than consuming)
+  🟡 Yellow = Balanced (within 10% of consumption)
+  🔴 Red    = Deficit (consuming faster than producing; days-to-empty shown)
+  ⚫ Grey   = No activity on this resource
+
+INTERACTIONS:
+  Tap [DASHBOARD] toolbar button  → Open / close (touch + desktop)
+  OR press [P] on keyboard        → keyboard alias
+  Tap / click any row             → Highlights contributing buildings on world map
+  Tap [CLOSE] or press [ESC]      → Close dashboard; game continues unpaused
+  Launchpad bar                   → Shows ETA in real time; updates every 5 seconds
+```
+
+---
+
+### 3.16 Phase 1 Victory / Phase Transition Screen
+
+Triggered when the player clicks LAUNCH ROCKET at the Launchpad (§3.14) with ≥ 100 Hydrolox
+units loaded. This is a non-interactive cinematic sequence (~8 seconds) followed by a summary.
+
+```
+╔══════════════════════════════════════════════════════════════╗
+║  [OUTPOST VIEW — camera slowly pulling back]                 ║
+║                                                              ║
+║  [ countdown audio: 3… 2… 1… ]                              ║
+║                                                              ║
+║  [ rocket engine ignites — particle burst, screen shake ]    ║
+║                                                              ║
+║  [ rocket rises from launchpad; shrinks to a point of light ]║
+║                                                              ║
+╠══════════════════════════════════════════════════════════════╣
+║                                                              ║
+║             ★ PHASE 1 COMPLETE ★                             ║
+║         OUTPOST — ASTEROID A1 DEPARTED                       ║
+║                                                              ║
+║  ┌──────────────────────────────────────────────────────┐   ║
+║  │  TIME IN PHASE 1:         32m 14s                    │   ║
+║  │  CREDITS EARNED:          1,240 CR                   │   ║
+║  │  IRON BARS PRODUCED:      312                        │   ║
+║  │  COPPER BARS PRODUCED:    88                         │   ║
+║  │  HYDROLOX USED FOR LAUNCH:100 units                  │   ║
+║  │  DRONE FLEET AT DEPARTURE: 4 drones (1 bay)          │   ║
+║  └──────────────────────────────────────────────────────┘   ║
+║                                                              ║
+║  ┌──────────────────────────────────────────────────────┐   ║
+║  │  ▶ CONTINUE TO PHASE 2                               │   ║
+║  └──────────────────────────────────────────────────────┘   ║
+║                                                              ║
+║  (Phase 2 systems: multi-planet, cargo ships,                ║
+║   tech tree, quality hunting — see future specs)             ║
+╚══════════════════════════════════════════════════════════════╝
+
+SEQUENCE DETAILS:
+  0s   → Player clicks LAUNCH ROCKET
+  0–1s → Panel closes; camera begins slow pullback
+  1–3s → Countdown audio; base keeps running in background
+  3–5s → Launch particle FX (amber/white burst); screen shake 0.4s
+  5–7s → Rocket ascends; base audio fades; orchestral sting plays
+  7s   → Cut to black → Phase 1 Complete card fades in
+  8s+  → Stats hold for 3 seconds; [CONTINUE] appears
+  Click → Save game; load Phase 2 scene (future milestone)
+```
+
+---
 
 ---
 
@@ -922,6 +1195,146 @@ Player      RoadSystem    DroneBase    PathfindingA*   HUD
 
 ---
 
+### 4.9 Load Game — CONTINUE From Main Menu
+
+```
+Player         MainMenu       SaveManager    OfflineSim      GameState
+  │                │               │               │               │
+  │─[CONTINUE]────▶│               │               │               │
+  │                │─checkFile()──▶│               │               │
+  │                │               │─fileExists?   │               │
+  │                │               │  YES          │               │
+  │                │               │─readJSON()    │               │
+  │                │               │─parseData()   │               │
+  │                │               │─calcOffline() │               │
+  │                │               │  (now - last_save_timestamp)  │
+  │                │               │               │               │
+  │                │               │─simulate()───▶│               │
+  │                │               │               │─30s steps×N   │
+  │                │               │               │─applyMining() │
+  │                │               │               │─applySmelt()  │
+  │                │               │               │─detectStalls()│
+  │                │               │◀──────────────{state, events} │
+  │                │               │─applyState()─────────────────▶│
+  │                │               │─updateTimestamp()             │
+  │                │               │─saveImmed()   │               │
+  │                │               │               │               │
+  │◀──────────────[OFFLINE EVENT LOG panel appears]               │
+  │  (shows: ore earned, stalls, credits earned while away)        │
+  │               │               │               │               │
+  │─[DISMISS]─────▶               │               │               │
+  │  (HUD loads normally; player resumes at asteroid outpost)      │
+
+CONTINUE DISABLED: if no save file exists, [CONTINUE] is greyed out.
+Player must click [NEW GAME] to start a fresh run.
+```
+
+---
+
+### 4.10 Autosave Trigger
+
+```
+Timer(5min)    SaveManager    HUD            GameState
+  │               │               │               │
+  │─tick()────────▶               │               │
+  │               │─gatherState()────────────────▶│
+  │               │               │               │─serialize()
+  │               │◀──────────────────────────────stateDict
+  │               │─writeJSON()   │               │
+  │               │─showIcon()───▶│               │
+  │               │  "SAVING…"    │─pulseIcon(1s) │
+  │               │               │─hideIcon()    │
+  │               │─resetTimer()  │               │
+
+AUTOSAVE ALSO FIRES ON:
+  Planet travel (before transition animation)
+  Player opens Pause → [SAVE GAME] manually
+  Any scene change (future Phase 2 planet transitions)
+```
+
+---
+
+### 4.11 Water → Hydrolox Production Chain
+
+This is the sequence that enables the Phase 1 launch. The player must connect the Water
+deposit to the Electrolysis Unit and then route fuel to the Launchpad.
+
+```
+Player     DroneBayPanel  MinerDrone  ElectrolysisUnit  StorageEntity  Launchpad
+  │               │             │               │               │          │
+  │  (player has built Electrolysis Unit and Launchpad)         │          │
+  │  (road connects: Water deposit → base → Launchpad area)     │          │
+  │               │             │               │               │          │
+  │─[E] at Bay────▶│             │               │               │          │
+  │               │─showPanel() │               │               │          │
+  │─[SET D-0N MINER for Water]──▶               │               │          │
+  │               │             │─findDeposit(Water)            │          │
+  │               │             │─travel() to Water             │          │
+  │               │             │─mine(3-5 units/hit)           │          │
+  │               │             │─haulToStorage()──────────────▶│          │
+  │               │             │               │               │─water+= N│
+  │               │             │               │               │          │
+  │  (Logistics drone picks up water from Storage → Electrolysis)│          │
+  │               │             │               │◀──────────────water fill │
+  │               │             │               │─startCycle()  │          │
+  │               │             │               │  (8s/cycle)   │          │
+  │               │             │               │─produce(1 Hydrolox)      │
+  │               │             │               │─outputBuffer+= 1         │
+  │               │             │               │               │          │
+  │  (Logistics drone hauls Hydrolox from Electrolysis → Storage)│          │
+  │               │             │               │               │─fuel+= 1 │
+  │               │             │               │               │          │
+  │  (Second Logistics drone: Storage → Launchpad fuel tank)    │          │
+  │               │             │               │               │──────────▶│
+  │               │             │               │               │          │─fuelGauge+=1
+  │◀────────────────────────────────────────────[HUD: Fuel: N/100]          │
+  │  (player watches Fuel bar climb in HUD top bar)             │          │
+  │  (Production Dashboard [P] shows ETA to launch)             │          │
+```
+
+---
+
+### 4.12 Phase 1 Launch Sequence
+
+```
+Player     LaunchpadEntity  CameraSystem  SceneManager  VictoryScreen
+  │               │               │               │               │
+  │─[E] at Pad────▶│               │               │               │
+  │               │─checkFuel()   │               │               │
+  │               │  fuel = 100 ✓ │               │               │
+  │               │─showPanel()   │               │               │
+  │◀──────────────(LAUNCH button is green / active)               │
+  │               │               │               │               │
+  │─[LAUNCH ROCKET]───────────────▶               │               │
+  │               │               │─closePanel()  │               │
+  │               │               │─startPullback()              │
+  │               │               │  (camera zooms out 3s)        │
+  │               │─playCountdown()               │               │
+  │               │  (3…2…1… audio)               │               │
+  │               │               │               │               │
+  │               │─fireLaunch()  │               │               │
+  │               │─playFX()      │               │               │
+  │               │  (particles, shake, SFX)       │               │
+  │               │─rocketAscend()│               │               │
+  │               │  (sprite rises + shrinks 2s)   │               │
+  │               │               │─fadeToBlack() │               │
+  │               │               │  (1s fade)    │               │
+  │               │               │               │─saveGame()    │
+  │               │               │               │─loadVictory()─▶│
+  │               │               │               │               │─showStats()
+  │               │               │               │               │─showContinue()
+  │◀──────────────────────────────────────────────[PHASE 1 COMPLETE screen]
+  │               │               │               │               │
+  │─[CONTINUE TO PHASE 2]─────────────────────────────────────────▶│
+  │               │               │               │─unloadA1()    │
+  │               │               │               │─loadPhase2()  │
+  │               │               │               │  (future milestone)
+```
+
+---
+
+---
+
 ## 5. State Machine — Player Modes
 
 ```
@@ -949,7 +1362,13 @@ Player      RoadSystem    DroneBase    PathfindingA*   HUD
              │   NORMAL PLAY (resume)  │
              └─────────────────────────┘
 
+LAUNCH SEQUENCE: non-interactive (no player input accepted)
+  Triggered by [LAUNCH ROCKET] at Launchpad → cinematic plays → Victory screen
+  ESC does NOT interrupt the launch sequence
+
 OVERLAY [O]: toggleable in ANY mode without disrupting mode
+OVERLAY / COVERAGE / DASHBOARD: toggled via HUD toolbar buttons in ANY mode
+DASHBOARD [P]: opens in ANY mode (pauses game while open)
 PAUSE [ESC from NORMAL]: opens pause menu; game time stops
 ```
 
@@ -979,14 +1398,25 @@ FABRICATOR (consumes bars from carry or Storage)
   Iron Bars × 4 + Copper × 2 ─────────────────────▶ Marketplace item
   Iron Bars × 6 + Copper × 4 ─────────────────────▶ Electrolysis Unit (Phase 2)
 
+WATER PRODUCTION CHAIN (Phase 1 win condition)
+  Water Deposit ──▶ [Miner Drones, road required] ─────▶ Storage Depot
+  Storage ─────────▶ [Logistics Drones] ─────────────── ▶ Electrolysis Unit (input)
+  Electrolysis Unit: Water × 3 → Hydrolox Fuel × 1 (8s cycle)
+  Electrolysis Out ▶ [Logistics Drones] ──────────────── ▶ Storage Depot
+  Storage ─────────▶ [Logistics Drones] ──────────────── ▶ Launchpad Fuel Tank
+
+LAUNCHPAD FUEL GAUGE
+  Hydrolox Fuel (from Storage) ────────────────────────▶ Launchpad (0→100 units)
+  At 100 units: [LAUNCH ROCKET] activates ─────────────▶ Phase 1 Win Sequence
+
 MARKETPLACE (overflow sink)
-  Iron Bars ───────────────────────────────────────▶ 20 CR each
-  Copper Bars ─────────────────────────────────────▶ 35 CR each
+  Iron Bars ───────────────────────────────────────────▶ 20 CR each
+  Copper Bars ─────────────────────────────────────────▶ 35 CR each
   (buy at 1.5× markup: Iron 30 CR, Copper 52 CR)
 
 CREDITS
-  Marketplace sells ────────────────────────────────▶ Credits balance
-  Buy items at Marketplace ◀────────────────────────  Credits balance
+  Marketplace sells ───────────────────────────────────▶ Credits balance
+  Buy items at Marketplace ◀───────────────────────────  Credits balance
 ```
 
 ---
@@ -1048,4 +1478,168 @@ Player picks up Drone Bay while drones are in transit
 
 ---
 
-*End of VoidYield Core Loop TDD + SSD v1.1*
+### 7.6 Electrolysis Unit Stalled — No Water
+```
+Electrolysis Unit input buffer = 0 water
+→ Unit STATUS: IDLE (grey)
+→ Production Overlay shows grey on Electrolysis Unit tile
+→ Tooltip: "Electrolysis idle — no water in input buffer"
+→ HUD top bar: H₂O shows 0 in Storage
+
+Root cause options:
+  (a) No Logistics drone assigned (Storage → Electrolysis) → add one
+  (b) Storage has no water → check Water miner assignment
+  (c) No road to Water deposit → enter road mode [N], connect it
+  (d) Water deposit depleted → alert: "Water deposit exhausted"
+      (Phase 1 has a single Water deposit; if depleted, launch is blocked
+       until a second sector — depletion should be designed not to occur
+       before the 100-unit fuel target is met)
+```
+
+### 7.7 Launchpad Fuel Insufficient — Launch Blocked
+```
+Player clicks [LAUNCH ROCKET] at Launchpad but fuel < 100
+→ LAUNCH button is greyed out / unclickable
+→ Panel shows fuel gauge: e.g. "43 / 100 units — need 57 more"
+→ ETA shown if Electrolysis is running: "~7.6 minutes at current rate"
+→ If Electrolysis is idle: "Electrolysis Unit not producing — check §3.13"
+
+Player options:
+  (a) Wait — Logistics drones keep filling the tank automatically
+  (b) Assign more Logistics drones to the Storage → Launchpad route
+  (c) Open Production Dashboard [P] to verify the full chain is running
+```
+
+### 7.8 All Deposits Depleted — No Resources Left
+```
+Scenario: Iron, Copper, and Water deposits all exhausted before launch
+
+→ Miner drones enter IDLE with message: "D-0N: Deposit exhausted — no target"
+→ HUD shows all ore stocks falling to zero
+→ Furnace: INPUT STARVED (grey)
+→ Electrolysis: INPUT STARVED (grey)
+→ Production Dashboard shows all resources as deficits
+
+Mitigations designed into Phase 1 balance:
+  Iron/Copper deposits sized for ~640 ore total each (enough for full build
+  budget: roads + drone bay + marketplace + electrolysis + launchpad + bars to sell)
+  Water deposit sized for ≥ 400 units (enough for 133 Hydrolox cycles → 133 fuel,
+  which exceeds the 100-unit launch requirement)
+
+If a player somehow exhausts all deposits before launching:
+→ Marketplace allows buying Iron Bars (30 CR) and Copper Bars (52 CR)
+→ Credits from prior sales let the player purchase what they need
+→ Water cannot be bought — if Water deposit exhausts before 100 fuel:
+   alert: "Phase 1 balance error — Water deposit sized incorrectly"
+   (flag for designer review; Water should never exhaust before 100 Hydrolox)
+```
+
+### 7.9 Save File Corrupt or Missing
+```
+Player clicks [CONTINUE] → SaveManager reads user://savegame.json
+→ File missing  → [CONTINUE] button greyed out on main menu (normal state)
+
+→ File exists but JSON parse fails:
+  → Alert modal: "Save file could not be read. Start a new game?"
+  → [START NEW GAME]  [CANCEL — stay on menu]
+  → Clicking START NEW GAME calls reset_to_defaults(), creates fresh state
+  → Clicking CANCEL returns to main menu (CONTINUE remains greyed until fixed)
+
+→ format_version mismatch (future schema upgrade):
+  → Alert: "Save file is from an older version. Continue anyway? (some data
+    may be reset to defaults)"
+  → [CONTINUE WITH MIGRATION]  [START FRESH]
+```
+
+---
+
+## 8. Phase 1 Input Binding Reference
+
+This section reconciles Phase 1 key assignments with the authoritative `docs/specs/16_input_map.md`.
+All keys listed here are a subset of spec 16. Phase 1 introduces `[N]` for Road placement — this
+must be added to spec 16 before implementation.
+
+### 8.1 Touch-First Design Principle
+
+**[E] is the only modal action key.** Everything else is a HUD toolbar button — tappable
+on touch, clickable on desktop. Keyboard shortcuts are _aliases_ for toolbar buttons, not
+primary input paths. This ensures 100% of Phase 1 is playable without a keyboard.
+
+| HUD Toolbar Button | Keyboard Alias | Touch Gesture | Action |
+|---|---|---|---|
+| [ROADS] | N | Tap button | Enter/exit road paint mode (§3.7) |
+| [OVERLAY] | O | Tap button | Toggle Production Overlay (§3.10) |
+| [COVERAGE] | B | Tap button | Toggle Coverage Overlay (§3.12) |
+| [DASHBOARD] | P | Tap button | Open Production Dashboard (§3.15) |
+| [MENU] | ESC | Tap button | Open pause / settings (§3.11) |
+
+| Input | Touch Equivalent | Action |
+|---|---|---|
+| WASD / Arrows | Tap anywhere to move (tap-to-move) | Move player |
+| [E] | INTERACT button (bottom-left, context-sensitive) | Mine deposit / open building panel |
+| Mouse Left | Tap | Interact / click UI |
+| Mouse Right | Long-press → context menu | Cancel / deselect |
+| Mouse Scroll | Two-finger pinch | Camera zoom |
+| Mouse Middle drag | One-finger drag (on world) | Camera pan |
+| [F11] | — (desktop only) | Toggle fullscreen |
+| `` ` `` / `~` | — (debug only) | Toggle debug panel |
+| [M] | MENU button (bottom-right) | Touch Menu Overlay — all panels |
+
+### 8.2 Keys NOT Active in Phase 1 (Reserved for Phase 2+)
+
+| Key | Spec 16 Assigned Action | Why Not Phase 1 |
+|---|---|---|
+| [Q] | Survey Tool | No survey tool in Phase 1 scope |
+| [Z] | Zone paint tool | Zone management is Phase 2+ |
+| [R] | Retool factory | No factory retool in Phase 1 (Furnace uses its own panel) |
+| [T] | Fleet / Traffic Overlay | Phase 2+ drone swarm scale |
+| [F] | Fleet Dispatch shortcut | Phase 2+ |
+| [G] | Galaxy Map | Phase 2+ (multiple planets) |
+| [L] | Logistics Overlay / Offline Log | Phase 2+ (Offline Log still shows in Phase 1 on load) |
+| [I] | Inventory / Stockpile panel | Player has no inventory in Phase 1 |
+| [J] | Survey Journal | Phase 2+ (no survey tool in Phase 1) |
+| [Tab] | Cycle panels | Phase 2+ (limited panels in Phase 1) |
+
+### 8.3 Key Conflict Resolution
+
+`[B]` in this SSD was previously described as "Build mode" in an earlier draft. This is **incorrect**.
+
+Per `spec 16_input_map.md`, `[B]` is definitively assigned to **Coverage Overlay** (Drone Bay
+radius). Building placement in Phase 1 is triggered exclusively by clicking `[CRAFT]` in the
+Fabricator panel (§3.5) — there is no standalone "build mode" key. The ghost placement screen
+(§3.6) opens automatically after crafting; the player presses `[ESC]` to cancel it, not a key
+to open it.
+
+`[N]` for Road Placement is a Phase 1 keyboard alias. Before implementing Phase 1, add this
+binding to `docs/specs/16_input_map.md` under §5 (Tools and Gameplay Actions):
+
+```
+| [N] | Road placement mode keyboard alias (primary: [ROADS] HUD button) | CORE_LOOP_TDD_SSD §3.7 |
+```
+
+Validate [N] has no conflict in spec 16 before adding (currently unassigned).
+
+**Design rule:** Never introduce a Phase 1 feature that is only reachable via keyboard. Every
+mode, overlay, and panel must have a corresponding HUD toolbar button or [M] menu entry so
+that touch-only players can access the full Phase 1 feature set without a physical keyboard.
+
+---
+
+## 9. Autosave Reference
+
+| Trigger | Timing | Behavior |
+|---|---|---|
+| Timer | Every 5 real-time minutes | Silent; 1s "SAVING…" icon in HUD corner |
+| Planet travel | Before transition animation | Silent; fires before the launch cutscene begins |
+| Pause → [SAVE GAME] | Player-initiated (Phase 1 only) | Same as timer save |
+| Phase 1 → Phase 2 transition | Immediately after Victory screen stats | Saves with `phase_flags.a1 = 1` |
+
+**Single save slot:** `voidyield_savegame` in `localStorage` (web). One slot only in Phase 1;
+no manual slot management. Corrupt or missing save → [CONTINUE] is disabled; [NEW GAME] starts fresh.
+
+**Offline simulation cap:** 8 hours. Sessions longer than 8 hours are extrapolated linearly
+from the last simulated state (no further stall detection past the cap).
+
+---
+
+*End of VoidYield Core Loop TDD + SSD v1.2*
