@@ -242,7 +242,6 @@ export class AsteroidOutpostScene implements Scene {
       if (this._droneDepot) {
         this._droneDepot.restoreBaySlot({ slotId: 'slot_0', droneType: 'scout', oreType: 'iron_ore' }, this._stage!);
         this._droneDepot.restoreBaySlot({ slotId: 'slot_1', droneType: 'scout', oreType: 'copper_ore' }, this._stage!);
-        this._droneDepot.restoreBaySlot({ slotId: 'slot_2', droneType: 'refinery', oreType: 'any' }, this._stage!);
       }
     }
 
