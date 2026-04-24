@@ -1,8 +1,8 @@
 # VoidYield Web — Codebase Status
 
-> Last audited: 2026-04-24  
-> Purpose: ground truth for agents and developers on what is active, what is intentionally deferred, and what has been deleted.  
-> When in doubt, check `git log -- <file>` to see when something was removed and why.
+> Last audited: 2026-04-24
+> Purpose: ground truth for agents and developers on what is active and what has been deleted.
+> When in doubt, check `git log -- <file>` to recover deleted files.
 
 ---
 
@@ -15,32 +15,9 @@ Only two scenes are registered in `src/main.ts` and reachable at runtime:
 | `boot` | `src/scenes/BootScene.ts` | Splash / loading screen |
 | `outpost` | `src/scenes/AsteroidOutpostScene.ts` | Primary gameplay scene |
 
-### Deferred Scenes (exist in src/ but NOT registered — unreachable)
+All five planet scenes (`PlanetA1Scene`, `PlanetA2Scene`, `PlanetA3Scene`, `PlanetBScene`, `PlanetCScene`) were **deleted 2026-04-24**. Recover from git if needed: `git log --all -- src/scenes/PlanetA1Scene.ts`
 
-These scenes contain real gameplay code but are not wired into `SceneManager`. They were written for planned multi-planet gameplay. Do **not** delete without team discussion — they represent future milestone work.
-
-| Scene ID | File | Status |
-|---|---|---|
-| `planet_a1` | `src/scenes/PlanetA1Scene.ts` | Deferred — not registered |
-| `planet_a2` | `src/scenes/PlanetA2Scene.ts` | Deferred — not registered |
-| `planet_a3` | `src/scenes/PlanetA3Scene.ts` | Deferred — not registered |
-| `planet_b` | `src/scenes/PlanetBScene.ts` | Deferred — not registered |
-| `planet_c` | `src/scenes/PlanetCScene.ts` | Deferred — not registered |
-
-**Known runtime risk:** `PrestigePanel` emits `scene:travel` → `planet_a1` after prestige; `GalaxyMap` tries to travel to planet nodes. Both will throw "unknown scene" errors until these scenes are registered.
-
-Files that exist solely because of deferred planet scenes (also deferred, not dead):
-- `src/data/deposits_a1.ts`
-- `src/data/deposits_a2.ts`
-- `src/data/deposits_a3.ts`
-- `src/data/deposits_b.ts`
-- `src/data/deposits_c.ts`
-- `src/ui/CoverageOverlay.ts` (only PlanetA1Scene)
-- `src/ui/TrafficOverlay.ts` (only PlanetA1Scene)
-- `src/ui/StoragePanel.ts` (only PlanetA1Scene)
-- `src/services/ZoneManager.ts` (only PlanetA1Scene + FleetManager comment)
-- `src/services/MiningCircuitManager.ts` (PlanetA1Scene + DebugAPI)
-- `src/services/InteractionManager.ts` (active — used by InteractionPrompt and TouchInteractButton)
+After prestige, `PrestigePanel` now travels to `'outpost'`. `GalaxyMap` shows an empty map (no planet nodes are fed to it from `AsteroidOutpostScene`).
 
 ---
 
@@ -52,21 +29,20 @@ All mounted in `src/ui/UILayer.ts` and opened by scene interaction handlers.
 |---|---|---|
 | `HUD.ts` | UILayer always-on | Credits, RP, planet label |
 | `InteractionPrompt.ts` | InteractionManager events | "Press E" floating hint |
-| `ShopPanel.ts` | AsteroidOutpostScene (marketplace building), PlanetA1Scene (trade hub) | Unified shop: DRONES / UPGRADES / MARKET / BUILD tabs. **The active marketplace UI.** |
-| `DroneBayPanel.ts` | AsteroidOutpostScene, PlanetA1Scene | Drone purchase & fleet |
-| `HabitationPanel.ts` | PlanetA1Scene | Colony population |
-| `ShipBayPanel.ts` | PlanetA1Scene, AsteroidOutpostScene | Launchpad / rocket |
+| `ShopPanel.ts` | AsteroidOutpostScene (marketplace building) | Unified shop: DRONES / UPGRADES / MARKET / BUILD tabs. **The active marketplace UI.** |
+| `DroneBayPanel.ts` | AsteroidOutpostScene | Drone purchase & fleet |
+| `ShipBayPanel.ts` | AsteroidOutpostScene | Launchpad / rocket |
 | `TechTreePanel.ts` | UILayer (T key) | Research tree |
 | `FleetPanel.ts` | UILayer (F key) | Drone fleet status |
 | `FabricatorPanel.ts` | AsteroidOutpostScene | Fabricator building |
 | `ProductionDashboard.ts` | UILayer | Factory output overview |
 | `LogisticsOverlay.ts` | UILayer | Trade route editor |
-| `GalaxyMap.ts` | UILayer (M key) | Planet navigation |
+| `GalaxyMap.ts` | UILayer (G key) | Planet navigation — shows empty map until planet scenes are rebuilt |
 | `SurveyOverlay.ts` | AsteroidOutpostScene | Deposit survey result |
 | `SurveyJournalPanel.ts` | UILayer | Survey history |
 | `PopulationHUD.ts` | UILayer | Colony tier display |
 | `SectorCompleteOverlay.ts` | EventBus `sector:complete` | End-of-sector summary |
-| `PrestigePanel.ts` | SectorCompleteOverlay | Prestige / sector restart |
+| `PrestigePanel.ts` | SectorCompleteOverlay | Prestige / sector restart; travels to `'outpost'` |
 | `OfflineDispatchPanel.ts` | UILayer | Offline progress summary |
 | `TouchMenuOverlay.ts` | Mobile touch | Radial action menu |
 | `TouchInteractButton.ts` | Mobile touch | "E" button for touch |
@@ -79,20 +55,23 @@ All mounted in `src/ui/UILayer.ts` and opened by scene interaction handlers.
 | `DepositPanel.ts` | AsteroidOutpostScene | Deposit interaction |
 | `ProductionOverlay.ts` | AsteroidOutpostScene | Building status summary |
 
+Panels that were deleted but only used by planet scenes:
+- `HabitationPanel.ts` — **still exists** in UILayer but only PlanetA1Scene opened it. Low priority to remove.
+
 ---
 
 ## Active Entities
 
 | File | Used By |
 |---|---|
-| `Player.ts` | AsteroidOutpostScene, all planet scenes |
-| `Deposit.ts` | All scenes |
-| `StorageDepot.ts` | All scenes |
+| `Player.ts` | AsteroidOutpostScene |
+| `Deposit.ts` | AsteroidOutpostScene |
+| `StorageDepot.ts` | AsteroidOutpostScene |
 | `Furnace.ts` | AsteroidOutpostScene |
 | `Marketplace.ts` | AsteroidOutpostScene |
-| `TradeHub.ts` | PlanetA1Scene (deferred) |
+| `TradeHub.ts` | DebugAPI / future use |
 | `DroneBase.ts` | Base class for all drones |
-| `DroneBay.ts` | AsteroidOutpostScene, PlanetA1Scene |
+| `DroneBay.ts` | AsteroidOutpostScene |
 | `DroneDepot.ts` | AsteroidOutpostScene |
 | `ScoutDrone.ts` | AsteroidOutpostScene |
 | `HeavyDrone.ts` | AsteroidOutpostScene |
@@ -102,19 +81,21 @@ All mounted in `src/ui/UILayer.ts` and opened by scene interaction handlers.
 | `SurveyDrone.ts` | AsteroidOutpostScene |
 | `RefineryDrone.ts` | AsteroidOutpostScene |
 | `GasCollector.ts` | HarvesterManager |
-| `HarvesterBase.ts` | Base class for GasCollector etc |
+| `HarvesterBase.ts` | Base class for GasCollector |
 | `Fabricator.ts` | AsteroidOutpostScene |
 | `ResearchLab.ts` | AsteroidOutpostScene |
-| `HabitationModule.ts` | PlanetA1Scene |
+| `HabitationModule.ts` | No active scene (planet scenes deleted) |
 | `SolarPanel.ts` | AsteroidOutpostScene |
-| `Launchpad.ts` | AsteroidOutpostScene, PlanetA1Scene |
-| `WarpGate.ts` | PlanetA1Scene |
-| `GalacticHub.ts` | PlanetA1Scene |
+| `Launchpad.ts` | AsteroidOutpostScene |
+| `WarpGate.ts` | No active scene (planet scenes deleted) |
+| `GalacticHub.ts` | No active scene (planet scenes deleted) |
 | `ElectrolysisUnit.ts` | AsteroidOutpostScene |
 | `WaterCondenser.ts` | AsteroidOutpostScene |
 | `IndustrialSite.ts` | AsteroidOutpostScene |
 | `PlacedBuilding.ts` | AsteroidOutpostScene (BuildGrid base) |
 | `ProcessingPlant.ts` | AsteroidOutpostScene |
+
+Note: `HabitationModule`, `WarpGate`, `GalacticHub` have no active scene using them now. They are kept because they may be needed when planet scenes are rebuilt.
 
 ---
 
@@ -142,9 +123,9 @@ All mounted in `src/ui/UILayer.ts` and opened by scene interaction handlers.
 | `TechTree.ts` | Research node registry |
 | `SectorManager.ts` | Prestige bonuses, sector completion |
 | `SurveyService.ts` | Deposit survey logic |
-| `TutorialManager.ts` | Tutorial state (active in DebugAPI; no scene uses it yet) |
+| `TutorialManager.ts` | Tutorial state — imported by DebugAPI only; no scene uses it |
 | `OutpostDispatcher.ts` | Drone auto-dispatch for outpost |
-| `StrandingManager.ts` | Planet B fuel state |
+| `StrandingManager.ts` | Planet B fuel state — kept for save compatibility |
 | `OfflineSimulator.ts` | Offline progress calculation |
 | `ObstacleManager.ts` | Pathfinding obstacle registry |
 | `RoadNetwork.ts` | Road tile graph |
@@ -153,8 +134,6 @@ All mounted in `src/ui/UILayer.ts` and opened by scene interaction handlers.
 | `SpriteSheetHelper.ts` | Sprite sheet slice utilities |
 | `DroneSpriteSheet.ts` | Drone animation state |
 | `PlayerSpriteSheet.ts` | Player animation state |
-| `ZoneManager.ts` | Drone zone assignment (used by PlanetA1Scene, deferred) |
-| `MiningCircuitManager.ts` | Auto-mining loop (used by PlanetA1Scene + DebugAPI) |
 
 ---
 
@@ -169,32 +148,66 @@ All mounted in `src/ui/UILayer.ts` and opened by scene interaction handlers.
 
 ---
 
-## Deleted Files (by audit 2026-04-24)
+## Marketplace Architecture (as of 2026-04-24)
 
-These were confirmed to have no active imports. Recover from git history if needed: `git show HEAD~:<path>`.
+`ShopPanel` (MARKET tab) is the **only** active marketplace UI.
+- Opened when player interacts with the `marketplace` building in `AsteroidOutpostScene`
+- All 34 `OreType` values listed with buy/sell buttons and live depot count
+- `FREE_BUY_MODE = true` in `MarketplaceService.ts` — flip to `false` to re-enable credit costs
 
-### UI
+---
+
+## Deletion Log
+
+All deleted files can be recovered via git: `git log --all -- <path>` then `git show <commit>:<path>`
+
+### 2026-04-24 — Audit cleanup (PR #85 + planet scene removal)
+
+**UI (6 files):**
 | File | Reason |
 |---|---|
-| `src/ui/MarketplaceOverlay.ts` | Legacy overlay (iron_bar/copper_bar only). Replaced by `ShopPanel` MARKET tab. |
-| `src/ui/HarvesterHUD.ts` | PixiJS harvester status bar. Never instantiated. |
-| `src/ui/HudOverlay.ts` | Old PixiJS credits/RP display. Replaced by `HUD.ts`. |
-| `src/ui/InventoryPanel.ts` | Inventory `[I]` panel. Created but never mounted or triggered. |
-| `src/ui/TutorialOverlay.ts` | Tutorial modal. Never instantiated in any scene. |
+| `src/ui/MarketplaceOverlay.ts` | Legacy iron_bar/copper_bar overlay. Replaced by ShopPanel MARKET tab. |
+| `src/ui/HarvesterHUD.ts` | Never instantiated in any scene. |
+| `src/ui/HudOverlay.ts` | Replaced by `HUD.ts`. |
+| `src/ui/InventoryPanel.ts` | Created but never mounted or triggered. |
+| `src/ui/TutorialOverlay.ts` | Never instantiated in any scene. |
+| `src/ui/StoragePanel.ts` | Only used by deleted planet scenes. |
+| `src/ui/CoverageOverlay.ts` | Only used by PlanetA1Scene (deleted). |
+| `src/ui/TrafficOverlay.ts` | Only used by PlanetA1Scene (deleted). |
 
-### Entities
+**Scenes (5 files):**
 | File | Reason |
 |---|---|
-| `src/entities/AethonFlora.ts` | Decorative entity. No imports anywhere. |
-| `src/entities/AssemblyComplex.ts` | Building entity. No imports anywhere. |
-| `src/entities/CrystalHarvester.ts` | Harvester variant. No imports anywhere. |
-| `src/entities/MineralHarvester.ts` | Harvester variant. No imports anywhere. |
-| `src/entities/Speeder.ts` | Vehicle entity. No imports anywhere. |
+| `src/scenes/PlanetA1Scene.ts` | Not registered in SceneManager. Deleted to reduce confusion. |
+| `src/scenes/PlanetA2Scene.ts` | Not registered in SceneManager. |
+| `src/scenes/PlanetA3Scene.ts` | Not registered in SceneManager. |
+| `src/scenes/PlanetBScene.ts` | Not registered in SceneManager. |
+| `src/scenes/PlanetCScene.ts` | Not registered in SceneManager. |
 
-### Services
+**Data (5 files):**
 | File | Reason |
 |---|---|
-| `src/services/DroneTaskQueue.ts` | Abandoned task queue service. No imports anywhere. |
+| `src/data/deposits_a1.ts` | Only used by PlanetA1Scene (deleted). |
+| `src/data/deposits_a2.ts` | Only used by PlanetA2Scene (deleted). |
+| `src/data/deposits_a3.ts` | Only used by PlanetA3Scene (deleted). |
+| `src/data/deposits_b.ts` | Only used by PlanetBScene (deleted). |
+| `src/data/deposits_c.ts` | Only used by PlanetCScene (deleted). |
+
+**Entities (5 files):**
+| File | Reason |
+|---|---|
+| `src/entities/AethonFlora.ts` | No imports anywhere. |
+| `src/entities/AssemblyComplex.ts` | No imports anywhere. |
+| `src/entities/CrystalHarvester.ts` | No imports anywhere. |
+| `src/entities/MineralHarvester.ts` | No imports anywhere. |
+| `src/entities/Speeder.ts` | No imports anywhere. |
+
+**Services (3 files):**
+| File | Reason |
+|---|---|
+| `src/services/DroneTaskQueue.ts` | Abandoned. No imports anywhere. |
+| `src/services/ZoneManager.ts` | Only used by PlanetA1Scene (deleted). |
+| `src/services/MiningCircuitManager.ts` | Only used by PlanetA1Scene and DebugAPI (removed from DebugAPI). |
 
 ---
 
@@ -208,13 +221,3 @@ Files with significant Godot references:
 `docs/specs/26_web_visual_parity.md` also references `LEGACY_old_godot_version/VoidYield` — that directory no longer exists.
 
 The specs are **not being deleted** — the game design intent is still valid. A future pass should strip Godot implementation sections and replace them with TypeScript/PixiJS equivalents.
-
----
-
-## Marketplace Architecture (as of 2026-04-24)
-
-`ShopPanel` (MARKET tab) is the **only** active marketplace UI.
-- Opened when player interacts with the `marketplace` building in `AsteroidOutpostScene`
-- All 34 `OreType` values are listed
-- `FREE_BUY_MODE = true` in `MarketplaceService.ts` — flip to `false` to re-enable credit costs
-- `MarketplaceOverlay` (iron_bar/copper_bar legacy) was **deleted**

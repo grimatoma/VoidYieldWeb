@@ -61,7 +61,7 @@ export class PrestigePanel {
         const bonus = card.dataset.bonus as SectorBonus;
         sectorManager.applyPrestigeAndReset(bonus);
         this.hide();
-        EventBus.emit('scene:travel', 'planet_a1');
+        EventBus.emit('scene:travel', 'outpost');
       });
     });
 
