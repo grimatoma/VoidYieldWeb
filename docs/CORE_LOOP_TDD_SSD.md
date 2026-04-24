@@ -203,7 +203,9 @@ The core game view. The camera shows the 40×30 asteroid surface (scrollable) wi
 ║  │  · · · · · · · · · · · · · · · · · · · · · · · ·    │   ║
 ║  └──────────────────────────────────────────────────────┘   ║
 ║                                                              ║
-║  [WASD] Move  [E] Interact  [N] Roads  [O] Overlay  [ESC] Menu   ║ ← key hints
+║  ┌─────────────────────────────────────────────────────────────┐  ║
+║  │ [ROADS]  [OVERLAY]  [COVERAGE]  [DASHBOARD]  [MENU]        │  ║ ← HUD toolbar
+║  └─────────────────────────────────────────────────────────────┘  ║
 ╚══════════════════════════════════════════════════════════════╝
 
 WORLD SYMBOLS:
@@ -233,14 +235,19 @@ NOTE: The player has no personal inventory. All mined ore and produced items
 go directly into Storage. The player is an action-controller, not a carrier.
 Drones are the only entities with inventory — they carry items between buildings.
 
-KEY HINTS BAR:
-  [WASD]  → Move player (or Arrow Keys)
-  [E]     → Context-sensitive interact (deposit, building)
-  [N]     → Enter Road placement mode (§3.7)
-  [O]     → Toggle Production Overlay (§3.10)
-  [B]     → Toggle Coverage Overlay — Drone Bay radius circles (§3.12)
-  [P]     → Open Production Dashboard (§3.15)
-  [ESC]   → Open pause / settings (§3.11)
+HUD TOOLBAR (bottom strip — tappable on touch, clickable on desktop):
+  [ROADS]      → Enter Road placement mode (§3.7)         keyboard alias: N
+  [OVERLAY]    → Toggle Production Overlay (§3.10)        keyboard alias: O
+  [COVERAGE]   → Toggle Coverage Overlay — Drone Bay radius (§3.12) alias: B
+  [DASHBOARD]  → Open Production Dashboard (§3.15)        keyboard alias: P
+  [MENU]       → Open pause / settings (§3.11)            keyboard alias: ESC
+
+  [E] / INTERACT button (touch) → Context-sensitive action on whatever is in
+    range: mine deposit, open building panel, attach component to Launchpad.
+    This is the ONLY modal action key — all other inputs are toolbar-driven.
+  [WASD] / Arrows → Move player (desktop). On touch: tap-to-move anywhere.
+  [M] → Touch Menu Overlay — full gateway to every panel, overlay, and tool
+    (mirrors the toolbar for players who prefer a radial/list menu).
 ```
 
 ---
@@ -392,7 +399,7 @@ MATERIAL SOURCING:
 ```
 ╔══════════════════════════════════════════════════════════════╗
 ║  ┌──── BUILD MODE ─ press [B] or crafted item auto-opens ──┐  ║
-║  │  [ESC] cancel placement                                  │  ║
+║  │  [ESC] or tap [✕ CANCEL] button to cancel placement      │  ║
 ║  └──────────────────────────────────────────────────────────┘  ║
 ║                                                              ║
 ║  [WORLD VIEW — ghost building follows cursor over tile grid]  ║
@@ -447,7 +454,7 @@ MOVING AN EXISTING BUILDING:
 
 ```
 ╔══════════════════════════════════════════════════════════════╗
-║  ┌──── ROAD MODE ─ drag to paint, [N] or [ESC] to exit ───┐  ║
+║  ┌──── ROAD MODE ─ tap [ROADS] toolbar button to exit, or [ESC] ───┐  ║
 ║  │  Each tile costs 1 iron bar. Roads extend outside fence.│  ║
 ║  └──────────────────────────────────────────────────────────┘  ║
 ║                                                              ║
@@ -482,9 +489,18 @@ ROAD PREVIEW:
   [CONFIRM] → deducts bars; tiles become permanent roads
   [CANCEL]  → no bars spent; preview cleared
 
+ENTERING ROAD MODE:
+  Tap [ROADS] button in the HUD toolbar     (touch + desktop)
+  OR press [N] on keyboard                  (desktop alias only)
+  Road mode opens; game is NOT paused; player can still move with WASD/arrows.
+
+EXITING ROAD MODE:
+  Tap [ROADS] again, tap [ESC], or click [CANCEL] in the road budget panel.
+
 REMOVING ROADS:
-  Hold [Shift] + click road tile → removes road, refunds 1 bar
-  Drones on removed road segment → re-path or return to bay if no path exists
+  [Shift] + click road tile (desktop) → removes road, refunds 1 bar
+  Long-press road tile (touch) → context menu → "Remove road"
+  Drones on removed segment → re-path or return to bay if no path exists
 ```
 
 ---
@@ -626,10 +642,12 @@ A lightweight toggle that color-codes every building on the map surface.
 ╚══════════════════════════════════════════════════════════════╝
 
 INTERACTIONS:
-  [O]     → Toggle overlay on/off; game continues
-  Hover   → One-line status tooltip on any colored building
-  Click   → Opens Building Info Panel (§3.8)
-  ESC     → Does NOT turn off overlay (only [O] does)
+  Tap [OVERLAY] toolbar button  → Toggle on/off (touch + desktop)
+  OR press [O] on keyboard      → keyboard alias
+  Hover / long-press building   → One-line status tooltip
+  Tap / click building          → Opens Building Info Panel (§3.8)
+  [MENU] / ESC                  → Does NOT turn off overlay; overlay stays
+    active until [OVERLAY] is tapped again
 ```
 
 ---
@@ -701,9 +719,10 @@ Shows Drone Bay service radius circles color-coded by drone load. Toggleable at 
 ╚══════════════════════════════════════════════════════════════╝
 
 INTERACTIONS:
-  [B]     → Toggle overlay on/off; game continues unpaused
-  Hover   → Per-bay summary tooltip (drone count + roles)
-  Click   → Opens Drone Bay panel (§3.8 Drone Bay variant)
+  Tap [COVERAGE] toolbar button  → Toggle on/off (touch + desktop)
+  OR press [B] on keyboard       → keyboard alias
+  Hover / long-press bay         → Per-bay summary tooltip (drone count + roles)
+  Tap / click bay                → Opens Drone Bay panel (§3.8 Drone Bay variant)
 ```
 
 ---
@@ -847,9 +866,11 @@ COLOR CODE (Net Delta):
   ⚫ Grey   = No activity on this resource
 
 INTERACTIONS:
-  Click any row  → Highlights contributing buildings on world map
-  [P] / [ESC]    → Close dashboard; game continues
-  Launchpad bar  → Shows ETA in real time; updates every 5 seconds
+  Tap [DASHBOARD] toolbar button  → Open / close (touch + desktop)
+  OR press [P] on keyboard        → keyboard alias
+  Tap / click any row             → Highlights contributing buildings on world map
+  Tap [CLOSE] or press [ESC]      → Close dashboard; game continues unpaused
+  Launchpad bar                   → Shows ETA in real time; updates every 5 seconds
 ```
 
 ---
@@ -1346,7 +1367,7 @@ LAUNCH SEQUENCE: non-interactive (no player input accepted)
   ESC does NOT interrupt the launch sequence
 
 OVERLAY [O]: toggleable in ANY mode without disrupting mode
-COVERAGE [B]: toggleable in ANY mode without disrupting mode
+OVERLAY / COVERAGE / DASHBOARD: toggled via HUD toolbar buttons in ANY mode
 DASHBOARD [P]: opens in ANY mode (pauses game while open)
 PAUSE [ESC from NORMAL]: opens pause menu; game time stops
 ```
@@ -1538,24 +1559,31 @@ This section reconciles Phase 1 key assignments with the authoritative `docs/spe
 All keys listed here are a subset of spec 16. Phase 1 introduces `[N]` for Road placement — this
 must be added to spec 16 before implementation.
 
-### 8.1 Active Keys in Phase 1
+### 8.1 Touch-First Design Principle
 
-| Key | Phase 1 Action | Note |
+**[E] is the only modal action key.** Everything else is a HUD toolbar button — tappable
+on touch, clickable on desktop. Keyboard shortcuts are _aliases_ for toolbar buttons, not
+primary input paths. This ensures 100% of Phase 1 is playable without a keyboard.
+
+| HUD Toolbar Button | Keyboard Alias | Touch Gesture | Action |
+|---|---|---|---|
+| [ROADS] | N | Tap button | Enter/exit road paint mode (§3.7) |
+| [OVERLAY] | O | Tap button | Toggle Production Overlay (§3.10) |
+| [COVERAGE] | B | Tap button | Toggle Coverage Overlay (§3.12) |
+| [DASHBOARD] | P | Tap button | Open Production Dashboard (§3.15) |
+| [MENU] | ESC | Tap button | Open pause / settings (§3.11) |
+
+| Input | Touch Equivalent | Action |
 |---|---|---|
-| WASD / Arrows | Move player | Core |
-| Mouse Left | Interact / click UI | Core |
-| Mouse Right | Cancel / deselect | Core |
-| Mouse Scroll | Camera zoom | Core |
-| Mouse Middle drag | Camera pan | Core |
-| [E] | Interact: mine deposit, open building panel | Core |
-| [N] | Road placement mode (§3.7) | **Phase 1 addition — add to spec 16** |
-| [O] | Production Overlay: building status colors (§3.10) | Spec 16 §4 |
-| [B] | Coverage Overlay: Drone Bay radius circles (§3.12) | Spec 16 §4 |
-| [P] | Production Dashboard (§3.15) | Spec 16 §3 |
-| [ESC] | Pause menu / close open panel | Spec 16 §3 |
-| [F11] | Toggle fullscreen | Spec 16 §3 |
-| `` ` `` / `~` | Toggle debug panel | Spec 16 §3 |
-| [M] | Touch menu overlay (mobile only) | Spec 16 §3 |
+| WASD / Arrows | Tap anywhere to move (tap-to-move) | Move player |
+| [E] | INTERACT button (bottom-left, context-sensitive) | Mine deposit / open building panel |
+| Mouse Left | Tap | Interact / click UI |
+| Mouse Right | Long-press → context menu | Cancel / deselect |
+| Mouse Scroll | Two-finger pinch | Camera zoom |
+| Mouse Middle drag | One-finger drag (on world) | Camera pan |
+| [F11] | — (desktop only) | Toggle fullscreen |
+| `` ` `` / `~` | — (debug only) | Toggle debug panel |
+| [M] | MENU button (bottom-right) | Touch Menu Overlay — all panels |
 
 ### 8.2 Keys NOT Active in Phase 1 (Reserved for Phase 2+)
 
@@ -1582,14 +1610,18 @@ Fabricator panel (§3.5) — there is no standalone "build mode" key. The ghost 
 (§3.6) opens automatically after crafting; the player presses `[ESC]` to cancel it, not a key
 to open it.
 
-`[N]` for Road Placement is a Phase 1 addition. Before implementing Phase 1, add this binding
-to `docs/specs/16_input_map.md` under §5 (Tools and Gameplay Actions):
+`[N]` for Road Placement is a Phase 1 keyboard alias. Before implementing Phase 1, add this
+binding to `docs/specs/16_input_map.md` under §5 (Tools and Gameplay Actions):
 
 ```
-| [N] | Road placement mode (enter/exit road paint mode) | CORE_LOOP_TDD_SSD §3.7 |
+| [N] | Road placement mode keyboard alias (primary: [ROADS] HUD button) | CORE_LOOP_TDD_SSD §3.7 |
 ```
 
 Validate [N] has no conflict in spec 16 before adding (currently unassigned).
+
+**Design rule:** Never introduce a Phase 1 feature that is only reachable via keyboard. Every
+mode, overlay, and panel must have a corresponding HUD toolbar button or [M] menu entry so
+that touch-only players can access the full Phase 1 feature set without a physical keyboard.
 
 ---
 
