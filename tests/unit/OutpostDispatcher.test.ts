@@ -259,4 +259,93 @@ describe('OutpostDispatcher', () => {
     // Two tasks: pull-from-storage CARRY + deliver-to-furnace CARRY
     expect(cargo.pushTask).toHaveBeenCalledTimes(2);
   });
+
+  // ──────────────────────────────────────────────────────────────────────────
+  // Stuck-drone scenarios
+  // ──────────────────────────────────────────────────────────────────────────
+
+  it('miner stays IDLE when no deposits match its slot oreType', () => {
+    // Only copper_ore deposits available, slot wants iron_ore.
+    const ironDeposit = makeDeposit('copper_ore');
+    vi.mocked(depositMap.getNearestUnclaimedDeposit).mockImplementation(
+      (_x, _y, orePref) => (orePref === 'copper_ore' ? ironDeposit as any : null),
+    );
+
+    const storage = makeStorage();
+    const furnace = makeFurnace('off');
+    const miner = makeDrone('d1', 'scout');
+    const slots: DroneBaySlot[] = [occupiedSlot('slot_0', miner, 'iron_ore')];
+
+    dispatcher.configure(storage as any, furnace as any, { x: 500, y: 500 }, slots);
+    dispatcher.start();
+    dispatcher.update(0.016);
+
+    // Dispatcher called getNearestUnclaimedDeposit with 'iron_ore' but got null.
+    expect(miner.pushTask).not.toHaveBeenCalled();
+    expect(miner.state).toBe('IDLE');
+  });
+
+  it('miner stays IDLE when all deposits of its ore type are exhausted', () => {
+    // getNearestUnclaimedDeposit returns null — simulates all deposits gone.
+    vi.mocked(depositMap.getNearestUnclaimedDeposit).mockReturnValue(null);
+
+    const storage = makeStorage();
+    const furnace = makeFurnace('off');
+    const miner = makeDrone('d1', 'scout');
+    // Place drone at storage position so it looks like it just returned.
+    miner.x = 200;
+    miner.y = 200;
+    const slots: DroneBaySlot[] = [occupiedSlot('slot_0', miner, 'iron_ore')];
+
+    dispatcher.configure(storage as any, furnace as any, { x: 500, y: 500 }, slots);
+    dispatcher.start();
+
+    // Simulate multiple ticks — drone must not get any tasks.
+    for (let i = 0; i < 10; i++) dispatcher.update(0.016);
+
+    expect(miner.pushTask).not.toHaveBeenCalled();
+    expect(miner.state).toBe('IDLE');
+  });
+
+  it('miner skips when deposit claim fails — another drone already holds it', () => {
+    const deposit = makeDeposit('iron_ore');
+    deposit.claim.mockReturnValue(false); // claim always rejected
+    vi.mocked(depositMap.getNearestUnclaimedDeposit).mockReturnValue(deposit as any);
+
+    const storage = makeStorage();
+    const furnace = makeFurnace('off');
+    const miner = makeDrone('d1', 'scout');
+    const slots: DroneBaySlot[] = [occupiedSlot('slot_0', miner, 'iron_ore')];
+
+    dispatcher.configure(storage as any, furnace as any, { x: 500, y: 500 }, slots);
+    dispatcher.start();
+    dispatcher.update(0.016);
+
+    expect(deposit.claim).toHaveBeenCalledWith('d1');
+    expect(miner.pushTask).not.toHaveBeenCalled();
+    expect(miner.state).toBe('IDLE');
+  });
+
+  it('MINE onExecute guards against zero-quantity lot — cargo stays null when deposit exhausted mid-flight', () => {
+    const deposit = makeDeposit('iron_ore');
+    // Deposit exhausted before drone arrives: mine() returns quantity 0.
+    deposit.mine.mockReturnValue({ oreType: 'iron_ore', quantity: 0, attributes: {} });
+    vi.mocked(depositMap.getNearestUnclaimedDeposit).mockReturnValue(deposit as any);
+
+    const storage = makeStorage();
+    const furnace = makeFurnace('off');
+    const miner = makeDrone('d1', 'scout');
+    const slots: DroneBaySlot[] = [occupiedSlot('slot_0', miner, 'iron_ore')];
+
+    dispatcher.configure(storage as any, furnace as any, { x: 500, y: 500 }, slots);
+    dispatcher.start();
+    dispatcher.update(0.016);
+
+    // Retrieve and fire the MINE onExecute callback.
+    const mineTask = miner._tasks[0] as { onExecute?: () => void };
+    mineTask.onExecute?.();
+
+    // cargo must remain null so the CARRY task doesn't deposit a zero-quantity lot.
+    expect(miner.cargo).toBeNull();
+  });
 });

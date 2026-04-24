@@ -5,7 +5,7 @@ import { Camera } from '@services/Camera';
 import { Player } from '@entities/Player';
 import { Deposit } from '@entities/Deposit';
 import { StorageDepot } from '@entities/StorageDepot';
-import { Furnace } from '@entities/Furnace';
+import { Furnace, FURNACE_RECIPES } from '@entities/Furnace';
 import { Marketplace } from '@entities/Marketplace';
 import { DroneDepot, resetDepotBuilt } from '@entities/DroneDepot';
 import { PlacedBuilding, CELL_SIZE, GRID_ORIGIN, gridToWorld } from '@entities/PlacedBuilding';
@@ -21,6 +21,8 @@ import { saveManager } from '@services/SaveManager';
 import { OUTPOST_DEPOSITS } from '@data/outpost_deposits';
 import { planetResources, outpostId } from '@store/gameStore';
 import { inventory } from '@services/Inventory';
+import { ElectrolysisUnit } from '@entities/ElectrolysisUnit';
+import { Launchpad } from '@entities/Launchpad';
 import { FurnaceOverlay } from '@ui/FurnaceOverlay';
 import { BuildMenuOverlay } from '@ui/BuildMenuOverlay';
 import { DroneDepotOverlay } from '@ui/DroneDepotOverlay';
@@ -28,10 +30,13 @@ import { BuildPromptOverlay } from '@ui/BuildPromptOverlay';
 import { MarketplaceOverlay } from '@ui/MarketplaceOverlay';
 import { ProductionOverlay } from '@ui/ProductionOverlay';
 import type { OutpostBuildingStatus } from '@ui/ProductionOverlay';
+import { ElectrolysisOverlay } from '@ui/ElectrolysisOverlay';
 import { DepositPanel } from '@ui/DepositPanel';
 import { powerManager } from '@services/PowerManager';
+import { EventBus } from '@services/EventBus';
 import { handleWorldTap } from '@services/TapToMove';
 import { roadNetwork } from '@services/RoadNetwork';
+import { obstacleManager } from '@services/ObstacleManager';
 
 // Built-in RTG provides enough power to run the furnace (3 W draw) without needing solar panels.
 const OUTPOST_REACTOR_POWER = 5;
@@ -39,16 +44,33 @@ const OUTPOST_REACTOR_POWER = 5;
 const OUTPOST_WORLD_WIDTH  = 1920;
 const OUTPOST_WORLD_HEIGHT = 1080;
 
-// Build costs per BuildMenuOverlay BUILDABLE list
+// Perimeter fence around the 5×5 build grid (grid spans x:260-700, y:50-490).
+// The east wall has a gate gap so the player and drones can reach the
+// deposits east of the compound. Wall rects are registered with
+// `obstacleManager` so they block movement and route pathfinding through the
+// gate. Keep these constants in sync with `_drawFence` and `_registerFenceObstacles`.
+const FENCE_LEFT     = 232;
+const FENCE_TOP      = 22;
+const FENCE_RIGHT    = 712;
+const FENCE_BOTTOM   = 518;
+const FENCE_THICK    = 10;
+const FENCE_GATE_TOP = 230;  // east-wall gate spans y:230..310 (80px wide opening)
+const FENCE_GATE_BOT = 310;
+
+// Build costs per BuildMenuOverlay BUILDABLE list (TDD §3.5)
 const BUILD_COSTS: Record<string, { iron_bar: number; copper_bar: number }> = {
-  marketplace: { iron_bar: 5,  copper_bar: 3 },
-  drone_depot: { iron_bar: 10, copper_bar: 5 },
+  marketplace:       { iron_bar: 4,  copper_bar: 2  },
+  drone_depot:       { iron_bar: 6,  copper_bar: 0  },
+  electrolysis_unit: { iron_bar: 6,  copper_bar: 4  },
+  launchpad:         { iron_bar: 30, copper_bar: 15 },
 };
 
-// Footprints matching the build menu definitions
+// Footprints matching the build menu definitions (TDD §2)
 const BUILD_FOOTPRINTS: Record<string, GridFootprint> = {
-  marketplace: { rows: 1, cols: 2 },
-  drone_depot: { rows: 2, cols: 2 },
+  marketplace:       { rows: 1, cols: 2 },
+  drone_depot:       { rows: 2, cols: 2 },
+  electrolysis_unit: { rows: 3, cols: 2 },
+  launchpad:         { rows: 3, cols: 3 },
 };
 
 export class AsteroidOutpostScene implements Scene {
@@ -68,6 +90,11 @@ export class AsteroidOutpostScene implements Scene {
   private _marketplaceOverlay: MarketplaceOverlay | null = null;
   private _productionOverlay: ProductionOverlay | null = null;
   private _productionOverlayActive = false;
+  private _electrolysisUnit: ElectrolysisUnit | null = null;
+  private _electrolysisOverlay: ElectrolysisOverlay | null = null;
+  private _launchpad: Launchpad | null = null;
+  private _launchpadPanel: HTMLDivElement | null = null;
+  private _phase1LaunchHandler: (() => void) | null = null;
   private _depositPanel: DepositPanel | null = null;
   private _app: Application | null = null;
   private _camera: Camera | null = null;
@@ -83,6 +110,9 @@ export class AsteroidOutpostScene implements Scene {
   private _ghostBuildingType: string | null = null;
   // Stored when moving an existing building; restored if the move is canceled
   private _ghostMoveEntry: PlacedEntry | null = null;
+  // Touch action panel shown during ghost placement
+  private _ghostActionPanel: HTMLDivElement | null = null;
+  private _ghostCurrentlyValid = false;
 
   // Road placement mode state
   private _roadMode = false;
@@ -129,6 +159,12 @@ export class AsteroidOutpostScene implements Scene {
     // Draw grid overlay (faint lines)
     this._drawGrid();
 
+    // Perimeter fence + east-wall gate. Registers wall colliders with the
+    // ObstacleManager so the player and drones must route through the gate
+    // gap to enter or leave the compound.
+    this._registerFenceObstacles();
+    this._drawFence();
+
     // Road layer — sits below the building layer
     this._roadLayer = new Graphics();
     this._stage.addChild(this._roadLayer);
@@ -158,15 +194,54 @@ export class AsteroidOutpostScene implements Scene {
     this._camera.onTap((wx, wy) => {
       if (!this._player) return;
 
-      if (this._furnaceOverlay?.isOpen())     { this._furnaceOverlay.close();     }
-      if (this._marketplaceOverlay?.isOpen()) { this._marketplaceOverlay.close(); }
-      if (this._droneDepotOverlay?.isOpen())  { this._droneDepotOverlay.close();  }
-      if (this._buildMenuOverlay?.isOpen())   { this._buildMenuOverlay.close();   }
-      if (this._depositPanel?.isOpen())       { this._depositPanel.close();       }
-
       const col = Math.floor((wx - GRID_ORIGIN.x) / CELL_SIZE);
       const row = Math.floor((wy - GRID_ORIGIN.y) / CELL_SIZE);
-      if (col >= 0 && col < BuildGrid.COLS && row >= 0 && row < BuildGrid.ROWS) {
+      const inGrid = col >= 0 && col < BuildGrid.COLS && row >= 0 && row < BuildGrid.ROWS;
+
+      // Road mode: tap a grid cell to toggle it in the road preview
+      if (this._roadMode) {
+        if (inGrid) {
+          const k = this._roadKey(row, col);
+          if (!roadNetwork.hasRoad(row, col)) {
+            if (this._roadPreview.has(k)) {
+              this._roadPreview.delete(k);
+            } else {
+              this._roadPreview.add(k);
+            }
+            this._updateBudgetPanel();
+          }
+          // Move player to tapped cell so they're visually at the painted location
+          const tx = GRID_ORIGIN.x + col * CELL_SIZE + CELL_SIZE / 2;
+          const ty = GRID_ORIGIN.y + row * CELL_SIZE + CELL_SIZE / 2;
+          this._player.setMoveTarget(tx, ty);
+        } else {
+          handleWorldTap(this._player, wx, wy);
+        }
+        return;
+      }
+
+      // Ghost mode: tap navigates player to that cell (repositions ghost); PLACE button confirms
+      if (this._ghostBuilding) {
+        if (inGrid) {
+          const tx = GRID_ORIGIN.x + col * CELL_SIZE + CELL_SIZE / 2;
+          const ty = GRID_ORIGIN.y + row * CELL_SIZE + CELL_SIZE / 2;
+          this._player.setMoveTarget(tx, ty);
+        } else {
+          handleWorldTap(this._player, wx, wy);
+        }
+        return;
+      }
+
+      // Normal tap: close any open overlay, then handle interaction/movement
+      if (this._furnaceOverlay?.isOpen())       { this._furnaceOverlay.close();       }
+      if (this._marketplaceOverlay?.isOpen())   { this._marketplaceOverlay.close();   }
+      if (this._droneDepotOverlay?.isOpen())    { this._droneDepotOverlay.close();    }
+      if (this._buildMenuOverlay?.isOpen())     { this._buildMenuOverlay.close();     }
+      if (this._depositPanel?.isOpen())         { this._depositPanel.close();         }
+      if (this._electrolysisOverlay?.isOpen())  { this._electrolysisOverlay.close();  }
+      if (this._launchpadPanel)                 { this._closeLaunchpadPanel();        }
+
+      if (inGrid) {
         const entry = buildGrid.getBuildingAt(row, col);
         if (entry) {
           const targetX = GRID_ORIGIN.x + col * CELL_SIZE + CELL_SIZE / 2;
@@ -188,10 +263,24 @@ export class AsteroidOutpostScene implements Scene {
     miningService.setFurnace(this._furnace!);
 
     // Furnace overlay
-    this._furnaceOverlay = new FurnaceOverlay(this._furnace!, () => {
-      // onInsert: called by the overlay's INSERT ORE button
-      this._furnace!.insertFromInventory();
-    });
+    this._furnaceOverlay = new FurnaceOverlay(
+      this._furnace!,
+      () => {
+        // Try player inventory first, then pull from storage as fallback.
+        if (this._furnace!.insertFromInventory() === 0 && this._storage) {
+          const recipe = this._furnace!.recipe;
+          if (recipe !== 'off') {
+            const r = FURNACE_RECIPES[recipe];
+            const qty = this._storage.getStockpile().get(r.input) ?? 0;
+            if (qty > 0) {
+              const pulled = this._storage.pull(r.input, qty);
+              if (pulled > 0) this._furnace!.insertBatch(r.input, pulled);
+            }
+          }
+        }
+      },
+      (oreType) => this._storage?.getStockpile().get(oreType) ?? 0,
+    );
     this._furnaceOverlay.mount();
 
     // Build menu overlay
@@ -200,8 +289,9 @@ export class AsteroidOutpostScene implements Scene {
       onBuildStart: (buildingType: string) => this._startGhostPlacement(buildingType),
       onMoveStart: (buildingId: string) => this._startGhostMove(buildingId),
       getPlacedBuildings: () => buildGrid.getAll().filter(e =>
-        e.buildingType !== 'storage' && e.buildingType !== 'furnace'
+        e.buildingType !== 'storage' && e.buildingType !== 'furnace' && e.buildingType !== 'fabricator'
       ),
+      onEnterRoadMode: () => this._enterRoadMode(),
     });
     this._buildMenuOverlay.mount();
 
@@ -220,6 +310,10 @@ export class AsteroidOutpostScene implements Scene {
     resetDepotBuilt();
 
     gameState.setCurrentPlanet('outpost');
+
+    // Phase 1 launch event
+    this._phase1LaunchHandler = () => this._showPhase1CompleteOverlay();
+    EventBus.on('phase1:launch', this._phase1LaunchHandler);
 
     // Register save getter, storage accessor, and debug hooks
     _activeSaveGetter = () => this.serializeOutpost();
@@ -361,8 +455,8 @@ export class AsteroidOutpostScene implements Scene {
     banner.innerHTML = [
       '<span style="background:#0a2030;border:1px solid #00B8D4;padding:1px 5px;border-radius:2px;color:#00B8D4;">R</span>',
       '<strong>ROAD MODE</strong>',
-      '<span style="color:#888;font-size:10px;">Move &amp; [E] to paint · Shift+[E] to remove · [R] confirm · [ESC] cancel</span>',
-      '<span style="margin-left:auto;color:#666;font-size:10px;">[R] or [ESC] to exit</span>',
+      '<span style="color:#888;font-size:10px;">Tap grid cell to paint · tap again to remove · then CONFIRM</span>',
+      '<span style="margin-left:auto;color:#666;font-size:10px;">[R] confirm · [ESC] cancel</span>',
     ].join('');
     uiLayer.appendChild(banner);
     this._roadModeBanner = banner;
@@ -386,7 +480,12 @@ export class AsteroidOutpostScene implements Scene {
       'color:#E8E4D0',
       'white-space:nowrap',
       'z-index:100',
+      'pointer-events:auto',
     ].join(';');
+    // Stop all touch/pointer events from propagating to the PixiJS canvas.
+    ['pointerdown', 'pointerup', 'touchstart', 'touchend', 'click'].forEach(evt => {
+      panel.addEventListener(evt, (e) => e.stopPropagation(), { capture: true });
+    });
     uiLayer.appendChild(panel);
     this._roadBudgetPanel = panel;
     this._updateBudgetPanel();
@@ -430,8 +529,8 @@ export class AsteroidOutpostScene implements Scene {
 
     const confirmBtn = this._roadBudgetPanel.querySelector('#road-confirm-btn') as HTMLButtonElement | null;
     const cancelBtn = this._roadBudgetPanel.querySelector('#road-cancel-btn') as HTMLButtonElement | null;
-    confirmBtn?.addEventListener('click', () => this._confirmRoadPlacement());
-    cancelBtn?.addEventListener('click', () => this._exitRoadMode());
+    confirmBtn?.addEventListener('click', (e) => { e.stopPropagation(); this._confirmRoadPlacement(); });
+    cancelBtn?.addEventListener('click', (e) => { e.stopPropagation(); this._exitRoadMode(); });
   }
 
   private _confirmRoadPlacement(): void {
@@ -525,6 +624,270 @@ export class AsteroidOutpostScene implements Scene {
     this._stage!.addChild(g);
   }
 
+  // -------------------------------------------------------------------------
+  // Perimeter fence — collision + visuals
+  // -------------------------------------------------------------------------
+
+  private _registerFenceObstacles(): void {
+    obstacleManager.clear();
+
+    // Top wall
+    obstacleManager.addWall({
+      x: FENCE_LEFT, y: FENCE_TOP,
+      w: FENCE_RIGHT - FENCE_LEFT, h: FENCE_THICK,
+    });
+    // Bottom wall
+    obstacleManager.addWall({
+      x: FENCE_LEFT, y: FENCE_BOTTOM - FENCE_THICK,
+      w: FENCE_RIGHT - FENCE_LEFT, h: FENCE_THICK,
+    });
+    // Left wall
+    obstacleManager.addWall({
+      x: FENCE_LEFT, y: FENCE_TOP,
+      w: FENCE_THICK, h: FENCE_BOTTOM - FENCE_TOP,
+    });
+    // East wall — split into two segments around the gate gap
+    obstacleManager.addWall({
+      x: FENCE_RIGHT - FENCE_THICK, y: FENCE_TOP,
+      w: FENCE_THICK, h: FENCE_GATE_TOP - FENCE_TOP,
+    });
+    obstacleManager.addWall({
+      x: FENCE_RIGHT - FENCE_THICK, y: FENCE_GATE_BOT,
+      w: FENCE_THICK, h: FENCE_BOTTOM - FENCE_GATE_BOT,
+    });
+
+    // Navigation waypoints so drones can route around the compound to reach
+    // the gate. The visibility-graph pathfinder uses these as intermediate
+    // hops when the direct line is wall-blocked.
+    const navOffset = 30;
+    const gateMidY = (FENCE_GATE_TOP + FENCE_GATE_BOT) / 2;
+    obstacleManager.addWaypoint({ x: FENCE_RIGHT + navOffset,  y: gateMidY });                       // gate approach (outside)
+    obstacleManager.addWaypoint({ x: FENCE_RIGHT - FENCE_THICK - navOffset, y: gateMidY });          // gate approach (inside)
+    obstacleManager.addWaypoint({ x: FENCE_RIGHT + navOffset,  y: FENCE_TOP - navOffset });          // NE outer corner
+    obstacleManager.addWaypoint({ x: FENCE_RIGHT + navOffset,  y: FENCE_BOTTOM + navOffset });       // SE outer corner
+    obstacleManager.addWaypoint({ x: FENCE_LEFT  - navOffset,  y: FENCE_TOP - navOffset });          // NW outer corner
+    obstacleManager.addWaypoint({ x: FENCE_LEFT  - navOffset,  y: FENCE_BOTTOM + navOffset });       // SW outer corner
+  }
+
+  private _drawFence(): void {
+    if (!this._stage) return;
+
+    const NAVY      = 0x142540;
+    const NAVY_DK   = 0x081229;
+    const AMBER     = 0xD4A843;
+    const AMBER_LT  = 0xFFE4A0;
+    const AMBER_DK  = 0x8C6B22;
+    const TEAL      = 0x00B8D4;
+    const BOLT      = 0x2A1A05;
+
+    const fence = new Graphics();
+
+    // Helper: draw an industrial wall segment as a dark navy band with an
+    // amber inner stripe, evenly spaced metal posts, and faint teal mesh.
+    const drawWallBand = (
+      x: number, y: number, w: number, h: number, horizontal: boolean,
+    ): void => {
+      // Outer shadow strip (one px outside the band for grounded look)
+      fence.rect(x - 1, y - 1, w + 2, h + 2).fill({ color: NAVY_DK });
+      // Base panel
+      fence.rect(x, y, w, h).fill({ color: NAVY });
+      // Amber inner highlight (top/left edge of the band)
+      if (horizontal) {
+        fence.rect(x, y + 1, w, 1).fill({ color: AMBER_DK });
+      } else {
+        fence.rect(x + 1, y, 1, h).fill({ color: AMBER_DK });
+      }
+
+      // Diagonal mesh weave between posts (subtle teal)
+      const meshStep = 6;
+      if (horizontal) {
+        for (let i = 0; i < w; i += meshStep) {
+          fence.moveTo(x + i, y + 1);
+          fence.lineTo(x + i + meshStep, y + h - 1);
+          fence.moveTo(x + i + meshStep, y + 1);
+          fence.lineTo(x + i, y + h - 1);
+        }
+      } else {
+        for (let i = 0; i < h; i += meshStep) {
+          fence.moveTo(x + 1, y + i);
+          fence.lineTo(x + w - 1, y + i + meshStep);
+          fence.moveTo(x + 1, y + i + meshStep);
+          fence.lineTo(x + w - 1, y + i);
+        }
+      }
+      fence.stroke({ color: TEAL, width: 0.6, alpha: 0.35 });
+
+      // Metal posts every 28px — slightly taller than the wall thickness so
+      // they read as posts when viewed from above.
+      const POST_SPACING = 28;
+      const POST_OVERHANG = 3;
+      const POST_SIZE = 5;
+      if (horizontal) {
+        for (let px = x + POST_SPACING / 2; px < x + w; px += POST_SPACING) {
+          fence.rect(px - POST_SIZE / 2, y - POST_OVERHANG, POST_SIZE, h + POST_OVERHANG * 2)
+               .fill({ color: AMBER });
+          fence.rect(px - POST_SIZE / 2, y - POST_OVERHANG, POST_SIZE, 1)
+               .fill({ color: AMBER_LT });
+          // Bolt heads top + bottom
+          fence.circle(px, y - POST_OVERHANG + 1, 0.9).fill({ color: BOLT });
+          fence.circle(px, y + h + POST_OVERHANG - 1, 0.9).fill({ color: BOLT });
+        }
+      } else {
+        for (let py = y + POST_SPACING / 2; py < y + h; py += POST_SPACING) {
+          fence.rect(x - POST_OVERHANG, py - POST_SIZE / 2, w + POST_OVERHANG * 2, POST_SIZE)
+               .fill({ color: AMBER });
+          fence.rect(x - POST_OVERHANG, py - POST_SIZE / 2, 1, POST_SIZE)
+               .fill({ color: AMBER_LT });
+          fence.circle(x - POST_OVERHANG + 1, py, 0.9).fill({ color: BOLT });
+          fence.circle(x + w + POST_OVERHANG - 1, py, 0.9).fill({ color: BOLT });
+        }
+      }
+    };
+
+    // Four wall bands (east wall split around gate)
+    drawWallBand(FENCE_LEFT,  FENCE_TOP,                    FENCE_RIGHT - FENCE_LEFT, FENCE_THICK,                  true);  // top
+    drawWallBand(FENCE_LEFT,  FENCE_BOTTOM - FENCE_THICK,   FENCE_RIGHT - FENCE_LEFT, FENCE_THICK,                  true);  // bottom
+    drawWallBand(FENCE_LEFT,  FENCE_TOP,                    FENCE_THICK,              FENCE_BOTTOM - FENCE_TOP,     false); // left
+    drawWallBand(FENCE_RIGHT - FENCE_THICK, FENCE_TOP,      FENCE_THICK,              FENCE_GATE_TOP - FENCE_TOP,   false); // east upper
+    drawWallBand(FENCE_RIGHT - FENCE_THICK, FENCE_GATE_BOT, FENCE_THICK,              FENCE_BOTTOM - FENCE_GATE_BOT, false); // east lower
+
+    // ── Gate ────────────────────────────────────────────────────────────────
+    // Two beefy gate posts flanking the gap, an amber arch beam between them
+    // a teal energy threshold across the opening, and two open door panels
+    // swung outward (drawn as rotated containers).
+    const gx = FENCE_RIGHT;
+    const gyTop = FENCE_GATE_TOP;
+    const gyBot = FENCE_GATE_BOT;
+    const gMid = (gyTop + gyBot) / 2;
+    const postW = FENCE_THICK + 6;
+    const postH = 14;
+
+    // Gate posts (anchors for the doors)
+    const drawGatePost = (px: number, py: number) => {
+      fence.rect(px, py - postH / 2, postW, postH).fill({ color: NAVY_DK });
+      fence.rect(px + 1, py - postH / 2 + 1, postW - 2, postH - 2).fill({ color: AMBER });
+      fence.rect(px + 1, py - postH / 2 + 1, postW - 2, 1).fill({ color: AMBER_LT });
+      // Bolt corners
+      fence.circle(px + 2,         py - postH / 2 + 2,         1.1).fill({ color: BOLT });
+      fence.circle(px + postW - 2, py - postH / 2 + 2,         1.1).fill({ color: BOLT });
+      fence.circle(px + 2,         py + postH / 2 - 2,         1.1).fill({ color: BOLT });
+      fence.circle(px + postW - 2, py + postH / 2 - 2,         1.1).fill({ color: BOLT });
+    };
+    drawGatePost(gx - postW / 2, gyTop);
+    drawGatePost(gx - postW / 2, gyBot);
+
+    // Arch beam connecting the two gate posts on the OUTSIDE (east) side.
+    // Drawn as a thin amber arc using line segments.
+    const archX0 = gx + postW / 2 - 1;
+    const archSegments = 14;
+    const archDepth = 10;
+    fence.moveTo(archX0, gyTop);
+    for (let i = 1; i <= archSegments; i++) {
+      const t = i / archSegments;
+      const py = gyTop + (gyBot - gyTop) * t;
+      // Symmetric bulge outward (east) peaking at the midpoint
+      const bulge = Math.sin(t * Math.PI) * archDepth;
+      fence.lineTo(archX0 + bulge, py);
+    }
+    fence.stroke({ color: AMBER, width: 2 });
+    // Inner highlight arc
+    fence.moveTo(archX0, gyTop);
+    for (let i = 1; i <= archSegments; i++) {
+      const t = i / archSegments;
+      const py = gyTop + (gyBot - gyTop) * t;
+      const bulge = Math.sin(t * Math.PI) * (archDepth - 2);
+      fence.lineTo(archX0 + bulge, py);
+    }
+    fence.stroke({ color: AMBER_LT, width: 0.6, alpha: 0.7 });
+
+    // Energy threshold — vertical teal line across the gate opening with a
+    // few horizontal scan strokes for sci-fi flavor.
+    fence.rect(gx - FENCE_THICK + 1, gyTop + 2, FENCE_THICK - 2, gyBot - gyTop - 4)
+         .fill({ color: TEAL, alpha: 0.18 });
+    fence.rect(gx - FENCE_THICK / 2, gyTop + 2, 1, gyBot - gyTop - 4)
+         .fill({ color: TEAL, alpha: 0.55 });
+    for (let py = gyTop + 6; py < gyBot - 4; py += 5) {
+      fence.rect(gx - FENCE_THICK + 2, py, FENCE_THICK - 4, 0.8)
+           .fill({ color: TEAL, alpha: 0.45 });
+    }
+
+    fence.zIndex = 1;
+    this._stage.addChild(fence);
+
+    // Open gate doors — separate Containers so we can rotate each about its
+    // hinge. Each door is a horizontal beam with three vertical bars and two
+    // diagonal cross-braces, swung outward (east) ~70° from the closed
+    // position so the gap reads as "open".
+    const doorLen = (gyBot - gyTop) * 0.55;
+    const doorThick = 5;
+
+    const buildDoor = (hingeX: number, hingeY: number, swingRad: number): Container => {
+      const door = new Container();
+      const dg = new Graphics();
+      // Beam
+      dg.rect(0, -doorThick / 2, doorLen, doorThick).fill({ color: AMBER_DK });
+      dg.rect(0, -doorThick / 2, doorLen, 1).fill({ color: AMBER_LT });
+      dg.rect(0, doorThick / 2 - 1, doorLen, 1).fill({ color: NAVY_DK });
+      // Vertical bars
+      for (let i = 0; i < 3; i++) {
+        const bx = (doorLen / 3) * (i + 0.5);
+        dg.rect(bx - 1.5, -doorThick / 2 - 4, 3, doorThick + 8).fill({ color: AMBER });
+      }
+      // Diagonal cross-brace
+      dg.moveTo(2, -doorThick / 2);
+      dg.lineTo(doorLen - 2, doorThick / 2);
+      dg.moveTo(2, doorThick / 2);
+      dg.lineTo(doorLen - 2, -doorThick / 2);
+      dg.stroke({ color: AMBER_DK, width: 1 });
+      // Hinge knob
+      dg.circle(0, 0, 2.5).fill({ color: NAVY_DK });
+      dg.circle(0, 0, 1.5).fill({ color: AMBER_LT });
+      // End handle
+      dg.circle(doorLen, 0, 2).fill({ color: BOLT });
+
+      door.addChild(dg);
+      door.x = hingeX;
+      door.y = hingeY;
+      door.rotation = swingRad;
+      return door;
+    };
+
+    // Top door hinges at top gate post, swings outward & up (negative y → angle)
+    const topDoor = buildDoor(gx, gyTop, -Math.PI * 0.42);
+    // Bottom door hinges at bottom gate post, swings outward & down
+    const botDoor = buildDoor(gx, gyBot, Math.PI * 0.42);
+    this._stage.addChild(topDoor);
+    this._stage.addChild(botDoor);
+
+    // GATE label above the arch — small amber text plate
+    const labelG = new Graphics();
+    const labelW = 28;
+    const labelH = 8;
+    const labelX = gx + archDepth + 4;
+    const labelY = gMid - labelH / 2;
+    labelG.rect(labelX - 1, labelY - 1, labelW + 2, labelH + 2).fill({ color: NAVY_DK });
+    labelG.rect(labelX, labelY, labelW, labelH).fill({ color: NAVY });
+    labelG.rect(labelX, labelY, labelW, 1).fill({ color: AMBER_LT });
+    labelG.rect(labelX, labelY + labelH - 1, labelW, 1).fill({ color: AMBER_DK });
+    // Tiny pixel-art "GATE" marks (5 amber dots + spacers)
+    const dot = (cx: number, cy: number) => labelG.rect(cx, cy, 1, 1).fill({ color: AMBER_LT });
+    const baseY = labelY + 3;
+    // G
+    dot(labelX + 3, baseY); dot(labelX + 4, baseY); dot(labelX + 3, baseY + 1); dot(labelX + 3, baseY + 2); dot(labelX + 4, baseY + 2); dot(labelX + 4, baseY + 1);
+    // A
+    dot(labelX + 7, baseY); dot(labelX + 8, baseY); dot(labelX + 6, baseY + 1); dot(labelX + 9, baseY + 1); dot(labelX + 6, baseY + 2); dot(labelX + 9, baseY + 2); dot(labelX + 7, baseY + 1); dot(labelX + 8, baseY + 1);
+    // T
+    dot(labelX + 11, baseY); dot(labelX + 12, baseY); dot(labelX + 13, baseY); dot(labelX + 12, baseY + 1); dot(labelX + 12, baseY + 2);
+    // E
+    dot(labelX + 15, baseY); dot(labelX + 16, baseY); dot(labelX + 17, baseY); dot(labelX + 15, baseY + 1); dot(labelX + 15, baseY + 2); dot(labelX + 16, baseY + 2); dot(labelX + 17, baseY + 2); dot(labelX + 16, baseY + 1);
+    // Direction chevron pointing east (out)
+    labelG.moveTo(labelX + 21, labelY + 1);
+    labelG.lineTo(labelX + 25, labelY + labelH / 2);
+    labelG.lineTo(labelX + 21, labelY + labelH - 1);
+    labelG.stroke({ color: AMBER_LT, width: 1 });
+    this._stage.addChild(labelG);
+  }
+
   private _initGrid(): void {
     buildGrid.deserialize([]); // reset
 
@@ -542,6 +905,12 @@ export class AsteroidOutpostScene implements Scene {
     this._furnace = new Furnace(furnacePos.x, furnacePos.y, this._storage);
     buildGrid.place({ buildingId: 'furnace_0', buildingType: 'furnace', row: 2, col: 1, footprint: { rows: 1, cols: 1 } });
     this._buildingLayer!.addChild(this._furnace.container);
+
+    // Fabricator placeholder (2×2) at [0,0] — always pre-placed; [E] opens Build Menu
+    buildGrid.place({ buildingId: 'fabricator_0', buildingType: 'fabricator', row: 0, col: 0, footprint: { rows: 2, cols: 2 } });
+    const fabPb = new PlacedBuilding('fabricator_0', 'fabricator', 0, 0, { rows: 2, cols: 2 });
+    this._placedBuildings.push(fabPb);
+    this._buildingLayer!.addChild(fabPb.container);
 
     // Drone Depot (2x2) at [0,3] (top right)
     const depotFootprint = BUILD_FOOTPRINTS['drone_depot'];
@@ -569,6 +938,9 @@ export class AsteroidOutpostScene implements Scene {
     // Furnace update
     this._furnace?.update(delta);
 
+    // Electrolysis unit update
+    this._electrolysisUnit?.update(delta);
+
     // Drone entity movement update
     fleetManager.update(delta);
 
@@ -594,7 +966,9 @@ export class AsteroidOutpostScene implements Scene {
         (this._marketplaceOverlay?.isOpen() ?? false) ||
         (this._droneDepotOverlay?.isOpen() ?? false) ||
         (this._buildMenuOverlay?.isOpen() ?? false) ||
-        (this._depositPanel?.isOpen() ?? false);
+        (this._depositPanel?.isOpen() ?? false) ||
+        (this._electrolysisOverlay?.isOpen() ?? false) ||
+        (this._launchpadPanel !== null);
       if (!anyOverlayOpen) {
         this._enterRoadMode();
       }
@@ -637,11 +1011,13 @@ export class AsteroidOutpostScene implements Scene {
 
     // Close overlays on ESC (pause_menu action)
     if (inputManager.wasJustPressed('pause_menu')) {
-      if (this._depositPanel?.isOpen())       { this._depositPanel.close();       return; }
-      if (this._furnaceOverlay?.isOpen())     { this._furnaceOverlay.close();     return; }
-      if (this._marketplaceOverlay?.isOpen()) { this._marketplaceOverlay.close(); return; }
-      if (this._droneDepotOverlay?.isOpen())  { this._droneDepotOverlay.close();  return; }
-      if (this._buildMenuOverlay?.isOpen())   { this._buildMenuOverlay.close();   return; }
+      if (this._depositPanel?.isOpen())        { this._depositPanel.close();        return; }
+      if (this._furnaceOverlay?.isOpen())      { this._furnaceOverlay.close();      return; }
+      if (this._marketplaceOverlay?.isOpen())  { this._marketplaceOverlay.close();  return; }
+      if (this._droneDepotOverlay?.isOpen())   { this._droneDepotOverlay.close();   return; }
+      if (this._buildMenuOverlay?.isOpen())    { this._buildMenuOverlay.close();    return; }
+      if (this._electrolysisOverlay?.isOpen()) { this._electrolysisOverlay.close(); return; }
+      if (this._launchpadPanel)                { this._closeLaunchpadPanel();       return; }
     }
 
     // ── Autonomy beat (TDD §4.7) ─────────────────────────────────────────────
@@ -692,11 +1068,12 @@ export class AsteroidOutpostScene implements Scene {
     const pool = this._storage?.getStockpile() ?? new Map();
     const cap = 1000;
     planetResources.value = [
-      { key: 'iron_ore',    label: 'IRON',   subLabel: 'ORE', swatchColor: '#B45F06', carried: inventory.getByType('iron_ore'),    pool: pool.get('iron_ore')    ?? 0, cap },
-      { key: 'copper_ore',  label: 'COPPER', subLabel: 'ORE', swatchColor: '#E69138', carried: inventory.getByType('copper_ore'),  pool: pool.get('copper_ore')  ?? 0, cap },
-      { key: 'water',       label: 'WATER',  subLabel: 'ICE', swatchColor: '#3D85C6', carried: inventory.getByType('water'),       pool: pool.get('water')       ?? 0, cap },
-      { key: 'iron_bar',    label: 'IRON',   subLabel: 'BAR', swatchColor: '#999999', carried: inventory.getByType('iron_bar'),    pool: pool.get('iron_bar')    ?? 0, cap },
-      { key: 'copper_bar',  label: 'COPPER', subLabel: 'BAR', swatchColor: '#F6B26B', carried: inventory.getByType('copper_bar'),  pool: pool.get('copper_bar')  ?? 0, cap },
+      { key: 'iron_ore',      label: 'IRON',   subLabel: 'ORE', swatchColor: '#B45F06', carried: inventory.getByType('iron_ore'),      pool: pool.get('iron_ore')      ?? 0, cap },
+      { key: 'copper_ore',    label: 'COPPER', subLabel: 'ORE', swatchColor: '#E69138', carried: inventory.getByType('copper_ore'),    pool: pool.get('copper_ore')    ?? 0, cap },
+      { key: 'water',         label: 'WATER',  subLabel: 'ICE', swatchColor: '#3D85C6', carried: inventory.getByType('water'),         pool: pool.get('water')         ?? 0, cap },
+      { key: 'iron_bar',      label: 'IRON',   subLabel: 'BAR', swatchColor: '#999999', carried: inventory.getByType('iron_bar'),      pool: pool.get('iron_bar')      ?? 0, cap },
+      { key: 'copper_bar',    label: 'COPPER', subLabel: 'BAR', swatchColor: '#F6B26B', carried: inventory.getByType('copper_bar'),    pool: pool.get('copper_bar')    ?? 0, cap },
+      { key: 'hydrolox_fuel', label: 'FUEL',   subLabel: 'HYD', swatchColor: '#00E5FF', carried: inventory.getByType('hydrolox_fuel'), pool: pool.get('hydrolox_fuel') ?? 0, cap },
     ];
   }
 
@@ -714,7 +1091,9 @@ export class AsteroidOutpostScene implements Scene {
     const footprint = BUILD_FOOTPRINTS[buildingType] ?? { rows: 1, cols: 1 };
     this._ghostBuilding = PlacedBuilding.createGhost(buildingType, footprint);
     this._ghostBuildingType = buildingType;
+    this._ghostCurrentlyValid = false;
     this._stage!.addChild(this._ghostBuilding.container);
+    this._showGhostActionPanel(buildingType);
   }
 
   private _startGhostMove(buildingId: string): void {
@@ -740,7 +1119,9 @@ export class AsteroidOutpostScene implements Scene {
     const footprint = entry.footprint;
     this._ghostBuilding = PlacedBuilding.createGhost(entry.buildingType, footprint);
     this._ghostBuildingType = entry.buildingType;
+    this._ghostCurrentlyValid = false;
     this._stage!.addChild(this._ghostBuilding.container);
+    this._showGhostActionPanel(entry.buildingType);
   }
 
   private _removeEntityBuilding(buildingId: string): void {
@@ -761,6 +1142,79 @@ export class AsteroidOutpostScene implements Scene {
     }
   }
 
+  private _showGhostActionPanel(buildingType: string): void {
+    this._hideGhostActionPanel();
+    const uiLayer = document.getElementById('ui-layer') ?? document.body;
+    const panel = document.createElement('div');
+    panel.id = 'ghost-action-panel';
+    panel.style.cssText = [
+      'position:absolute',
+      'bottom:60px',
+      'left:50%',
+      'transform:translateX(-50%)',
+      'background:rgba(7,18,42,0.96)',
+      'border:1px solid #D4A843',
+      'padding:8px 14px',
+      'display:flex',
+      'align-items:center',
+      'gap:10px',
+      'font-family:monospace',
+      'font-size:12px',
+      'color:#E8E4D0',
+      'z-index:100',
+      'pointer-events:auto',
+      'white-space:nowrap',
+    ].join(';');
+    const label = buildingType.replace(/_/g, ' ').toUpperCase();
+    panel.innerHTML = `
+      <span style="color:#D4A843;">Placing: ${label}</span>
+      <span style="color:#444;">│</span>
+      <span style="color:#888;font-size:10px;">Walk to position</span>
+      <span style="color:#444;">│</span>
+      <button id="ghost-place-btn" disabled style="font-family:monospace;font-size:12px;padding:6px 16px;border:1px solid #3A5A8A;background:transparent;color:#3A5A8A;cursor:default;min-width:72px;">PLACE</button>
+      <button id="ghost-cancel-btn" style="font-family:monospace;font-size:12px;padding:6px 14px;border:1px solid #8A3A3A;background:transparent;color:#E8E4D0;cursor:pointer;">CANCEL</button>
+    `;
+    // Stop all pointer/touch events from propagating to the PixiJS canvas below.
+    ['pointerdown', 'pointerup', 'touchstart', 'touchend', 'click'].forEach(evt => {
+      panel.addEventListener(evt, (e) => e.stopPropagation(), { capture: true });
+    });
+    panel.querySelector('#ghost-cancel-btn')?.addEventListener('click', (e) => {
+      e.stopPropagation();
+      this._cancelGhost();
+    });
+    panel.querySelector('#ghost-place-btn')?.addEventListener('click', (e) => {
+      e.stopPropagation();
+      if (this._ghostBuilding && this._ghostCurrentlyValid) {
+        this._confirmGhostPlacement(this._ghostBuilding.row, this._ghostBuilding.col);
+      }
+    });
+    uiLayer.appendChild(panel);
+    this._ghostActionPanel = panel;
+  }
+
+  private _hideGhostActionPanel(): void {
+    this._ghostActionPanel?.remove();
+    this._ghostActionPanel = null;
+  }
+
+  private _updateGhostActionPanel(valid: boolean): void {
+    if (!this._ghostActionPanel) return;
+    const btn = this._ghostActionPanel.querySelector('#ghost-place-btn') as HTMLButtonElement | null;
+    if (!btn) return;
+    btn.disabled = !valid;
+    if (valid) {
+      btn.style.borderColor = '#4ADE80';
+      btn.style.color = '#4ADE80';
+      btn.style.cursor = 'pointer';
+      btn.style.background = 'rgba(0,60,20,0.4)';
+    } else {
+      btn.style.borderColor = '#3A5A8A';
+      btn.style.color = '#3A5A8A';
+      btn.style.cursor = 'default';
+      btn.style.background = 'transparent';
+    }
+  }
+
   private _updateGhostPlacement(): void {
     if (!this._ghostBuilding || !this._player) return;
 
@@ -778,14 +1232,18 @@ export class AsteroidOutpostScene implements Scene {
 
     const valid = buildGrid.canPlace(clampedRow, clampedCol, footprint);
     this._ghostBuilding.setGhostValid(valid);
+    if (valid !== this._ghostCurrentlyValid) {
+      this._ghostCurrentlyValid = valid;
+      this._updateGhostActionPanel(valid);
+    }
 
-    // E to confirm placement
+    // E to confirm placement (keyboard)
     if (inputManager.wasJustPressed('interact') && valid) {
       this._confirmGhostPlacement(clampedRow, clampedCol);
       return;
     }
 
-    // ESC to cancel
+    // ESC to cancel (keyboard)
     if (inputManager.wasJustPressed('pause_menu')) {
       this._cancelGhost();
     }
@@ -827,6 +1285,7 @@ export class AsteroidOutpostScene implements Scene {
     this._ghostBuilding = null;
     this._ghostBuildingType = null;
     this._ghostMoveEntry = null;
+    this._hideGhostActionPanel();
 
     // Refresh build menu
     this._buildMenuOverlay?.refresh();
@@ -838,6 +1297,7 @@ export class AsteroidOutpostScene implements Scene {
     this._stage?.removeChild(this._ghostBuilding.container);
     this._ghostBuilding = null;
     this._ghostBuildingType = null;
+    this._hideGhostActionPanel();
 
     // If we were moving an existing building, restore it to its original position
     if (this._ghostMoveEntry) {
@@ -901,6 +1361,19 @@ export class AsteroidOutpostScene implements Scene {
       this._droneDepotOverlay?.unmount();
       this._droneDepotOverlay = new DroneDepotOverlay(depot, () => this._stage!);
       this._droneDepotOverlay.mount();
+    } else if (buildingType === 'electrolysis_unit') {
+      const eu = new ElectrolysisUnit(wx, wy);
+      this._electrolysisUnit = eu;
+      this._buildingLayer!.addChild(eu.container);
+      this._electrolysisOverlay?.unmount();
+      this._electrolysisOverlay = new ElectrolysisOverlay(eu);
+      this._electrolysisOverlay.mount();
+      outpostDispatcher.setElectrolysisUnit(eu);
+    } else if (buildingType === 'launchpad') {
+      const lp = new Launchpad(wx, wy);
+      this._launchpad = lp;
+      this._buildingLayer!.addChild(lp.container);
+      outpostDispatcher.setLaunchpad(lp);
     } else {
       // Generic PlacedBuilding fallback
       const pb = new PlacedBuilding(buildingId, buildingType, row, col, footprint);
@@ -926,10 +1399,11 @@ export class AsteroidOutpostScene implements Scene {
     }
 
     // Close whichever overlay is open and bail
-    if (this._furnaceOverlay?.isOpen())     { this._furnaceOverlay.close();     return; }
-    if (this._marketplaceOverlay?.isOpen()) { this._marketplaceOverlay.close(); return; }
-    if (this._droneDepotOverlay?.isOpen())  { this._droneDepotOverlay.close();  return; }
-    if (this._buildMenuOverlay?.isOpen())   { this._buildMenuOverlay.close();   return; }
+    if (this._furnaceOverlay?.isOpen())       { this._furnaceOverlay.close();       return; }
+    if (this._marketplaceOverlay?.isOpen())   { this._marketplaceOverlay.close();   return; }
+    if (this._droneDepotOverlay?.isOpen())    { this._droneDepotOverlay.close();    return; }
+    if (this._buildMenuOverlay?.isOpen())     { this._buildMenuOverlay.close();     return; }
+    if (this._electrolysisOverlay?.isOpen())  { this._electrolysisOverlay.close();  return; }
 
     // Grid-tile-based interaction: every cell of a building's footprint triggers
     // the correct action menu, eliminating the circle-radius gap bugs.
@@ -938,10 +1412,13 @@ export class AsteroidOutpostScene implements Scene {
     if (col >= 0 && col < BuildGrid.COLS && row >= 0 && row < BuildGrid.ROWS) {
       const entry = buildGrid.getBuildingAt(row, col);
       if (entry) {
-        if (entry.buildingType === 'furnace')     { this._furnaceOverlay?.open();     return; }
-        if (entry.buildingType === 'marketplace') { this._marketplaceOverlay?.open(); return; }
-        if (entry.buildingType === 'drone_depot') { this._droneDepotOverlay?.open();  return; }
-        if (entry.buildingType === 'storage')     { miningService.onInteract(px, py); return; }
+        if (entry.buildingType === 'furnace')           { this._furnaceOverlay?.open();      return; }
+        if (entry.buildingType === 'marketplace')       { this._marketplaceOverlay?.open();  return; }
+        if (entry.buildingType === 'drone_depot')       { this._droneDepotOverlay?.open();   return; }
+        if (entry.buildingType === 'storage')           { miningService.onInteract(px, py);  return; }
+        if (entry.buildingType === 'fabricator')        { this._buildMenuOverlay?.open();    return; }
+        if (entry.buildingType === 'electrolysis_unit') { this._electrolysisOverlay?.open(); return; }
+        if (entry.buildingType === 'launchpad')         { this._openLaunchpadPanel();        return; }
         return; // occupied tile, type not interactable
       }
       // Empty grid tile → build menu
@@ -996,6 +1473,131 @@ export class AsteroidOutpostScene implements Scene {
         miningService.onInteractReleased();
       },
     });
+  }
+
+  private _openLaunchpadPanel(): void {
+    if (this._launchpadPanel) return;
+    const lp = this._launchpad;
+    if (!lp) return;
+
+    const uiLayer = document.getElementById('ui-layer') ?? document.body;
+    const panel = document.createElement('div');
+    panel.id = 'launchpad-panel';
+    panel.style.cssText = [
+      'position:absolute',
+      'top:50%',
+      'left:50%',
+      'transform:translate(-50%,-50%)',
+      'background:rgba(7,18,42,0.98)',
+      'border:1px solid #D4A843',
+      'color:#E8E4D0',
+      'font-family:monospace',
+      'font-size:13px',
+      'padding:0',
+      'min-width:360px',
+      'max-width:440px',
+      'z-index:20',
+      'pointer-events:auto',
+    ].join(';');
+
+    const render = () => {
+      if (!panel.isConnected) return;
+      const fuel = lp.fuelUnits;
+      const needed = Launchpad.FUEL_REQUIRED;
+      const pct = Math.min(100, Math.round((fuel / needed) * 100));
+      const ready = fuel >= needed;
+      const fuelColor = ready ? '#4ADE80' : '#00E5FF';
+      panel.innerHTML = `
+        <div style="background:#041229;color:#D4A843;padding:8px 14px;font-size:12px;font-weight:bold;border-bottom:1px solid #D4A843;display:flex;justify-content:space-between;align-items:center;">
+          <span>🚀 LAUNCHPAD</span>
+          <span style="font-size:10px;color:${ready ? '#4ADE80' : '#888'};">${ready ? '▶ READY TO LAUNCH' : '— FUELING'}</span>
+        </div>
+        <div style="padding:12px 14px;">
+          <div style="font-size:11px;color:#D4A843;letter-spacing:1px;margin-bottom:8px;">HYDROLOX FUEL</div>
+          <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px;">
+            <div style="flex:1;height:10px;background:#0A1A2A;border:1px solid #1A3A5A;">
+              <div style="display:inline-block;width:${pct}%;height:10px;background:${fuelColor};vertical-align:middle;"></div>
+            </div>
+            <span style="color:#E8E4D0;width:70px;text-align:right;">${fuel} / ${needed}</span>
+          </div>
+          <div style="font-size:10px;color:#444;margin-bottom:14px;">→ Logistics drones haul hydrolox_fuel from Storage</div>
+          <div style="font-size:11px;color:#888;margin-bottom:14px;">Fuel ${needed - fuel > 0 ? `needed: ${needed - fuel} more units` : 'tank full — ready!'}</div>
+          <div style="display:flex;justify-content:flex-end;gap:8px;">
+            <button id="lp-launch" style="font-family:monospace;font-size:11px;padding:4px 14px;border:1px solid ${ready ? '#4ADE80' : '#3A5A8A'};background:${ready ? '#0A3A0A' : 'transparent'};color:${ready ? '#4ADE80' : '#3A5A8A'};cursor:${ready ? 'pointer' : 'default'};" ${ready ? '' : 'disabled'}>LAUNCH ROCKET</button>
+            <button id="lp-close" style="font-family:monospace;font-size:11px;padding:4px 12px;border:1px solid #3A5A8A;background:transparent;color:#E8E4D0;cursor:pointer;">CLOSE</button>
+          </div>
+        </div>
+      `;
+      panel.querySelector('#lp-close')?.addEventListener('click', () => this._closeLaunchpadPanel());
+      panel.querySelector('#lp-launch')?.addEventListener('click', () => {
+        if (lp.fuelUnits >= Launchpad.FUEL_REQUIRED) {
+          lp.launchPhase1();
+          this._closeLaunchpadPanel();
+        }
+      });
+    };
+
+    render();
+    uiLayer.appendChild(panel);
+    this._launchpadPanel = panel;
+
+    // Refresh the panel every 500ms to show fuel progress
+    const intervalId = window.setInterval(() => {
+      if (!panel.isConnected) { window.clearInterval(intervalId); return; }
+      render();
+    }, 500);
+    (panel as any).__intervalId = intervalId;
+
+    // ESC key closes panel
+    const onKey = (e: KeyboardEvent) => {
+      if (e.code === 'Escape' || e.code === 'KeyE') {
+        e.preventDefault();
+        e.stopImmediatePropagation();
+        this._closeLaunchpadPanel();
+        window.removeEventListener('keydown', onKey, true);
+      }
+    };
+    window.addEventListener('keydown', onKey, true);
+    (panel as any).__keyHandler = onKey;
+  }
+
+  private _closeLaunchpadPanel(): void {
+    if (!this._launchpadPanel) return;
+    const panel = this._launchpadPanel;
+    const intervalId = (panel as any).__intervalId;
+    if (intervalId !== undefined) window.clearInterval(intervalId);
+    const keyHandler = (panel as any).__keyHandler;
+    if (keyHandler) window.removeEventListener('keydown', keyHandler, true);
+    panel.remove();
+    this._launchpadPanel = null;
+  }
+
+  private _showPhase1CompleteOverlay(): void {
+    const uiLayer = document.getElementById('ui-layer') ?? document.body;
+    const overlay = document.createElement('div');
+    overlay.id = 'phase1-complete-overlay';
+    overlay.style.cssText = [
+      'position:fixed',
+      'inset:0',
+      'background:rgba(0,0,0,0.85)',
+      'display:flex',
+      'flex-direction:column',
+      'align-items:center',
+      'justify-content:center',
+      'z-index:9999',
+      'font-family:monospace',
+      'color:#E8E4D0',
+    ].join(';');
+    overlay.innerHTML = `
+      <div style="background:#07122a;border:2px solid #D4A843;padding:32px 40px;min-width:380px;max-width:480px;text-align:center;box-shadow:0 0 60px rgba(212,168,67,0.3);">
+        <div style="font-size:22px;font-weight:bold;color:#D4A843;margin-bottom:12px;">★ PHASE 1 COMPLETE ★</div>
+        <div style="font-size:13px;color:#B8B4A0;margin-bottom:20px;">Rocket launched — asteroid outpost established!</div>
+        <div style="font-size:11px;color:#666;margin-bottom:24px;">The hydrolox rocket burns bright against the void.<br>Phase 2 awaits beyond the belt…</div>
+        <button id="phase1-continue" style="font-family:monospace;font-size:12px;padding:8px 20px;border:1px solid #D4A843;background:#1a3060;color:#D4A843;cursor:pointer;">CONTINUE</button>
+      </div>
+    `;
+    uiLayer.appendChild(overlay);
+    overlay.querySelector('#phase1-continue')?.addEventListener('click', () => overlay.remove());
   }
 
   private _isPlayerNearGrid(px: number, py: number, radius = 120): boolean {
@@ -1233,6 +1835,21 @@ export class AsteroidOutpostScene implements Scene {
   }
 
   exit(): void {
+    // Unregister Phase 1 launch event handler
+    if (this._phase1LaunchHandler) {
+      EventBus.off('phase1:launch', this._phase1LaunchHandler);
+      this._phase1LaunchHandler = null;
+    }
+
+    // Clean up launchpad panel
+    this._closeLaunchpadPanel();
+
+    // Unmount electrolysis overlay
+    this._electrolysisOverlay?.unmount();
+    this._electrolysisOverlay = null;
+    this._electrolysisUnit = null;
+    this._launchpad = null;
+
     // Hide autonomy win banner if still visible
     this._hideAutonomyWinBanner();
 
@@ -1266,6 +1883,9 @@ export class AsteroidOutpostScene implements Scene {
     // Stop dispatcher
     outpostDispatcher.stop();
 
+    // Clear perimeter fence colliders so other scenes don't inherit them
+    obstacleManager.clear();
+
     // Unmount camera and clear tap callback
     if (this._camera && this._app) {
       this._camera.onTap(null);
@@ -1288,8 +1908,9 @@ export class AsteroidOutpostScene implements Scene {
     this._depositPanel?.unmount();
     this._depositPanel = null;
 
-    // Cancel any active ghost
+    // Cancel any active ghost (also hides ghost action panel)
     this._cancelGhost();
+    this._hideGhostActionPanel();
 
     // Destroy tap highlight if pending
     if (this._tapHighlight) {

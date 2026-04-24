@@ -80,7 +80,7 @@ describe('DroneDepot', () => {
     resetDepotBuilt();
   });
 
-  it('onBuild sets furnace.manualOnly = false', () => {
+  it('onBuild leaves furnace.manualOnly as true (logistics drones use insertBatch)', () => {
     const depot = new DroneDepot(400, 300);
     const storage = makeStorage();
     const furnace = makeFurnace();
@@ -88,7 +88,7 @@ describe('DroneDepot', () => {
 
     expect(furnace.manualOnly).toBe(true);
     depot.onBuild(storage as any, furnace as any, dispatcher as any);
-    expect(furnace.manualOnly).toBe(false);
+    expect(furnace.manualOnly).toBe(true);
   });
 
   it('onBuild calls dispatcher.configure with the live bay-slot array', () => {

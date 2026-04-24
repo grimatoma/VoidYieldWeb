@@ -2,6 +2,8 @@ import type { StorageDepot } from '@entities/StorageDepot';
 import type { Furnace } from '@entities/Furnace';
 import { FURNACE_RECIPES } from '@entities/Furnace';
 import type { DroneBase } from '@entities/DroneBase';
+import { ElectrolysisUnit } from '@entities/ElectrolysisUnit';
+import { Launchpad } from '@entities/Launchpad';
 import { depositMap } from './DepositMap';
 import { fleetManager } from './FleetManager';
 import type { OreType, DroneTask, DroneType } from '@data/types';
@@ -31,6 +33,8 @@ export class OutpostDispatcher {
   private _depotPos: { x: number; y: number } | null = null;
   private _slots: DroneBaySlot[] = [];
   private _active = false;
+  private _electrolysisUnit: ElectrolysisUnit | null = null;
+  private _launchpad: Launchpad | null = null;
 
   /**
    * Wire up storage, furnace, and the live bay-slot array.
@@ -49,6 +53,16 @@ export class OutpostDispatcher {
 
   stop(): void {
     this._active = false;
+    this._electrolysisUnit = null;
+    this._launchpad = null;
+  }
+
+  setElectrolysisUnit(eu: ElectrolysisUnit): void {
+    this._electrolysisUnit = eu;
+  }
+
+  setLaunchpad(lp: Launchpad): void {
+    this._launchpad = lp;
   }
 
   /**
@@ -109,7 +123,7 @@ export class OutpostDispatcher {
         executeDurationSec: drone.mineTimeSec,
         onExecute: () => {
           const lot = deposit.mine(drone.carryCapacity);
-          drone.cargo = lot;
+          if (lot.quantity > 0) drone.cargo = lot;
           deposit.release(drone.id);
         },
       });
@@ -156,8 +170,8 @@ export class OutpostDispatcher {
     // 1. Output Pickup: Prioritize getting products OUT of the furnace
     if (furnace.plant.outputBuffer > 0) {
       for (const drone of idleLogistics) {
-        if (furnace.plant.outputBuffer <= 0) break; // someone else might grab it, but for now we just dispatch one by one
-        
+        if (furnace.plant.outputBuffer <= 0) break;
+
         const takeTask: DroneTask = {
           type: 'CARRY',
           targetX: furnace.x,
@@ -235,7 +249,102 @@ export class OutpostDispatcher {
       }
     }
 
-    // 3. Idle Return: if still idle and not at drone depot, return to drone depot to wait
+    // 3. Electrolysis: supply water + collect hydrolox_fuel
+    const eu = this._electrolysisUnit;
+    if (eu) {
+      // 3a. Hydrolox pickup — if output buffer has fuel, move to storage
+      if (eu.outputBuffer > 0) {
+        for (const drone of idleLogistics) {
+          if (drone.getTasks().length > 0) continue;
+          const pullQty = Math.min(eu.outputBuffer, drone.carryCapacity);
+          drone.pushTask({
+            type: 'CARRY',
+            targetX: eu.x,
+            targetY: eu.y,
+            executeDurationSec: 0.3,
+            onExecute: () => {
+              const pulled = eu.pullHydrolox(pullQty);
+              if (pulled > 0) drone.cargo = { oreType: 'hydrolox_fuel', quantity: pulled, attributes: {} };
+            },
+          });
+          drone.pushTask({
+            type: 'CARRY',
+            targetX: storage.x,
+            targetY: storage.y,
+            executeDurationSec: 0.3,
+            onExecute: () => {
+              if (drone.cargo) { storage.deposit([drone.cargo]); drone.cargo = null; }
+            },
+          });
+          return;
+        }
+      }
+
+      // 3b. Water supply — if input buffer is low and storage has water
+      if (eu.inputBuffer < ElectrolysisUnit.MAX_INPUT - ElectrolysisUnit.INPUT_PER_CYCLE) {
+        const waterAvail = storage.getStockpile().get('water') ?? 0;
+        if (waterAvail >= ElectrolysisUnit.INPUT_PER_CYCLE) {
+          for (const drone of idleLogistics) {
+            if (drone.getTasks().length > 0) continue;
+            const carry = Math.min(waterAvail, drone.carryCapacity);
+            drone.pushTask({
+              type: 'CARRY',
+              targetX: storage.x,
+              targetY: storage.y,
+              executeDurationSec: 0.3,
+              onExecute: () => {
+                const pulled = storage.pull('water', carry);
+                if (pulled > 0) drone.cargo = { oreType: 'water', quantity: pulled, attributes: {} };
+              },
+            });
+            drone.pushTask({
+              type: 'CARRY',
+              targetX: eu.x,
+              targetY: eu.y,
+              executeDurationSec: 0.3,
+              onExecute: () => {
+                if (drone.cargo) { eu.addWater(drone.cargo.quantity); drone.cargo = null; }
+              },
+            });
+            return;
+          }
+        }
+      }
+    }
+
+    // 4. Launchpad: deliver hydrolox_fuel from storage
+    const lp = this._launchpad;
+    if (lp && lp.fuelUnits < Launchpad.FUEL_REQUIRED) {
+      const hydroloxAvail = storage.getStockpile().get('hydrolox_fuel') ?? 0;
+      if (hydroloxAvail > 0) {
+        for (const drone of idleLogistics) {
+          if (drone.getTasks().length > 0) continue;
+          const carry = Math.min(hydroloxAvail, drone.carryCapacity);
+          drone.pushTask({
+            type: 'CARRY',
+            targetX: storage.x,
+            targetY: storage.y,
+            executeDurationSec: 0.3,
+            onExecute: () => {
+              const pulled = storage.pull('hydrolox_fuel', carry);
+              if (pulled > 0) drone.cargo = { oreType: 'hydrolox_fuel', quantity: pulled, attributes: {} };
+            },
+          });
+          drone.pushTask({
+            type: 'CARRY',
+            targetX: lp.x,
+            targetY: lp.y,
+            executeDurationSec: 0.3,
+            onExecute: () => {
+              if (drone.cargo) { lp.addFuel(drone.cargo.quantity); drone.cargo = null; }
+            },
+          });
+          return;
+        }
+      }
+    }
+
+    // 5. Idle Return: if still idle and not at drone depot, return to drone depot to wait
     if (this._depotPos) {
       for (const drone of idleLogistics) {
         // If it was given a task in steps 1 or 2, it won't be in idleLogistics, wait, yes it will be in the array, but its task length will be > 0.

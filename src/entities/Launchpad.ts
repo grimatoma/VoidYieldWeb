@@ -4,6 +4,7 @@ import type { RocketComponentData, RocketComponentType } from '@data/types';
 import type { StorageDepot } from './StorageDepot';
 import { assetManager } from '@services/AssetManager';
 import { strandingManager } from '@services/StrandingManager';
+import { EventBus } from '@services/EventBus';
 
 export type LaunchpadState = 'BUILDING' | 'READY' | 'LAUNCHING' | 'LAUNCHED';
 
@@ -138,6 +139,27 @@ export class Launchpad {
   get componentsInstalled(): number { return this.components.size; }
   get isLaunchReady(): boolean {
     return this.components.size === 5 && this._fuelUnits >= Launchpad.FUEL_REQUIRED;
+  }
+
+  /** Add hydrolox fuel to the tank (Phase 1 core loop). Returns actual units added. */
+  addFuel(units: number): number {
+    const space = Launchpad.FUEL_CAP - this._fuelUnits;
+    const added = Math.min(units, space);
+    this._fuelUnits += added;
+    this._updateStatus();
+    return added;
+  }
+
+  /** Phase 1 launch: requires only FUEL_REQUIRED hydrolox, emits 'phase1:launch'. */
+  launchPhase1(): void {
+    if (this._fuelUnits < Launchpad.FUEL_REQUIRED) return;
+    this.state = 'LAUNCHING';
+    this._fuelUnits -= Launchpad.FUEL_REQUIRED;
+    this.rocketGraphic.clear();
+    if (this._rocketSprite) this._rocketSprite.visible = false;
+    this.statusText.text = 'LPAD\nLNCD';
+    this.state = 'LAUNCHED';
+    EventBus.emit('phase1:launch');
   }
 
   /** Trigger launch sequence. Returns true if launched. */

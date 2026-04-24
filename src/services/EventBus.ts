@@ -46,6 +46,7 @@ export type GameEvents = {
   'outpost:inventory-changed': [];
   'furnace:state-changed': [state: 'idle' | 'running' | 'output-ready'];
   'input:build_menu': [];
+  'phase1:launch': [];
 };
 
 class TypedEventBus extends EventEmitter<GameEvents> {}

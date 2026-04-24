@@ -291,13 +291,30 @@ export class DroneDepotOverlay {
 
     const statusColor = statusClass === 'warn' ? '#FBBF24' : statusClass === 'idle' ? '#4A4A6A' : '#4ADE80';
 
+    // Ore-type selector — only shown for miner slots so players can restrict
+    // which resource this drone targets. Options match the outpost deposits.
+    const oreOptions: Array<{ value: string; label: string }> = [
+      { value: 'any',        label: 'ANY' },
+      { value: 'iron_ore',   label: 'IRON' },
+      { value: 'copper_ore', label: 'COPPER' },
+      { value: 'water',      label: 'WATER' },
+    ];
+    const oreSelectHtml = role === 'miner'
+      ? `<select id="ddo-ore-${slot.slotId}" style="font-family:monospace;font-size:10px;background:#1A0A2A;color:#CC88FF;border:1px solid #4A2A6A;padding:2px 4px;cursor:pointer;flex-shrink:0;">${
+          oreOptions.map(o =>
+            `<option value="${o.value}"${slot.oreType === o.value ? ' selected' : ''}>${o.label}</option>`,
+          ).join('')
+        }</select>`
+      : '';
+
     return `
       <div style="display:flex;align-items:center;gap:8px;padding:5px 0;${borderStyle}font-size:11px;">
         <span style="color:${dotColor};width:6px;height:6px;border-radius:50%;display:inline-block;flex-shrink:0;margin-left:2px;background:${dotColor};"></span>
         <span style="color:#8040C0;width:34px;font-weight:bold;flex-shrink:0;">${droneId}</span>
         <span style="padding:2px 7px;font-size:10px;font-weight:bold;border-radius:2px;width:72px;text-align:center;flex-shrink:0;${badgeStyle}">${badgeLabel}</span>
         <span style="color:${statusColor};flex:1;font-size:10px;">${statusText}</span>
-        <div style="display:flex;gap:4px;margin-left:auto;flex-shrink:0;">
+        <div style="display:flex;gap:4px;margin-left:auto;flex-shrink:0;align-items:center;">
+          ${oreSelectHtml}
           <button id="ddo-role-m-${slot.slotId}" style="padding:2px 7px;font-family:monospace;font-size:10px;cursor:pointer;border:none;${mBtnStyle}">M</button>
           <button id="ddo-role-l-${slot.slotId}" style="padding:2px 7px;font-family:monospace;font-size:10px;cursor:pointer;border:none;${lBtnStyle}">L</button>
         </div>

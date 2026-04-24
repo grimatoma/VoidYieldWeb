@@ -37,6 +37,7 @@ const ORE_COLORS: Record<OreType, number> = {
   copper_ore: 0xE07B39,
   iron_bar: 0x78909C,
   copper_bar: 0xBF6030,
+  hydrolox_fuel: 0x00E5FF,
 };
 
 /** Legacy icon keys for ore inventory display (small icons, not deposit nodes). */

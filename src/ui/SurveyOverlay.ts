@@ -45,6 +45,7 @@ const ORE_HEX: Record<OreType, string> = {
   copper_ore:        '#E07B39',
   iron_bar:          '#78909C',
   copper_bar:        '#BF6030',
+  hydrolox_fuel:     '#00E5FF',
 };
 
 const STAGE_LABEL: Record<ScanStage, string> = {
