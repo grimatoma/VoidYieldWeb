@@ -188,6 +188,51 @@ describe('MiningCircuitManager', () => {
     mgr.update(1);
     expect(drone.getTasks().length).toBe(0);
   });
+
+  it('drone stays IDLE when orePreference matches no available deposits', () => {
+    // Only vorax available; drone set to mine krysite — deposit is on the other end
+    // but simulate the exhausted-preference case by setting preference to a type
+    // with zero yield.
+    depositMap['deposits'].clear();
+    depositMap.loadPlanet([
+      { depositId: 'iron_only', oreType: 'vorax', x: 500, y: 400, concentrationPeak: 50, yieldRemaining: 100, sizeClass: 'small', isExhausted: false, qualityAttributes: {} },
+    ], fakeWorld);
+
+    const drone = new ScoutDrone(1400, 1000);
+    drone.orePreference = 'krysite'; // no krysite deposits on the map
+    fleetManager.add(drone);
+
+    mgr.update(0.6); // trigger a scan tick
+    mgr.update(0.016);
+
+    expect(drone.getTasks().length).toBe(0);
+    expect(drone.state).toBe('IDLE');
+  });
+
+  it('drone stays IDLE at storage after returning when all preferred deposits exhausted', () => {
+    // Start with one krysite deposit, run until it's mined out.
+    depositMap['deposits'].clear();
+    depositMap.loadPlanet([
+      { depositId: 'k1', oreType: 'krysite', x: 1410, y: 1010, concentrationPeak: 50, yieldRemaining: 3, sizeClass: 'small', isExhausted: false, qualityAttributes: {} },
+    ], fakeWorld);
+
+    const drone = new ScoutDrone(1400, 1000);
+    drone.orePreference = 'krysite';
+    fleetManager.add(drone);
+
+    // Run until the deposit is exhausted and the drone returns to depot.
+    runUntil(mgr, fleetManager, () => {
+      const dep = depositMap.getDeposit('k1');
+      return (dep?.data.isExhausted ?? false) && drone.state === 'IDLE' && drone.getTasks().length === 0;
+    }, 120);
+
+    // After deposit is gone, more ticks must not dispatch new tasks.
+    const tasksBeforeExtraTicks = drone.getTasks().length;
+    for (let i = 0; i < 20; i++) tick(mgr, fleetManager, 0.1);
+
+    expect(tasksBeforeExtraTicks).toBe(0);
+    expect(drone.getTasks().length).toBe(0);
+  });
 });
 
 describe('Deposit claim system', () => {
