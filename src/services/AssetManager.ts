@@ -3,7 +3,7 @@ import { Assets, Texture } from 'pixi.js';
 export type AssetKey =
   | 'player_ne' | 'player_nw' | 'player_se' | 'player_sw'
   | 'player_sheet'
-  | 'building_drone_bay' | 'building_storage_depot' | 'building_sell_terminal'
+  | 'building_drone_bay' | 'building_sell_terminal'
   | 'building_shop_terminal' | 'building_launch_pad' | 'building_spaceship'
   | 'ore_vorax' | 'ore_krysite' | 'ore_aethite' | 'ore_voidstone' | 'ore_shards'
   | 'ore_node_vorax'
@@ -44,7 +44,7 @@ export type AssetKey =
   | 'tile_road_t_north' | 'tile_road_t_south' | 'tile_road_t_east' | 'tile_road_t_west'
   | 'tile_road_cross'
   // --- Phase 1 buildings ---
-  | 'sheet_furnace';
+  | 'sheet_furnace' | 'sheet_storage_depot';
 
 const ASSET_URLS: Record<AssetKey, string> = {
   player_ne: 'sprites/player/player_ne.png',
@@ -54,7 +54,6 @@ const ASSET_URLS: Record<AssetKey, string> = {
   player_sheet: 'sprites/player/player_sheet.png',
 
   building_drone_bay:      'sprites/buildings/drone_bay.png',
-  building_storage_depot:  'sprites/buildings/storage_depot.png',
   building_sell_terminal:  'sprites/buildings/sell_terminal.png',
   building_shop_terminal:  'sprites/buildings/shop_terminal.png',
   building_launch_pad:     'sprites/buildings/launch_pad.png',
@@ -114,6 +113,7 @@ const ASSET_URLS: Record<AssetKey, string> = {
   sheet_cave_drill:                 'sprites/buildings/harvester_cave_drill_sheet.png',
   sheet_gas_trap:                   'sprites/buildings/harvester_gas_trap_sheet.png',
   sheet_furnace:                    'sprites/buildings/furnace_sheet.png',
+  sheet_storage_depot:              'sprites/buildings/storage_depot_sheet.png',
 
   // Animated deposit sheets
   deposit_vorax_small:        'sprites/deposits/deposit_vorax_small.png',
