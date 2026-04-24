@@ -186,6 +186,67 @@ describe('Furnace', () => {
     expect(vi.mocked(EventBus.emit)).toHaveBeenCalledWith('inventory:changed');
   });
 
+  describe('insertFromStorage', () => {
+    function makeStorageDepot(initial: Record<string, number> = {}) {
+      const stock = new Map<string, number>(Object.entries(initial));
+      return {
+        getStockpile: vi.fn(() => stock),
+        pull: vi.fn((ore: string, qty: number) => {
+          const cur = stock.get(ore) ?? 0;
+          const removed = Math.min(cur, qty);
+          if (removed > 0) stock.set(ore, cur - removed);
+          return removed;
+        }),
+        deposit: vi.fn((lots: Array<{ oreType: string; quantity: number }>) => {
+          for (const l of lots) stock.set(l.oreType, (stock.get(l.oreType) ?? 0) + l.quantity);
+        }),
+        _stock: stock,
+      } as any;
+    }
+
+    it('returns 0 when recipe is "off"', () => {
+      const depot = makeStorageDepot({ iron_ore: 50 });
+      expect(furnace.insertFromStorage(depot)).toBe(0);
+      expect(depot.pull).not.toHaveBeenCalled();
+    });
+
+    it('returns 0 when depot has no matching ore', () => {
+      furnace.setRecipe('iron');
+      const depot = makeStorageDepot({ copper_ore: 50 });
+      expect(furnace.insertFromStorage(depot)).toBe(0);
+    });
+
+    it('returns excess to the depot when the buffer cannot accept everything', () => {
+      furnace.setRecipe('iron');
+      const mockPlant = vi.mocked(ProcessingPlant).mock.results.at(-1)!.value;
+      // Plant buffer accepts only 20 (the cap), not all 50.
+      mockPlant.insertBatch.mockReturnValue(20);
+
+      const depot = makeStorageDepot({ iron_ore: 50 });
+
+      const inserted = furnace.insertFromStorage(depot);
+
+      expect(inserted).toBe(20);
+      // 30 ore must remain in the depot — the bug was that they vanished.
+      expect(depot._stock.get('iron_ore')).toBe(30);
+      expect(depot.deposit).toHaveBeenCalledWith(
+        expect.arrayContaining([expect.objectContaining({ oreType: 'iron_ore', quantity: 30 })]),
+      );
+    });
+
+    it('does not deposit when the buffer accepts the full amount', () => {
+      furnace.setRecipe('iron');
+      const mockPlant = vi.mocked(ProcessingPlant).mock.results.at(-1)!.value;
+      mockPlant.insertBatch.mockReturnValue(10);
+
+      const depot = makeStorageDepot({ iron_ore: 10 });
+
+      expect(furnace.insertFromStorage(depot)).toBe(10);
+      expect(depot._stock.get('iron_ore')).toBe(0);
+      expect(depot.deposit).not.toHaveBeenCalled();
+    });
+  });
+
   it('getBatchProgress returns plant.batchProgress when recipe is active', () => {
     furnace.setRecipe('iron');
     const mockPlant = vi.mocked(ProcessingPlant).mock.results.at(-1)!.value;

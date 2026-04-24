@@ -5,7 +5,7 @@ import { Camera } from '@services/Camera';
 import { Player } from '@entities/Player';
 import { Deposit } from '@entities/Deposit';
 import { StorageDepot } from '@entities/StorageDepot';
-import { Furnace, FURNACE_RECIPES } from '@entities/Furnace';
+import { Furnace } from '@entities/Furnace';
 import { Marketplace } from '@entities/Marketplace';
 import { DroneDepot, resetDepotBuilt } from '@entities/DroneDepot';
 import { PlacedBuilding, CELL_SIZE, GRID_ORIGIN, gridToWorld } from '@entities/PlacedBuilding';
@@ -268,15 +268,7 @@ export class AsteroidOutpostScene implements Scene {
       () => {
         // Try player inventory first, then pull from storage as fallback.
         if (this._furnace!.insertFromInventory() === 0 && this._storage) {
-          const recipe = this._furnace!.recipe;
-          if (recipe !== 'off') {
-            const r = FURNACE_RECIPES[recipe];
-            const qty = this._storage.getStockpile().get(r.input) ?? 0;
-            if (qty > 0) {
-              const pulled = this._storage.pull(r.input, qty);
-              if (pulled > 0) this._furnace!.insertBatch(r.input, pulled);
-            }
-          }
+          this._furnace!.insertFromStorage(this._storage);
         }
       },
       (oreType) => this._storage?.getStockpile().get(oreType) ?? 0,

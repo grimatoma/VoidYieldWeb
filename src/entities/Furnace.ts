@@ -102,6 +102,29 @@ export class Furnace {
   }
 
   /**
+   * Pull matching ore from a storage depot into the input buffer, returning
+   * any excess that didn't fit back to the depot. Returns the number actually
+   * inserted.
+   */
+  insertFromStorage(depot: StorageDepot): number {
+    if (this._recipe === 'off') return 0;
+
+    const r = FURNACE_RECIPES[this._recipe];
+    const available = depot.getStockpile().get(r.input) ?? 0;
+    if (available <= 0) return 0;
+
+    const pulled = depot.pull(r.input, available);
+    if (pulled <= 0) return 0;
+
+    const inserted = this._plant.insertBatch(r.input, pulled);
+    const excess = pulled - inserted;
+    if (excess > 0) {
+      depot.deposit([{ oreType: r.input, quantity: excess, attributes: {} }]);
+    }
+    return inserted;
+  }
+
+  /**
    * Called by a player E-press: consume matching ore from player inventory
    * and push it into the furnace input buffer.
    * Returns the number of ore units actually inserted.
