@@ -483,8 +483,9 @@ export class AsteroidOutpostScene implements Scene {
       'pointer-events:auto',
     ].join(';');
     // Stop all touch/pointer events from propagating to the PixiJS canvas.
+    // Bubble phase (no capture) so child buttons still receive the events first.
     ['pointerdown', 'pointerup', 'touchstart', 'touchend', 'click'].forEach(evt => {
-      panel.addEventListener(evt, (e) => e.stopPropagation(), { capture: true });
+      panel.addEventListener(evt, (e) => e.stopPropagation());
     });
     uiLayer.appendChild(panel);
     this._roadBudgetPanel = panel;
