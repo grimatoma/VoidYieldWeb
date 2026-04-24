@@ -109,7 +109,7 @@ export class OutpostDispatcher {
         executeDurationSec: drone.mineTimeSec,
         onExecute: () => {
           const lot = deposit.mine(drone.carryCapacity);
-          drone.cargo = lot;
+          if (lot.quantity > 0) drone.cargo = lot;
           deposit.release(drone.id);
         },
       });
