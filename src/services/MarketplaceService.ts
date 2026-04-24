@@ -50,18 +50,10 @@ export const SELL_PRICES: Record<OreType, number> = {
 
 const BUY_MARKUP = 1.5;
 
-export const MARKETPLACE_RESOURCES: OreType[] = [
-  'vorax',
-  'krysite',
-  'aethite',
-  'shards',
-  'steel_bars',
-  'alloy_rods',
-  'crystal_lattice',
-  'power_cells',
-  'rocket_fuel',
-  'void_cores',
-];
+/** Set to true during testing — all buys are free, no credit check. */
+export const FREE_BUY_MODE = true;
+
+export const MARKETPLACE_RESOURCES: OreType[] = Object.keys(SELL_PRICES) as OreType[];
 
 export interface MarketplaceListing {
   oreType: OreType;
@@ -80,6 +72,7 @@ export class MarketplaceService {
   }
 
   getBuyPrice(ore: OreType): number {
+    if (FREE_BUY_MODE) return 0;
     const base = SELL_PRICES[ore] ?? 0;
     if (base <= 0) return 0;
     return Math.ceil(base * BUY_MARKUP);
@@ -96,6 +89,7 @@ export class MarketplaceService {
 
   canBuy(ore: OreType, qty: number): boolean {
     if (qty <= 0) return false;
+    if (FREE_BUY_MODE) return true;
     const price = this.getBuyPrice(ore);
     if (price <= 0) return false;
     return gameState.credits >= price * qty;
@@ -107,12 +101,11 @@ export class MarketplaceService {
     return (depot.getStockpile().get(ore) ?? 0) >= qty;
   }
 
-  /** Buy qty of ore at BUY_PRICE; deducts credits, deposits into the depot. */
+  /** Buy qty of ore; free in FREE_BUY_MODE, otherwise deducts credits. */
   buy(depot: StorageDepot, ore: OreType, qty: number): boolean {
     if (!this.canBuy(ore, qty)) return false;
-    const price = this.getBuyPrice(ore);
-    const cost = price * qty;
-    gameState.addCredits(-cost);
+    const cost = FREE_BUY_MODE ? 0 : this.getBuyPrice(ore) * qty;
+    if (cost > 0) gameState.addCredits(-cost);
     const current = depot.getStockpile().get(ore) ?? 0;
     depot.setStock(ore, current + qty);
     EventBus.emit('marketplace:buy', { ore, qty, cost });

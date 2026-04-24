@@ -9,7 +9,6 @@ import { HUD } from './HUD';
 import { InteractionPrompt } from './InteractionPrompt';
 import { DebugOverlay } from './DebugOverlay';
 import { ShopPanel } from './ShopPanel';
-import { StoragePanel } from './StoragePanel';
 import { DroneBayPanel } from './DroneBayPanel';
 import { HabitationPanel } from './HabitationPanel';
 import { ShipBayPanel } from './ShipBayPanel';
@@ -39,7 +38,6 @@ export class UILayer {
   private _interactionPrompt: InteractionPrompt | null = null;
   private _debugOverlay: DebugOverlay | null = null;
   private _shopPanel: ShopPanel | null = null;
-  private _storagePanel: StoragePanel | null = null;
   private _droneBayPanel: DroneBayPanel | null = null;
   private _habitationPanel: HabitationPanel | null = null;
   private _shipBayPanel: ShipBayPanel | null = null;
@@ -123,9 +121,6 @@ export class UILayer {
     this._shopPanel = new ShopPanel();
     this._shopPanel.mount(this._root);
 
-    this._storagePanel = new StoragePanel();
-    this._storagePanel.mount(this._root);
-
     this._droneManagementPanel = new DroneManagementPanel();
     this._droneManagementPanel.mount(this._root);
 
@@ -200,7 +195,6 @@ export class UILayer {
     return this._interactionPrompt;
   }
   get shopPanel(): ShopPanel | null { return this._shopPanel; }
-  get storagePanel(): StoragePanel | null { return this._storagePanel; }
   get droneBayPanel(): DroneBayPanel | null { return this._droneBayPanel; }
   get habitationPanel(): HabitationPanel | null { return this._habitationPanel; }
   get shipBayPanel(): ShipBayPanel | null { return this._shipBayPanel; }
@@ -220,7 +214,6 @@ export class UILayer {
   /** Close every opened interaction panel — used when switching planets or on Esc. */
   closeAllPanels(): void {
     this._shopPanel?.close();
-    this._storagePanel?.close();
     this._droneBayPanel?.close();
     this._droneManagementPanel?.close();
     this._habitationPanel?.close();
@@ -248,8 +241,6 @@ export class UILayer {
     this._debugOverlay = null;
     this._shopPanel?.destroy();
     this._shopPanel = null;
-    this._storagePanel?.destroy();
-    this._storagePanel = null;
     this._droneBayPanel?.destroy();
     this._droneBayPanel = null;
     this._droneManagementPanel?.destroy();

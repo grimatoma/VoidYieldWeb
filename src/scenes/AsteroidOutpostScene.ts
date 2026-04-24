@@ -1,11 +1,11 @@
-import { Application, Container, Graphics } from 'pixi.js';
+import { Application, Container, Graphics, TilingSprite } from 'pixi.js';
 import type { Scene } from './SceneManager';
 import type { SaveData } from '@services/SaveManager';
 import { Camera } from '@services/Camera';
 import { Player } from '@entities/Player';
 import { Deposit } from '@entities/Deposit';
 import { StorageDepot } from '@entities/StorageDepot';
-import { Furnace, FURNACE_RECIPES } from '@entities/Furnace';
+import { Furnace } from '@entities/Furnace';
 import { Marketplace } from '@entities/Marketplace';
 import { DroneDepot, resetDepotBuilt } from '@entities/DroneDepot';
 import { PlacedBuilding, CELL_SIZE, GRID_ORIGIN, gridToWorld } from '@entities/PlacedBuilding';
@@ -28,7 +28,6 @@ import { FurnaceOverlay } from '@ui/FurnaceOverlay';
 import { BuildMenuOverlay } from '@ui/BuildMenuOverlay';
 import { DroneDepotOverlay } from '@ui/DroneDepotOverlay';
 import { BuildPromptOverlay } from '@ui/BuildPromptOverlay';
-import { MarketplaceOverlay } from '@ui/MarketplaceOverlay';
 import { ProductionOverlay } from '@ui/ProductionOverlay';
 import type { OutpostBuildingStatus } from '@ui/ProductionOverlay';
 import { ElectrolysisOverlay } from '@ui/ElectrolysisOverlay';
@@ -38,6 +37,9 @@ import { EventBus } from '@services/EventBus';
 import { handleWorldTap } from '@services/TapToMove';
 import { roadNetwork } from '@services/RoadNetwork';
 import { obstacleManager } from '@services/ObstacleManager';
+import type { UILayer } from '@ui/UILayer';
+import { assetManager } from '@services/AssetManager';
+import { firstFrameTexture } from '@services/SpriteSheetHelper';
 
 // Built-in RTG provides enough power to run the furnace (3 W draw) without needing solar panels.
 const OUTPOST_REACTOR_POWER = 5;
@@ -88,7 +90,6 @@ export class AsteroidOutpostScene implements Scene {
   private _buildMenuOverlay: BuildMenuOverlay | null = null;
   private _buildPromptOverlay: BuildPromptOverlay | null = null;
   private _droneDepotOverlay: DroneDepotOverlay | null = null;
-  private _marketplaceOverlay: MarketplaceOverlay | null = null;
   private _productionOverlay: ProductionOverlay | null = null;
   private _productionOverlayActive = false;
   private _electrolysisUnit: ElectrolysisUnit | null = null;
@@ -138,10 +139,40 @@ export class AsteroidOutpostScene implements Scene {
     this._stage = new Container();
     app.stage.addChild(this._stage);
 
-    // Dark asteroid background — fills the whole world so there are no gaps when camera scrolls
-    const bg = new Graphics();
-    bg.rect(0, 0, OUTPOST_WORLD_WIDTH, OUTPOST_WORLD_HEIGHT).fill(0x1A1A2E);
-    this._stage.addChild(bg);
+    // Asteroid dirt tiling sprite — matches the old PlanetA1 ground pattern.
+    {
+      const bgTex = firstFrameTexture('tile_ground_asteroid_dirt', { frameCount: 4, frameWidth: 32, frameHeight: 32 })
+        ?? (assetManager.has('tile_space_bg') ? assetManager.texture('tile_space_bg') : null);
+      if (bgTex) {
+        const tile = new TilingSprite({ texture: bgTex, width: OUTPOST_WORLD_WIDTH, height: OUTPOST_WORLD_HEIGHT });
+        this._stage.addChild(tile);
+      } else {
+        const bg = new Graphics();
+        bg.rect(0, 0, OUTPOST_WORLD_WIDTH, OUTPOST_WORLD_HEIGHT).fill(0x1A1A2E);
+        this._stage.addChild(bg);
+      }
+    }
+
+    // Metal floor tile inside the compound fence — same pattern as PlanetA1Scene outpost floor.
+    {
+      const floorTex = firstFrameTexture('tile_floor_metal', { frameCount: 8, frameWidth: 32, frameHeight: 32 })
+        ?? (assetManager.has('tile_outpost_floor') ? assetManager.texture('tile_outpost_floor') : null);
+      const floorX = FENCE_LEFT + FENCE_THICK;
+      const floorY = FENCE_TOP  + FENCE_THICK;
+      const floorW = FENCE_RIGHT  - FENCE_LEFT - FENCE_THICK * 2;
+      const floorH = FENCE_BOTTOM - FENCE_TOP  - FENCE_THICK * 2;
+      if (floorTex) {
+        const floor = new TilingSprite({ texture: floorTex, width: floorW, height: floorH });
+        floor.x = floorX;
+        floor.y = floorY;
+        floor.alpha = 0.85;
+        this._stage.addChild(floor);
+      } else {
+        const floor = new Graphics();
+        floor.rect(floorX, floorY, floorW, floorH).fill(0x18233d);
+        this._stage.addChild(floor);
+      }
+    }
 
     // Camera — scale to fill the screen like other planet scenes, capped so the
     // full 5×5 grid remains visible at the reference 960×540 size (zoom ≥ 1.2).
@@ -234,8 +265,9 @@ export class AsteroidOutpostScene implements Scene {
       }
 
       // Normal tap: close any open overlay, then handle interaction/movement
+      const _tapUi = (window as unknown as { __voidyield_uiLayer?: UILayer }).__voidyield_uiLayer;
+      if (_tapUi?.shopPanel?.visible)           { _tapUi.shopPanel.close();           }
       if (this._furnaceOverlay?.isOpen())       { this._furnaceOverlay.close();       }
-      if (this._marketplaceOverlay?.isOpen())   { this._marketplaceOverlay.close();   }
       if (this._droneDepotOverlay?.isOpen())    { this._droneDepotOverlay.close();    }
       if (this._buildMenuOverlay?.isOpen())     { this._buildMenuOverlay.close();     }
       if (this._depositPanel?.isOpen())         { this._depositPanel.close();         }
@@ -269,15 +301,7 @@ export class AsteroidOutpostScene implements Scene {
       () => {
         // Try player inventory first, then pull from storage as fallback.
         if (this._furnace!.insertFromInventory() === 0 && this._storage) {
-          const recipe = this._furnace!.recipe;
-          if (recipe !== 'off') {
-            const r = FURNACE_RECIPES[recipe];
-            const qty = this._storage.getStockpile().get(r.input) ?? 0;
-            if (qty > 0) {
-              const pulled = this._storage.pull(r.input, qty);
-              if (pulled > 0) this._furnace!.insertBatch(r.input, pulled);
-            }
-          }
+          this._furnace!.insertFromStorage(this._storage);
         }
       },
       (oreType) => this._storage?.getStockpile().get(oreType) ?? 0,
@@ -966,9 +990,10 @@ export class AsteroidOutpostScene implements Scene {
 
     // Enter road mode on R key (retool_factory) when no ghost and no overlay is open
     if (inputManager.wasJustPressed('retool_factory')) {
+      const _roadUi = (window as unknown as { __voidyield_uiLayer?: UILayer }).__voidyield_uiLayer;
       const anyOverlayOpen =
+        (_roadUi?.shopPanel?.visible ?? false) ||
         (this._furnaceOverlay?.isOpen() ?? false) ||
-        (this._marketplaceOverlay?.isOpen() ?? false) ||
         (this._droneDepotOverlay?.isOpen() ?? false) ||
         (this._buildMenuOverlay?.isOpen() ?? false) ||
         (this._depositPanel?.isOpen() ?? false) ||
@@ -1028,7 +1053,6 @@ export class AsteroidOutpostScene implements Scene {
     if (inputManager.wasJustPressed('pause_menu')) {
       if (this._depositPanel?.isOpen())        { this._depositPanel.close();        return; }
       if (this._furnaceOverlay?.isOpen())      { this._furnaceOverlay.close();      return; }
-      if (this._marketplaceOverlay?.isOpen())  { this._marketplaceOverlay.close();  return; }
       if (this._droneDepotOverlay?.isOpen())   { this._droneDepotOverlay.close();   return; }
       if (this._buildMenuOverlay?.isOpen())    { this._buildMenuOverlay.close();    return; }
       if (this._electrolysisOverlay?.isOpen()) { this._electrolysisOverlay.close(); return; }
@@ -1145,8 +1169,6 @@ export class AsteroidOutpostScene implements Scene {
     if (buildingId.startsWith('marketplace_') && this._marketplace) {
       this._buildingLayer?.removeChild(this._marketplace.container);
       this._marketplace = null;
-      this._marketplaceOverlay?.unmount();
-      this._marketplaceOverlay = null;
     }
     if (buildingId.startsWith('drone_depot_') && this._droneDepot) {
       this._buildingLayer?.removeChild(this._droneDepot.container);
@@ -1357,9 +1379,6 @@ export class AsteroidOutpostScene implements Scene {
       this._marketplace = market;
       this._buildingLayer!.addChild(market.container);
 
-      this._marketplaceOverlay?.unmount();
-      this._marketplaceOverlay = new MarketplaceOverlay(market, this._storage!);
-      this._marketplaceOverlay.mount();
     } else if (buildingType === 'drone_depot') {
       const depot = new DroneDepot(wx, wy);
       this._droneDepot = depot;
@@ -1432,7 +1451,14 @@ export class AsteroidOutpostScene implements Scene {
       const entry = buildGrid.getBuildingAt(row, col);
       if (entry) {
         if (entry.buildingType === 'furnace')           { this._furnaceOverlay?.open();      return; }
-        if (entry.buildingType === 'marketplace')       { this._marketplaceOverlay?.open();  return; }
+        if (entry.buildingType === 'marketplace') {
+          const ui = (window as unknown as { __voidyield_uiLayer?: UILayer }).__voidyield_uiLayer;
+          if (ui?.shopPanel && this._storage) {
+            ui.shopPanel.setDepot(this._storage);
+            ui.shopPanel.open();
+          }
+          return;
+        }
         if (entry.buildingType === 'drone_depot')       { this._droneDepotOverlay?.open();   return; }
         if (entry.buildingType === 'storage')           { miningService.onInteract(px, py);  return; }
         if (entry.buildingType === 'fabricator')        { this._buildMenuOverlay?.open();    return; }
@@ -1927,7 +1953,6 @@ export class AsteroidOutpostScene implements Scene {
 
     // Unmount overlays
     this._furnaceOverlay?.unmount();
-    this._marketplaceOverlay?.unmount();
     this._buildMenuOverlay?.unmount();
     this._buildPromptOverlay?.unmount();
     this._droneDepotOverlay?.unmount();
@@ -1957,7 +1982,6 @@ export class AsteroidOutpostScene implements Scene {
     this._marketplace = null;
     this._droneDepot = null;
     this._furnaceOverlay = null;
-    this._marketplaceOverlay = null;
     this._buildMenuOverlay = null;
     this._buildPromptOverlay = null;
     this._droneDepotOverlay = null;

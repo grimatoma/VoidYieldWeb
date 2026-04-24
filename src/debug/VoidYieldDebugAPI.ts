@@ -16,7 +16,6 @@ import { settingsManager } from '@services/SettingsManager';
 import { EventBus } from '@services/EventBus';
 import { tutorialManager } from '@services/TutorialManager';
 import { fleetManager } from '@services/FleetManager';
-import { miningCircuitManager } from '@services/MiningCircuitManager';
 import { depositMap } from '@services/DepositMap';
 import { marketplaceService } from '@services/MarketplaceService';
 import { droneBayRegistry } from '@services/DroneBayRegistry';
@@ -95,7 +94,6 @@ export interface VoidYieldDebugAPI {
     EventBus: typeof EventBus;
     surveyService: typeof surveyService;
     fleetManager: typeof fleetManager;
-    miningCircuitManager: typeof miningCircuitManager;
     depositMap: typeof depositMap;
     marketplaceService: typeof marketplaceService;
     droneBayRegistry: typeof droneBayRegistry;
@@ -338,7 +336,6 @@ function createDebugAPI(): VoidYieldDebugAPI {
       EventBus,
       surveyService,
       fleetManager,
-      miningCircuitManager,
       depositMap,
       marketplaceService,
       droneBayRegistry,
