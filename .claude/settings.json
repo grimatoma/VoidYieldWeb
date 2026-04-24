@@ -3,9 +3,5 @@
     "allow": [
       "Bash(git push *)"
     ]
-  },
-  "env": {
-    "CLAUDE_STREAM_IDLE_TIMEOUT_MS": "600000",
-    "CLAUDE_ENABLE_STREAM_WATCHDOG": "1"
   }
 }
