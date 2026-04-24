@@ -154,6 +154,27 @@ export class AsteroidOutpostScene implements Scene {
       }
     }
 
+    // Metal floor tile inside the compound fence — same pattern as PlanetA1Scene outpost floor.
+    {
+      const floorTex = firstFrameTexture('tile_floor_metal', { frameCount: 8, frameWidth: 32, frameHeight: 32 })
+        ?? (assetManager.has('tile_outpost_floor') ? assetManager.texture('tile_outpost_floor') : null);
+      const floorX = FENCE_LEFT + FENCE_THICK;
+      const floorY = FENCE_TOP  + FENCE_THICK;
+      const floorW = FENCE_RIGHT  - FENCE_LEFT - FENCE_THICK * 2;
+      const floorH = FENCE_BOTTOM - FENCE_TOP  - FENCE_THICK * 2;
+      if (floorTex) {
+        const floor = new TilingSprite({ texture: floorTex, width: floorW, height: floorH });
+        floor.x = floorX;
+        floor.y = floorY;
+        floor.alpha = 0.85;
+        this._stage.addChild(floor);
+      } else {
+        const floor = new Graphics();
+        floor.rect(floorX, floorY, floorW, floorH).fill(0x18233d);
+        this._stage.addChild(floor);
+      }
+    }
+
     // Camera — scale to fill the screen like other planet scenes, capped so the
     // full 5×5 grid remains visible at the reference 960×540 size (zoom ≥ 1.2).
     this._camera = new Camera(
