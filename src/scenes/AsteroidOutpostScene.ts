@@ -480,7 +480,12 @@ export class AsteroidOutpostScene implements Scene {
       'color:#E8E4D0',
       'white-space:nowrap',
       'z-index:100',
+      'pointer-events:auto',
     ].join(';');
+    // Stop all touch/pointer events from propagating to the PixiJS canvas.
+    ['pointerdown', 'pointerup', 'touchstart', 'touchend', 'click'].forEach(evt => {
+      panel.addEventListener(evt, (e) => e.stopPropagation(), { capture: true });
+    });
     uiLayer.appendChild(panel);
     this._roadBudgetPanel = panel;
     this._updateBudgetPanel();
@@ -524,8 +529,8 @@ export class AsteroidOutpostScene implements Scene {
 
     const confirmBtn = this._roadBudgetPanel.querySelector('#road-confirm-btn') as HTMLButtonElement | null;
     const cancelBtn = this._roadBudgetPanel.querySelector('#road-cancel-btn') as HTMLButtonElement | null;
-    confirmBtn?.addEventListener('click', () => this._confirmRoadPlacement());
-    cancelBtn?.addEventListener('click', () => this._exitRoadMode());
+    confirmBtn?.addEventListener('click', (e) => { e.stopPropagation(); this._confirmRoadPlacement(); });
+    cancelBtn?.addEventListener('click', (e) => { e.stopPropagation(); this._exitRoadMode(); });
   }
 
   private _confirmRoadPlacement(): void {
