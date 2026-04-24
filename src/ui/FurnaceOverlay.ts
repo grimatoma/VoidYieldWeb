@@ -350,10 +350,10 @@ export class FurnaceOverlay {
     }
 
     // ── I/O buffer readouts ──────────────────────────────────────────────────
-    const maxIn  = plant.schematic.inputQty * 10;
-    const maxOut = plant.schematic.outputQty * 10;
+    const maxIn      = plant.schematic.inputQty * 10;
+    const depotCount = r ? this._furnace.getDepotBarCount() : 0;
     this._inBufEl.textContent  = `${plant.inputBuffer}/${maxIn}`;
-    this._outBufEl.textContent = `${plant.outputBuffer}/${maxOut}`;
+    this._outBufEl.textContent = `${depotCount} in depot`;
 
     // ── Insert button ────────────────────────────────────────────────────────
     const oreName   = r ? r.input.replace(/_/g, ' ') : '';
@@ -367,7 +367,7 @@ export class FurnaceOverlay {
     this._insertBtn.style.opacity = canInsert ? '1' : '0.4';
 
     // ── Extract button ───────────────────────────────────────────────────────
-    const canExtract = plant.outputBuffer > 0;
+    const canExtract = depotCount > 0;
     this._extractBtn.textContent = r
       ? `TAKE ${r.output.replace(/_/g, ' ').toUpperCase()}`
       : 'EXTRACT';

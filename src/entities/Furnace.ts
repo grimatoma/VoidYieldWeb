@@ -140,16 +140,24 @@ export class Furnace {
   }
 
   /**
-   * Called by a player E-press: extract products from the furnace output buffer
-   * and add them to the player's inventory.
+   * Called by a player E-press or the overlay Extract button: pull bars from the
+   * linked output depot into the player's inventory.
    */
   takeProducts(): boolean {
     if (this._recipe === 'off') return false;
-    const lot = this._plant.takeOutput();
-    if (!lot) return false;
-    inventory.add(lot);
+    const r = FURNACE_RECIPES[this._recipe];
+    const qty = this._outputDepot.pull(r.output, this._outputDepot.getBarCount(r.output));
+    if (qty <= 0) return false;
+    inventory.add({ oreType: r.output, quantity: qty, attributes: {} });
     EventBus.emit('inventory:changed');
     return true;
+  }
+
+  /** Count of finished bars currently sitting in the linked output depot. */
+  getDepotBarCount(): number {
+    if (this._recipe === 'off') return 0;
+    const r = FURNACE_RECIPES[this._recipe];
+    return this._outputDepot.getBarCount(r.output);
   }
 
   /** Called every frame from the scene update loop. */
@@ -186,11 +194,10 @@ export class Furnace {
       return { verb: 'CONFIGURE', target: 'FURNACE (off)' };
     }
     
-    if (this._plant.outputBuffer > 0) {
+    const r = FURNACE_RECIPES[this._recipe];
+    if (this._outputDepot.getBarCount(r.output) > 0) {
       return { verb: 'TAKE', target: 'PRODUCTS' };
     }
-
-    const r = FURNACE_RECIPES[this._recipe];
     const canInsert = inventory.getByType(r.input) > 0;
     return canInsert
       ? {
