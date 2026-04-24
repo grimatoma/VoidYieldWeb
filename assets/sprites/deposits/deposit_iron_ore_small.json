@@ -1,0 +1,78 @@
+{ "frames": {
+   "sprite-1777009225611247600 0.aseprite": {
+    "frame": { "x": 0, "y": 0, "w": 44, "h": 36 },
+    "rotated": false,
+    "trimmed": false,
+    "spriteSourceSize": { "x": 0, "y": 0, "w": 44, "h": 36 },
+    "sourceSize": { "w": 44, "h": 36 },
+    "duration": 150
+   },
+   "sprite-1777009225611247600 1.aseprite": {
+    "frame": { "x": 44, "y": 0, "w": 44, "h": 36 },
+    "rotated": false,
+    "trimmed": false,
+    "spriteSourceSize": { "x": 0, "y": 0, "w": 44, "h": 36 },
+    "sourceSize": { "w": 44, "h": 36 },
+    "duration": 150
+   },
+   "sprite-1777009225611247600 2.aseprite": {
+    "frame": { "x": 88, "y": 0, "w": 44, "h": 36 },
+    "rotated": false,
+    "trimmed": false,
+    "spriteSourceSize": { "x": 0, "y": 0, "w": 44, "h": 36 },
+    "sourceSize": { "w": 44, "h": 36 },
+    "duration": 150
+   },
+   "sprite-1777009225611247600 3.aseprite": {
+    "frame": { "x": 132, "y": 0, "w": 44, "h": 36 },
+    "rotated": false,
+    "trimmed": false,
+    "spriteSourceSize": { "x": 0, "y": 0, "w": 44, "h": 36 },
+    "sourceSize": { "w": 44, "h": 36 },
+    "duration": 150
+   },
+   "sprite-1777009225611247600 4.aseprite": {
+    "frame": { "x": 176, "y": 0, "w": 44, "h": 36 },
+    "rotated": false,
+    "trimmed": false,
+    "spriteSourceSize": { "x": 0, "y": 0, "w": 44, "h": 36 },
+    "sourceSize": { "w": 44, "h": 36 },
+    "duration": 150
+   },
+   "sprite-1777009225611247600 5.aseprite": {
+    "frame": { "x": 220, "y": 0, "w": 44, "h": 36 },
+    "rotated": false,
+    "trimmed": false,
+    "spriteSourceSize": { "x": 0, "y": 0, "w": 44, "h": 36 },
+    "sourceSize": { "w": 44, "h": 36 },
+    "duration": 150
+   },
+   "sprite-1777009225611247600 6.aseprite": {
+    "frame": { "x": 264, "y": 0, "w": 44, "h": 36 },
+    "rotated": false,
+    "trimmed": false,
+    "spriteSourceSize": { "x": 0, "y": 0, "w": 44, "h": 36 },
+    "sourceSize": { "w": 44, "h": 36 },
+    "duration": 100
+   }
+ },
+ "meta": {
+  "app": "https://www.aseprite.org/",
+  "version": "1.3.17-x64",
+  "image": "deposit_iron_ore_small.png",
+  "format": "RGBA8888",
+  "size": { "w": 308, "h": 36 },
+  "scale": "1",
+  "frameTags": [
+   { "name": "shimmer", "from": 0, "to": 5, "direction": "pingpong", "color": "#000000ff" }
+  ],
+  "layers": [
+   { "name": "Layer 1", "opacity": 255, "blendMode": "normal" },
+   { "name": "base", "opacity": 255, "blendMode": "normal" },
+   { "name": "details", "opacity": 255, "blendMode": "normal" },
+   { "name": "outline", "opacity": 255, "blendMode": "normal" }
+  ],
+  "slices": [
+  ]
+ }
+}
