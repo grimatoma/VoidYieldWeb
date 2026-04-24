@@ -61,6 +61,23 @@ export class OutpostDispatcher {
     if (slot) slot.role = role;
   }
 
+  /**
+   * Returns a "D-01" style name for the first miner slot that targets the
+   * given ore type (or 'any'), or null if no miner drone is assigned.
+   */
+  getAssignedDroneForOre(oreType: OreType): string | null {
+    for (let i = 0; i < this._slots.length; i++) {
+      const slot = this._slots[i];
+      if (!slot.drone) continue;
+      const effectiveRole = slot.role
+        ?? (slot.drone.droneType === 'refinery' || slot.drone.droneType === 'cargo' ? 'logistics' : 'miner');
+      if (effectiveRole !== 'miner') continue;
+      if (slot.oreType !== oreType && slot.oreType !== 'any') continue;
+      return `D-${String(i + 1).padStart(2, '0')}`;
+    }
+    return null;
+  }
+
   update(_delta: number): void {
     if (!this._active || !this._storage || !this._furnace) return;
     this._tickMiners();
