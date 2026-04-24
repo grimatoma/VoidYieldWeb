@@ -10,7 +10,41 @@ export type AssetKey =
   | 'tile_outpost_floor' | 'tile_outpost_edge' | 'tile_space_bg'
   | 'tile_asteroid' | 'tile_asteroid_field' | 'tile_planet_b'
   | 'rock_small' | 'rock_medium' | 'rock_large'
-  | 'drone_miner';
+  | 'drone_miner'
+  // --- Animated building sheets ---
+  | 'sheet_drone_bay' | 'sheet_habitation_module' | 'sheet_crafting_station'
+  | 'sheet_trade_hub' | 'sheet_solar_panel' | 'sheet_battery_bank'
+  | 'sheet_launchpad' | 'sheet_cargo_ship_bay' | 'sheet_warp_gate'
+  | 'sheet_water_extractor'
+  | 'sheet_gate' | 'sheet_gate_post' | 'sheet_fence_straight' | 'sheet_fence_corner'
+  | 'sheet_processing_plant' | 'sheet_fabricator' | 'sheet_assembly_complex'
+  | 'sheet_research_lab' | 'sheet_ore_refinery' | 'sheet_fuel_synthesizer'
+  | 'sheet_harvester_mineral_personal' | 'sheet_harvester_mineral_medium'
+  | 'sheet_harvester_mineral_heavy'   | 'sheet_harvester_mineral_elite'
+  | 'sheet_harvester_crystal_personal' | 'sheet_harvester_crystal_medium'
+  | 'sheet_harvester_crystal_heavy'    | 'sheet_harvester_crystal_elite'
+  | 'sheet_gas_collector_personal' | 'sheet_gas_collector_medium' | 'sheet_gas_collector_heavy'
+  | 'sheet_cave_drill' | 'sheet_gas_trap'
+  // --- Animated deposit sheets ---
+  | 'deposit_vorax_small'    | 'deposit_vorax_medium'    | 'deposit_vorax_large'
+  | 'deposit_krysite_small'  | 'deposit_krysite_medium'  | 'deposit_krysite_large'
+  | 'deposit_aethite_small'  | 'deposit_aethite_medium'  | 'deposit_aethite_large'
+  | 'deposit_voidstone_small'| 'deposit_voidstone_medium'| 'deposit_voidstone_large'
+  | 'deposit_gas_small'      | 'deposit_gas_large'
+  | 'deposit_dark_gas_geyser' | 'deposit_resonance_crystal' | 'deposit_bio_resin_flora'
+  | 'deposit_iron_ore_small' | 'deposit_iron_ore_medium' | 'deposit_iron_ore_large'
+  | 'deposit_copper_ore_small' | 'deposit_copper_ore_medium' | 'deposit_copper_ore_large'
+  | 'deposit_water_small' | 'deposit_water_medium' | 'deposit_water_large'
+  // --- Animated ground tiles ---
+  | 'tile_floor_metal' | 'tile_floor_clean' | 'tile_ground_concrete'
+  | 'tile_ground_asteroid_dirt' | 'tile_ground_planet_b_dirt' | 'tile_ground_metal_grating'
+  // --- Road tiles ---
+  | 'tile_road_straight_h' | 'tile_road_straight_v'
+  | 'tile_road_corner_ne' | 'tile_road_corner_nw' | 'tile_road_corner_se' | 'tile_road_corner_sw'
+  | 'tile_road_t_north' | 'tile_road_t_south' | 'tile_road_t_east' | 'tile_road_t_west'
+  | 'tile_road_cross'
+  // --- Phase 1 buildings ---
+  | 'sheet_furnace';
 
 const ASSET_URLS: Record<AssetKey, string> = {
   player_ne: 'sprites/player/player_ne.png',
@@ -44,6 +78,89 @@ const ASSET_URLS: Record<AssetKey, string> = {
   rock_large:         'sprites/ground/rock_large.png',
 
   drone_miner: 'sprites/drones/miner_spritesheet.png',
+
+  // Animated building sheets
+  sheet_drone_bay:                  'sprites/buildings/building_drone_bay_animated_sheet.png',
+  sheet_habitation_module:          'sprites/buildings/habitation_module_sheet.png',
+  sheet_crafting_station:           'sprites/buildings/crafting_station_sheet.png',
+  sheet_trade_hub:                  'sprites/buildings/trade_hub_sheet.png',
+  sheet_solar_panel:                'sprites/buildings/solar_panel_sheet.png',
+  sheet_battery_bank:               'sprites/buildings/battery_bank_sheet.png',
+  sheet_launchpad:                  'sprites/buildings/launchpad_animated_sheet.png',
+  sheet_cargo_ship_bay:             'sprites/buildings/cargo_ship_bay_sheet.png',
+  sheet_warp_gate:                  'sprites/buildings/warp_gate_sheet.png',
+  sheet_water_extractor:            'sprites/buildings/atmospheric_water_extractor_sheet.png',
+  sheet_gate:                       'sprites/buildings/gate_sheet.png',
+  sheet_gate_post:                  'sprites/buildings/gate_post_sheet.png',
+  sheet_fence_straight:             'sprites/buildings/fence_straight_sheet.png',
+  sheet_fence_corner:               'sprites/buildings/fence_corner_sheet.png',
+  sheet_processing_plant:           'sprites/buildings/processing_plant_sheet.png',
+  sheet_fabricator:                 'sprites/buildings/fabricator_sheet.png',
+  sheet_assembly_complex:           'sprites/buildings/assembly_complex_sheet.png',
+  sheet_research_lab:               'sprites/buildings/research_lab_sheet.png',
+  sheet_ore_refinery:               'sprites/buildings/ore_refinery_sheet.png',
+  sheet_fuel_synthesizer:           'sprites/buildings/fuel_synthesizer_sheet.png',
+  sheet_harvester_mineral_personal: 'sprites/buildings/harvester_mineral_personal_sheet.png',
+  sheet_harvester_mineral_medium:   'sprites/buildings/harvester_mineral_medium_sheet.png',
+  sheet_harvester_mineral_heavy:    'sprites/buildings/harvester_mineral_heavy_sheet.png',
+  sheet_harvester_mineral_elite:    'sprites/buildings/harvester_mineral_elite_sheet.png',
+  sheet_harvester_crystal_personal: 'sprites/buildings/harvester_crystal_personal_sheet.png',
+  sheet_harvester_crystal_medium:   'sprites/buildings/harvester_crystal_medium_sheet.png',
+  sheet_harvester_crystal_heavy:    'sprites/buildings/harvester_crystal_heavy_sheet.png',
+  sheet_harvester_crystal_elite:    'sprites/buildings/harvester_crystal_elite_sheet.png',
+  sheet_gas_collector_personal:     'sprites/buildings/gas_collector_personal_sheet.png',
+  sheet_gas_collector_medium:       'sprites/buildings/gas_collector_medium_sheet.png',
+  sheet_gas_collector_heavy:        'sprites/buildings/gas_collector_heavy_sheet.png',
+  sheet_cave_drill:                 'sprites/buildings/harvester_cave_drill_sheet.png',
+  sheet_gas_trap:                   'sprites/buildings/harvester_gas_trap_sheet.png',
+  sheet_furnace:                    'sprites/buildings/furnace_sheet.png',
+
+  // Animated deposit sheets
+  deposit_vorax_small:        'sprites/deposits/deposit_vorax_small.png',
+  deposit_vorax_medium:       'sprites/deposits/deposit_vorax_medium.png',
+  deposit_vorax_large:        'sprites/deposits/deposit_vorax_large.png',
+  deposit_krysite_small:      'sprites/deposits/deposit_krysite_small.png',
+  deposit_krysite_medium:     'sprites/deposits/deposit_krysite_medium.png',
+  deposit_krysite_large:      'sprites/deposits/deposit_krysite_large.png',
+  deposit_aethite_small:      'sprites/deposits/deposit_aethite_small.png',
+  deposit_aethite_medium:     'sprites/deposits/deposit_aethite_medium.png',
+  deposit_aethite_large:      'sprites/deposits/deposit_aethite_large.png',
+  deposit_voidstone_small:    'sprites/deposits/deposit_voidstone_small.png',
+  deposit_voidstone_medium:   'sprites/deposits/deposit_voidstone_medium.png',
+  deposit_voidstone_large:    'sprites/deposits/deposit_voidstone_large.png',
+  deposit_gas_small:          'sprites/deposits/deposit_gas_small.png',
+  deposit_gas_large:          'sprites/deposits/deposit_gas_large.png',
+  deposit_dark_gas_geyser:    'sprites/deposits/deposit_dark_gas_geyser_sheet.png',
+  deposit_resonance_crystal:  'sprites/deposits/deposit_resonance_crystal_sheet.png',
+  deposit_bio_resin_flora:    'sprites/deposits/deposit_bio_resin_flora_sheet.png',
+  deposit_iron_ore_small:     'sprites/deposits/deposit_iron_ore_small.png',
+  deposit_iron_ore_medium:    'sprites/deposits/deposit_iron_ore_medium.png',
+  deposit_iron_ore_large:     'sprites/deposits/deposit_iron_ore_large.png',
+  deposit_copper_ore_small:   'sprites/deposits/deposit_copper_ore_small.png',
+  deposit_copper_ore_medium:  'sprites/deposits/deposit_copper_ore_medium.png',
+  deposit_copper_ore_large:   'sprites/deposits/deposit_copper_ore_large.png',
+  deposit_water_small:        'sprites/deposits/deposit_water_small.png',
+  deposit_water_medium:       'sprites/deposits/deposit_water_medium.png',
+  deposit_water_large:        'sprites/deposits/deposit_water_large.png',
+
+  // Animated ground tiles
+  tile_floor_metal:            'sprites/ground/tile_outpost_floor_metal.png',
+  tile_floor_clean:            'sprites/ground/tile_outpost_floor_clean.png',
+  tile_ground_concrete:        'sprites/ground/tile_ground_concrete.png',
+  tile_ground_asteroid_dirt:   'sprites/ground/tile_ground_asteroid_dirt.png',
+  tile_ground_planet_b_dirt:   'sprites/ground/tile_ground_planet_b_dirt.png',
+  tile_ground_metal_grating:   'sprites/ground/tile_ground_metal_grating.png',
+  tile_road_straight_h:        'sprites/ground/tile_road_straight_h.png',
+  tile_road_straight_v:        'sprites/ground/tile_road_straight_v.png',
+  tile_road_corner_ne:         'sprites/ground/tile_road_corner_ne.png',
+  tile_road_corner_nw:         'sprites/ground/tile_road_corner_nw.png',
+  tile_road_corner_se:         'sprites/ground/tile_road_corner_se.png',
+  tile_road_corner_sw:         'sprites/ground/tile_road_corner_sw.png',
+  tile_road_t_north:           'sprites/ground/tile_road_t_north.png',
+  tile_road_t_south:           'sprites/ground/tile_road_t_south.png',
+  tile_road_t_east:            'sprites/ground/tile_road_t_east.png',
+  tile_road_t_west:            'sprites/ground/tile_road_t_west.png',
+  tile_road_cross:             'sprites/ground/tile_road_cross.png',
 };
 
 /**

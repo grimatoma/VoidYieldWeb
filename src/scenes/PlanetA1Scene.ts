@@ -3,6 +3,7 @@ import { Application, Container, Graphics, Text, TextStyle, TilingSprite, Sprite
 import { Player } from '@entities/Player';
 import { simulateOffline } from '@services/OfflineSimulator';
 import { assetManager } from '@services/AssetManager';
+import { firstFrameTexture } from '@services/SpriteSheetHelper';
 import { Camera } from '@services/Camera';
 import { IndustrialSite } from '@entities/IndustrialSite';
 import { inputManager } from '@services/InputManager';
@@ -122,22 +123,21 @@ export class PlanetA1Scene implements Scene {
     const gateL  = OUTPOST_CX - OUTPOST_GATE_HALF;
     const gateR  = OUTPOST_CX + OUTPOST_GATE_HALF;
 
-    // Tiled outpost floor under the compound — fallback to a solid fill if
-    // the tile texture isn't loaded (tests).
-    if (assetManager.has('tile_outpost_floor')) {
-      const floor = new TilingSprite({
-        texture: assetManager.texture('tile_outpost_floor'),
-        width: right - left,
-        height: bottom - top,
-      });
-      floor.x = left;
-      floor.y = top;
-      floor.alpha = 0.85;
-      this.worldContainer.addChild(floor);
-    } else {
-      const floor = new Graphics();
-      floor.rect(left, top, right - left, bottom - top).fill(0x18233d);
-      this.worldContainer.addChild(floor);
+    // Tiled outpost floor — prefer new metal tile (first frame); fallback to legacy or solid fill.
+    {
+      const floorTex = firstFrameTexture('tile_floor_metal', { frameCount: 8, frameWidth: 32, frameHeight: 32 })
+        ?? (assetManager.has('tile_outpost_floor') ? assetManager.texture('tile_outpost_floor') : null);
+      if (floorTex) {
+        const floor = new TilingSprite({ texture: floorTex, width: right - left, height: bottom - top });
+        floor.x = left;
+        floor.y = top;
+        floor.alpha = 0.85;
+        this.worldContainer.addChild(floor);
+      } else {
+        const floor = new Graphics();
+        floor.rect(left, top, right - left, bottom - top).fill(0x18233d);
+        this.worldContainer.addChild(floor);
+      }
     }
 
     // Walls — dark navy fill with amber inner trim.
@@ -211,19 +211,18 @@ export class PlanetA1Scene implements Scene {
     this.worldContainer = new Container();
     app.stage.addChild(this.worldContainer);
 
-    // 2. Background: tiled space field if the texture loaded, else flat navy.
-    if (assetManager.has('tile_space_bg')) {
-      const tile = new TilingSprite({
-        texture: assetManager.texture('tile_space_bg'),
-        width: WORLD_WIDTH,
-        height: WORLD_HEIGHT,
-      });
-      this.worldContainer.addChild(tile);
-    } else {
-      const bg = new Graphics();
-      bg.rect(0, 0, WORLD_WIDTH, WORLD_HEIGHT);
-      bg.fill(0x0D1B3E);
-      this.worldContainer.addChild(bg);
+    // 2. Background: asteroid dirt tile (new), fallback to space_bg or flat navy.
+    {
+      const bgTex = firstFrameTexture('tile_ground_asteroid_dirt', { frameCount: 4, frameWidth: 32, frameHeight: 32 })
+        ?? (assetManager.has('tile_space_bg') ? assetManager.texture('tile_space_bg') : null);
+      if (bgTex) {
+        const tile = new TilingSprite({ texture: bgTex, width: WORLD_WIDTH, height: WORLD_HEIGHT });
+        this.worldContainer.addChild(tile);
+      } else {
+        const bg = new Graphics();
+        bg.rect(0, 0, WORLD_WIDTH, WORLD_HEIGHT).fill(0x0D1B3E);
+        this.worldContainer.addChild(bg);
+      }
     }
 
     // 2b. Scatter a few ambient rocks so the world doesn't look empty.

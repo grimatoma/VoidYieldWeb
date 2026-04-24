@@ -1,4 +1,5 @@
 import { Container, Graphics, Sprite, Text, TextStyle } from 'pixi.js';
+import { makeAnimatedSprite } from '@services/SpriteSheetHelper';
 import type { RocketComponentData, RocketComponentType } from '@data/types';
 import type { StorageDepot } from './StorageDepot';
 import { assetManager } from '@services/AssetManager';
@@ -30,9 +31,13 @@ export class Launchpad {
     this.container.x = worldX;
     this.container.y = worldY;
 
-    // Pad base: launch_pad sprite if available, else amber rect fallback.
+    // Pad base: animated launchpad sheet, fallback to static, then graphics.
     this.body = new Graphics();
-    if (assetManager.has('building_launch_pad')) {
+    const padAnim = makeAnimatedSprite('sheet_launchpad', { frameCount: 8, frameWidth: 96, frameHeight: 96 });
+    if (padAnim) {
+      padAnim.anchor.set(0.5);
+      this.container.addChild(padAnim);
+    } else if (assetManager.has('building_launch_pad')) {
       const s = new Sprite(assetManager.texture('building_launch_pad'));
       s.anchor.set(0.5);
       s.width = 72;
