@@ -32,12 +32,26 @@ import { DepositPanel } from '@ui/DepositPanel';
 import { powerManager } from '@services/PowerManager';
 import { handleWorldTap } from '@services/TapToMove';
 import { roadNetwork } from '@services/RoadNetwork';
+import { obstacleManager } from '@services/ObstacleManager';
 
 // Built-in RTG provides enough power to run the furnace (3 W draw) without needing solar panels.
 const OUTPOST_REACTOR_POWER = 5;
 
 const OUTPOST_WORLD_WIDTH  = 1920;
 const OUTPOST_WORLD_HEIGHT = 1080;
+
+// Perimeter fence around the 5×5 build grid (grid spans x:260-700, y:50-490).
+// The east wall has a gate gap so the player and drones can reach the
+// deposits east of the compound. Wall rects are registered with
+// `obstacleManager` so they block movement and route pathfinding through the
+// gate. Keep these constants in sync with `_drawFence` and `_registerFenceObstacles`.
+const FENCE_LEFT     = 232;
+const FENCE_TOP      = 22;
+const FENCE_RIGHT    = 712;
+const FENCE_BOTTOM   = 518;
+const FENCE_THICK    = 10;
+const FENCE_GATE_TOP = 230;  // east-wall gate spans y:230..310 (80px wide opening)
+const FENCE_GATE_BOT = 310;
 
 // Build costs per BuildMenuOverlay BUILDABLE list
 const BUILD_COSTS: Record<string, { iron_bar: number; copper_bar: number }> = {
@@ -128,6 +142,12 @@ export class AsteroidOutpostScene implements Scene {
 
     // Draw grid overlay (faint lines)
     this._drawGrid();
+
+    // Perimeter fence + east-wall gate. Registers wall colliders with the
+    // ObstacleManager so the player and drones must route through the gate
+    // gap to enter or leave the compound.
+    this._registerFenceObstacles();
+    this._drawFence();
 
     // Road layer — sits below the building layer
     this._roadLayer = new Graphics();
@@ -523,6 +543,270 @@ export class AsteroidOutpostScene implements Scene {
     }
     g.stroke({ width: 1, color: 0x2A3A5A, alpha: 0.8 });
     this._stage!.addChild(g);
+  }
+
+  // -------------------------------------------------------------------------
+  // Perimeter fence — collision + visuals
+  // -------------------------------------------------------------------------
+
+  private _registerFenceObstacles(): void {
+    obstacleManager.clear();
+
+    // Top wall
+    obstacleManager.addWall({
+      x: FENCE_LEFT, y: FENCE_TOP,
+      w: FENCE_RIGHT - FENCE_LEFT, h: FENCE_THICK,
+    });
+    // Bottom wall
+    obstacleManager.addWall({
+      x: FENCE_LEFT, y: FENCE_BOTTOM - FENCE_THICK,
+      w: FENCE_RIGHT - FENCE_LEFT, h: FENCE_THICK,
+    });
+    // Left wall
+    obstacleManager.addWall({
+      x: FENCE_LEFT, y: FENCE_TOP,
+      w: FENCE_THICK, h: FENCE_BOTTOM - FENCE_TOP,
+    });
+    // East wall — split into two segments around the gate gap
+    obstacleManager.addWall({
+      x: FENCE_RIGHT - FENCE_THICK, y: FENCE_TOP,
+      w: FENCE_THICK, h: FENCE_GATE_TOP - FENCE_TOP,
+    });
+    obstacleManager.addWall({
+      x: FENCE_RIGHT - FENCE_THICK, y: FENCE_GATE_BOT,
+      w: FENCE_THICK, h: FENCE_BOTTOM - FENCE_GATE_BOT,
+    });
+
+    // Navigation waypoints so drones can route around the compound to reach
+    // the gate. The visibility-graph pathfinder uses these as intermediate
+    // hops when the direct line is wall-blocked.
+    const navOffset = 30;
+    const gateMidY = (FENCE_GATE_TOP + FENCE_GATE_BOT) / 2;
+    obstacleManager.addWaypoint({ x: FENCE_RIGHT + navOffset,  y: gateMidY });                       // gate approach (outside)
+    obstacleManager.addWaypoint({ x: FENCE_RIGHT - FENCE_THICK - navOffset, y: gateMidY });          // gate approach (inside)
+    obstacleManager.addWaypoint({ x: FENCE_RIGHT + navOffset,  y: FENCE_TOP - navOffset });          // NE outer corner
+    obstacleManager.addWaypoint({ x: FENCE_RIGHT + navOffset,  y: FENCE_BOTTOM + navOffset });       // SE outer corner
+    obstacleManager.addWaypoint({ x: FENCE_LEFT  - navOffset,  y: FENCE_TOP - navOffset });          // NW outer corner
+    obstacleManager.addWaypoint({ x: FENCE_LEFT  - navOffset,  y: FENCE_BOTTOM + navOffset });       // SW outer corner
+  }
+
+  private _drawFence(): void {
+    if (!this._stage) return;
+
+    const NAVY      = 0x142540;
+    const NAVY_DK   = 0x081229;
+    const AMBER     = 0xD4A843;
+    const AMBER_LT  = 0xFFE4A0;
+    const AMBER_DK  = 0x8C6B22;
+    const TEAL      = 0x00B8D4;
+    const BOLT      = 0x2A1A05;
+
+    const fence = new Graphics();
+
+    // Helper: draw an industrial wall segment as a dark navy band with an
+    // amber inner stripe, evenly spaced metal posts, and faint teal mesh.
+    const drawWallBand = (
+      x: number, y: number, w: number, h: number, horizontal: boolean,
+    ): void => {
+      // Outer shadow strip (one px outside the band for grounded look)
+      fence.rect(x - 1, y - 1, w + 2, h + 2).fill({ color: NAVY_DK });
+      // Base panel
+      fence.rect(x, y, w, h).fill({ color: NAVY });
+      // Amber inner highlight (top/left edge of the band)
+      if (horizontal) {
+        fence.rect(x, y + 1, w, 1).fill({ color: AMBER_DK });
+      } else {
+        fence.rect(x + 1, y, 1, h).fill({ color: AMBER_DK });
+      }
+
+      // Diagonal mesh weave between posts (subtle teal)
+      const meshStep = 6;
+      if (horizontal) {
+        for (let i = 0; i < w; i += meshStep) {
+          fence.moveTo(x + i, y + 1);
+          fence.lineTo(x + i + meshStep, y + h - 1);
+          fence.moveTo(x + i + meshStep, y + 1);
+          fence.lineTo(x + i, y + h - 1);
+        }
+      } else {
+        for (let i = 0; i < h; i += meshStep) {
+          fence.moveTo(x + 1, y + i);
+          fence.lineTo(x + w - 1, y + i + meshStep);
+          fence.moveTo(x + 1, y + i + meshStep);
+          fence.lineTo(x + w - 1, y + i);
+        }
+      }
+      fence.stroke({ color: TEAL, width: 0.6, alpha: 0.35 });
+
+      // Metal posts every 28px — slightly taller than the wall thickness so
+      // they read as posts when viewed from above.
+      const POST_SPACING = 28;
+      const POST_OVERHANG = 3;
+      const POST_SIZE = 5;
+      if (horizontal) {
+        for (let px = x + POST_SPACING / 2; px < x + w; px += POST_SPACING) {
+          fence.rect(px - POST_SIZE / 2, y - POST_OVERHANG, POST_SIZE, h + POST_OVERHANG * 2)
+               .fill({ color: AMBER });
+          fence.rect(px - POST_SIZE / 2, y - POST_OVERHANG, POST_SIZE, 1)
+               .fill({ color: AMBER_LT });
+          // Bolt heads top + bottom
+          fence.circle(px, y - POST_OVERHANG + 1, 0.9).fill({ color: BOLT });
+          fence.circle(px, y + h + POST_OVERHANG - 1, 0.9).fill({ color: BOLT });
+        }
+      } else {
+        for (let py = y + POST_SPACING / 2; py < y + h; py += POST_SPACING) {
+          fence.rect(x - POST_OVERHANG, py - POST_SIZE / 2, w + POST_OVERHANG * 2, POST_SIZE)
+               .fill({ color: AMBER });
+          fence.rect(x - POST_OVERHANG, py - POST_SIZE / 2, 1, POST_SIZE)
+               .fill({ color: AMBER_LT });
+          fence.circle(x - POST_OVERHANG + 1, py, 0.9).fill({ color: BOLT });
+          fence.circle(x + w + POST_OVERHANG - 1, py, 0.9).fill({ color: BOLT });
+        }
+      }
+    };
+
+    // Four wall bands (east wall split around gate)
+    drawWallBand(FENCE_LEFT,  FENCE_TOP,                    FENCE_RIGHT - FENCE_LEFT, FENCE_THICK,                  true);  // top
+    drawWallBand(FENCE_LEFT,  FENCE_BOTTOM - FENCE_THICK,   FENCE_RIGHT - FENCE_LEFT, FENCE_THICK,                  true);  // bottom
+    drawWallBand(FENCE_LEFT,  FENCE_TOP,                    FENCE_THICK,              FENCE_BOTTOM - FENCE_TOP,     false); // left
+    drawWallBand(FENCE_RIGHT - FENCE_THICK, FENCE_TOP,      FENCE_THICK,              FENCE_GATE_TOP - FENCE_TOP,   false); // east upper
+    drawWallBand(FENCE_RIGHT - FENCE_THICK, FENCE_GATE_BOT, FENCE_THICK,              FENCE_BOTTOM - FENCE_GATE_BOT, false); // east lower
+
+    // ── Gate ────────────────────────────────────────────────────────────────
+    // Two beefy gate posts flanking the gap, an amber arch beam between them
+    // a teal energy threshold across the opening, and two open door panels
+    // swung outward (drawn as rotated containers).
+    const gx = FENCE_RIGHT;
+    const gyTop = FENCE_GATE_TOP;
+    const gyBot = FENCE_GATE_BOT;
+    const gMid = (gyTop + gyBot) / 2;
+    const postW = FENCE_THICK + 6;
+    const postH = 14;
+
+    // Gate posts (anchors for the doors)
+    const drawGatePost = (px: number, py: number) => {
+      fence.rect(px, py - postH / 2, postW, postH).fill({ color: NAVY_DK });
+      fence.rect(px + 1, py - postH / 2 + 1, postW - 2, postH - 2).fill({ color: AMBER });
+      fence.rect(px + 1, py - postH / 2 + 1, postW - 2, 1).fill({ color: AMBER_LT });
+      // Bolt corners
+      fence.circle(px + 2,         py - postH / 2 + 2,         1.1).fill({ color: BOLT });
+      fence.circle(px + postW - 2, py - postH / 2 + 2,         1.1).fill({ color: BOLT });
+      fence.circle(px + 2,         py + postH / 2 - 2,         1.1).fill({ color: BOLT });
+      fence.circle(px + postW - 2, py + postH / 2 - 2,         1.1).fill({ color: BOLT });
+    };
+    drawGatePost(gx - postW / 2, gyTop);
+    drawGatePost(gx - postW / 2, gyBot);
+
+    // Arch beam connecting the two gate posts on the OUTSIDE (east) side.
+    // Drawn as a thin amber arc using line segments.
+    const archX0 = gx + postW / 2 - 1;
+    const archSegments = 14;
+    const archDepth = 10;
+    fence.moveTo(archX0, gyTop);
+    for (let i = 1; i <= archSegments; i++) {
+      const t = i / archSegments;
+      const py = gyTop + (gyBot - gyTop) * t;
+      // Symmetric bulge outward (east) peaking at the midpoint
+      const bulge = Math.sin(t * Math.PI) * archDepth;
+      fence.lineTo(archX0 + bulge, py);
+    }
+    fence.stroke({ color: AMBER, width: 2 });
+    // Inner highlight arc
+    fence.moveTo(archX0, gyTop);
+    for (let i = 1; i <= archSegments; i++) {
+      const t = i / archSegments;
+      const py = gyTop + (gyBot - gyTop) * t;
+      const bulge = Math.sin(t * Math.PI) * (archDepth - 2);
+      fence.lineTo(archX0 + bulge, py);
+    }
+    fence.stroke({ color: AMBER_LT, width: 0.6, alpha: 0.7 });
+
+    // Energy threshold — vertical teal line across the gate opening with a
+    // few horizontal scan strokes for sci-fi flavor.
+    fence.rect(gx - FENCE_THICK + 1, gyTop + 2, FENCE_THICK - 2, gyBot - gyTop - 4)
+         .fill({ color: TEAL, alpha: 0.18 });
+    fence.rect(gx - FENCE_THICK / 2, gyTop + 2, 1, gyBot - gyTop - 4)
+         .fill({ color: TEAL, alpha: 0.55 });
+    for (let py = gyTop + 6; py < gyBot - 4; py += 5) {
+      fence.rect(gx - FENCE_THICK + 2, py, FENCE_THICK - 4, 0.8)
+           .fill({ color: TEAL, alpha: 0.45 });
+    }
+
+    fence.zIndex = 1;
+    this._stage.addChild(fence);
+
+    // Open gate doors — separate Containers so we can rotate each about its
+    // hinge. Each door is a horizontal beam with three vertical bars and two
+    // diagonal cross-braces, swung outward (east) ~70° from the closed
+    // position so the gap reads as "open".
+    const doorLen = (gyBot - gyTop) * 0.55;
+    const doorThick = 5;
+
+    const buildDoor = (hingeX: number, hingeY: number, swingRad: number): Container => {
+      const door = new Container();
+      const dg = new Graphics();
+      // Beam
+      dg.rect(0, -doorThick / 2, doorLen, doorThick).fill({ color: AMBER_DK });
+      dg.rect(0, -doorThick / 2, doorLen, 1).fill({ color: AMBER_LT });
+      dg.rect(0, doorThick / 2 - 1, doorLen, 1).fill({ color: NAVY_DK });
+      // Vertical bars
+      for (let i = 0; i < 3; i++) {
+        const bx = (doorLen / 3) * (i + 0.5);
+        dg.rect(bx - 1.5, -doorThick / 2 - 4, 3, doorThick + 8).fill({ color: AMBER });
+      }
+      // Diagonal cross-brace
+      dg.moveTo(2, -doorThick / 2);
+      dg.lineTo(doorLen - 2, doorThick / 2);
+      dg.moveTo(2, doorThick / 2);
+      dg.lineTo(doorLen - 2, -doorThick / 2);
+      dg.stroke({ color: AMBER_DK, width: 1 });
+      // Hinge knob
+      dg.circle(0, 0, 2.5).fill({ color: NAVY_DK });
+      dg.circle(0, 0, 1.5).fill({ color: AMBER_LT });
+      // End handle
+      dg.circle(doorLen, 0, 2).fill({ color: BOLT });
+
+      door.addChild(dg);
+      door.x = hingeX;
+      door.y = hingeY;
+      door.rotation = swingRad;
+      return door;
+    };
+
+    // Top door hinges at top gate post, swings outward & up (negative y → angle)
+    const topDoor = buildDoor(gx, gyTop, -Math.PI * 0.42);
+    // Bottom door hinges at bottom gate post, swings outward & down
+    const botDoor = buildDoor(gx, gyBot, Math.PI * 0.42);
+    this._stage.addChild(topDoor);
+    this._stage.addChild(botDoor);
+
+    // GATE label above the arch — small amber text plate
+    const labelG = new Graphics();
+    const labelW = 28;
+    const labelH = 8;
+    const labelX = gx + archDepth + 4;
+    const labelY = gMid - labelH / 2;
+    labelG.rect(labelX - 1, labelY - 1, labelW + 2, labelH + 2).fill({ color: NAVY_DK });
+    labelG.rect(labelX, labelY, labelW, labelH).fill({ color: NAVY });
+    labelG.rect(labelX, labelY, labelW, 1).fill({ color: AMBER_LT });
+    labelG.rect(labelX, labelY + labelH - 1, labelW, 1).fill({ color: AMBER_DK });
+    // Tiny pixel-art "GATE" marks (5 amber dots + spacers)
+    const dot = (cx: number, cy: number) => labelG.rect(cx, cy, 1, 1).fill({ color: AMBER_LT });
+    const baseY = labelY + 3;
+    // G
+    dot(labelX + 3, baseY); dot(labelX + 4, baseY); dot(labelX + 3, baseY + 1); dot(labelX + 3, baseY + 2); dot(labelX + 4, baseY + 2); dot(labelX + 4, baseY + 1);
+    // A
+    dot(labelX + 7, baseY); dot(labelX + 8, baseY); dot(labelX + 6, baseY + 1); dot(labelX + 9, baseY + 1); dot(labelX + 6, baseY + 2); dot(labelX + 9, baseY + 2); dot(labelX + 7, baseY + 1); dot(labelX + 8, baseY + 1);
+    // T
+    dot(labelX + 11, baseY); dot(labelX + 12, baseY); dot(labelX + 13, baseY); dot(labelX + 12, baseY + 1); dot(labelX + 12, baseY + 2);
+    // E
+    dot(labelX + 15, baseY); dot(labelX + 16, baseY); dot(labelX + 17, baseY); dot(labelX + 15, baseY + 1); dot(labelX + 15, baseY + 2); dot(labelX + 16, baseY + 2); dot(labelX + 17, baseY + 2); dot(labelX + 16, baseY + 1);
+    // Direction chevron pointing east (out)
+    labelG.moveTo(labelX + 21, labelY + 1);
+    labelG.lineTo(labelX + 25, labelY + labelH / 2);
+    labelG.lineTo(labelX + 21, labelY + labelH - 1);
+    labelG.stroke({ color: AMBER_LT, width: 1 });
+    this._stage.addChild(labelG);
   }
 
   private _initGrid(): void {
@@ -1265,6 +1549,9 @@ export class AsteroidOutpostScene implements Scene {
 
     // Stop dispatcher
     outpostDispatcher.stop();
+
+    // Clear perimeter fence colliders so other scenes don't inherit them
+    obstacleManager.clear();
 
     // Unmount camera and clear tap callback
     if (this._camera && this._app) {
