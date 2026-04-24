@@ -1,6 +1,7 @@
-import { Container, Graphics, Sprite } from 'pixi.js';
-import type { DepositData, QualityLot, OreType } from '@data/types';
+import { Container, Graphics, Sprite, AnimatedSprite } from 'pixi.js';
+import type { DepositData, QualityLot, OreType, SizeClass } from '@data/types';
 import { assetManager, type AssetKey } from '@services/AssetManager';
+import { makeAnimatedSprite, type SheetSpec } from '@services/SpriteSheetHelper';
 
 const ORE_COLORS: Record<OreType, number> = {
   vorax: 0xFF8C42,
@@ -38,14 +39,43 @@ const ORE_COLORS: Record<OreType, number> = {
   copper_bar: 0xBF6030,
 };
 
-/** Map ore type to the sprite key where legacy assets exist; otherwise null -> color circle fallback. */
-const ORE_SPRITE_KEYS: Partial<Record<OreType, AssetKey>> = {
+/** Legacy icon keys for ore inventory display (small icons, not deposit nodes). */
+const ORE_ICON_KEYS: Partial<Record<OreType, AssetKey>> = {
   vorax: 'ore_vorax',
   krysite: 'ore_krysite',
   aethite: 'ore_aethite',
   shards: 'ore_shards',
-  // voidstone sprite exists but there's no ore type id 'voidstone' yet
 };
+
+/** Deposit node sheet specs: frameCount, frameWidth, frameHeight per sizeClass. */
+const DEPOSIT_SPECS: Record<SizeClass, SheetSpec> = {
+  small:  { frameCount: 6, frameWidth: 44, frameHeight: 36 },
+  medium: { frameCount: 6, frameWidth: 64, frameHeight: 52 },
+  large:  { frameCount: 6, frameWidth: 80, frameHeight: 64 },
+};
+
+/** Special deposit sheet specs (not size-classed). */
+const SPECIAL_DEPOSIT_SPECS: Partial<Record<OreType, SheetSpec>> = {
+  dark_gas:        { frameCount: 8, frameWidth: 56, frameHeight: 64 },
+  resonance_shards:{ frameCount: 8, frameWidth: 64, frameHeight: 80 },
+  bio_resin:       { frameCount: 8, frameWidth: 48, frameHeight: 56 },
+};
+
+/** Map ore type + size to deposit node animated sheet key. */
+function depositSheetKey(oreType: OreType, sizeClass: SizeClass): AssetKey | null {
+  switch (oreType) {
+    case 'vorax':     return `deposit_vorax_${sizeClass}` as AssetKey;
+    case 'krysite':   return `deposit_krysite_${sizeClass}` as AssetKey;
+    case 'aethite':   return `deposit_aethite_${sizeClass}` as AssetKey;
+    case 'void_cores':
+    case 'void_touched_ore': return `deposit_voidstone_${sizeClass}` as AssetKey;
+    case 'gas':       return sizeClass === 'large' ? 'deposit_gas_large' : 'deposit_gas_small';
+    case 'dark_gas':  return 'deposit_dark_gas_geyser';
+    case 'resonance_shards': return 'deposit_resonance_crystal';
+    case 'bio_resin': return 'deposit_bio_resin_flora';
+    default:          return null;
+  }
+}
 
 /** Deposit state — mirrors legacy ore_node.gd FULL / CRACKED / DEPLETED. */
 export type DepositState = 'FULL' | 'CRACKED' | 'DEPLETED';
@@ -53,7 +83,7 @@ export type DepositState = 'FULL' | 'CRACKED' | 'DEPLETED';
 export class Deposit {
   readonly container: Container;
   readonly data: DepositData;
-  private sprite: Sprite | null = null;
+  private sprite: Sprite | AnimatedSprite | null = null;
   private fallback: Graphics | null = null;
   private _initialYield: number;
   private _holdProgress = 0; // 0..1 — live hold-to-mine progress, set by MiningService
@@ -131,9 +161,24 @@ export class Deposit {
   }
 
   private _buildVisual(): void {
-    const spriteKey = ORE_SPRITE_KEYS[this.data.oreType];
-    if (spriteKey && assetManager.has(spriteKey)) {
-      this.sprite = new Sprite(assetManager.texture(spriteKey));
+    const sheetKey = depositSheetKey(this.data.oreType, this.data.sizeClass);
+    const specialSpec = SPECIAL_DEPOSIT_SPECS[this.data.oreType];
+    const spec = specialSpec ?? DEPOSIT_SPECS[this.data.sizeClass];
+
+    if (sheetKey) {
+      const anim = makeAnimatedSprite(sheetKey, spec, 0.07);
+      if (anim) {
+        anim.anchor.set(0.5);
+        this.sprite = anim;
+        this.container.addChild(anim);
+        return;
+      }
+    }
+
+    // Fallback: legacy icon or colour circle
+    const iconKey = ORE_ICON_KEYS[this.data.oreType];
+    if (iconKey && assetManager.has(iconKey)) {
+      this.sprite = new Sprite(assetManager.texture(iconKey));
       this.sprite.anchor.set(0.5);
       this.sprite.width = 32;
       this.sprite.height = 32;

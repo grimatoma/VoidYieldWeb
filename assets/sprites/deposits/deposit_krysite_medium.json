@@ -1,0 +1,68 @@
+{ "frames": {
+   "sprite-1777007556412604200 0.aseprite": {
+    "frame": { "x": 0, "y": 0, "w": 64, "h": 52 },
+    "rotated": false,
+    "trimmed": false,
+    "spriteSourceSize": { "x": 0, "y": 0, "w": 64, "h": 52 },
+    "sourceSize": { "w": 64, "h": 52 },
+    "duration": 100
+   },
+   "sprite-1777007556412604200 1.aseprite": {
+    "frame": { "x": 64, "y": 0, "w": 64, "h": 52 },
+    "rotated": false,
+    "trimmed": false,
+    "spriteSourceSize": { "x": 0, "y": 0, "w": 64, "h": 52 },
+    "sourceSize": { "w": 64, "h": 52 },
+    "duration": 100
+   },
+   "sprite-1777007556412604200 2.aseprite": {
+    "frame": { "x": 128, "y": 0, "w": 64, "h": 52 },
+    "rotated": false,
+    "trimmed": false,
+    "spriteSourceSize": { "x": 0, "y": 0, "w": 64, "h": 52 },
+    "sourceSize": { "w": 64, "h": 52 },
+    "duration": 100
+   },
+   "sprite-1777007556412604200 3.aseprite": {
+    "frame": { "x": 192, "y": 0, "w": 64, "h": 52 },
+    "rotated": false,
+    "trimmed": false,
+    "spriteSourceSize": { "x": 0, "y": 0, "w": 64, "h": 52 },
+    "sourceSize": { "w": 64, "h": 52 },
+    "duration": 100
+   },
+   "sprite-1777007556412604200 4.aseprite": {
+    "frame": { "x": 256, "y": 0, "w": 64, "h": 52 },
+    "rotated": false,
+    "trimmed": false,
+    "spriteSourceSize": { "x": 0, "y": 0, "w": 64, "h": 52 },
+    "sourceSize": { "w": 64, "h": 52 },
+    "duration": 100
+   },
+   "sprite-1777007556412604200 5.aseprite": {
+    "frame": { "x": 320, "y": 0, "w": 64, "h": 52 },
+    "rotated": false,
+    "trimmed": false,
+    "spriteSourceSize": { "x": 0, "y": 0, "w": 64, "h": 52 },
+    "sourceSize": { "w": 64, "h": 52 },
+    "duration": 100
+   }
+ },
+ "meta": {
+  "app": "https://www.aseprite.org/",
+  "version": "1.3.17-x64",
+  "image": "deposit_krysite_medium.png",
+  "format": "RGBA8888",
+  "size": { "w": 384, "h": 52 },
+  "scale": "1",
+  "frameTags": [
+   { "name": "shimmer", "from": 0, "to": 5, "direction": "pingpong", "color": "#000000ff" }
+  ],
+  "layers": [
+   { "name": "Layer 1", "opacity": 255, "blendMode": "normal" },
+   { "name": "base", "opacity": 255, "blendMode": "normal" }
+  ],
+  "slices": [
+  ]
+ }
+}

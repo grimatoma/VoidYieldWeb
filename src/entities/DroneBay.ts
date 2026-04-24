@@ -1,4 +1,5 @@
 import { Container, Graphics, Sprite, Text, TextStyle } from 'pixi.js';
+import { makeAnimatedSprite } from '@services/SpriteSheetHelper';
 import { DroneBase } from './DroneBase';
 import { ScoutDrone } from './ScoutDrone';
 import { RefineryDrone } from './RefineryDrone';
@@ -29,7 +30,11 @@ export class DroneBay {
     this.container.x = x;
     this.container.y = y;
 
-    if (assetManager.has('building_drone_bay')) {
+    const anim = makeAnimatedSprite('sheet_drone_bay', { frameCount: 8, frameWidth: 64, frameHeight: 64 });
+    if (anim) {
+      anim.anchor.set(0.5);
+      this.container.addChild(anim);
+    } else if (assetManager.has('building_drone_bay')) {
       const s = new Sprite(assetManager.texture('building_drone_bay'));
       s.anchor.set(0.5);
       s.width = 64;

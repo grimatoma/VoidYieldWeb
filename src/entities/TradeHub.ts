@@ -1,4 +1,5 @@
 import { Container, Graphics, Sprite, Text, TextStyle } from 'pixi.js';
+import { makeAnimatedSprite } from '@services/SpriteSheetHelper';
 import { gameState } from '@services/GameState';
 import { EventBus } from '@services/EventBus';
 import { assetManager } from '@services/AssetManager';
@@ -30,7 +31,11 @@ export class TradeHub {
     this.container.x = x;
     this.container.y = y;
 
-    if (assetManager.has('building_shop_terminal')) {
+    const anim = makeAnimatedSprite('sheet_trade_hub', { frameCount: 8, frameWidth: 64, frameHeight: 64 });
+    if (anim) {
+      anim.anchor.set(0.5);
+      this.container.addChild(anim);
+    } else if (assetManager.has('building_shop_terminal')) {
       const s = new Sprite(assetManager.texture('building_shop_terminal'));
       s.anchor.set(0.5);
       s.width = 56;
