@@ -104,7 +104,7 @@ export class FleetManager {
     // Drones with loop=true but no pending tasks were interrupted — re-trigger their update
     for (const drone of this._drones) {
       if (drone.loop && drone.getTasks().length === 0) {
-        drone.loop = false;  // will be re-set by ZoneManager on next scan
+        drone.loop = false;
       }
     }
   }
