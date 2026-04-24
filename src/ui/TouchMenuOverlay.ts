@@ -19,6 +19,7 @@ const SECTIONS: MenuSection[] = [
       { action: 'galaxy_map',           label: 'Galaxy Map',       key: 'G' },
       { action: 'inventory',            label: 'Inventory',        key: 'I' },
       { action: 'journal',              label: 'Survey Journal',   key: 'J' },
+      { action: 'drone_management',     label: 'Drone Management', key: '—' },
       { action: 'fleet_panel',          label: 'Fleet Command',    key: 'T' },
       { action: 'production_dashboard', label: 'Production',       key: 'P' },
       { action: 'logistics_overlay',    label: 'Logistics',        key: 'L' },

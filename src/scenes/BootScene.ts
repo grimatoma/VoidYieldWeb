@@ -3,6 +3,7 @@ import type { Scene } from './SceneManager';
 import { saveManager, defaultSaveData } from '@services/SaveManager';
 import { gameState } from '@services/GameState';
 import { EventBus } from '@services/EventBus';
+import { droneAllocationManager } from '@services/DroneAllocationManager';
 import { getOutpostSaveData } from './AsteroidOutpostScene';
 
 export class BootScene implements Scene {
@@ -58,6 +59,7 @@ export class BootScene implements Scene {
     const getState = () => ({
       ...defaultSaveData(),
       ...gameState.serialize(),
+      drone_allocations: droneAllocationManager.serialize(),
       outpost: getOutpostSaveData(),
     });
 

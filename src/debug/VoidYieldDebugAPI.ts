@@ -18,6 +18,8 @@ import { tutorialManager } from '@services/TutorialManager';
 import { fleetManager } from '@services/FleetManager';
 import { depositMap } from '@services/DepositMap';
 import { marketplaceService } from '@services/MarketplaceService';
+import { droneBayRegistry } from '@services/DroneBayRegistry';
+import { droneAllocationManager } from '@services/DroneAllocationManager';
 import { getActiveStorage, forceBuildInOutpost, setOutpostFurnaceRecipe } from '@scenes/AsteroidOutpostScene';
 
 export interface VoidYieldDebugAPI {
@@ -94,6 +96,8 @@ export interface VoidYieldDebugAPI {
     fleetManager: typeof fleetManager;
     depositMap: typeof depositMap;
     marketplaceService: typeof marketplaceService;
+    droneBayRegistry: typeof droneBayRegistry;
+    droneAllocationManager: typeof droneAllocationManager;
   };
 }
 
@@ -334,6 +338,8 @@ function createDebugAPI(): VoidYieldDebugAPI {
       fleetManager,
       depositMap,
       marketplaceService,
+      droneBayRegistry,
+      droneAllocationManager,
     },
   };
 }

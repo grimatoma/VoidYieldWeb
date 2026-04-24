@@ -2,7 +2,7 @@ import { EventBus } from './EventBus';
 import type { PlacedEntry } from './BuildGrid';
 import type { DroneBaySlotData } from './OutpostDispatcher';
 
-export const FORMAT_VERSION = 3;
+export const FORMAT_VERSION = 4;
 const SAVE_KEY = 'voidyield_savegame';
 const AUTOSAVE_INTERVAL_MS = 5 * 60 * 1000;
 
@@ -36,6 +36,7 @@ export interface SaveData {
   stranding_manager?: { rocketFuel: number; isStranded: boolean };
   tutorial_state?: { step: number; completed: boolean; skipped: boolean };
   max_active_drones?: number;
+  drone_allocations?: { miners: Record<string, number>; logistics: number };
   outpost?: {
     grid: PlacedEntry[];
     furnaceRecipe: 'iron' | 'copper' | 'off';
@@ -71,6 +72,27 @@ const MIGRATIONS: Record<number, (data: unknown) => SaveData> = {
     format_version: 3,
     current_planet: 'outpost',
   }),
+  // v3 -> v4: migrate max_active_drones + outpost droneSlots oreType into drone_allocations
+  3: (data: unknown) => {
+    const d = data as Partial<SaveData>;
+    // Build initial miner allocation from old slot oreTypes
+    const miners: Record<string, number> = {};
+    const oldSlots = d.outpost?.droneSlots ?? [];
+    for (const slot of oldSlots) {
+      if (!slot.droneType) continue;
+      const isMiner = slot.droneType === 'scout' || slot.droneType === 'heavy';
+      if (!isMiner) continue;
+      const ore = (slot as any).oreType as string | undefined;
+      if (ore && ore !== 'any') {
+        miners[ore] = (miners[ore] ?? 0) + 1;
+      }
+    }
+    return {
+      ...d,
+      format_version: 4,
+      drone_allocations: { miners, logistics: 0 },
+    } as SaveData;
+  },
 };
 
 export function defaultSaveData(): SaveData {

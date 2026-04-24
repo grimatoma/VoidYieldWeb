@@ -26,6 +26,7 @@ import { PrestigePanel } from './PrestigePanel';
 import { OfflineDispatchPanel } from './OfflineDispatchPanel';
 import { TouchMenuOverlay } from './TouchMenuOverlay';
 import { TouchInteractButton } from './TouchInteractButton';
+import { DroneManagementPanel } from './DroneManagementPanel';
 const UI_SCALE_STORAGE_KEY = 'voidyield_ui_scale';
 const UI_SCALE_MIN = 0.6;
 const UI_SCALE_MAX = 1.6;
@@ -54,6 +55,7 @@ export class UILayer {
   private _offlineDispatch: OfflineDispatchPanel | null = null;
   private _touchMenu: TouchMenuOverlay | null = null;
   private _touchInteract: TouchInteractButton | null = null;
+  private _droneManagementPanel: DroneManagementPanel | null = null;
   private _onResize: () => void;
   private _userScale: number = UI_SCALE_DEFAULT;
 
@@ -119,7 +121,11 @@ export class UILayer {
     this._shopPanel = new ShopPanel();
     this._shopPanel.mount(this._root);
 
+    this._droneManagementPanel = new DroneManagementPanel();
+    this._droneManagementPanel.mount(this._root);
+
     this._droneBayPanel = new DroneBayPanel();
+    this._droneBayPanel.setOpenManagementCallback(() => this._droneManagementPanel?.open());
     this._droneBayPanel.mount(this._root);
 
     this._habitationPanel = new HabitationPanel();
@@ -203,11 +209,13 @@ export class UILayer {
   get offlineDispatch(): OfflineDispatchPanel | null { return this._offlineDispatch; }
   get touchMenu(): TouchMenuOverlay | null { return this._touchMenu; }
   get touchInteract(): TouchInteractButton | null { return this._touchInteract; }
+  get droneManagementPanel(): DroneManagementPanel | null { return this._droneManagementPanel; }
 
   /** Close every opened interaction panel — used when switching planets or on Esc. */
   closeAllPanels(): void {
     this._shopPanel?.close();
     this._droneBayPanel?.close();
+    this._droneManagementPanel?.close();
     this._habitationPanel?.close();
     this._shipBayPanel?.close();
     this._fabricatorPanel?.close();
@@ -235,6 +243,8 @@ export class UILayer {
     this._shopPanel = null;
     this._droneBayPanel?.destroy();
     this._droneBayPanel = null;
+    this._droneManagementPanel?.destroy();
+    this._droneManagementPanel = null;
     this._habitationPanel?.destroy();
     this._habitationPanel = null;
     this._shipBayPanel?.destroy();

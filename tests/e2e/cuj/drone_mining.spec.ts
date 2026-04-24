@@ -64,15 +64,21 @@ test.describe('Drone auto-mining loop', () => {
     expect(await g.getCredits()).toBe(credBefore + revenue);
   });
 
-  test('miner respects bay-slot cap — extra drones spawn disabled', async ({ page }) => {
+  test('droneBayRegistry reports correct slot counts for planet bay', async ({ page }) => {
     const g = await waitForPlanet(page, 'planet_a1');
 
-    // Force cap=1 so the starter drone saturates the bay.
-    await g.eval(`g.services.gameState.setMaxActiveDrones(1)`);
-    const starterActive = await g.eval<number>(
-      `g.services.fleetManager.getDrones().filter(d => !d.disabled).length`,
+    // The planet A1 bay is registered in the global DroneBayRegistry.
+    const slots = await g.eval<{ total: number; used: number; empty: number }>(
+      `({
+         total: g.services.droneBayRegistry.totalSlots(),
+         used:  g.services.droneBayRegistry.totalUsedSlots(),
+         empty: g.services.droneBayRegistry.totalEmptySlots(),
+       })`,
     );
-    expect(starterActive).toBeLessThanOrEqual(1);
+
+    expect(slots.total).toBeGreaterThanOrEqual(3);
+    expect(slots.used).toBeGreaterThanOrEqual(1);   // starter drone
+    expect(slots.empty).toBeLessThan(slots.total);
   });
 
   test('disabled drone does not mine', async ({ page }) => {

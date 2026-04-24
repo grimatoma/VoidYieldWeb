@@ -12,6 +12,7 @@ import { PlacedBuilding, CELL_SIZE, GRID_ORIGIN, gridToWorld } from '@entities/P
 import { buildGrid } from '@services/BuildGrid';
 import type { GridFootprint, PlacedEntry } from '@services/BuildGrid';
 import { fleetManager } from '@services/FleetManager';
+import { droneAllocationManager } from '@services/DroneAllocationManager';
 import { depositMap } from '@services/DepositMap';
 import { miningService } from '@services/MiningService';
 import { inputManager } from '@services/InputManager';
@@ -361,10 +362,13 @@ export class AsteroidOutpostScene implements Scene {
       this._storage?.setStock('iron_bar', 100);
       this._storage?.setStock('copper_bar', 100);
 
-      // Default starting drones
+      // Default starting drones (fresh game)
       if (this._droneDepot) {
-        this._droneDepot.restoreBaySlot({ slotId: 'slot_0', droneType: 'scout', oreType: 'iron_ore' }, this._stage!);
-        this._droneDepot.restoreBaySlot({ slotId: 'slot_1', droneType: 'scout', oreType: 'copper_ore' }, this._stage!);
+        this._droneDepot.restoreBaySlot({ slotIndex: 0, droneType: 'scout' }, this._stage!);
+        this._droneDepot.restoreBaySlot({ slotIndex: 1, droneType: 'scout' }, this._stage!);
+        // Seed default miner allocation for iron + copper
+        droneAllocationManager.allocateMiner('iron_ore', 1, 2);
+        droneAllocationManager.allocateMiner('copper_ore', 1, 2);
       }
     }
 
@@ -1016,6 +1020,10 @@ export class AsteroidOutpostScene implements Scene {
       this._productionOverlay.renderOutpost(this._gatherBuildingStatuses());
     }
 
+    // Drone Management panel update
+    const uiDmu = (window as unknown as { __voidyield_uiLayer?: import('@ui/UILayer').UILayer }).__voidyield_uiLayer;
+    uiDmu?.droneManagementPanel?.update(delta);
+
     // Mining + interactions
     miningService.update(delta, { x: this._player.x, y: this._player.y });
 
@@ -1024,6 +1032,12 @@ export class AsteroidOutpostScene implements Scene {
     }
     if (!inputManager.isHeld('interact')) {
       miningService.onInteractReleased();
+    }
+
+    // Drone Management panel
+    if (inputManager.wasJustPressed('drone_management')) {
+      const uiDm = (window as unknown as { __voidyield_uiLayer?: import('@ui/UILayer').UILayer }).__voidyield_uiLayer;
+      uiDm?.droneManagementPanel?.open();
     }
 
     // Build menu toggle (N key)
@@ -1372,14 +1386,18 @@ export class AsteroidOutpostScene implements Scene {
 
       // Wire up depot
       try {
-        depot.onBuild(this._storage!, this._furnace!, outpostDispatcher);
+        depot.onBuild(this._storage!, this._furnace!, outpostDispatcher, this._stage!);
       } catch (err) {
         console.warn('DroneDepot.onBuild failed:', err);
       }
 
-      // Create overlay for this depot; pass stage as drone spawn container
+      // Create overlay for this depot
       this._droneDepotOverlay?.unmount();
-      this._droneDepotOverlay = new DroneDepotOverlay(depot, () => this._stage!);
+      const openMgmt = () => {
+        const ui = (window as unknown as { __voidyield_uiLayer?: import('@ui/UILayer').UILayer }).__voidyield_uiLayer;
+        ui?.droneManagementPanel?.open();
+      };
+      this._droneDepotOverlay = new DroneDepotOverlay(depot, () => this._stage!, openMgmt);
       this._droneDepotOverlay.mount();
     } else if (buildingType === 'electrolysis_unit') {
       const eu = new ElectrolysisUnit(wx, wy);
@@ -1438,6 +1456,7 @@ export class AsteroidOutpostScene implements Scene {
           if (ui?.shopPanel && this._storage) {
             ui.shopPanel.setDepot(this._storage);
             ui.shopPanel.open();
+          }
           return;
         }
         if (entry.buildingType === 'drone_depot')       { this._droneDepotOverlay?.open();   return; }
@@ -1846,6 +1865,13 @@ export class AsteroidOutpostScene implements Scene {
       for (const slotData of data.droneSlots) {
         this._droneDepot.restoreBaySlot(slotData, this._stage!);
       }
+    }
+
+    // Restore drone allocations
+    const allocData = (data as any).drone_allocations as { miners?: Record<string, number>; logistics?: number } | undefined;
+    if (allocData) {
+      droneAllocationManager.deserialize(allocData);
+      droneAllocationManager.reconcile();
     }
 
     // Restore player position
