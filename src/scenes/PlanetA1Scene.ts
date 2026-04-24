@@ -271,14 +271,12 @@ export class PlanetA1Scene implements Scene {
     // Drone Bay — top-left slot inside compound
     this.droneBay = new DroneBay(SLOT.DRONE_BAY.x, SLOT.DRONE_BAY.y);
     this.worldContainer.addChild(this.droneBay.container);
+    this.droneBay.setWorldContainer(this.worldContainer);
 
-    // Starter Mining Drone so a fresh save has a visible, working drone.
-    // No credits charged — gifted to the player. MiningCircuitManager will
-    // pick it up and drive it through the SEEK → MINE → HAUL loop.
+    // Starter Mining Drone — gifted to the player, no credits charged.
     const starter = new (await import('@entities/ScoutDrone')).ScoutDrone(this.droneBay.x, this.droneBay.y);
     this.worldContainer.addChild(starter.container);
-    this.droneBay['_drones'].push(starter); // direct push avoids the price charge
-    fleetManager.add(starter);
+    this.droneBay.addStarterDrone(starter, this.worldContainer);
 
     // Traffic overlay (T key)
     this.trafficOverlay = new TrafficOverlay();
@@ -491,6 +489,10 @@ export class PlanetA1Scene implements Scene {
       if (action === 'fleet_panel' && pressed) {
         this.fleetPanel.toggle();
       }
+      if (action === 'drone_management' && pressed) {
+        const uiDm = (window as unknown as { __voidyield_uiLayer?: UILayer }).__voidyield_uiLayer;
+        uiDm?.droneManagementPanel?.open();
+      }
       if (action === 'coverage_overlay' && pressed) {
         this.coverageOverlay.setVisible(!this.coverageOverlay.visible);
       }
@@ -544,7 +546,7 @@ export class PlanetA1Scene implements Scene {
     }
     const px = this.player.x, py = this.player.y;
     if (this.droneBay.isNearby(px, py, 80)) {
-      ui2?.droneBayPanel?.setBay(this.droneBay, this.worldContainer);
+      ui2?.droneBayPanel?.setBay(this.droneBay);
       ui2?.droneBayPanel?.open();
       return;
     }
@@ -617,6 +619,7 @@ export class PlanetA1Scene implements Scene {
     miningCircuitManager.update(delta);
     if (this.fleetPanel.visible) this.fleetPanel.update();
     ui?.droneBayPanel?.update(delta);
+    ui?.droneManagementPanel?.update(delta);
     this.trafficOverlay.update(fleetManager.getDrones());
     this.processingPlant.update(delta);
     this.platePressPlant.update(delta);

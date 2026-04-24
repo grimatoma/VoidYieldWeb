@@ -25,6 +25,7 @@ export type GameEvents = {
   'fleet:count_changed': [count: number];
   'fleet:roster_changed': [];
   'drone:bay_cap_changed': [cap: number];
+  'drone:allocation_changed': [];
   'tutorial:step_changed': [step: number];
   'tutorial:completed': [];
   'tutorial:skipped': [];

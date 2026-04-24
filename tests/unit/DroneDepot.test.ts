@@ -10,6 +10,7 @@ vi.mock('pixi.js', () => {
     x: 0,
     y: 0,
     destroy: vi.fn(),
+    parent: null,
   });
   return {
     Container:  vi.fn().mockImplementation(makeContainer),
@@ -23,22 +24,50 @@ vi.mock('pixi.js', () => {
   };
 });
 
-// Mock PlacedBuilding (only CELL_SIZE is needed)
 vi.mock('@entities/PlacedBuilding', () => ({
   CELL_SIZE: 80,
+}));
+
+vi.mock('@services/DroneBayRegistry', () => ({
+  droneBayRegistry: {
+    register:   vi.fn(),
+    unregister: vi.fn(),
+  },
+}));
+
+vi.mock('@services/FleetManager', () => ({
+  fleetManager: {
+    add:    vi.fn(),
+    remove: vi.fn(),
+  },
+}));
+
+vi.mock('@services/GameState', () => ({
+  gameState: {
+    credits: 500,
+    addCredits: vi.fn(),
+  },
+}));
+
+vi.mock('@services/EventBus', () => ({
+  EventBus: { emit: vi.fn(), on: vi.fn() },
 }));
 
 // ---------------------------------------------------------------------------
 // Import after mocks
 // ---------------------------------------------------------------------------
 
-// reset depotBuilt before each test
-import { resetDepotBuilt } from '@entities/DroneDepot';
-import { DroneDepot } from '@entities/DroneDepot';
+import { resetDepotBuilt, DroneDepot } from '@entities/DroneDepot';
+import { droneBayRegistry } from '@services/DroneBayRegistry';
+import { gameState } from '@services/GameState';
 
 // ---------------------------------------------------------------------------
 // Helpers
 // ---------------------------------------------------------------------------
+
+function makeWorldContainer() {
+  return { addChild: vi.fn(), removeChild: vi.fn() };
+}
 
 function makeStorage() {
   return {
@@ -78,68 +107,106 @@ function makeDispatcher() {
 describe('DroneDepot', () => {
   beforeEach(() => {
     resetDepotBuilt();
+    vi.clearAllMocks();
+    (gameState as any).credits = 500;
   });
 
-  it('onBuild leaves furnace.manualOnly as true (logistics drones use insertBatch)', () => {
+  it('onBuild registers with droneBayRegistry', () => {
     const depot = new DroneDepot(400, 300);
-    const storage = makeStorage();
-    const furnace = makeFurnace();
-    const dispatcher = makeDispatcher();
-
-    expect(furnace.manualOnly).toBe(true);
-    depot.onBuild(storage as any, furnace as any, dispatcher as any);
-    expect(furnace.manualOnly).toBe(true);
+    const wc = makeWorldContainer();
+    depot.onBuild(makeStorage() as any, makeFurnace() as any, makeDispatcher() as any, wc as any);
+    expect(droneBayRegistry.register).toHaveBeenCalledWith(depot);
   });
 
-  it('onBuild calls dispatcher.configure with the live bay-slot array', () => {
+  it('onBuild calls dispatcher.configure with BaySlot array (no oreType)', () => {
     const depot = new DroneDepot(400, 300);
-    const storage = makeStorage();
-    const furnace = makeFurnace();
     const dispatcher = makeDispatcher();
+    const wc = makeWorldContainer();
 
-    depot.onBuild(storage as any, furnace as any, dispatcher as any);
+    depot.onBuild(makeStorage() as any, makeFurnace() as any, dispatcher as any, wc as any);
 
     expect(dispatcher.configure).toHaveBeenCalledOnce();
-    const [s, f, pos, slots] = dispatcher.configure.mock.calls[0];
-    expect(s).toBe(storage);
-    expect(f).toBe(furnace);
+    const [, , pos, slots] = dispatcher.configure.mock.calls[0];
     expect(pos).toMatchObject({ x: 400, y: 300 });
     expect(slots).toHaveLength(4);
-    expect(slots[0]).toMatchObject({ slotId: 'slot_0', drone: null, droneType: null, oreType: 'iron_ore' });
-    expect(slots[1]).toMatchObject({ slotId: 'slot_1', drone: null, droneType: null, oreType: 'copper_ore' });
-    expect(slots[2]).toMatchObject({ slotId: 'slot_2', drone: null, droneType: null, oreType: 'iron_ore' });
-    expect(slots[3]).toMatchObject({ slotId: 'slot_3', drone: null, droneType: null, oreType: 'iron_ore' });
+    // New shape: BaySlot — no slotId, no oreType
+    expect(slots[0]).toMatchObject({ drone: null, droneType: null });
+    expect(Object.keys(slots[0])).not.toContain('oreType');
+    expect(Object.keys(slots[0])).not.toContain('slotId');
   });
 
-  it('setSlotOreType updates oreType for the given slot', () => {
+  it('onBuild leaves furnace.manualOnly as true', () => {
     const depot = new DroneDepot(400, 300);
-    const storage = makeStorage();
     const furnace = makeFurnace();
-    const dispatcher = makeDispatcher();
-
-    depot.onBuild(storage as any, furnace as any, dispatcher as any);
-
-    depot.setSlotOreType('slot_0', 'copper_ore');
-
-    const slots = depot.getBaySlots();
-    expect(slots[0]).toMatchObject({ slotId: 'slot_0', oreType: 'copper_ore' });
-    // Mutation is live — no re-configure needed since slots are passed by reference
-    expect(dispatcher.configure).toHaveBeenCalledOnce(); // only from onBuild
+    const wc = makeWorldContainer();
+    depot.onBuild(makeStorage() as any, furnace as any, makeDispatcher() as any, wc as any);
+    expect(furnace.manualOnly).toBe(true);
   });
 
   it('second DroneDepot throws (MVP limit)', () => {
     const depot1 = new DroneDepot(400, 300);
-    const storage = makeStorage();
-    const furnace1 = makeFurnace();
-    const dispatcher1 = makeDispatcher();
-    depot1.onBuild(storage as any, furnace1 as any, dispatcher1 as any);
+    const wc = makeWorldContainer();
+    depot1.onBuild(makeStorage() as any, makeFurnace() as any, makeDispatcher() as any, wc as any);
 
     const depot2 = new DroneDepot(500, 300);
-    const furnace2 = makeFurnace();
-    const dispatcher2 = makeDispatcher();
-
     expect(() => {
-      depot2.onBuild(storage as any, furnace2 as any, dispatcher2 as any);
+      depot2.onBuild(makeStorage() as any, makeFurnace() as any, makeDispatcher() as any, wc as any);
     }).toThrow();
+  });
+
+  it('upgradeSlot deducts credits and grows slot array', () => {
+    const depot = new DroneDepot(400, 300, 4);
+    const wc = makeWorldContainer();
+    depot.onBuild(makeStorage() as any, makeFurnace() as any, makeDispatcher() as any, wc as any);
+
+    const cost = depot.upgradeCost(); // 100 * (4+1)^2 = 2500
+    expect(cost).toBe(2500);
+
+    // Set credits high enough
+    (gameState as any).credits = 9999;
+    const result = depot.upgradeSlot();
+    expect(result).toBe(true);
+    expect(gameState.addCredits).toHaveBeenCalledWith(-cost);
+    expect(depot.slotCount).toBe(5);
+    expect(depot.slots).toHaveLength(5);
+  });
+
+  it('upgradeSlot returns false when credits insufficient', () => {
+    const depot = new DroneDepot(400, 300, 4);
+    const wc = makeWorldContainer();
+    depot.onBuild(makeStorage() as any, makeFurnace() as any, makeDispatcher() as any, wc as any);
+    (gameState as any).credits = 0;
+    expect(depot.upgradeSlot()).toBe(false);
+    expect(depot.slotCount).toBe(4);
+  });
+
+  it('getBaySlotData serialises slot indices', () => {
+    const depot = new DroneDepot(400, 300, 3);
+    const wc = makeWorldContainer();
+    depot.onBuild(makeStorage() as any, makeFurnace() as any, makeDispatcher() as any, wc as any);
+
+    const data = depot.getBaySlotData();
+    expect(data).toHaveLength(3);
+    expect(data[0]).toMatchObject({ slotIndex: 0, droneType: null });
+    expect(data[1]).toMatchObject({ slotIndex: 1, droneType: null });
+  });
+
+  it('restoreBaySlot accepts slotId format (backwards compat)', () => {
+    const depot = new DroneDepot(400, 300, 4);
+    const wc = makeWorldContainer();
+    depot.onBuild(makeStorage() as any, makeFurnace() as any, makeDispatcher() as any, wc as any);
+
+    // Old format used slotId: 'slot_0'
+    depot.restoreBaySlot({ slotId: 'slot_0', droneType: 'scout' }, wc as any);
+    expect(depot.slots[0].droneType).toBe('scout');
+  });
+
+  it('restoreBaySlot accepts slotIndex format', () => {
+    const depot = new DroneDepot(400, 300, 4);
+    const wc = makeWorldContainer();
+    depot.onBuild(makeStorage() as any, makeFurnace() as any, makeDispatcher() as any, wc as any);
+
+    depot.restoreBaySlot({ slotIndex: 2, droneType: 'refinery' }, wc as any);
+    expect(depot.slots[2].droneType).toBe('refinery');
   });
 });

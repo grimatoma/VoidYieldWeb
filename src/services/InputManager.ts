@@ -24,7 +24,8 @@ export type InputAction =
   | 'camera_zoom_in'
   | 'camera_zoom_out'
   | 'debug_toggle'
-  | 'build_menu';  // N key — B is claimed by coverage_overlay (spec 16)
+  | 'build_menu'   // N key — B is claimed by coverage_overlay (spec 16)
+  | 'drone_management';  // No default key — dispatched from touch menu / per-bay button
 
 type KeyMap = Record<string, InputAction>;
 
