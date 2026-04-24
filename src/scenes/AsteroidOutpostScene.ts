@@ -21,6 +21,8 @@ import { saveManager } from '@services/SaveManager';
 import { OUTPOST_DEPOSITS } from '@data/outpost_deposits';
 import { planetResources, outpostId } from '@store/gameStore';
 import { inventory } from '@services/Inventory';
+import { ElectrolysisUnit } from '@entities/ElectrolysisUnit';
+import { Launchpad } from '@entities/Launchpad';
 import { FurnaceOverlay } from '@ui/FurnaceOverlay';
 import { BuildMenuOverlay } from '@ui/BuildMenuOverlay';
 import { DroneDepotOverlay } from '@ui/DroneDepotOverlay';
@@ -28,8 +30,10 @@ import { BuildPromptOverlay } from '@ui/BuildPromptOverlay';
 import { MarketplaceOverlay } from '@ui/MarketplaceOverlay';
 import { ProductionOverlay } from '@ui/ProductionOverlay';
 import type { OutpostBuildingStatus } from '@ui/ProductionOverlay';
+import { ElectrolysisOverlay } from '@ui/ElectrolysisOverlay';
 import { DepositPanel } from '@ui/DepositPanel';
 import { powerManager } from '@services/PowerManager';
+import { EventBus } from '@services/EventBus';
 import { handleWorldTap } from '@services/TapToMove';
 import { roadNetwork } from '@services/RoadNetwork';
 import { obstacleManager } from '@services/ObstacleManager';
@@ -53,16 +57,20 @@ const FENCE_THICK    = 10;
 const FENCE_GATE_TOP = 230;  // east-wall gate spans y:230..310 (80px wide opening)
 const FENCE_GATE_BOT = 310;
 
-// Build costs per BuildMenuOverlay BUILDABLE list
+// Build costs per BuildMenuOverlay BUILDABLE list (TDD §3.5)
 const BUILD_COSTS: Record<string, { iron_bar: number; copper_bar: number }> = {
-  marketplace: { iron_bar: 5,  copper_bar: 3 },
-  drone_depot: { iron_bar: 10, copper_bar: 5 },
+  marketplace:       { iron_bar: 4,  copper_bar: 2  },
+  drone_depot:       { iron_bar: 6,  copper_bar: 0  },
+  electrolysis_unit: { iron_bar: 6,  copper_bar: 4  },
+  launchpad:         { iron_bar: 30, copper_bar: 15 },
 };
 
-// Footprints matching the build menu definitions
+// Footprints matching the build menu definitions (TDD §2)
 const BUILD_FOOTPRINTS: Record<string, GridFootprint> = {
-  marketplace: { rows: 1, cols: 2 },
-  drone_depot: { rows: 2, cols: 2 },
+  marketplace:       { rows: 2, cols: 2 },
+  drone_depot:       { rows: 2, cols: 2 },
+  electrolysis_unit: { rows: 3, cols: 2 },
+  launchpad:         { rows: 3, cols: 3 },
 };
 
 export class AsteroidOutpostScene implements Scene {
@@ -82,6 +90,11 @@ export class AsteroidOutpostScene implements Scene {
   private _marketplaceOverlay: MarketplaceOverlay | null = null;
   private _productionOverlay: ProductionOverlay | null = null;
   private _productionOverlayActive = false;
+  private _electrolysisUnit: ElectrolysisUnit | null = null;
+  private _electrolysisOverlay: ElectrolysisOverlay | null = null;
+  private _launchpad: Launchpad | null = null;
+  private _launchpadPanel: HTMLDivElement | null = null;
+  private _phase1LaunchHandler: (() => void) | null = null;
   private _depositPanel: DepositPanel | null = null;
   private _app: Application | null = null;
   private _camera: Camera | null = null;
@@ -178,11 +191,13 @@ export class AsteroidOutpostScene implements Scene {
     this._camera.onTap((wx, wy) => {
       if (!this._player) return;
 
-      if (this._furnaceOverlay?.isOpen())     { this._furnaceOverlay.close();     }
-      if (this._marketplaceOverlay?.isOpen()) { this._marketplaceOverlay.close(); }
-      if (this._droneDepotOverlay?.isOpen())  { this._droneDepotOverlay.close();  }
-      if (this._buildMenuOverlay?.isOpen())   { this._buildMenuOverlay.close();   }
-      if (this._depositPanel?.isOpen())       { this._depositPanel.close();       }
+      if (this._furnaceOverlay?.isOpen())       { this._furnaceOverlay.close();       }
+      if (this._marketplaceOverlay?.isOpen())   { this._marketplaceOverlay.close();   }
+      if (this._droneDepotOverlay?.isOpen())    { this._droneDepotOverlay.close();    }
+      if (this._buildMenuOverlay?.isOpen())     { this._buildMenuOverlay.close();     }
+      if (this._depositPanel?.isOpen())         { this._depositPanel.close();         }
+      if (this._electrolysisOverlay?.isOpen())  { this._electrolysisOverlay.close();  }
+      if (this._launchpadPanel)                 { this._closeLaunchpadPanel();        }
 
       const col = Math.floor((wx - GRID_ORIGIN.x) / CELL_SIZE);
       const row = Math.floor((wy - GRID_ORIGIN.y) / CELL_SIZE);
@@ -220,8 +235,9 @@ export class AsteroidOutpostScene implements Scene {
       onBuildStart: (buildingType: string) => this._startGhostPlacement(buildingType),
       onMoveStart: (buildingId: string) => this._startGhostMove(buildingId),
       getPlacedBuildings: () => buildGrid.getAll().filter(e =>
-        e.buildingType !== 'storage' && e.buildingType !== 'furnace'
+        e.buildingType !== 'storage' && e.buildingType !== 'furnace' && e.buildingType !== 'fabricator'
       ),
+      onEnterRoadMode: () => this._enterRoadMode(),
     });
     this._buildMenuOverlay.mount();
 
@@ -240,6 +256,10 @@ export class AsteroidOutpostScene implements Scene {
     resetDepotBuilt();
 
     gameState.setCurrentPlanet('outpost');
+
+    // Phase 1 launch event
+    this._phase1LaunchHandler = () => this._showPhase1CompleteOverlay();
+    EventBus.on('phase1:launch', this._phase1LaunchHandler);
 
     // Register save getter, storage accessor, and debug hooks
     _activeSaveGetter = () => this.serializeOutpost();
@@ -827,6 +847,12 @@ export class AsteroidOutpostScene implements Scene {
     buildGrid.place({ buildingId: 'furnace_0', buildingType: 'furnace', row: 2, col: 1, footprint: { rows: 1, cols: 1 } });
     this._buildingLayer!.addChild(this._furnace.container);
 
+    // Fabricator placeholder (2×2) at [0,0] — always pre-placed; [E] opens Build Menu
+    buildGrid.place({ buildingId: 'fabricator_0', buildingType: 'fabricator', row: 0, col: 0, footprint: { rows: 2, cols: 2 } });
+    const fabPb = new PlacedBuilding('fabricator_0', 'fabricator', 0, 0, { rows: 2, cols: 2 });
+    this._placedBuildings.push(fabPb);
+    this._buildingLayer!.addChild(fabPb.container);
+
     // Drone Depot (2x2) at [0,3] (top right)
     const depotFootprint = BUILD_FOOTPRINTS['drone_depot'];
     buildGrid.place({ buildingId: 'drone_depot_0', buildingType: 'drone_depot', row: 0, col: 3, footprint: depotFootprint });
@@ -853,6 +879,9 @@ export class AsteroidOutpostScene implements Scene {
     // Furnace update
     this._furnace?.update(delta);
 
+    // Electrolysis unit update
+    this._electrolysisUnit?.update(delta);
+
     // Drone entity movement update
     fleetManager.update(delta);
 
@@ -878,7 +907,9 @@ export class AsteroidOutpostScene implements Scene {
         (this._marketplaceOverlay?.isOpen() ?? false) ||
         (this._droneDepotOverlay?.isOpen() ?? false) ||
         (this._buildMenuOverlay?.isOpen() ?? false) ||
-        (this._depositPanel?.isOpen() ?? false);
+        (this._depositPanel?.isOpen() ?? false) ||
+        (this._electrolysisOverlay?.isOpen() ?? false) ||
+        (this._launchpadPanel !== null);
       if (!anyOverlayOpen) {
         this._enterRoadMode();
       }
@@ -921,11 +952,13 @@ export class AsteroidOutpostScene implements Scene {
 
     // Close overlays on ESC (pause_menu action)
     if (inputManager.wasJustPressed('pause_menu')) {
-      if (this._depositPanel?.isOpen())       { this._depositPanel.close();       return; }
-      if (this._furnaceOverlay?.isOpen())     { this._furnaceOverlay.close();     return; }
-      if (this._marketplaceOverlay?.isOpen()) { this._marketplaceOverlay.close(); return; }
-      if (this._droneDepotOverlay?.isOpen())  { this._droneDepotOverlay.close();  return; }
-      if (this._buildMenuOverlay?.isOpen())   { this._buildMenuOverlay.close();   return; }
+      if (this._depositPanel?.isOpen())        { this._depositPanel.close();        return; }
+      if (this._furnaceOverlay?.isOpen())      { this._furnaceOverlay.close();      return; }
+      if (this._marketplaceOverlay?.isOpen())  { this._marketplaceOverlay.close();  return; }
+      if (this._droneDepotOverlay?.isOpen())   { this._droneDepotOverlay.close();   return; }
+      if (this._buildMenuOverlay?.isOpen())    { this._buildMenuOverlay.close();    return; }
+      if (this._electrolysisOverlay?.isOpen()) { this._electrolysisOverlay.close(); return; }
+      if (this._launchpadPanel)                { this._closeLaunchpadPanel();       return; }
     }
 
     // ── Autonomy beat (TDD §4.7) ─────────────────────────────────────────────
@@ -976,11 +1009,12 @@ export class AsteroidOutpostScene implements Scene {
     const pool = this._storage?.getStockpile() ?? new Map();
     const cap = 1000;
     planetResources.value = [
-      { key: 'iron_ore',    label: 'IRON',   subLabel: 'ORE', swatchColor: '#B45F06', carried: inventory.getByType('iron_ore'),    pool: pool.get('iron_ore')    ?? 0, cap },
-      { key: 'copper_ore',  label: 'COPPER', subLabel: 'ORE', swatchColor: '#E69138', carried: inventory.getByType('copper_ore'),  pool: pool.get('copper_ore')  ?? 0, cap },
-      { key: 'water',       label: 'WATER',  subLabel: 'ICE', swatchColor: '#3D85C6', carried: inventory.getByType('water'),       pool: pool.get('water')       ?? 0, cap },
-      { key: 'iron_bar',    label: 'IRON',   subLabel: 'BAR', swatchColor: '#999999', carried: inventory.getByType('iron_bar'),    pool: pool.get('iron_bar')    ?? 0, cap },
-      { key: 'copper_bar',  label: 'COPPER', subLabel: 'BAR', swatchColor: '#F6B26B', carried: inventory.getByType('copper_bar'),  pool: pool.get('copper_bar')  ?? 0, cap },
+      { key: 'iron_ore',      label: 'IRON',   subLabel: 'ORE', swatchColor: '#B45F06', carried: inventory.getByType('iron_ore'),      pool: pool.get('iron_ore')      ?? 0, cap },
+      { key: 'copper_ore',    label: 'COPPER', subLabel: 'ORE', swatchColor: '#E69138', carried: inventory.getByType('copper_ore'),    pool: pool.get('copper_ore')    ?? 0, cap },
+      { key: 'water',         label: 'WATER',  subLabel: 'ICE', swatchColor: '#3D85C6', carried: inventory.getByType('water'),         pool: pool.get('water')         ?? 0, cap },
+      { key: 'iron_bar',      label: 'IRON',   subLabel: 'BAR', swatchColor: '#999999', carried: inventory.getByType('iron_bar'),      pool: pool.get('iron_bar')      ?? 0, cap },
+      { key: 'copper_bar',    label: 'COPPER', subLabel: 'BAR', swatchColor: '#F6B26B', carried: inventory.getByType('copper_bar'),    pool: pool.get('copper_bar')    ?? 0, cap },
+      { key: 'hydrolox_fuel', label: 'FUEL',   subLabel: 'HYD', swatchColor: '#00E5FF', carried: inventory.getByType('hydrolox_fuel'), pool: pool.get('hydrolox_fuel') ?? 0, cap },
     ];
   }
 
@@ -1185,6 +1219,19 @@ export class AsteroidOutpostScene implements Scene {
       this._droneDepotOverlay?.unmount();
       this._droneDepotOverlay = new DroneDepotOverlay(depot, () => this._stage!);
       this._droneDepotOverlay.mount();
+    } else if (buildingType === 'electrolysis_unit') {
+      const eu = new ElectrolysisUnit(wx, wy);
+      this._electrolysisUnit = eu;
+      this._buildingLayer!.addChild(eu.container);
+      this._electrolysisOverlay?.unmount();
+      this._electrolysisOverlay = new ElectrolysisOverlay(eu);
+      this._electrolysisOverlay.mount();
+      outpostDispatcher.setElectrolysisUnit(eu);
+    } else if (buildingType === 'launchpad') {
+      const lp = new Launchpad(wx, wy);
+      this._launchpad = lp;
+      this._buildingLayer!.addChild(lp.container);
+      outpostDispatcher.setLaunchpad(lp);
     } else {
       // Generic PlacedBuilding fallback
       const pb = new PlacedBuilding(buildingId, buildingType, row, col, footprint);
@@ -1210,10 +1257,11 @@ export class AsteroidOutpostScene implements Scene {
     }
 
     // Close whichever overlay is open and bail
-    if (this._furnaceOverlay?.isOpen())     { this._furnaceOverlay.close();     return; }
-    if (this._marketplaceOverlay?.isOpen()) { this._marketplaceOverlay.close(); return; }
-    if (this._droneDepotOverlay?.isOpen())  { this._droneDepotOverlay.close();  return; }
-    if (this._buildMenuOverlay?.isOpen())   { this._buildMenuOverlay.close();   return; }
+    if (this._furnaceOverlay?.isOpen())       { this._furnaceOverlay.close();       return; }
+    if (this._marketplaceOverlay?.isOpen())   { this._marketplaceOverlay.close();   return; }
+    if (this._droneDepotOverlay?.isOpen())    { this._droneDepotOverlay.close();    return; }
+    if (this._buildMenuOverlay?.isOpen())     { this._buildMenuOverlay.close();     return; }
+    if (this._electrolysisOverlay?.isOpen())  { this._electrolysisOverlay.close();  return; }
 
     // Grid-tile-based interaction: every cell of a building's footprint triggers
     // the correct action menu, eliminating the circle-radius gap bugs.
@@ -1222,10 +1270,13 @@ export class AsteroidOutpostScene implements Scene {
     if (col >= 0 && col < BuildGrid.COLS && row >= 0 && row < BuildGrid.ROWS) {
       const entry = buildGrid.getBuildingAt(row, col);
       if (entry) {
-        if (entry.buildingType === 'furnace')     { this._furnaceOverlay?.open();     return; }
-        if (entry.buildingType === 'marketplace') { this._marketplaceOverlay?.open(); return; }
-        if (entry.buildingType === 'drone_depot') { this._droneDepotOverlay?.open();  return; }
-        if (entry.buildingType === 'storage')     { miningService.onInteract(px, py); return; }
+        if (entry.buildingType === 'furnace')           { this._furnaceOverlay?.open();      return; }
+        if (entry.buildingType === 'marketplace')       { this._marketplaceOverlay?.open();  return; }
+        if (entry.buildingType === 'drone_depot')       { this._droneDepotOverlay?.open();   return; }
+        if (entry.buildingType === 'storage')           { miningService.onInteract(px, py);  return; }
+        if (entry.buildingType === 'fabricator')        { this._buildMenuOverlay?.open();    return; }
+        if (entry.buildingType === 'electrolysis_unit') { this._electrolysisOverlay?.open(); return; }
+        if (entry.buildingType === 'launchpad')         { this._openLaunchpadPanel();        return; }
         return; // occupied tile, type not interactable
       }
       // Empty grid tile → build menu
@@ -1280,6 +1331,131 @@ export class AsteroidOutpostScene implements Scene {
         miningService.onInteractReleased();
       },
     });
+  }
+
+  private _openLaunchpadPanel(): void {
+    if (this._launchpadPanel) return;
+    const lp = this._launchpad;
+    if (!lp) return;
+
+    const uiLayer = document.getElementById('ui-layer') ?? document.body;
+    const panel = document.createElement('div');
+    panel.id = 'launchpad-panel';
+    panel.style.cssText = [
+      'position:absolute',
+      'top:50%',
+      'left:50%',
+      'transform:translate(-50%,-50%)',
+      'background:rgba(7,18,42,0.98)',
+      'border:1px solid #D4A843',
+      'color:#E8E4D0',
+      'font-family:monospace',
+      'font-size:13px',
+      'padding:0',
+      'min-width:360px',
+      'max-width:440px',
+      'z-index:20',
+      'pointer-events:auto',
+    ].join(';');
+
+    const render = () => {
+      if (!panel.isConnected) return;
+      const fuel = lp.fuelUnits;
+      const needed = Launchpad.FUEL_REQUIRED;
+      const pct = Math.min(100, Math.round((fuel / needed) * 100));
+      const ready = fuel >= needed;
+      const fuelColor = ready ? '#4ADE80' : '#00E5FF';
+      panel.innerHTML = `
+        <div style="background:#041229;color:#D4A843;padding:8px 14px;font-size:12px;font-weight:bold;border-bottom:1px solid #D4A843;display:flex;justify-content:space-between;align-items:center;">
+          <span>🚀 LAUNCHPAD</span>
+          <span style="font-size:10px;color:${ready ? '#4ADE80' : '#888'};">${ready ? '▶ READY TO LAUNCH' : '— FUELING'}</span>
+        </div>
+        <div style="padding:12px 14px;">
+          <div style="font-size:11px;color:#D4A843;letter-spacing:1px;margin-bottom:8px;">HYDROLOX FUEL</div>
+          <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px;">
+            <div style="flex:1;height:10px;background:#0A1A2A;border:1px solid #1A3A5A;">
+              <div style="display:inline-block;width:${pct}%;height:10px;background:${fuelColor};vertical-align:middle;"></div>
+            </div>
+            <span style="color:#E8E4D0;width:70px;text-align:right;">${fuel} / ${needed}</span>
+          </div>
+          <div style="font-size:10px;color:#444;margin-bottom:14px;">→ Logistics drones haul hydrolox_fuel from Storage</div>
+          <div style="font-size:11px;color:#888;margin-bottom:14px;">Fuel ${needed - fuel > 0 ? `needed: ${needed - fuel} more units` : 'tank full — ready!'}</div>
+          <div style="display:flex;justify-content:flex-end;gap:8px;">
+            <button id="lp-launch" style="font-family:monospace;font-size:11px;padding:4px 14px;border:1px solid ${ready ? '#4ADE80' : '#3A5A8A'};background:${ready ? '#0A3A0A' : 'transparent'};color:${ready ? '#4ADE80' : '#3A5A8A'};cursor:${ready ? 'pointer' : 'default'};" ${ready ? '' : 'disabled'}>LAUNCH ROCKET</button>
+            <button id="lp-close" style="font-family:monospace;font-size:11px;padding:4px 12px;border:1px solid #3A5A8A;background:transparent;color:#E8E4D0;cursor:pointer;">CLOSE</button>
+          </div>
+        </div>
+      `;
+      panel.querySelector('#lp-close')?.addEventListener('click', () => this._closeLaunchpadPanel());
+      panel.querySelector('#lp-launch')?.addEventListener('click', () => {
+        if (lp.fuelUnits >= Launchpad.FUEL_REQUIRED) {
+          lp.launchPhase1();
+          this._closeLaunchpadPanel();
+        }
+      });
+    };
+
+    render();
+    uiLayer.appendChild(panel);
+    this._launchpadPanel = panel;
+
+    // Refresh the panel every 500ms to show fuel progress
+    const intervalId = window.setInterval(() => {
+      if (!panel.isConnected) { window.clearInterval(intervalId); return; }
+      render();
+    }, 500);
+    (panel as any).__intervalId = intervalId;
+
+    // ESC key closes panel
+    const onKey = (e: KeyboardEvent) => {
+      if (e.code === 'Escape' || e.code === 'KeyE') {
+        e.preventDefault();
+        e.stopImmediatePropagation();
+        this._closeLaunchpadPanel();
+        window.removeEventListener('keydown', onKey, true);
+      }
+    };
+    window.addEventListener('keydown', onKey, true);
+    (panel as any).__keyHandler = onKey;
+  }
+
+  private _closeLaunchpadPanel(): void {
+    if (!this._launchpadPanel) return;
+    const panel = this._launchpadPanel;
+    const intervalId = (panel as any).__intervalId;
+    if (intervalId !== undefined) window.clearInterval(intervalId);
+    const keyHandler = (panel as any).__keyHandler;
+    if (keyHandler) window.removeEventListener('keydown', keyHandler, true);
+    panel.remove();
+    this._launchpadPanel = null;
+  }
+
+  private _showPhase1CompleteOverlay(): void {
+    const uiLayer = document.getElementById('ui-layer') ?? document.body;
+    const overlay = document.createElement('div');
+    overlay.id = 'phase1-complete-overlay';
+    overlay.style.cssText = [
+      'position:fixed',
+      'inset:0',
+      'background:rgba(0,0,0,0.85)',
+      'display:flex',
+      'flex-direction:column',
+      'align-items:center',
+      'justify-content:center',
+      'z-index:9999',
+      'font-family:monospace',
+      'color:#E8E4D0',
+    ].join(';');
+    overlay.innerHTML = `
+      <div style="background:#07122a;border:2px solid #D4A843;padding:32px 40px;min-width:380px;max-width:480px;text-align:center;box-shadow:0 0 60px rgba(212,168,67,0.3);">
+        <div style="font-size:22px;font-weight:bold;color:#D4A843;margin-bottom:12px;">★ PHASE 1 COMPLETE ★</div>
+        <div style="font-size:13px;color:#B8B4A0;margin-bottom:20px;">Rocket launched — asteroid outpost established!</div>
+        <div style="font-size:11px;color:#666;margin-bottom:24px;">The hydrolox rocket burns bright against the void.<br>Phase 2 awaits beyond the belt…</div>
+        <button id="phase1-continue" style="font-family:monospace;font-size:12px;padding:8px 20px;border:1px solid #D4A843;background:#1a3060;color:#D4A843;cursor:pointer;">CONTINUE</button>
+      </div>
+    `;
+    uiLayer.appendChild(overlay);
+    overlay.querySelector('#phase1-continue')?.addEventListener('click', () => overlay.remove());
   }
 
   private _isPlayerNearGrid(px: number, py: number, radius = 120): boolean {
@@ -1517,6 +1693,21 @@ export class AsteroidOutpostScene implements Scene {
   }
 
   exit(): void {
+    // Unregister Phase 1 launch event handler
+    if (this._phase1LaunchHandler) {
+      EventBus.off('phase1:launch', this._phase1LaunchHandler);
+      this._phase1LaunchHandler = null;
+    }
+
+    // Clean up launchpad panel
+    this._closeLaunchpadPanel();
+
+    // Unmount electrolysis overlay
+    this._electrolysisOverlay?.unmount();
+    this._electrolysisOverlay = null;
+    this._electrolysisUnit = null;
+    this._launchpad = null;
+
     // Hide autonomy win banner if still visible
     this._hideAutonomyWinBanner();
 
