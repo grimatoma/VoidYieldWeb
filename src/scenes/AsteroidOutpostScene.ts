@@ -110,6 +110,9 @@ export class AsteroidOutpostScene implements Scene {
   private _ghostBuildingType: string | null = null;
   // Stored when moving an existing building; restored if the move is canceled
   private _ghostMoveEntry: PlacedEntry | null = null;
+  // Touch action panel shown during ghost placement
+  private _ghostActionPanel: HTMLDivElement | null = null;
+  private _ghostCurrentlyValid = false;
 
   // Road placement mode state
   private _roadMode = false;
@@ -191,6 +194,45 @@ export class AsteroidOutpostScene implements Scene {
     this._camera.onTap((wx, wy) => {
       if (!this._player) return;
 
+      const col = Math.floor((wx - GRID_ORIGIN.x) / CELL_SIZE);
+      const row = Math.floor((wy - GRID_ORIGIN.y) / CELL_SIZE);
+      const inGrid = col >= 0 && col < BuildGrid.COLS && row >= 0 && row < BuildGrid.ROWS;
+
+      // Road mode: tap a grid cell to toggle it in the road preview
+      if (this._roadMode) {
+        if (inGrid) {
+          const k = this._roadKey(row, col);
+          if (!roadNetwork.hasRoad(row, col)) {
+            if (this._roadPreview.has(k)) {
+              this._roadPreview.delete(k);
+            } else {
+              this._roadPreview.add(k);
+            }
+            this._updateBudgetPanel();
+          }
+          // Move player to tapped cell so they're visually at the painted location
+          const tx = GRID_ORIGIN.x + col * CELL_SIZE + CELL_SIZE / 2;
+          const ty = GRID_ORIGIN.y + row * CELL_SIZE + CELL_SIZE / 2;
+          this._player.setMoveTarget(tx, ty);
+        } else {
+          handleWorldTap(this._player, wx, wy);
+        }
+        return;
+      }
+
+      // Ghost mode: tap navigates player to that cell (repositions ghost); PLACE button confirms
+      if (this._ghostBuilding) {
+        if (inGrid) {
+          const tx = GRID_ORIGIN.x + col * CELL_SIZE + CELL_SIZE / 2;
+          const ty = GRID_ORIGIN.y + row * CELL_SIZE + CELL_SIZE / 2;
+          this._player.setMoveTarget(tx, ty);
+        } else {
+          handleWorldTap(this._player, wx, wy);
+        }
+        return;
+      }
+
+      // Normal tap: close any open overlay, then handle interaction/movement
       if (this._furnaceOverlay?.isOpen())       { this._furnaceOverlay.close();       }
       if (this._marketplaceOverlay?.isOpen())   { this._marketplaceOverlay.close();   }
       if (this._droneDepotOverlay?.isOpen())    { this._droneDepotOverlay.close();    }
@@ -199,9 +241,7 @@ export class AsteroidOutpostScene implements Scene {
       if (this._electrolysisOverlay?.isOpen())  { this._electrolysisOverlay.close();  }
       if (this._launchpadPanel)                 { this._closeLaunchpadPanel();        }
 
-      const col = Math.floor((wx - GRID_ORIGIN.x) / CELL_SIZE);
-      const row = Math.floor((wy - GRID_ORIGIN.y) / CELL_SIZE);
-      if (col >= 0 && col < BuildGrid.COLS && row >= 0 && row < BuildGrid.ROWS) {
+      if (inGrid) {
         const entry = buildGrid.getBuildingAt(row, col);
         if (entry) {
           const targetX = GRID_ORIGIN.x + col * CELL_SIZE + CELL_SIZE / 2;
@@ -401,8 +441,8 @@ export class AsteroidOutpostScene implements Scene {
     banner.innerHTML = [
       '<span style="background:#0a2030;border:1px solid #00B8D4;padding:1px 5px;border-radius:2px;color:#00B8D4;">R</span>',
       '<strong>ROAD MODE</strong>',
-      '<span style="color:#888;font-size:10px;">Move &amp; [E] to paint · Shift+[E] to remove · [R] confirm · [ESC] cancel</span>',
-      '<span style="margin-left:auto;color:#666;font-size:10px;">[R] or [ESC] to exit</span>',
+      '<span style="color:#888;font-size:10px;">Tap grid cell to paint · tap again to remove · then CONFIRM</span>',
+      '<span style="margin-left:auto;color:#666;font-size:10px;">[R] confirm · [ESC] cancel</span>',
     ].join('');
     uiLayer.appendChild(banner);
     this._roadModeBanner = banner;
@@ -1032,7 +1072,9 @@ export class AsteroidOutpostScene implements Scene {
     const footprint = BUILD_FOOTPRINTS[buildingType] ?? { rows: 1, cols: 1 };
     this._ghostBuilding = PlacedBuilding.createGhost(buildingType, footprint);
     this._ghostBuildingType = buildingType;
+    this._ghostCurrentlyValid = false;
     this._stage!.addChild(this._ghostBuilding.container);
+    this._showGhostActionPanel(buildingType);
   }
 
   private _startGhostMove(buildingId: string): void {
@@ -1058,7 +1100,9 @@ export class AsteroidOutpostScene implements Scene {
     const footprint = entry.footprint;
     this._ghostBuilding = PlacedBuilding.createGhost(entry.buildingType, footprint);
     this._ghostBuildingType = entry.buildingType;
+    this._ghostCurrentlyValid = false;
     this._stage!.addChild(this._ghostBuilding.container);
+    this._showGhostActionPanel(entry.buildingType);
   }
 
   private _removeEntityBuilding(buildingId: string): void {
@@ -1079,6 +1123,71 @@ export class AsteroidOutpostScene implements Scene {
     }
   }
 
+  private _showGhostActionPanel(buildingType: string): void {
+    this._hideGhostActionPanel();
+    const uiLayer = document.getElementById('ui-layer') ?? document.body;
+    const panel = document.createElement('div');
+    panel.id = 'ghost-action-panel';
+    panel.style.cssText = [
+      'position:absolute',
+      'bottom:60px',
+      'left:50%',
+      'transform:translateX(-50%)',
+      'background:rgba(7,18,42,0.96)',
+      'border:1px solid #D4A843',
+      'padding:8px 14px',
+      'display:flex',
+      'align-items:center',
+      'gap:10px',
+      'font-family:monospace',
+      'font-size:12px',
+      'color:#E8E4D0',
+      'z-index:100',
+      'pointer-events:auto',
+      'white-space:nowrap',
+    ].join(';');
+    const label = buildingType.replace(/_/g, ' ').toUpperCase();
+    panel.innerHTML = `
+      <span style="color:#D4A843;">Placing: ${label}</span>
+      <span style="color:#444;">│</span>
+      <span style="color:#888;font-size:10px;">Walk to position</span>
+      <span style="color:#444;">│</span>
+      <button id="ghost-place-btn" disabled style="font-family:monospace;font-size:12px;padding:6px 16px;border:1px solid #3A5A8A;background:transparent;color:#3A5A8A;cursor:default;min-width:72px;">PLACE</button>
+      <button id="ghost-cancel-btn" style="font-family:monospace;font-size:12px;padding:6px 14px;border:1px solid #8A3A3A;background:transparent;color:#E8E4D0;cursor:pointer;">CANCEL</button>
+    `;
+    panel.querySelector('#ghost-cancel-btn')?.addEventListener('click', () => this._cancelGhost());
+    panel.querySelector('#ghost-place-btn')?.addEventListener('click', () => {
+      if (this._ghostBuilding && this._ghostCurrentlyValid) {
+        this._confirmGhostPlacement(this._ghostBuilding.row, this._ghostBuilding.col);
+      }
+    });
+    uiLayer.appendChild(panel);
+    this._ghostActionPanel = panel;
+  }
+
+  private _hideGhostActionPanel(): void {
+    this._ghostActionPanel?.remove();
+    this._ghostActionPanel = null;
+  }
+
+  private _updateGhostActionPanel(valid: boolean): void {
+    if (!this._ghostActionPanel) return;
+    const btn = this._ghostActionPanel.querySelector('#ghost-place-btn') as HTMLButtonElement | null;
+    if (!btn) return;
+    btn.disabled = !valid;
+    if (valid) {
+      btn.style.borderColor = '#4ADE80';
+      btn.style.color = '#4ADE80';
+      btn.style.cursor = 'pointer';
+      btn.style.background = 'rgba(0,60,20,0.4)';
+    } else {
+      btn.style.borderColor = '#3A5A8A';
+      btn.style.color = '#3A5A8A';
+      btn.style.cursor = 'default';
+      btn.style.background = 'transparent';
+    }
+  }
+
   private _updateGhostPlacement(): void {
     if (!this._ghostBuilding || !this._player) return;
 
@@ -1096,14 +1205,18 @@ export class AsteroidOutpostScene implements Scene {
 
     const valid = buildGrid.canPlace(clampedRow, clampedCol, footprint);
     this._ghostBuilding.setGhostValid(valid);
+    if (valid !== this._ghostCurrentlyValid) {
+      this._ghostCurrentlyValid = valid;
+      this._updateGhostActionPanel(valid);
+    }
 
-    // E to confirm placement
+    // E to confirm placement (keyboard)
     if (inputManager.wasJustPressed('interact') && valid) {
       this._confirmGhostPlacement(clampedRow, clampedCol);
       return;
     }
 
-    // ESC to cancel
+    // ESC to cancel (keyboard)
     if (inputManager.wasJustPressed('pause_menu')) {
       this._cancelGhost();
     }
@@ -1145,6 +1258,7 @@ export class AsteroidOutpostScene implements Scene {
     this._ghostBuilding = null;
     this._ghostBuildingType = null;
     this._ghostMoveEntry = null;
+    this._hideGhostActionPanel();
 
     // Refresh build menu
     this._buildMenuOverlay?.refresh();
@@ -1156,6 +1270,7 @@ export class AsteroidOutpostScene implements Scene {
     this._stage?.removeChild(this._ghostBuilding.container);
     this._ghostBuilding = null;
     this._ghostBuildingType = null;
+    this._hideGhostActionPanel();
 
     // If we were moving an existing building, restore it to its original position
     if (this._ghostMoveEntry) {
@@ -1766,8 +1881,9 @@ export class AsteroidOutpostScene implements Scene {
     this._depositPanel?.unmount();
     this._depositPanel = null;
 
-    // Cancel any active ghost
+    // Cancel any active ghost (also hides ghost action panel)
     this._cancelGhost();
+    this._hideGhostActionPanel();
 
     // Destroy tap highlight if pending
     if (this._tapHighlight) {
