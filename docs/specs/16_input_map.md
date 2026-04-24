@@ -67,6 +67,7 @@ Before adding any new key binding to any spec file, check this document. If the 
 | Key | Action | Spec Reference |
 |---|---|---|
 | [Q] | Survey Tool active / toggle scan mode | 02_surveying |
+| [N] | Road placement mode (enter/exit road paint mode — touch: [ROADS] HUD button) | CORE_LOOP_TDD_SSD §3.7 |
 | [Z] | Zone paint tool (draw drone management zones on minimap) | 04_drone_swarm §3 Tier 2 |
 | [R] | Retool factory (opens recipe picker for the selected factory) | 05_factories |
 | [F] | Fleet Dispatch shortcut (open Fleet Command panel / dispatch from Cargo Ship Bay) | 04_drone_swarm §6, 14_ui_systems §9 |
@@ -168,6 +169,7 @@ All bindings are defined in Godot's Project Settings → Input Map. Action names
 player_move_up, player_move_down, player_move_left, player_move_right
 interact
 survey_tool_toggle
+road_placement
 zone_paint
 retool_factory
 fleet_panel
