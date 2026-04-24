@@ -1,7 +1,6 @@
 import type { StorageDepot } from '@entities/StorageDepot';
 import type { Furnace } from '@entities/Furnace';
 import { FURNACE_RECIPES } from '@entities/Furnace';
-import type { DroneBase } from '@entities/DroneBase';
 import { ElectrolysisUnit } from '@entities/ElectrolysisUnit';
 import { Launchpad } from '@entities/Launchpad';
 import { depositMap } from './DepositMap';

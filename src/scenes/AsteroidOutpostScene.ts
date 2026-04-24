@@ -1438,7 +1438,6 @@ export class AsteroidOutpostScene implements Scene {
 
     // Close whichever overlay is open and bail
     if (this._furnaceOverlay?.isOpen())       { this._furnaceOverlay.close();       return; }
-    if (this._marketplaceOverlay?.isOpen())   { this._marketplaceOverlay.close();   return; }
     if (this._droneDepotOverlay?.isOpen())    { this._droneDepotOverlay.close();    return; }
     if (this._buildMenuOverlay?.isOpen())     { this._buildMenuOverlay.close();     return; }
     if (this._electrolysisOverlay?.isOpen())  { this._electrolysisOverlay.close();  return; }
@@ -1491,11 +1490,10 @@ export class AsteroidOutpostScene implements Scene {
     const stockRemaining = deposit.data.yieldRemaining;
     const stockMax = deposit.initialYield || 820;
     const roadConnected = roadNetwork.getAll().length > 0;
-    const assignedDroneName = outpostDispatcher.getAssignedDroneForOre(oreType as any);
+    const assignedDroneName: string | null = null;
 
     // Close other overlays when panel opens
     this._furnaceOverlay?.close();
-    this._marketplaceOverlay?.close();
     this._droneDepotOverlay?.close();
     this._buildMenuOverlay?.close();
 

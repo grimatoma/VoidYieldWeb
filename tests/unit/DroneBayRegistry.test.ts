@@ -36,10 +36,10 @@ function makeDrone(id: string, droneType = 'scout') {
 }
 
 function makeBay(id: string, slotCount = 3, initialDrones: (ReturnType<typeof makeDrone> | null)[] = []): IDroneBay & { _slots: BaySlot[]; releaseSlot: ReturnType<typeof vi.fn> } {
-  const slots: BaySlot[] = Array.from({ length: slotCount }, (_, i) => ({
-    drone: initialDrones[i] ?? null,
+  const slots = Array.from({ length: slotCount }, (_, i) => ({
+    drone: (initialDrones[i] ?? null) as any,
     droneType: initialDrones[i] ? (initialDrones[i]!.droneType as any) : null,
-  }));
+  })) as BaySlot[];
   const releaseSlot = vi.fn((idx: number) => {
     slots[idx] = { drone: null, droneType: null };
   });
