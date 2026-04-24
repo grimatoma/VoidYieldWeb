@@ -157,56 +157,19 @@ Note: `HabitationModule`, `WarpGate`, `GalacticHub` have no active scene using t
 
 ---
 
-## Deletion Log
+## Deletion Log (2026-04-24)
 
-All deleted files can be recovered via git: `git log --all -- <path>` then `git show <commit>:<path>`
+Everything deleted was either a stub, boilerplate copy, or trivially remakeable from the specs. Only four files had non-obvious design worth noting before deletion. Recover any file via git: `git log --all -- <path>` then `git show <commit>:<path>`
 
-### 2026-04-24 — Audit cleanup (PR #85 + planet scene removal)
+### Files with non-obvious design — reference before rebuilding
 
-**UI (6 files):**
-| File | Reason |
-|---|---|
-| `src/ui/MarketplaceOverlay.ts` | Legacy iron_bar/copper_bar overlay. Replaced by ShopPanel MARKET tab. |
-| `src/ui/HarvesterHUD.ts` | Never instantiated in any scene. |
-| `src/ui/HudOverlay.ts` | Replaced by `HUD.ts`. |
-| `src/ui/InventoryPanel.ts` | Created but never mounted or triggered. |
-| `src/ui/TutorialOverlay.ts` | Never instantiated in any scene. |
-| `src/ui/StoragePanel.ts` | Only used by deleted planet scenes. |
-| `src/ui/CoverageOverlay.ts` | Only used by PlanetA1Scene (deleted). |
-| `src/ui/TrafficOverlay.ts` | Only used by PlanetA1Scene (deleted). |
+**`src/services/MiningCircuitManager.ts`** — implemented GDD §11 auto-mining loop: IDLE → SEEKING → MINING → RETURNING → IDLE. Scanned every 0.5s, claimed deposits to prevent two drones mining the same node, skipped disabled drones and full depots. Wire per planet scene via `setDepot()`.
 
-**Scenes (5 files):**
-| File | Reason |
-|---|---|
-| `src/scenes/PlanetA1Scene.ts` | Not registered in SceneManager. Deleted to reduce confusion. |
-| `src/scenes/PlanetA2Scene.ts` | Not registered in SceneManager. |
-| `src/scenes/PlanetA3Scene.ts` | Not registered in SceneManager. |
-| `src/scenes/PlanetBScene.ts` | Not registered in SceneManager. |
-| `src/scenes/PlanetCScene.ts` | Not registered in SceneManager. |
+**`src/services/ZoneManager.ts`** — auto-harvest-support dispatcher. Watched `harvesterManager.getAll()` every 3s; on `FUEL_EMPTY` state dispatched a refinery drone to carry fuel to the harvester; on `HOPPER_FULL` dispatched to empty the hopper to the depot.
 
-**Data (5 files):**
-| File | Reason |
-|---|---|
-| `src/data/deposits_a1.ts` | Only used by PlanetA1Scene (deleted). |
-| `src/data/deposits_a2.ts` | Only used by PlanetA2Scene (deleted). |
-| `src/data/deposits_a3.ts` | Only used by PlanetA3Scene (deleted). |
-| `src/data/deposits_b.ts` | Only used by PlanetBScene (deleted). |
-| `src/data/deposits_c.ts` | Only used by PlanetCScene (deleted). |
+**`src/entities/AssemblyComplex.ts`** — 3-input batch processor with state machine: `RUNNING / STALLED_A / STALLED_B / STALLED_C / NO_POWER / IDLE`. Pulled inputs in order (A then B then C), refunded on stall, respected `powerManager.throttleMultiplier` and `consumptionManager.productivityMultiplier`.
 
-**Entities (5 files):**
-| File | Reason |
-|---|---|
-| `src/entities/AethonFlora.ts` | No imports anywhere. |
-| `src/entities/AssemblyComplex.ts` | No imports anywhere. |
-| `src/entities/CrystalHarvester.ts` | No imports anywhere. |
-| `src/entities/MineralHarvester.ts` | No imports anywhere. |
-| `src/entities/Speeder.ts` | No imports anywhere. |
-
-**Services (3 files):**
-| File | Reason |
-|---|---|
-| `src/services/DroneTaskQueue.ts` | Abandoned. No imports anywhere. |
-| `src/services/ZoneManager.ts` | Only used by PlanetA1Scene (deleted). |
+**`src/scenes/PlanetA1Scene.ts`** — most complete planet scene (680 lines). Best reference for planet scene architecture: how deposits, drones, the trade hub, habitation, launchpad, warp gate, GalaxyMap, and StoragePanel were all wired together in one scene.
 | `src/services/MiningCircuitManager.ts` | Only used by PlanetA1Scene and DebugAPI (removed from DebugAPI). |
 
 ---
