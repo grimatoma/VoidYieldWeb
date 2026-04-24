@@ -156,8 +156,8 @@ export class OutpostDispatcher {
     // 1. Output Pickup: Prioritize getting products OUT of the furnace
     if (furnace.plant.outputBuffer > 0) {
       for (const drone of idleLogistics) {
-        if (furnace.plant.outputBuffer <= 0) break; // someone else might grab it, but for now we just dispatch one by one
-        
+        if (furnace.plant.outputBuffer <= 0) break;
+
         const takeTask: DroneTask = {
           type: 'CARRY',
           targetX: furnace.x,

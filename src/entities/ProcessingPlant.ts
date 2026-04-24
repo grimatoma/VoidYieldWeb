@@ -115,7 +115,7 @@ export class ProcessingPlant {
 
       if (inputConsumed > 0) {
         if (this.manualOnly) {
-          // Send output to internal buffer
+          // Send output to internal buffer for drone or player pickup.
           this._outputBuffer += this.schematic.outputQty;
           this.state = 'RUNNING';
         } else {
