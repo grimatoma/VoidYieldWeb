@@ -526,6 +526,19 @@
 }
 .trade-row-buy-btn:disabled:hover { background: transparent; }
 
+/* Market tab — test-mode banner */
+.market-free-banner {
+  padding: calc(6px * var(--hud-scale)) calc(10px * var(--hud-scale));
+  margin-bottom: calc(6px * var(--hud-scale));
+  background: rgba(212, 168, 67, 0.15);
+  border: 1px solid #D4A843;
+  border-radius: 3px;
+  color: #D4A843;
+  font-size: calc(11px * var(--hud-scale));
+  text-align: center;
+  letter-spacing: 0.05em;
+}
+
 /* Market tab — per-resource buy + sell controls */
 .market-actions {
   gap: calc(6px * var(--hud-scale));
