@@ -25,10 +25,10 @@ import { RefineryDrone } from '@entities/RefineryDrone';
 const MINER_TYPES: ReadonlySet<DroneType> = new Set<DroneType>(['scout', 'heavy']);
 const LOGISTICS_TYPES: ReadonlySet<DroneType> = new Set<DroneType>(['refinery', 'cargo']);
 
-const DRONE_SPECS: Array<{ key: DroneType; label: string; cost: number; isMiner: boolean }> = [
-  { key: 'scout',    label: 'MINING DRONE',   cost: ScoutDrone.COST,    isMiner: true  },
-  { key: 'heavy',    label: 'HEAVY MINER',    cost: HeavyDrone.COST,    isMiner: true  },
-  { key: 'refinery', label: 'REFINERY DRONE', cost: RefineryDrone.COST, isMiner: false },
+const DRONE_SPECS: Array<{ key: DroneType; label: string; sublabel: string; cost: number; isMiner: boolean }> = [
+  { key: 'scout',    label: 'MINING DRONE',    sublabel: 'Scout class',    cost: ScoutDrone.COST,    isMiner: true  },
+  { key: 'heavy',    label: 'HEAVY MINER',     sublabel: 'Heavy class',    cost: HeavyDrone.COST,    isMiner: true  },
+  { key: 'refinery', label: 'LOGISTICS DRONE', sublabel: 'Refinery class', cost: RefineryDrone.COST, isMiner: false },
 ];
 
 const ORE_OPTIONS: Array<{ value: OreType; label: string }> = [
@@ -42,7 +42,7 @@ const ORE_OPTIONS: Array<{ value: OreType; label: string }> = [
 ];
 
 const DRONE_TYPE_LABEL: Record<DroneType, string> = {
-  scout: 'MINING', heavy: 'HEAVY', refinery: 'REFINERY',
+  scout: 'MINING', heavy: 'HEAVY', refinery: 'LOGISTICS',
   survey: 'SURVEY', builder: 'BUILDER', cargo: 'CARGO', repair: 'REPAIR',
 };
 
@@ -333,6 +333,7 @@ export class DroneManagementPanel {
       row.innerHTML = `
         <div class="trade-row-main">
           <div class="trade-row-name">${spec.label}</div>
+          <div class="trade-row-sub">${spec.sublabel}</div>
         </div>
         <div class="trade-row-buy">
           <div class="trade-row-cost">${spec.cost} CR</div>
