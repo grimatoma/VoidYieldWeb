@@ -1,4 +1,4 @@
-import { Application, Container, Graphics } from 'pixi.js';
+import { Application, Container, Graphics, TilingSprite } from 'pixi.js';
 import type { Scene } from './SceneManager';
 import type { SaveData } from '@services/SaveManager';
 import { Camera } from '@services/Camera';
@@ -38,6 +38,8 @@ import { handleWorldTap } from '@services/TapToMove';
 import { roadNetwork } from '@services/RoadNetwork';
 import { obstacleManager } from '@services/ObstacleManager';
 import type { UILayer } from '@ui/UILayer';
+import { assetManager } from '@services/AssetManager';
+import { firstFrameTexture } from '@services/SpriteSheetHelper';
 
 // Built-in RTG provides enough power to run the furnace (3 W draw) without needing solar panels.
 const OUTPOST_REACTOR_POWER = 5;
@@ -138,10 +140,19 @@ export class AsteroidOutpostScene implements Scene {
     this._stage = new Container();
     app.stage.addChild(this._stage);
 
-    // Dark asteroid background — fills the whole world so there are no gaps when camera scrolls
-    const bg = new Graphics();
-    bg.rect(0, 0, OUTPOST_WORLD_WIDTH, OUTPOST_WORLD_HEIGHT).fill(0x1A1A2E);
-    this._stage.addChild(bg);
+    // Asteroid dirt tiling sprite — matches the old PlanetA1 ground pattern.
+    {
+      const bgTex = firstFrameTexture('tile_ground_asteroid_dirt', { frameCount: 4, frameWidth: 32, frameHeight: 32 })
+        ?? (assetManager.has('tile_space_bg') ? assetManager.texture('tile_space_bg') : null);
+      if (bgTex) {
+        const tile = new TilingSprite({ texture: bgTex, width: OUTPOST_WORLD_WIDTH, height: OUTPOST_WORLD_HEIGHT });
+        this._stage.addChild(tile);
+      } else {
+        const bg = new Graphics();
+        bg.rect(0, 0, OUTPOST_WORLD_WIDTH, OUTPOST_WORLD_HEIGHT).fill(0x1A1A2E);
+        this._stage.addChild(bg);
+      }
+    }
 
     // Camera — scale to fill the screen like other planet scenes, capped so the
     // full 5×5 grid remains visible at the reference 960×540 size (zoom ≥ 1.2).
