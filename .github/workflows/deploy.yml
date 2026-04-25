@@ -37,7 +37,13 @@ jobs:
       - name: Copy design mocks into dist
         run: |
           mkdir -p dist/mocks
+          mkdir -p dist/docs
+          cp -r docs/. dist/docs/
           cp -r docs/design_mocks/. dist/mocks/
+          cp design_mocks/home.html dist/mocks/
+          cp design_mocks/29_standard_menu_console.html dist/mocks/
+          mkdir -p dist/assets/fonts
+          cp assets/fonts/VoidYieldTerminal.ttf dist/assets/fonts/
 
       - uses: actions/configure-pages@v4
 
@@ -47,3 +53,16 @@ jobs:
 
       - uses: actions/deploy-pages@v4
         id: deployment
+
+      - name: Write deployment links
+        run: |
+          {
+            echo "## Deployment Links"
+            echo ""
+            echo "- Site: ${{ steps.deployment.outputs.page_url }}"
+            echo "- Review home: ${{ steps.deployment.outputs.page_url }}mocks/home.html"
+            echo "- Docs home: ${{ steps.deployment.outputs.page_url }}docs/"
+            echo "- Specs directory: ${{ steps.deployment.outputs.page_url }}docs/specs/"
+            echo "- Mocks index: ${{ steps.deployment.outputs.page_url }}mocks/"
+            echo "- Standard menu console: ${{ steps.deployment.outputs.page_url }}mocks/29_standard_menu_console.html"
+          } >> "$GITHUB_STEP_SUMMARY"
