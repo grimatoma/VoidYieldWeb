@@ -1,0 +1,1774 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>VoidYield - Standard Menu Console</title>
+  <style>
+    @font-face {
+      font-family: "VoidYield Terminal";
+      src: url("../assets/fonts/VoidYieldTerminal.ttf") format("truetype");
+      font-display: swap;
+    }
+
+    :root {
+      --bg: #060a14;
+      --bg-2: #0a1122;
+      --panel: rgba(11, 18, 34, 0.9);
+      --panel-2: rgba(14, 24, 44, 0.88);
+      --panel-3: rgba(18, 30, 55, 0.78);
+      --edge: rgba(212, 168, 67, 0.26);
+      --edge-strong: rgba(212, 168, 67, 0.52);
+      --text: #e9eef7;
+      --text-soft: #a8b5ca;
+      --text-dim: #6d7a91;
+      --amber: #d4a843;
+      --amber-soft: #f2c768;
+      --teal: #00b8d4;
+      --teal-soft: #62e6f4;
+      --good: #68d391;
+      --warn: #f6c35b;
+      --bad: #f07c72;
+      --shadow: 0 24px 80px rgba(0, 0, 0, 0.46);
+      --glow: 0 0 30px rgba(212, 168, 67, 0.18);
+      --radius: 22px;
+      --radius-sm: 14px;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    html {
+      scroll-behavior: smooth;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      color: var(--text);
+      font-family: "VoidYield Terminal", "Space Mono", "Courier New", monospace;
+      background:
+        radial-gradient(circle at top left, rgba(0, 184, 212, 0.12), transparent 32%),
+        radial-gradient(circle at 82% 10%, rgba(212, 168, 67, 0.16), transparent 28%),
+        linear-gradient(180deg, #09101f 0%, #050811 100%);
+      letter-spacing: 0.02em;
+    }
+
+    body::before {
+      content: "";
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      opacity: 0.45;
+      background-image:
+        radial-gradient(1px 1px at 8% 16%, rgba(255,255,255,0.6), transparent),
+        radial-gradient(1px 1px at 18% 74%, rgba(255,255,255,0.4), transparent),
+        radial-gradient(1px 1px at 61% 22%, rgba(0,184,212,0.55), transparent),
+        radial-gradient(1px 1px at 76% 65%, rgba(212,168,67,0.65), transparent),
+        radial-gradient(1px 1px at 90% 30%, rgba(255,255,255,0.35), transparent);
+      background-size: 100% 100%;
+    }
+
+    a {
+      color: inherit;
+    }
+
+    .page {
+      position: relative;
+      z-index: 1;
+      width: min(1460px, calc(100% - 32px));
+      margin: 0 auto;
+      padding: 32px 0 56px;
+    }
+
+    .hero {
+      position: relative;
+      overflow: hidden;
+      padding: 30px;
+      border: 1px solid var(--edge);
+      border-radius: 30px;
+      background:
+        linear-gradient(135deg, rgba(13, 22, 42, 0.94), rgba(7, 13, 24, 0.96)),
+        var(--bg);
+      box-shadow: var(--shadow);
+    }
+
+    .hero::after {
+      content: "";
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 3px;
+      background: linear-gradient(90deg, var(--teal) 0%, var(--amber) 50%, transparent 100%);
+      opacity: 0.85;
+    }
+
+    .eyebrow {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      padding: 8px 12px;
+      border-radius: 999px;
+      border: 1px solid rgba(0, 184, 212, 0.28);
+      background: rgba(0, 184, 212, 0.08);
+      color: var(--teal-soft);
+      text-transform: uppercase;
+      font-size: 11px;
+      letter-spacing: 0.2em;
+    }
+
+    h1 {
+      margin: 18px 0 12px;
+      font-size: clamp(34px, 4vw, 64px);
+      line-height: 0.95;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--amber-soft);
+      text-shadow: var(--glow);
+    }
+
+    .hero p {
+      max-width: 840px;
+      margin: 0;
+      font-size: 15px;
+      line-height: 1.7;
+      color: var(--text-soft);
+    }
+
+    .hero-grid {
+      display: grid;
+      grid-template-columns: 1.2fr 0.8fr;
+      gap: 24px;
+      margin-top: 26px;
+    }
+
+    .principles,
+    .why {
+      border: 1px solid var(--edge);
+      border-radius: 20px;
+      background: rgba(10, 17, 32, 0.72);
+      padding: 18px;
+    }
+
+    .section-label {
+      margin-bottom: 12px;
+      color: var(--teal-soft);
+      text-transform: uppercase;
+      letter-spacing: 0.18em;
+      font-size: 11px;
+    }
+
+    .principles ul,
+    .why ul {
+      margin: 0;
+      padding-left: 18px;
+      color: var(--text-soft);
+      line-height: 1.7;
+      font-size: 13px;
+    }
+
+    .shell {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) 280px;
+      gap: 22px;
+      margin-top: 22px;
+      align-items: start;
+    }
+
+    .console-wrap {
+      border: 1px solid var(--edge);
+      border-radius: 28px;
+      background:
+        linear-gradient(180deg, rgba(9, 15, 28, 0.96), rgba(6, 11, 20, 0.98));
+      box-shadow: var(--shadow);
+      overflow: hidden;
+    }
+
+    .console-topbar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 16px;
+      padding: 18px 22px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+      background:
+        linear-gradient(180deg, rgba(18, 29, 51, 0.92), rgba(11, 19, 34, 0.94));
+    }
+
+    .console-brand {
+      display: flex;
+      flex-direction: column;
+      gap: 7px;
+    }
+
+    .console-brand small {
+      color: var(--teal-soft);
+      text-transform: uppercase;
+      letter-spacing: 0.18em;
+      font-size: 10px;
+    }
+
+    .console-brand strong {
+      font-size: 20px;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--amber-soft);
+    }
+
+    .console-controls {
+      display: flex;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+
+    .chrome-btn,
+    .view-tab,
+    .action-btn,
+    .recipe-chip,
+    .seg-btn {
+      border: 1px solid transparent;
+      border-radius: 999px;
+      background: transparent;
+      color: inherit;
+      font: inherit;
+      cursor: pointer;
+      transition: 140ms ease;
+    }
+
+    .chrome-btn {
+      padding: 8px 12px;
+      border-color: rgba(255,255,255,0.08);
+      color: var(--text-dim);
+      text-transform: uppercase;
+      letter-spacing: 0.16em;
+      font-size: 10px;
+    }
+
+    .chrome-btn:hover {
+      border-color: var(--edge-strong);
+      color: var(--amber-soft);
+      background: rgba(212,168,67,0.08);
+    }
+
+    .view-strip {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      padding: 18px 22px 8px;
+      background: rgba(10, 17, 31, 0.76);
+    }
+
+    .view-tab {
+      min-width: 150px;
+      padding: 12px 14px;
+      text-align: left;
+      border-radius: 18px;
+      border: 1px solid rgba(255,255,255,0.06);
+      background: rgba(255,255,255,0.02);
+      color: var(--text-soft);
+    }
+
+    .view-tab strong {
+      display: block;
+      margin-bottom: 4px;
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      font-size: 12px;
+      color: var(--text);
+    }
+
+    .view-tab span {
+      font-size: 11px;
+      line-height: 1.4;
+      color: var(--text-dim);
+    }
+
+    .view-tab.active {
+      border-color: var(--edge-strong);
+      background:
+        linear-gradient(135deg, rgba(212,168,67,0.15), rgba(0,184,212,0.08));
+      box-shadow: inset 0 0 0 1px rgba(255,255,255,0.03);
+    }
+
+    .view-tab.active strong {
+      color: var(--amber-soft);
+    }
+
+    .view-tab.active span {
+      color: var(--text-soft);
+    }
+
+    .console {
+      padding: 18px 22px 22px;
+    }
+
+    .hero-card {
+      display: grid;
+      grid-template-columns: 1.15fr 0.85fr;
+      gap: 18px;
+      padding: 18px;
+      border-radius: 22px;
+      border: 1px solid var(--edge);
+      background:
+        linear-gradient(135deg, rgba(18, 30, 55, 0.68), rgba(9, 15, 28, 0.78));
+    }
+
+    .hero-copy {
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+
+    .title-row {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+
+    .kicker {
+      color: var(--teal-soft);
+      text-transform: uppercase;
+      letter-spacing: 0.2em;
+      font-size: 11px;
+    }
+
+    .facility-title {
+      margin: 0;
+      font-size: clamp(24px, 3vw, 38px);
+      line-height: 1;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--amber-soft);
+    }
+
+    .status-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      align-self: start;
+      padding: 8px 12px;
+      border-radius: 999px;
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.15em;
+      border: 1px solid currentColor;
+    }
+
+    .status-pill::before {
+      content: "";
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: currentColor;
+      box-shadow: 0 0 10px currentColor;
+    }
+
+    .status-pill.good {
+      color: var(--good);
+      background: rgba(104, 211, 145, 0.08);
+    }
+
+    .status-pill.warn {
+      color: var(--warn);
+      background: rgba(246, 195, 91, 0.08);
+    }
+
+    .status-pill.bad {
+      color: var(--bad);
+      background: rgba(240, 124, 114, 0.08);
+    }
+
+    .summary {
+      color: var(--text-soft);
+      font-size: 14px;
+      line-height: 1.7;
+      max-width: 60ch;
+    }
+
+    .meta-grid {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 10px;
+    }
+
+    .meta-card {
+      padding: 12px;
+      border-radius: 16px;
+      border: 1px solid rgba(255,255,255,0.05);
+      background: rgba(255,255,255,0.02);
+    }
+
+    .meta-card small {
+      display: block;
+      margin-bottom: 6px;
+      text-transform: uppercase;
+      letter-spacing: 0.14em;
+      color: var(--text-dim);
+      font-size: 10px;
+    }
+
+    .meta-card strong {
+      font-size: 17px;
+      color: var(--text);
+    }
+
+    .facility-art {
+      position: relative;
+      min-height: 220px;
+      overflow: hidden;
+      border-radius: 18px;
+      border: 1px solid rgba(255,255,255,0.05);
+      background:
+        linear-gradient(180deg, rgba(7,11,19,0.18), rgba(7,11,19,0.58)),
+        radial-gradient(circle at center, rgba(212,168,67,0.2), transparent 55%),
+        repeating-linear-gradient(
+          90deg,
+          rgba(255,255,255,0.02) 0,
+          rgba(255,255,255,0.02) 1px,
+          transparent 1px,
+          transparent 26px
+        );
+    }
+
+    .facility-art::before,
+    .facility-art::after {
+      content: "";
+      position: absolute;
+      inset: auto auto 24px 24px;
+      width: 120px;
+      height: 120px;
+      border: 1px solid rgba(255,255,255,0.06);
+      border-radius: 24px;
+      transform: rotate(12deg);
+      opacity: 0.5;
+    }
+
+    .facility-art::after {
+      inset: 28px 26px auto auto;
+      width: 86px;
+      height: 86px;
+      transform: rotate(-16deg);
+    }
+
+    .machine {
+      position: absolute;
+      inset: 22px;
+      display: grid;
+      place-items: center;
+    }
+
+    .machine-core {
+      position: relative;
+      width: min(240px, 90%);
+      aspect-ratio: 1;
+      border-radius: 30px;
+      border: 1px solid rgba(255,255,255,0.08);
+      background:
+        linear-gradient(145deg, rgba(22, 36, 65, 0.92), rgba(12, 18, 30, 0.92));
+      box-shadow:
+        inset 0 0 0 1px rgba(255,255,255,0.03),
+        0 10px 40px rgba(0,0,0,0.35);
+    }
+
+    .machine-core::before,
+    .machine-core::after {
+      content: "";
+      position: absolute;
+      border-radius: 18px;
+      border: 1px solid rgba(255,255,255,0.09);
+      background: rgba(255,255,255,0.03);
+    }
+
+    .machine-core::before {
+      inset: 16% 18%;
+    }
+
+    .machine-core::after {
+      inset: 34% 34%;
+      border-radius: 999px;
+      background: radial-gradient(circle, rgba(212,168,67,0.45), rgba(0,184,212,0.12));
+      box-shadow: 0 0 28px rgba(212,168,67,0.22);
+    }
+
+    .signal {
+      position: absolute;
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      background: var(--teal-soft);
+      box-shadow: 0 0 14px rgba(98,230,244,0.9);
+      animation: pulse 2.4s ease-in-out infinite;
+    }
+
+    .signal.a { top: 24%; left: 18%; }
+    .signal.b { top: 28%; right: 16%; animation-delay: 0.4s; }
+    .signal.c { bottom: 18%; left: 28%; animation-delay: 0.8s; }
+    .signal.d { bottom: 24%; right: 26%; animation-delay: 1.2s; }
+
+    @keyframes pulse {
+      0%, 100% { transform: scale(0.85); opacity: 0.55; }
+      50% { transform: scale(1.22); opacity: 1; }
+    }
+
+    .content-grid {
+      display: grid;
+      grid-template-columns: minmax(0, 1.25fr) minmax(0, 0.95fr);
+      gap: 18px;
+      margin-top: 18px;
+    }
+
+    .column {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    .panel-block {
+      border: 1px solid var(--edge);
+      border-radius: 20px;
+      background: var(--panel);
+      overflow: hidden;
+    }
+
+    .panel-head {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+      padding: 14px 16px;
+      background: rgba(255,255,255,0.03);
+      border-bottom: 1px solid rgba(255,255,255,0.05);
+    }
+
+    .panel-head strong {
+      color: var(--amber-soft);
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      font-size: 13px;
+    }
+
+    .panel-head span {
+      color: var(--text-dim);
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+    }
+
+    .panel-body {
+      padding: 14px 16px 16px;
+    }
+
+    .list {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .row-card {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      gap: 14px;
+      align-items: center;
+      padding: 14px;
+      border-radius: 16px;
+      border: 1px solid rgba(255,255,255,0.06);
+      background:
+        linear-gradient(135deg, rgba(17, 27, 50, 0.86), rgba(10, 15, 27, 0.9));
+    }
+
+    .row-card.active {
+      border-color: rgba(212,168,67,0.5);
+      box-shadow: inset 0 0 0 1px rgba(212,168,67,0.12);
+    }
+
+    .row-main {
+      min-width: 0;
+    }
+
+    .row-main strong {
+      display: block;
+      margin-bottom: 4px;
+      color: var(--text);
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      font-size: 13px;
+    }
+
+    .row-main p,
+    .minor {
+      margin: 0;
+      color: var(--text-soft);
+      font-size: 12px;
+      line-height: 1.5;
+    }
+
+    .minor {
+      color: var(--text-dim);
+      margin-top: 3px;
+    }
+
+    .row-side {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-end;
+      gap: 8px;
+      min-width: 140px;
+    }
+
+    .value {
+      color: var(--amber-soft);
+      font-size: 18px;
+      text-align: right;
+    }
+
+    .tagline {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 7px 10px;
+      border-radius: 999px;
+      border: 1px solid rgba(0,184,212,0.18);
+      background: rgba(0,184,212,0.08);
+      color: var(--teal-soft);
+      font-size: 10px;
+      text-transform: uppercase;
+      letter-spacing: 0.16em;
+    }
+
+    .data-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 10px;
+    }
+
+    .datum {
+      padding: 12px;
+      border-radius: 14px;
+      border: 1px solid rgba(255,255,255,0.05);
+      background: rgba(255,255,255,0.02);
+    }
+
+    .datum small {
+      display: block;
+      margin-bottom: 5px;
+      color: var(--text-dim);
+      font-size: 10px;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+    }
+
+    .datum strong {
+      display: block;
+      color: var(--text);
+      font-size: 15px;
+      line-height: 1.35;
+    }
+
+    .progress {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .progress-row {
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      color: var(--text-soft);
+      font-size: 12px;
+    }
+
+    .bar {
+      position: relative;
+      height: 10px;
+      overflow: hidden;
+      border-radius: 999px;
+      background: rgba(255,255,255,0.06);
+      border: 1px solid rgba(255,255,255,0.04);
+    }
+
+    .fill {
+      position: absolute;
+      top: 0;
+      left: 0;
+      bottom: 0;
+      border-radius: inherit;
+      background: linear-gradient(90deg, var(--teal), var(--amber));
+    }
+
+    .notes {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .note {
+      padding: 12px 14px;
+      border-radius: 14px;
+      border: 1px solid rgba(255,255,255,0.05);
+      font-size: 12px;
+      line-height: 1.6;
+      color: var(--text-soft);
+      background: rgba(255,255,255,0.02);
+    }
+
+    .note.good {
+      border-color: rgba(104, 211, 145, 0.3);
+      background: rgba(104, 211, 145, 0.08);
+    }
+
+    .note.warn {
+      border-color: rgba(246, 195, 91, 0.35);
+      background: rgba(246, 195, 91, 0.08);
+    }
+
+    .recipe-row,
+    .fleet-row {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      gap: 10px;
+      align-items: center;
+      padding: 12px 0;
+      border-top: 1px solid rgba(255,255,255,0.05);
+    }
+
+    .recipe-row:first-child,
+    .fleet-row:first-child {
+      border-top: 0;
+      padding-top: 0;
+    }
+
+    .recipe-chip {
+      padding: 8px 12px;
+      border-color: rgba(255,255,255,0.08);
+      color: var(--text-soft);
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.14em;
+    }
+
+    .recipe-chip.active,
+    .recipe-chip:hover {
+      border-color: var(--edge-strong);
+      color: var(--amber-soft);
+      background: rgba(212,168,67,0.08);
+    }
+
+    .segmented {
+      display: inline-flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .seg-btn {
+      padding: 8px 10px;
+      border-radius: 12px;
+      border: 1px solid rgba(255,255,255,0.08);
+      color: var(--text-dim);
+      font-size: 10px;
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+    }
+
+    .seg-btn.active {
+      border-color: rgba(0,184,212,0.38);
+      color: var(--teal-soft);
+      background: rgba(0,184,212,0.08);
+    }
+
+    .command-bar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 16px;
+      flex-wrap: wrap;
+      margin-top: 18px;
+      padding: 16px 18px;
+      border-radius: 18px;
+      border: 1px solid var(--edge);
+      background:
+        linear-gradient(135deg, rgba(13, 21, 38, 0.96), rgba(10, 17, 32, 0.96));
+    }
+
+    .command-copy {
+      min-width: 0;
+    }
+
+    .command-copy strong {
+      display: block;
+      margin-bottom: 4px;
+      color: var(--amber-soft);
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      font-size: 12px;
+    }
+
+    .command-copy span {
+      color: var(--text-soft);
+      font-size: 12px;
+      line-height: 1.5;
+    }
+
+    .actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+
+    .action-btn {
+      padding: 11px 16px;
+      border-radius: 14px;
+      border: 1px solid rgba(255,255,255,0.08);
+      color: var(--text-soft);
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.14em;
+    }
+
+    .action-btn:hover {
+      border-color: var(--edge-strong);
+      color: var(--amber-soft);
+      background: rgba(212,168,67,0.08);
+    }
+
+    .action-btn.primary {
+      border-color: rgba(212,168,67,0.5);
+      color: #0a1020;
+      background: linear-gradient(135deg, var(--amber), var(--amber-soft));
+      font-weight: bold;
+    }
+
+    .action-btn.primary:hover {
+      transform: translateY(-1px);
+      filter: brightness(1.04);
+    }
+
+    .sidebar {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    .sidebar-card {
+      border: 1px solid var(--edge);
+      border-radius: 22px;
+      background: rgba(10, 17, 31, 0.84);
+      padding: 16px;
+      box-shadow: var(--shadow);
+    }
+
+    .sidebar-card h2,
+    .sidebar-card h3 {
+      margin: 0 0 12px;
+      color: var(--amber-soft);
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      font-size: 14px;
+    }
+
+    .token-list,
+    .rule-list {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .token,
+    .rule {
+      padding: 11px 12px;
+      border-radius: 14px;
+      border: 1px solid rgba(255,255,255,0.05);
+      background: rgba(255,255,255,0.02);
+    }
+
+    .token strong,
+    .rule strong {
+      display: block;
+      margin-bottom: 4px;
+      color: var(--text);
+      font-size: 12px;
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+    }
+
+    .token span,
+    .rule span {
+      color: var(--text-soft);
+      font-size: 12px;
+      line-height: 1.5;
+    }
+
+    .footnote {
+      margin-top: 20px;
+      padding: 16px 18px;
+      border: 1px solid var(--edge);
+      border-radius: 18px;
+      background: rgba(9, 15, 28, 0.72);
+      color: var(--text-soft);
+      font-size: 13px;
+      line-height: 1.7;
+    }
+
+    [data-screen] {
+      display: none;
+    }
+
+    [data-screen].active {
+      display: block;
+    }
+
+    @media (max-width: 1120px) {
+      .hero-grid,
+      .shell,
+      .content-grid,
+      .hero-card {
+        grid-template-columns: 1fr;
+      }
+
+      .meta-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+    }
+
+    @media (max-width: 760px) {
+      .page {
+        width: min(100% - 20px, 100%);
+        padding-top: 14px;
+      }
+
+      .hero,
+      .console-wrap,
+      .sidebar-card {
+        border-radius: 20px;
+      }
+
+      .hero,
+      .console,
+      .view-strip,
+      .console-topbar {
+        padding-left: 16px;
+        padding-right: 16px;
+      }
+
+      .console-topbar,
+      .panel-head,
+      .command-bar {
+        align-items: flex-start;
+        flex-direction: column;
+      }
+
+      .meta-grid,
+      .data-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .row-card,
+      .recipe-row,
+      .fleet-row {
+        grid-template-columns: 1fr;
+      }
+
+      .row-side {
+        align-items: flex-start;
+        min-width: 0;
+      }
+
+      .view-tab {
+        min-width: 0;
+        width: 100%;
+      }
+    }
+  </style>
+</head>
+<body>
+  <main class="page">
+    <section class="hero">
+      <div class="eyebrow">VoidYield menu proposal / standard operations console</div>
+      <h1>One menu language for every facility</h1>
+      <p>
+        This mock turns the eclectic building menus into a single UI grammar: every facility opens as an
+        operations console with the same anatomy, the same action placement, the same status logic, and the same
+        reading order. The facility changes. The shell does not.
+      </p>
+      <div class="hero-grid">
+        <div class="principles">
+          <div class="section-label">Design principles</div>
+          <ul>
+            <li>Top tells you what this building is, what state it is in, and why you should care right now.</li>
+            <li>Center column is always the main interaction area: trade rows, drone roster, recipe queue, or buffers.</li>
+            <li>Right column is always live telemetry and consequences, so players can make decisions without hunting.</li>
+            <li>Bottom command bar always holds primary action, safe secondary actions, and close/help affordances.</li>
+          </ul>
+        </div>
+        <div class="why">
+          <div class="section-label">What this fixes</div>
+          <ul>
+            <li>Marketplace, drone panels, and production panels stop feeling like three different games.</li>
+            <li>Players learn one set of visual rules instead of re-learning every building.</li>
+            <li>Important state moves above the fold: power, throughput, queue health, stock pressure, and blockers.</li>
+            <li>The style keeps VoidYield’s amber, navy, and teal identity without sliding into generic sci-fi UI.</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <section class="shell">
+      <div class="console-wrap">
+        <div class="console-topbar">
+          <div class="console-brand">
+            <small>Unified facility shell</small>
+            <strong>Operations Console</strong>
+          </div>
+          <div class="console-controls">
+            <button class="chrome-btn">Tab cycle</button>
+            <button class="chrome-btn">Pin summary</button>
+            <button class="chrome-btn">Compact mode</button>
+          </div>
+        </div>
+
+        <div class="view-strip">
+          <button class="view-tab active" data-view-target="market">
+            <strong>Marketplace</strong>
+            <span>Fast sale review with current value, demand hints, and settlement context.</span>
+          </button>
+          <button class="view-tab" data-view-target="drone">
+            <strong>Drone command</strong>
+            <span>Roster, availability, active cap, and quick task steering in one shell.</span>
+          </button>
+          <button class="view-tab" data-view-target="electrolysis">
+            <strong>Electrolysis</strong>
+            <span>Buffer health and cycle visibility without burying the actual blocker.</span>
+          </button>
+          <button class="view-tab" data-view-target="forge">
+            <strong>Forge / plant</strong>
+            <span>Recipe choice, quality impact, and value delta in the same decision frame.</span>
+          </button>
+        </div>
+
+        <div class="console">
+          <section class="screen active" data-screen="market">
+            <div class="hero-card">
+              <div class="hero-copy">
+                <div class="kicker">Outpost trade terminal</div>
+                <div class="title-row">
+                  <h2 class="facility-title">Marketplace</h2>
+                  <div class="status-pill good">Ready to trade</div>
+                </div>
+                <div class="summary">
+                  Selling is no longer just a list of rows. The console starts with your expected credit swing, current depot
+                  pressure, and the best-value export so the player can answer "should I sell now?" in one glance.
+                </div>
+                <div class="meta-grid">
+                  <div class="meta-card">
+                    <small>Projected sale</small>
+                    <strong>430 CR</strong>
+                  </div>
+                  <div class="meta-card">
+                    <small>Current balance</small>
+                    <strong>2,940 CR</strong>
+                  </div>
+                  <div class="meta-card">
+                    <small>Storage pressure</small>
+                    <strong>84%</strong>
+                  </div>
+                  <div class="meta-card">
+                    <small>Best value stack</small>
+                    <strong>Copper bar</strong>
+                  </div>
+                </div>
+              </div>
+              <div class="facility-art">
+                <div class="machine">
+                  <div class="machine-core">
+                    <div class="signal a"></div>
+                    <div class="signal b"></div>
+                    <div class="signal c"></div>
+                    <div class="signal d"></div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="content-grid">
+              <div class="column">
+                <div class="panel-block">
+                  <div class="panel-head">
+                    <strong>Sell ledger</strong>
+                    <span>Primary interaction zone</span>
+                  </div>
+                  <div class="panel-body">
+                    <div class="list">
+                      <div class="row-card active">
+                        <div class="row-main">
+                          <strong>Copper bars</strong>
+                          <p>High margin processed export. Good to clear before another plant cycle completes.</p>
+                          <div class="minor">43 units in storage / market demand stable / 10 CR each</div>
+                        </div>
+                        <div class="row-side">
+                          <div class="value">430 CR</div>
+                          <div class="tagline">Top payout</div>
+                        </div>
+                      </div>
+                      <div class="row-card">
+                        <div class="row-main">
+                          <strong>Iron bars</strong>
+                          <p>Bulk material with lower value, but worth selling to free depot space.</p>
+                          <div class="minor">58 units in storage / 5 CR each / feeds fabrication if retained</div>
+                        </div>
+                        <div class="row-side">
+                          <div class="value">290 CR</div>
+                          <div class="tagline">Overflow risk</div>
+                        </div>
+                      </div>
+                      <div class="row-card">
+                        <div class="row-main">
+                          <strong>Hold recommendation</strong>
+                          <p>Krysite-derived components are more valuable in fabrication than immediate sale.</p>
+                          <div class="minor">System note replaces hidden mental math with explicit advice.</div>
+                        </div>
+                        <div class="row-side">
+                          <div class="value">Retain</div>
+                          <div class="tagline">Strategic reserve</div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="panel-block">
+                  <div class="panel-head">
+                    <strong>Trade framing</strong>
+                    <span>Always in the same place</span>
+                  </div>
+                  <div class="panel-body">
+                    <div class="notes">
+                      <div class="note good">Selling all stock clears enough room for 11 more furnace batches.</div>
+                      <div class="note warn">If you plan to queue drone frames next, keep at least 20 iron bars.</div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="column">
+                <div class="panel-block">
+                  <div class="panel-head">
+                    <strong>Settlement telemetry</strong>
+                    <span>Decision context</span>
+                  </div>
+                  <div class="panel-body">
+                    <div class="data-grid">
+                      <div class="datum">
+                        <small>Exchange</small>
+                        <strong>Asteroid Exchange / Stable pricing</strong>
+                      </div>
+                      <div class="datum">
+                        <small>Depot load</small>
+                        <strong>168 / 200</strong>
+                      </div>
+                      <div class="datum">
+                        <small>Next bottleneck</small>
+                        <strong>Processing output bins fill in 02:10</strong>
+                      </div>
+                      <div class="datum">
+                        <small>Recommended action</small>
+                        <strong>Sell bars now, hold lattices</strong>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="panel-block">
+                  <div class="panel-head">
+                    <strong>Storage pressure</strong>
+                    <span>Live consequence</span>
+                  </div>
+                  <div class="panel-body progress">
+                    <div class="progress-row">
+                      <span>Current load</span>
+                      <span>84%</span>
+                    </div>
+                    <div class="bar"><div class="fill" style="width:84%"></div></div>
+                    <div class="progress-row">
+                      <span>After sale</span>
+                      <span>46%</span>
+                    </div>
+                    <div class="bar"><div class="fill" style="width:46%"></div></div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="command-bar">
+              <div class="command-copy">
+                <strong>Command rail</strong>
+                <span>The primary button is always the thing you most likely want to do next. Secondary actions stay stable across menus.</span>
+              </div>
+              <div class="actions">
+                <button class="action-btn">Close [E]</button>
+                <button class="action-btn">View depot</button>
+                <button class="action-btn">Route forecast</button>
+                <button class="action-btn primary">Sell all stock</button>
+              </div>
+            </div>
+          </section>
+
+          <section class="screen" data-screen="drone">
+            <div class="hero-card">
+              <div class="hero-copy">
+                <div class="kicker">Fleet operations node</div>
+                <div class="title-row">
+                  <h2 class="facility-title">Drone command</h2>
+                  <div class="status-pill warn">1 idle issue</div>
+                </div>
+                <div class="summary">
+                  The drone menu becomes command-and-control instead of a shop list. Purchase, activation, ore targeting,
+                  and availability all live in one predictable shell, with fleet pressure and role gaps surfaced immediately.
+                </div>
+                <div class="meta-grid">
+                  <div class="meta-card">
+                    <small>Total drones</small>
+                    <strong>18</strong>
+                  </div>
+                  <div class="meta-card">
+                    <small>Active cap</small>
+                    <strong>14 / 16</strong>
+                  </div>
+                  <div class="meta-card">
+                    <small>Priority gap</small>
+                    <strong>Refinery support</strong>
+                  </div>
+                  <div class="meta-card">
+                    <small>Next purchase</small>
+                    <strong>Heavy miner</strong>
+                  </div>
+                </div>
+              </div>
+              <div class="facility-art">
+                <div class="machine">
+                  <div class="machine-core">
+                    <div class="signal a"></div>
+                    <div class="signal b"></div>
+                    <div class="signal c"></div>
+                    <div class="signal d"></div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="content-grid">
+              <div class="column">
+                <div class="panel-block">
+                  <div class="panel-head">
+                    <strong>Active roster</strong>
+                    <span>Always first in management screens</span>
+                  </div>
+                  <div class="panel-body">
+                    <div class="list">
+                      <div class="row-card active">
+                        <div class="row-main">
+                          <strong>Mining drone #04</strong>
+                          <p>Assigned to Vorax priority lane. Auto-retargets to nearby deposits if the lane depletes.</p>
+                          <div class="minor">State: mining / ore preference: Vorax / loop health: strong</div>
+                        </div>
+                        <div class="row-side">
+                          <div class="tagline">Active</div>
+                          <div class="segmented">
+                            <button class="seg-btn active">Vorax</button>
+                            <button class="seg-btn">Krysite</button>
+                            <button class="seg-btn">Any</button>
+                          </div>
+                        </div>
+                      </div>
+                      <div class="row-card">
+                        <div class="row-main">
+                          <strong>Refinery drone #02</strong>
+                          <p>Feeding harvester fuel and emptying hoppers across the east industrial lane.</p>
+                          <div class="minor">State: servicing / 2 harvesters protected / no route blockers</div>
+                        </div>
+                        <div class="row-side">
+                          <div class="tagline">Healthy route</div>
+                          <div class="value">96%</div>
+                        </div>
+                      </div>
+                      <div class="row-card">
+                        <div class="row-main">
+                          <strong>Survey drone #01</strong>
+                          <p>No active assignment. Console promotes the problem instead of burying it below the buy list.</p>
+                          <div class="minor">State: idle / ready for zone sweep / lost uptime: 03:14</div>
+                        </div>
+                        <div class="row-side">
+                          <div class="tagline">Needs task</div>
+                          <div class="value">Idle</div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="panel-block">
+                  <div class="panel-head">
+                    <strong>Fleet quick controls</strong>
+                    <span>Consistent command pattern</span>
+                  </div>
+                  <div class="panel-body">
+                    <div class="notes">
+                      <div class="note">Role filters, inactive toggles, and ore targeting stay in this slot for every fleet-capable building.</div>
+                      <div class="note warn">Two heavy miners are sharing one rich Vorax lane. Consider splitting them or adding Krysite priority.</div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="column">
+                <div class="panel-block">
+                  <div class="panel-head">
+                    <strong>Role health</strong>
+                    <span>Live telemetry</span>
+                  </div>
+                  <div class="panel-body">
+                    <div class="fleet-row">
+                      <div class="row-main">
+                        <strong>Mining</strong>
+                        <p>8 units / ore extraction stable</p>
+                      </div>
+                      <div class="tagline">Nominal</div>
+                    </div>
+                    <div class="fleet-row">
+                      <div class="row-main">
+                        <strong>Refinery support</strong>
+                        <p>2 units / fuel response borderline during peak load</p>
+                      </div>
+                      <div class="tagline">Thin</div>
+                    </div>
+                    <div class="fleet-row">
+                      <div class="row-main">
+                        <strong>Build and repair</strong>
+                        <p>1 builder / 1 repair / adequate for current footprint</p>
+                      </div>
+                      <div class="tagline">Stable</div>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="panel-block">
+                  <div class="panel-head">
+                    <strong>Procurement</strong>
+                    <span>Secondary zone</span>
+                  </div>
+                  <div class="panel-body">
+                    <div class="recipe-row">
+                      <div class="row-main">
+                        <strong>Heavy miner</strong>
+                        <p>40 px/s / 10 ore / best next purchase for current bottleneck.</p>
+                      </div>
+                      <button class="recipe-chip active">120 CR</button>
+                    </div>
+                    <div class="recipe-row">
+                      <div class="row-main">
+                        <strong>Refinery drone</strong>
+                        <p>Harvester logistics and hopper clearing. Highest reliability upgrade.</p>
+                      </div>
+                      <button class="recipe-chip">150 CR</button>
+                    </div>
+                    <div class="recipe-row">
+                      <div class="row-main">
+                        <strong>Survey drone</strong>
+                        <p>Expands coverage, but not the immediate bottleneck right now.</p>
+                      </div>
+                      <button class="recipe-chip">110 CR</button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="command-bar">
+              <div class="command-copy">
+                <strong>Command rail</strong>
+                <span>Manage first, buy second. The shell keeps procurement available without letting it dominate the menu.</span>
+              </div>
+              <div class="actions">
+                <button class="action-btn">Close [E]</button>
+                <button class="action-btn">Deactivate idle</button>
+                <button class="action-btn">Open fleet overlay</button>
+                <button class="action-btn primary">Purchase heavy miner</button>
+              </div>
+            </div>
+          </section>
+
+          <section class="screen" data-screen="electrolysis">
+            <div class="hero-card">
+              <div class="hero-copy">
+                <div class="kicker">Fuel processing console</div>
+                <div class="title-row">
+                  <h2 class="facility-title">Electrolysis unit</h2>
+                  <div class="status-pill warn">Output blocked</div>
+                </div>
+                <div class="summary">
+                  Utility buildings need clarity more than complexity. This version makes the blocker explicit and moves
+                  input, output, and cycle progression into a consistent telemetry pattern that matches every production menu.
+                </div>
+                <div class="meta-grid">
+                  <div class="meta-card">
+                    <small>Cycle state</small>
+                    <strong>Paused by full output</strong>
+                  </div>
+                  <div class="meta-card">
+                    <small>Input buffer</small>
+                    <strong>36 / 50 water</strong>
+                  </div>
+                  <div class="meta-card">
+                    <small>Output buffer</small>
+                    <strong>20 / 20 fuel</strong>
+                  </div>
+                  <div class="meta-card">
+                    <small>Fix needed</small>
+                    <strong>Clear Hydrolox</strong>
+                  </div>
+                </div>
+              </div>
+              <div class="facility-art">
+                <div class="machine">
+                  <div class="machine-core">
+                    <div class="signal a"></div>
+                    <div class="signal b"></div>
+                    <div class="signal c"></div>
+                    <div class="signal d"></div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="content-grid">
+              <div class="column">
+                <div class="panel-block">
+                  <div class="panel-head">
+                    <strong>Process state</strong>
+                    <span>Main status read</span>
+                  </div>
+                  <div class="panel-body">
+                    <div class="notes">
+                      <div class="note warn">Hydrolox output is full. The next cycle cannot begin until a logistics drone clears the tank.</div>
+                      <div class="note good">Water supply is healthy enough to resume immediately once output is emptied.</div>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="panel-block">
+                  <div class="panel-head">
+                    <strong>Buffers</strong>
+                    <span>Primary telemetry block</span>
+                  </div>
+                  <div class="panel-body progress">
+                    <div class="progress-row">
+                      <span>Water reserve</span>
+                      <span>72%</span>
+                    </div>
+                    <div class="bar"><div class="fill" style="width:72%"></div></div>
+                    <div class="progress-row">
+                      <span>Hydrolox output</span>
+                      <span>100%</span>
+                    </div>
+                    <div class="bar"><div class="fill" style="width:100%"></div></div>
+                    <div class="progress-row">
+                      <span>Current cycle</span>
+                      <span>46%</span>
+                    </div>
+                    <div class="bar"><div class="fill" style="width:46%"></div></div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="column">
+                <div class="panel-block">
+                  <div class="panel-head">
+                    <strong>Production logic</strong>
+                    <span>Always right column</span>
+                  </div>
+                  <div class="panel-body">
+                    <div class="data-grid">
+                      <div class="datum">
+                        <small>Conversion</small>
+                        <strong>5 water -> 3 Hydrolox fuel</strong>
+                      </div>
+                      <div class="datum">
+                        <small>Cycle length</small>
+                        <strong>10 seconds</strong>
+                      </div>
+                      <div class="datum">
+                        <small>Drone dependency</small>
+                        <strong>1 logistics drone assigned</strong>
+                      </div>
+                      <div class="datum">
+                        <small>Recovery ETA</small>
+                        <strong>00:18 after clear</strong>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="panel-block">
+                  <div class="panel-head">
+                    <strong>Operator suggestions</strong>
+                    <span>Action framing</span>
+                  </div>
+                  <div class="panel-body">
+                    <div class="notes">
+                      <div class="note">If fuel demand is persistent, route a second logistics drone here before adding another unit.</div>
+                      <div class="note warn">This building does not need a recipe selector. Utility menus should stay lean and diagnostic.</div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="command-bar">
+              <div class="command-copy">
+                <strong>Command rail</strong>
+                <span>Utilities emphasize unblock actions rather than menu chrome. Primary CTA is always the fastest recovery move.</span>
+              </div>
+              <div class="actions">
+                <button class="action-btn">Close [E]</button>
+                <button class="action-btn">Open route details</button>
+                <button class="action-btn">Pin telemetry</button>
+                <button class="action-btn primary">Clear output route</button>
+              </div>
+            </div>
+          </section>
+
+          <section class="screen" data-screen="forge">
+            <div class="hero-card">
+              <div class="hero-copy">
+                <div class="kicker">Refining and quality console</div>
+                <div class="title-row">
+                  <h2 class="facility-title">Forge / processing plant</h2>
+                  <div class="status-pill good">Running batch</div>
+                </div>
+                <div class="summary">
+                  Forge menus should feel more deliberate than utility panels: recipe choice is the main act, but the shell still
+                  keeps throughput, quality influence, and value change in the same places players just learned elsewhere.
+                </div>
+                <div class="meta-grid">
+                  <div class="meta-card">
+                    <small>Active recipe</small>
+                    <strong>Copper ingot</strong>
+                  </div>
+                  <div class="meta-card">
+                    <small>Batch time</small>
+                    <strong>7.5 sec</strong>
+                  </div>
+                  <div class="meta-card">
+                    <small>Quality yield</small>
+                    <strong>1.34x value</strong>
+                  </div>
+                  <div class="meta-card">
+                    <small>Plant state</small>
+                    <strong>Input stable</strong>
+                  </div>
+                </div>
+              </div>
+              <div class="facility-art">
+                <div class="machine">
+                  <div class="machine-core">
+                    <div class="signal a"></div>
+                    <div class="signal b"></div>
+                    <div class="signal c"></div>
+                    <div class="signal d"></div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="content-grid">
+              <div class="column">
+                <div class="panel-block">
+                  <div class="panel-head">
+                    <strong>Recipe control</strong>
+                    <span>Primary decision zone</span>
+                  </div>
+                  <div class="panel-body">
+                    <div class="recipe-row">
+                      <div class="row-main">
+                        <strong>Copper ingot</strong>
+                        <p>Fast revenue conversion. Strong current value because ore quality is high.</p>
+                      </div>
+                      <button class="recipe-chip active">Active</button>
+                    </div>
+                    <div class="recipe-row">
+                      <div class="row-main">
+                        <strong>Iron ingot</strong>
+                        <p>Lower sale value, but better strategic reserve for fabrication chains.</p>
+                      </div>
+                      <button class="recipe-chip">Select</button>
+                    </div>
+                    <div class="recipe-row">
+                      <div class="row-main">
+                        <strong>Off</strong>
+                        <p>Pause the line without changing context. Same placement as every other selectable mode.</p>
+                      </div>
+                      <button class="recipe-chip">Pause</button>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="panel-block">
+                  <div class="panel-head">
+                    <strong>Batch economics</strong>
+                    <span>Outcome preview</span>
+                  </div>
+                  <div class="panel-body">
+                    <div class="data-grid">
+                      <div class="datum">
+                        <small>Raw ore input</small>
+                        <strong>2 copper ore / batch</strong>
+                      </div>
+                      <div class="datum">
+                        <small>Output</small>
+                        <strong>1 copper ingot / batch</strong>
+                      </div>
+                      <div class="datum">
+                        <small>Raw stack value</small>
+                        <strong>8 CR</strong>
+                      </div>
+                      <div class="datum">
+                        <small>Refined value</small>
+                        <strong>10.7 CR effective</strong>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="column">
+                <div class="panel-block">
+                  <div class="panel-head">
+                    <strong>Line telemetry</strong>
+                    <span>Right rail</span>
+                  </div>
+                  <div class="panel-body progress">
+                    <div class="progress-row">
+                      <span>Input hopper</span>
+                      <span>65%</span>
+                    </div>
+                    <div class="bar"><div class="fill" style="width:65%"></div></div>
+                    <div class="progress-row">
+                      <span>Output bin</span>
+                      <span>25%</span>
+                    </div>
+                    <div class="bar"><div class="fill" style="width:25%"></div></div>
+                    <div class="progress-row">
+                      <span>Current batch</span>
+                      <span>61%</span>
+                    </div>
+                    <div class="bar"><div class="fill" style="width:61%"></div></div>
+                  </div>
+                </div>
+
+                <div class="panel-block">
+                  <div class="panel-head">
+                    <strong>Quality influence</strong>
+                    <span>Persistent location</span>
+                  </div>
+                  <div class="panel-body">
+                    <div class="notes">
+                      <div class="note good">Ore ER average is high, so this batch produces above-baseline ingot value.</div>
+                      <div class="note">Quality messaging belongs in the same block across forge, fabricator, and assembly menus.</div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="command-bar">
+              <div class="command-copy">
+                <strong>Command rail</strong>
+                <span>Production menus always end in a do-something row: load input, extract output, or commit a recipe.</span>
+              </div>
+              <div class="actions">
+                <button class="action-btn">Close [E]</button>
+                <button class="action-btn">Extract output</button>
+                <button class="action-btn">Insert ore</button>
+                <button class="action-btn primary">Commit recipe</button>
+              </div>
+            </div>
+          </section>
+        </div>
+      </div>
+
+      <aside class="sidebar">
+        <section class="sidebar-card">
+          <h2>Shared anatomy</h2>
+          <div class="token-list">
+            <div class="token">
+              <strong>1. Hero header</strong>
+              <span>Name, state, why-it-matters summary, and four critical metrics.</span>
+            </div>
+            <div class="token">
+              <strong>2. Main interaction block</strong>
+              <span>List, roster, recipe queue, or sell ledger always occupies the left column.</span>
+            </div>
+            <div class="token">
+              <strong>3. Telemetry rail</strong>
+              <span>Buffers, quality, line health, and route consequences always occupy the right column.</span>
+            </div>
+            <div class="token">
+              <strong>4. Command rail</strong>
+              <span>Primary action right-aligned, close/help stable, no hunting for the "do it" button.</span>
+            </div>
+          </div>
+        </section>
+
+        <section class="sidebar-card">
+          <h3>Rules to carry into implementation</h3>
+          <div class="rule-list">
+            <div class="rule">
+              <strong>Status first</strong>
+              <span>Every menu should explain its blocker or opportunity before showing controls.</span>
+            </div>
+            <div class="rule">
+              <strong>One accent per facility</strong>
+              <span>Amber shell stays global; teal, gold, mint, or orange can specialize a facility without breaking the system.</span>
+            </div>
+            <div class="rule">
+              <strong>Management before shopping</strong>
+              <span>If a menu both controls and purchases, control comes first and buying becomes secondary.</span>
+            </div>
+            <div class="rule">
+              <strong>Action phrasing stays human</strong>
+              <span>Buttons should say what happens now: sell stock, clear output route, commit recipe, purchase heavy miner.</span>
+            </div>
+          </div>
+        </section>
+      </aside>
+    </section>
+
+    <section class="footnote">
+      Review intent: this is a UX proposal, not final implementation. If this direction feels right, the next pass would be to
+      translate the shared shell into reusable CSS/HTML structure for the in-game overlays and then migrate each panel into it
+      without losing its gameplay-specific information.
+    </section>
+  </main>
+
+  <script>
+    const tabs = Array.from(document.querySelectorAll("[data-view-target]"));
+    const screens = Array.from(document.querySelectorAll("[data-screen]"));
+
+    function setView(id) {
+      tabs.forEach((tab) => {
+        tab.classList.toggle("active", tab.dataset.viewTarget === id);
+      });
+      screens.forEach((screen) => {
+        screen.classList.toggle("active", screen.dataset.screen === id);
+      });
+    }
+
+    tabs.forEach((tab) => {
+      tab.addEventListener("click", () => setView(tab.dataset.viewTarget));
+    });
+  </script>
+</body>
+</html>

@@ -412,6 +412,50 @@
       margin: 0 auto;
     }
 
+    .mock-frame--html-link {
+      min-height: 240px;
+      display: flex;
+      align-items: stretch;
+    }
+
+    .html-mock-link {
+      width: 100%;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      gap: 12px;
+      padding: 24px;
+      border-radius: 16px;
+      background:
+        radial-gradient(circle at top right, rgba(0, 184, 212, 0.12), transparent 35%),
+        linear-gradient(135deg, rgba(13, 27, 62, 0.75), rgba(8, 10, 13, 0.55));
+    }
+
+    .html-mock-badge {
+      align-self: flex-start;
+      padding: 6px 10px;
+      border: var(--border-teal);
+      background: var(--teal-dim);
+      color: var(--teal-soft);
+      font-size: 10px;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+    }
+
+    .html-mock-link strong {
+      color: var(--amber);
+      font-size: 22px;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+
+    .html-mock-link span:last-child {
+      color: var(--text-soft);
+      max-width: 36ch;
+      line-height: 1.7;
+      font-size: 13px;
+    }
+
     /* ─── FOOTER ─── */
     footer {
       padding: 32px 24px;
@@ -582,6 +626,7 @@
       <div class="toc-group">
         <div class="toc-group-title">Menus & Flow</div>
         <ul class="toc-list">
+          <li><a href="#m29"><span class="num">29</span>Standard Menu Console</a></li>
           <li><a href="#m17"><span class="num">17</span>Pause Settings</a></li>
           <li><a href="#m18"><span class="num">18</span>Main Menu</a></li>
           <li><a href="#m24"><span class="num">24</span>Launch Transition</a></li>
@@ -877,8 +922,23 @@
         <div class="category-header">
           <div class="category-icon"></div>
           <div class="category-name">Menus &amp; Flow</div>
-          <div class="category-count">5 screens</div>
+          <div class="category-count">6 screens</div>
         </div>
+
+        <article class="mock" id="m29">
+          <div class="mock-header">
+            <div class="mock-num">29</div>
+            <div class="mock-title">Standard Menu Console</div>
+            <div class="mock-file"><a href="29_standard_menu_console.html" target="_blank">29_standard_menu_console.html ↗</a></div>
+          </div>
+          <div class="mock-frame mock-frame--html-link">
+            <a class="html-mock-link" href="29_standard_menu_console.html" target="_blank">
+              <span class="html-mock-badge">Interactive HTML</span>
+              <strong>Unified facility shell</strong>
+              <span>Review a shared UX for marketplace, drone command, electrolysis, and forge menus.</span>
+            </a>
+          </div>
+        </article>
 
         <article class="mock" id="m17">
           <div class="mock-header">
