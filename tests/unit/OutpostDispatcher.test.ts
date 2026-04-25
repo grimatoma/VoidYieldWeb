@@ -17,6 +17,7 @@ vi.mock('@services/FleetManager', () => ({
 vi.mock('@services/DepositMap', () => ({
   depositMap: {
     getNearestUnclaimedDeposit: vi.fn(),
+    releaseClaimsBy: vi.fn(),
   },
 }));
 
@@ -45,6 +46,7 @@ interface MockDrone {
   _tasks: unknown[];
   pushTask: ReturnType<typeof vi.fn>;
   getTasks: () => unknown[];
+  clearTasks: ReturnType<typeof vi.fn>;
 }
 
 interface MockBaySlot {
@@ -79,6 +81,7 @@ function makeDrone(id: string, droneType = 'scout', orePreference: string | null
     _tasks: tasks,
     pushTask: vi.fn((t) => { tasks.push(t); return true; }),
     getTasks: () => tasks,
+    clearTasks: vi.fn(() => { tasks.length = 0; }),
   };
 }
 
@@ -326,6 +329,64 @@ describe('OutpostDispatcher', () => {
     expect(deposit.claim).toHaveBeenCalledWith('d1');
     expect(miner.pushTask).not.toHaveBeenCalled();
     expect(miner.state).toBe('IDLE');
+  });
+
+  // ──────────────────────────────────────────────────────────────────────────
+  // Deallocation scenarios
+  // ──────────────────────────────────────────────────────────────────────────
+
+  it('unallocated miner (orePreference null) is not dispatched to mine', () => {
+    const deposit = makeDeposit('iron_ore');
+    vi.mocked(depositMap.getNearestUnclaimedDeposit).mockReturnValue(deposit as any);
+
+    const storage = makeStorage();
+    const furnace = makeFurnace('off');
+    const miner = makeDrone('d1', 'scout', null); // unallocated
+    const slots: MockBaySlot[] = [occupiedSlot(miner)];
+
+    dispatcher.configure(storage as any, furnace as any, { x: 500, y: 500 }, slots as any);
+    dispatcher.start();
+    dispatcher.update(0.016);
+
+    expect(miner.pushTask).not.toHaveBeenCalledWith(expect.objectContaining({ type: 'MINE' }));
+  });
+
+  it('unallocated miner with an active MINE task is recalled: tasks cleared, claims released, depot return queued', () => {
+    const storage = makeStorage();
+    const furnace = makeFurnace('off');
+    const miner = makeDrone('d1', 'scout', null); // unallocated
+    miner._tasks.push({ type: 'MINE', targetX: 100, targetY: 100, executeDurationSec: 3 });
+    miner._tasks.push({ type: 'CARRY', targetX: 200, targetY: 200, executeDurationSec: 0.3 });
+
+    const slots: MockBaySlot[] = [occupiedSlot(miner)];
+    dispatcher.configure(storage as any, furnace as any, { x: 500, y: 500 }, slots as any);
+    dispatcher.start();
+    dispatcher.update(0.016);
+
+    expect(miner.clearTasks).toHaveBeenCalled();
+    expect(depositMap.releaseClaimsBy).toHaveBeenCalledWith('d1');
+    expect(miner.pushTask).toHaveBeenCalledWith(
+      expect.objectContaining({ type: 'CARRY', targetX: 500, targetY: 500 }),
+    );
+  });
+
+  it('idle unallocated miner away from depot is sent back to depot', () => {
+    vi.mocked(depositMap.getNearestUnclaimedDeposit).mockReturnValue(null);
+
+    const storage = makeStorage();
+    const furnace = makeFurnace('off');
+    const miner = makeDrone('d1', 'scout', null); // unallocated
+    miner.x = 400;
+    miner.y = 400; // far from depot at (500,500)? No — (400-500)^2+(400-500)^2 = 20000 > 400
+
+    const slots: MockBaySlot[] = [occupiedSlot(miner)];
+    dispatcher.configure(storage as any, furnace as any, { x: 500, y: 500 }, slots as any);
+    dispatcher.start();
+    dispatcher.update(0.016);
+
+    expect(miner.pushTask).toHaveBeenCalledWith(
+      expect.objectContaining({ type: 'CARRY', targetX: 500, targetY: 500 }),
+    );
   });
 
   it('MINE onExecute guards against zero-quantity lot — cargo stays null when deposit exhausted mid-flight', () => {

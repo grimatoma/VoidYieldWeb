@@ -74,7 +74,10 @@ export class DroneManagementPanel {
   private _visible = false;
   private _updateTimer = 0;
   private _needsRender = false;
+  private _isInteracting = false;
   private _onKeydown: (e: KeyboardEvent) => void;
+  private _onWinPointerup: () => void;
+  private _onWinPointercancel: () => void;
   private _unsubBus: Array<() => void> = [];
 
   constructor() {
@@ -90,6 +93,14 @@ export class DroneManagementPanel {
       }
     };
     window.addEventListener('keydown', this._onKeydown, true);
+
+    // Suppress DOM rebuilds between pointerdown and pointerup so in-flight
+    // click events always land on the element the user pressed.
+    this._onWinPointerup = () => { this._isInteracting = false; };
+    this._onWinPointercancel = () => { this._isInteracting = false; };
+    this._root.addEventListener('pointerdown', () => { this._isInteracting = true; });
+    window.addEventListener('pointerup', this._onWinPointerup);
+    window.addEventListener('pointercancel', this._onWinPointercancel);
   }
 
   get visible(): boolean { return this._visible; }
@@ -374,6 +385,7 @@ export class DroneManagementPanel {
     if (!this._visible) return;
     this._updateTimer += delta;
     if (!this._needsRender && this._updateTimer < 0.25) return;
+    if (this._isInteracting) return;
     this._updateTimer = 0;
     this._needsRender = false;
     this._render();
@@ -425,6 +437,8 @@ export class DroneManagementPanel {
 
   destroy(): void {
     window.removeEventListener('keydown', this._onKeydown, true);
+    window.removeEventListener('pointerup', this._onWinPointerup);
+    window.removeEventListener('pointercancel', this._onWinPointercancel);
     for (const c of this._cleanups) c();
     this._cleanups = [];
     for (const u of this._unsubBus) u();
