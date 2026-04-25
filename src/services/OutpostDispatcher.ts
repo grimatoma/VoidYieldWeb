@@ -64,6 +64,37 @@ export class OutpostDispatcher {
       const drone = slot.drone;
       if (!drone || drone.disabled) continue;
       if (!MINER_TYPES.has(drone.droneType)) continue;
+
+      if (drone.orePreference === null) {
+        // Unallocated: cancel any active MINE task and return to depot.
+        const firstTask = drone.getTasks()[0];
+        if (firstTask?.type === 'MINE') {
+          drone.clearTasks();
+          depositMap.releaseClaimsBy(drone.id);
+          if (this._depotPos) {
+            drone.pushTask({
+              type: 'CARRY',
+              targetX: this._depotPos.x,
+              targetY: this._depotPos.y,
+              executeDurationSec: 0,
+            });
+          }
+        } else if (drone.state === 'IDLE' && drone.getTasks().length === 0 && this._depotPos) {
+          // Already idle (e.g. finished a CARRY drop-off); drift back to depot.
+          const dx = drone.x - this._depotPos.x;
+          const dy = drone.y - this._depotPos.y;
+          if (dx * dx + dy * dy > 400) {
+            drone.pushTask({
+              type: 'CARRY',
+              targetX: this._depotPos.x,
+              targetY: this._depotPos.y,
+              executeDurationSec: 0,
+            });
+          }
+        }
+        continue;
+      }
+
       if (drone.state !== 'IDLE' || drone.getTasks().length > 0) continue;
 
       const deposit = depositMap.getNearestUnclaimedDeposit(
