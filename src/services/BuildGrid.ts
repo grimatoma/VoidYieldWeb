@@ -12,7 +12,7 @@ export interface PlacedEntry {
 
 export class BuildGrid {
   static readonly COLS = 5;
-  static readonly ROWS = 5;
+  static readonly ROWS = 6;
 
   private entries: PlacedEntry[] = [];
 

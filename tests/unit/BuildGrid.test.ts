@@ -29,7 +29,7 @@ describe('BuildGrid', () => {
   });
 
   it('canPlace returns false when row is out of bounds', () => {
-    expect(grid.canPlace(5, 0, { rows: 1, cols: 1 })).toBe(false);
+    expect(grid.canPlace(6, 0, { rows: 1, cols: 1 })).toBe(false);
   });
 
   it('canPlace returns false when col is out of bounds', () => {
