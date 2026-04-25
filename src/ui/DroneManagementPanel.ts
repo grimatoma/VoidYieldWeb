@@ -64,9 +64,7 @@ function allocationLabel(d: DroneBase): string {
     const ore = ORE_OPTIONS.find(o => o.value === d.orePreference);
     return `→ ${ore?.label ?? d.orePreference.toUpperCase()}`;
   }
-  if (LOGISTICS_TYPES.has(d.droneType)) {
-    return d.disabled ? '— parked' : '→ Pool';
-  }
+  if (LOGISTICS_TYPES.has(d.droneType)) return '→ Active';
   return '—';
 }
 
@@ -140,59 +138,39 @@ export class DroneManagementPanel {
     container.appendChild(sec);
 
     const drones = fleetManager.getDrones();
-    const miners = drones.filter(d => MINER_TYPES.has(d.droneType) && !d.disabled);
-    const logistics = drones.filter(d => LOGISTICS_TYPES.has(d.droneType));
+    const miners = drones.filter(d => MINER_TYPES.has(d.droneType));
     const totalMiners = miners.length;
-    const totalLogistics = logistics.length;
     const allocated = droneAllocationManager.totalAllocatedMiners();
     const unallocatedMiners = Math.max(0, totalMiners - allocated);
-    const logAlloc = droneAllocationManager.getLogisticsAlloc();
-    const unallocLogi = Math.max(0, totalLogistics - logAlloc);
 
     const grid = document.createElement('div');
     grid.className = 'trade-panel-list';
     grid.style.gap = '4px';
 
-    if (totalMiners === 0 && totalLogistics === 0) {
+    if (totalMiners === 0) {
       const empty = document.createElement('div');
       empty.style.cssText = 'color:#666;font-size:11px;padding:8px 0;';
-      empty.textContent = 'No drones owned.';
+      empty.textContent = 'No mining drones owned.';
       grid.appendChild(empty);
       container.appendChild(grid);
       return container;
     }
 
-    // Mining block
-    if (totalMiners > 0) {
-      const mHead = document.createElement('div');
-      mHead.style.cssText = 'font-size:10px;color:#D4A843;letter-spacing:1px;margin:8px 0 4px;font-weight:bold;';
-      mHead.textContent = `MINING DRONES (${totalMiners})`;
-      grid.appendChild(mHead);
+    const mHead = document.createElement('div');
+    mHead.style.cssText = 'font-size:10px;color:#D4A843;letter-spacing:1px;margin:8px 0 4px;font-weight:bold;';
+    mHead.textContent = `MINING DRONES (${totalMiners})`;
+    grid.appendChild(mHead);
 
-      // Unallocated row (display only)
-      grid.appendChild(this._allocRow('Unallocated', unallocatedMiners, null, false));
+    // Unallocated row (display only)
+    grid.appendChild(this._allocRow('Unallocated', unallocatedMiners, null, false));
 
-      // Per-ore rows
-      const alloc = droneAllocationManager.getMinerAlloc();
-      for (const opt of ORE_OPTIONS) {
-        const count = alloc.get(opt.value) ?? 0;
-        const canInc = unallocatedMiners > 0;
-        const canDec = count > 0;
-        grid.appendChild(this._allocRow(opt.label, count, opt.value, true, canInc, canDec));
-      }
-    }
-
-    // Logistics block
-    if (totalLogistics > 0) {
-      const lHead = document.createElement('div');
-      lHead.style.cssText = 'font-size:10px;color:#00B8D4;letter-spacing:1px;margin:8px 0 4px;font-weight:bold;';
-      lHead.textContent = `LOGISTICS DRONES (${totalLogistics})`;
-      grid.appendChild(lHead);
-
-      grid.appendChild(this._allocRow('Unallocated', unallocLogi, null, false));
-      const canIncL = logAlloc < totalLogistics;
-      const canDecL = logAlloc > 0;
-      grid.appendChild(this._allocRow('Pool', logAlloc, '__logistics__' as OreType, true, canIncL, canDecL));
+    // Per-ore rows
+    const alloc = droneAllocationManager.getMinerAlloc();
+    for (const opt of ORE_OPTIONS) {
+      const count = alloc.get(opt.value) ?? 0;
+      const canInc = unallocatedMiners > 0;
+      const canDec = count > 0;
+      grid.appendChild(this._allocRow(opt.label, count, opt.value, true, canInc, canDec));
     }
 
     container.appendChild(grid);
@@ -355,15 +333,8 @@ export class DroneManagementPanel {
       btn.addEventListener('click', () => {
         const ore = btn.dataset.ore!;
         const delta = parseInt(btn.dataset.delta!);
-        const drones = fleetManager.getDrones();
-
-        if (ore === '__logistics__') {
-          const total = drones.filter(d => LOGISTICS_TYPES.has(d.droneType)).length;
-          droneAllocationManager.allocateLogistics(delta, total);
-        } else {
-          const total = drones.filter(d => MINER_TYPES.has(d.droneType) && !d.disabled).length;
-          droneAllocationManager.allocateMiner(ore as OreType, delta, total);
-        }
+        const total = fleetManager.getDrones().filter(d => MINER_TYPES.has(d.droneType)).length;
+        droneAllocationManager.allocateMiner(ore as OreType, delta, total);
         this._needsRender = true;
       });
     });

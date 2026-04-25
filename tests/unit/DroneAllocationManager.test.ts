@@ -47,20 +47,11 @@ describe('DroneAllocationManager', () => {
     expect(droneAllocationManager.totalAllocatedMiners()).toBe(3);
   });
 
-  // ─── allocateLogistics ────────────────────────────────────────────────────
+  // ─── allocateLogistics (no-op — logistics are always active) ─────────────
 
-  it('allocates logistics drones', () => {
+  it('allocateLogistics always returns true', () => {
     expect(droneAllocationManager.allocateLogistics(2, 3)).toBe(true);
-    expect(droneAllocationManager.getLogisticsAlloc()).toBe(2);
-  });
-
-  it('allocateLogistics returns false when exceeding totalLogistics', () => {
-    expect(droneAllocationManager.allocateLogistics(4, 3)).toBe(false);
-    expect(droneAllocationManager.getLogisticsAlloc()).toBe(0);
-  });
-
-  it('allocateLogistics returns false when result goes below 0', () => {
-    expect(droneAllocationManager.allocateLogistics(-1, 2)).toBe(false);
+    expect(droneAllocationManager.allocateLogistics(-1, 3)).toBe(true);
   });
 
   // ─── serialize / deserialize ──────────────────────────────────────────────
@@ -68,16 +59,12 @@ describe('DroneAllocationManager', () => {
   it('serialize produces correct shape', () => {
     droneAllocationManager.allocateMiner('iron_ore', 2, 5);
     droneAllocationManager.allocateMiner('copper_ore', 1, 5);
-    droneAllocationManager.allocateLogistics(1, 2);
 
     const data = droneAllocationManager.serialize();
-    expect(data).toEqual({
-      miners: { iron_ore: 2, copper_ore: 1 },
-      logistics: 1,
-    });
+    expect(data.miners).toEqual({ iron_ore: 2, copper_ore: 1 });
   });
 
-  it('deserialize restores allocation state', () => {
+  it('deserialize restores miner allocation state', () => {
     droneAllocationManager.deserialize({
       miners: { iron_ore: 3, copper_ore: 2 },
       logistics: 1,
@@ -85,7 +72,6 @@ describe('DroneAllocationManager', () => {
 
     expect(droneAllocationManager.getMinerAlloc().get('iron_ore')).toBe(3);
     expect(droneAllocationManager.getMinerAlloc().get('copper_ore')).toBe(2);
-    expect(droneAllocationManager.getLogisticsAlloc()).toBe(1);
     expect(droneAllocationManager.totalAllocatedMiners()).toBe(5);
   });
 
@@ -94,7 +80,7 @@ describe('DroneAllocationManager', () => {
     expect(droneAllocationManager.getMinerAlloc().has('iron_ore')).toBe(false);
   });
 
-  it('deserialize with missing fields defaults to 0', () => {
+  it('deserialize with missing fields defaults to empty', () => {
     droneAllocationManager.deserialize({});
     expect(droneAllocationManager.totalAllocatedMiners()).toBe(0);
     expect(droneAllocationManager.getLogisticsAlloc()).toBe(0);
@@ -104,11 +90,9 @@ describe('DroneAllocationManager', () => {
 
   it('reset clears all state', () => {
     droneAllocationManager.allocateMiner('iron_ore', 2, 5);
-    droneAllocationManager.allocateLogistics(1, 2);
     droneAllocationManager.reset();
 
     expect(droneAllocationManager.totalAllocatedMiners()).toBe(0);
-    expect(droneAllocationManager.getLogisticsAlloc()).toBe(0);
     expect(droneAllocationManager.getMinerAlloc().size).toBe(0);
   });
 });
