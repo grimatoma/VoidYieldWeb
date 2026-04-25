@@ -3,7 +3,9 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>VoidYield - Docs Directory</title>
+  <title>VoidYield · Docs &amp; Mocks Hub</title>
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' fill='%23070b14'/%3E%3Ccircle cx='16' cy='16' r='6' fill='%23d4a843'/%3E%3Ccircle cx='16' cy='16' r='3' fill='%2300b8d4'/%3E%3C/svg%3E"/>
+  <link rel="stylesheet" href="vendor/highlight-theme.css">
   <style>
     @font-face {
       font-family: "VoidYield Terminal";
@@ -12,278 +14,1314 @@
     }
 
     :root {
-      --bg: #070b14;
-      --panel: rgba(14, 22, 40, 0.9);
-      --edge: rgba(212, 168, 67, 0.28);
-      --edge-strong: rgba(212, 168, 67, 0.52);
-      --amber: #d4a843;
-      --amber-soft: #f1cb74;
-      --teal: #00b8d4;
-      --teal-soft: #75e5f2;
-      --text: #edf1f8;
-      --text-soft: #afbccf;
-      --text-dim: #76839b;
-      --shadow: 0 22px 64px rgba(0, 0, 0, 0.42);
+      --bg:           #060912;
+      --bg-elev:      #0a0f1c;
+      --panel:        rgba(13, 22, 42, 0.92);
+      --panel-2:      rgba(11, 19, 36, 0.72);
+      --edge:         rgba(212, 168, 67, 0.22);
+      --edge-strong:  rgba(212, 168, 67, 0.55);
+      --edge-teal:    rgba(0, 184, 212, 0.28);
+      --amber:        #d4a843;
+      --amber-soft:   #f1cb74;
+      --amber-dim:    rgba(212, 168, 67, 0.12);
+      --teal:         #00b8d4;
+      --teal-soft:    #75e5f2;
+      --teal-dim:     rgba(0, 184, 212, 0.12);
+      --text:         #e8edf6;
+      --text-soft:    #aeb9cd;
+      --text-dim:     #6f7c95;
+      --shadow:       0 22px 64px rgba(0, 0, 0, 0.42);
+      --code-bg:      rgba(0, 0, 0, 0.32);
+      --header-h:     56px;
     }
 
-    * { box-sizing: border-box; }
+    *, *::before, *::after { box-sizing: border-box; }
+
+    html, body {
+      height: 100%;
+      margin: 0;
+    }
 
     body {
-      margin: 0;
-      min-height: 100vh;
-      font-family: "VoidYield Terminal", "Space Mono", "Courier New", monospace;
+      font-family: "VoidYield Terminal", "Space Mono", "Courier New", ui-monospace, monospace;
       color: var(--text);
       background:
-        radial-gradient(circle at 18% 0%, rgba(0,184,212,0.12), transparent 34%),
-        radial-gradient(circle at 86% 10%, rgba(212,168,67,0.14), transparent 28%),
-        linear-gradient(180deg, #09101d 0%, #05080f 100%);
+        radial-gradient(circle at 18% -10%, rgba(0,184,212,0.12), transparent 36%),
+        radial-gradient(circle at 92% 0%, rgba(212,168,67,0.14), transparent 30%),
+        linear-gradient(180deg, #08101e 0%, #04070e 100%);
+      overflow: hidden;
     }
 
-    .page {
-      width: min(1200px, calc(100% - 32px));
-      margin: 0 auto;
-      padding: 32px 0 56px;
+    /* ─── HEADER ─── */
+    header.bar {
+      position: sticky;
+      top: 0;
+      height: var(--header-h);
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      padding: 0 16px;
+      border-bottom: 1px solid var(--edge);
+      background: rgba(5, 9, 18, 0.92);
+      backdrop-filter: blur(10px);
+      z-index: 30;
     }
 
-    .hero,
-    .section {
-      border: 1px solid var(--edge);
-      border-radius: 24px;
-      background: var(--panel);
-      box-shadow: var(--shadow);
+    .brand {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      text-decoration: none;
+      color: var(--amber-soft);
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      font-size: 13px;
+      white-space: nowrap;
     }
-
-    .hero {
-      padding: 28px;
-      margin-bottom: 18px;
-    }
-
-    .eyebrow {
+    .brand .dot {
+      width: 9px; height: 9px;
+      background: var(--teal);
+      box-shadow: 0 0 10px var(--teal);
       display: inline-block;
-      padding: 8px 12px;
+    }
+    .brand small {
+      color: var(--text-dim);
+      font-size: 10px;
+      letter-spacing: 0.22em;
+      margin-left: 4px;
+    }
+
+    .header-search {
+      flex: 1 1 auto;
+      max-width: 460px;
+      position: relative;
+    }
+    .header-search input {
+      width: 100%;
+      padding: 8px 12px 8px 32px;
+      font: inherit;
+      font-size: 12px;
+      letter-spacing: 0.05em;
+      color: var(--text);
+      background: rgba(0,0,0,0.3);
+      border: 1px solid var(--edge);
       border-radius: 999px;
-      border: 1px solid rgba(0,184,212,0.28);
-      background: rgba(0,184,212,0.08);
-      color: var(--teal-soft);
+      outline: none;
+      transition: border-color .15s, background .15s;
+    }
+    .header-search input::placeholder { color: var(--text-dim); }
+    .header-search input:focus {
+      border-color: var(--edge-strong);
+      background: rgba(0,0,0,0.5);
+    }
+    .header-search::before {
+      content: '⌕';
+      position: absolute;
+      left: 11px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: var(--teal);
+      font-size: 14px;
+    }
+
+    .view-toggle {
+      display: inline-flex;
+      gap: 0;
+      border: 1px solid var(--edge);
+      border-radius: 8px;
+      overflow: hidden;
+    }
+    .view-toggle button {
+      width: 34px;
+      height: 30px;
+      border: none;
+      background: transparent;
+      color: var(--text-dim);
+      cursor: pointer;
+      font-size: 14px;
+      font-family: inherit;
+      transition: background .15s, color .15s;
+    }
+    .view-toggle button + button { border-left: 1px solid var(--edge); }
+    .view-toggle button:hover { color: var(--amber-soft); background: var(--amber-dim); }
+    .view-toggle button.active { color: var(--amber); background: var(--amber-dim); }
+
+    .header-link {
+      padding: 6px 12px;
+      border: 1px solid var(--edge);
+      border-radius: 999px;
+      color: var(--text-soft);
+      text-decoration: none;
       font-size: 11px;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      white-space: nowrap;
+      transition: all .15s;
+    }
+    .header-link:hover {
+      color: var(--amber-soft);
+      border-color: var(--edge-strong);
+      background: var(--amber-dim);
+    }
+
+    /* ─── LAYOUT ─── */
+    .layout {
+      display: grid;
+      grid-template-columns: 280px minmax(0, 1fr) 240px;
+      height: calc(100vh - var(--header-h));
+    }
+    body[data-view="wide"] .layout  { grid-template-columns: 280px minmax(0, 1fr); }
+    body[data-view="wide"] .rail    { display: none; }
+    body[data-view="focus"] .layout { grid-template-columns: minmax(0, 1fr); }
+    body[data-view="focus"] .sidebar,
+    body[data-view="focus"] .rail   { display: none; }
+
+    /* ─── SIDEBAR ─── */
+    aside.sidebar {
+      overflow-y: auto;
+      padding: 18px 12px 32px;
+      border-right: 1px solid var(--edge);
+      background: rgba(4, 8, 16, 0.6);
+      scrollbar-width: thin;
+      scrollbar-color: var(--edge) transparent;
+    }
+    aside.sidebar::-webkit-scrollbar { width: 8px; }
+    aside.sidebar::-webkit-scrollbar-thumb { background: var(--edge); border-radius: 4px; }
+
+    .nav-group { margin-bottom: 8px; }
+    .nav-group-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      padding: 8px 10px;
+      border-radius: 8px;
+      cursor: pointer;
+      user-select: none;
+      color: var(--amber-soft);
+      font-size: 11px;
+      letter-spacing: 0.22em;
+      text-transform: uppercase;
+      transition: background .12s;
+    }
+    .nav-group-header:hover { background: var(--amber-dim); }
+    .nav-group-header .glyph {
+      color: var(--teal);
+      font-size: 11px;
+      transition: transform .15s;
+    }
+    .nav-group.collapsed .glyph { transform: rotate(-90deg); }
+    .nav-group.collapsed .nav-section { display: none; }
+
+    .nav-section {
+      margin: 4px 0 12px 8px;
+      padding-left: 8px;
+      border-left: 1px solid var(--edge);
+    }
+    .nav-section-label {
+      padding: 4px 6px 6px;
+      color: var(--text-dim);
+      font-size: 10px;
       letter-spacing: 0.18em;
       text-transform: uppercase;
     }
 
-    h1 {
-      margin: 18px 0 12px;
+    .nav-item {
+      display: flex;
+      align-items: baseline;
+      gap: 8px;
+      padding: 5px 8px;
+      border-radius: 6px;
+      color: var(--text-soft);
+      text-decoration: none;
+      font-size: 12px;
+      line-height: 1.5;
+      transition: background .12s, color .12s;
+    }
+    .nav-item:hover {
+      background: var(--amber-dim);
       color: var(--amber-soft);
-      font-size: clamp(34px, 6vw, 58px);
-      line-height: 0.95;
-      letter-spacing: 0.08em;
-      text-transform: uppercase;
+    }
+    .nav-item.active {
+      background: rgba(0, 184, 212, 0.14);
+      color: var(--teal-soft);
+      box-shadow: inset 2px 0 0 var(--teal);
+    }
+    .nav-item .badge {
+      font-size: 9px;
+      padding: 1px 5px;
+      border-radius: 4px;
+      color: var(--teal);
+      background: var(--teal-dim);
+      letter-spacing: 0.12em;
+    }
+    .nav-item.is-svg .badge  { color: var(--amber); background: var(--amber-dim); }
+    .nav-item.is-html .badge { color: var(--teal); background: var(--teal-dim); }
+    .nav-item.is-md .badge   { color: var(--text-soft); background: rgba(255,255,255,0.06); }
+
+    .nav-empty {
+      padding: 8px 12px;
+      color: var(--text-dim);
+      font-size: 11px;
+      font-style: italic;
     }
 
+    /* ─── CONTENT ─── */
+    main.content {
+      overflow-y: auto;
+      padding: 28px clamp(20px, 4vw, 56px) 80px;
+      scrollbar-width: thin;
+      scrollbar-color: var(--edge) transparent;
+    }
+    main.content::-webkit-scrollbar { width: 10px; }
+    main.content::-webkit-scrollbar-thumb { background: var(--edge); border-radius: 5px; }
+
+    .breadcrumb {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 18px;
+      color: var(--text-dim);
+      font-size: 11px;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+    }
+    .breadcrumb a {
+      color: var(--text-soft);
+      text-decoration: none;
+    }
+    .breadcrumb a:hover { color: var(--amber-soft); }
+    .breadcrumb .sep { color: var(--edge-strong); }
+    .breadcrumb .actions {
+      margin-left: auto;
+      display: inline-flex;
+      gap: 6px;
+    }
+    .breadcrumb .actions a {
+      padding: 4px 10px;
+      border: 1px solid var(--edge);
+      border-radius: 999px;
+      font-size: 10px;
+      letter-spacing: 0.18em;
+    }
+    .breadcrumb .actions a:hover {
+      color: var(--amber-soft);
+      border-color: var(--edge-strong);
+      background: var(--amber-dim);
+    }
+
+    /* ─── WELCOME ─── */
+    .welcome { max-width: 1100px; margin: 0 auto; }
+    .hero {
+      padding: 32px;
+      border: 1px solid var(--edge);
+      border-radius: 22px;
+      background: linear-gradient(135deg, rgba(16,27,48,0.92), rgba(7,11,20,0.95));
+      box-shadow: var(--shadow);
+      position: relative;
+      overflow: hidden;
+    }
+    .hero::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+      background:
+        radial-gradient(1px 1px at 14% 22%, rgba(255,255,255,0.5), transparent),
+        radial-gradient(1px 1px at 76% 14%, rgba(0,184,212,0.5), transparent),
+        radial-gradient(1px 1px at 88% 64%, rgba(212,168,67,0.45), transparent),
+        radial-gradient(1px 1px at 36% 78%, rgba(255,255,255,0.32), transparent);
+      opacity: 0.5;
+    }
+    .hero .eyebrow {
+      display: inline-block;
+      padding: 6px 12px;
+      border-radius: 999px;
+      border: 1px solid var(--edge-teal);
+      background: var(--teal-dim);
+      color: var(--teal-soft);
+      font-size: 10px;
+      letter-spacing: 0.22em;
+      text-transform: uppercase;
+    }
+    .hero h1 {
+      margin: 18px 0 14px;
+      color: var(--amber-soft);
+      font-size: clamp(34px, 5vw, 54px);
+      line-height: 1;
+      letter-spacing: 0.07em;
+      text-transform: uppercase;
+    }
+    .hero h1 span { color: var(--teal); }
     .hero p {
       margin: 0;
       max-width: 760px;
       color: var(--text-soft);
-      line-height: 1.7;
-      font-size: 15px;
+      font-size: 14px;
+      line-height: 1.75;
     }
-
-    .quick-links {
+    .hero-stats {
       display: flex;
       flex-wrap: wrap;
-      gap: 10px;
-      margin-top: 20px;
+      gap: 28px;
+      margin-top: 26px;
+      padding-top: 20px;
+      border-top: 1px dashed var(--edge);
+    }
+    .hero-stats .stat-val {
+      font-size: 22px; color: var(--amber); letter-spacing: 0.06em;
+    }
+    .hero-stats .stat-lbl {
+      font-size: 10px; color: var(--text-dim);
+      letter-spacing: 0.22em; text-transform: uppercase;
     }
 
-    .quick-links a {
-      padding: 10px 14px;
-      border-radius: 999px;
+    .welcome-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 16px;
+      margin-top: 22px;
+    }
+    .welcome-card {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      padding: 22px;
       border: 1px solid var(--edge);
-      color: var(--text-soft);
+      border-radius: 18px;
+      background: linear-gradient(135deg, rgba(16,27,48,0.85), rgba(7,11,20,0.9));
       text-decoration: none;
-      text-transform: uppercase;
-      letter-spacing: 0.14em;
-      font-size: 11px;
+      transition: transform .15s, border-color .15s, box-shadow .15s;
     }
-
-    .quick-links a:hover {
+    .welcome-card:hover {
+      transform: translateY(-2px);
       border-color: var(--edge-strong);
-      color: var(--amber-soft);
-      background: rgba(212,168,67,0.08);
+      box-shadow: 0 24px 60px rgba(0,0,0,0.55);
     }
-
-    .layout {
-      display: grid;
-      grid-template-columns: 0.9fr 1.1fr;
-      gap: 18px;
-    }
-
-    .section {
-      padding: 20px;
-    }
-
-    .section h2 {
-      margin: 0 0 14px;
-      color: var(--amber-soft);
-      font-size: 16px;
-      letter-spacing: 0.12em;
+    .welcome-card .badge {
+      align-self: flex-start;
+      padding: 4px 8px;
+      border-radius: 999px;
+      border: 1px solid var(--edge-teal);
+      background: var(--teal-dim);
+      color: var(--teal-soft);
+      font-size: 10px;
+      letter-spacing: 0.18em;
       text-transform: uppercase;
     }
-
-    .section p {
-      margin: 0 0 14px;
+    .welcome-card h2 {
+      margin: 0;
+      color: var(--amber-soft);
+      font-size: 22px;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+    .welcome-card p {
+      margin: 0;
       color: var(--text-soft);
-      line-height: 1.7;
       font-size: 13px;
-    }
-
-    .link-list {
-      display: grid;
-      gap: 10px;
-    }
-
-    .doc-link {
-      display: block;
-      padding: 14px;
-      border-radius: 16px;
-      border: 1px solid rgba(255,255,255,0.05);
-      background: rgba(255,255,255,0.02);
-      text-decoration: none;
-    }
-
-    .doc-link:hover {
-      border-color: var(--edge-strong);
-      background: rgba(212,168,67,0.06);
-    }
-
-    .doc-link strong {
-      display: block;
-      margin-bottom: 4px;
-      color: var(--text);
-      font-size: 13px;
-      letter-spacing: 0.06em;
-      text-transform: uppercase;
-    }
-
-    .doc-link span {
-      color: var(--text-dim);
-      font-size: 12px;
       line-height: 1.6;
     }
-
-    .spec-grid {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 10px;
+    .welcome-card .cta {
+      margin-top: auto;
+      color: var(--teal-soft);
+      font-size: 11px;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
     }
 
-    .spec-chip {
-      display: block;
-      padding: 12px;
-      border-radius: 14px;
-      border: 1px solid rgba(255,255,255,0.05);
-      background: rgba(255,255,255,0.02);
-      text-decoration: none;
-      color: var(--text-soft);
-      font-size: 12px;
+    /* ─── PROSE (markdown) ─── */
+    article.prose {
+      max-width: 860px;
+      margin: 0 auto;
+      color: var(--text);
+      line-height: 1.75;
+      font-size: 14.5px;
+      font-family: "Inter", "Segoe UI", -apple-system, BlinkMacSystemFont, sans-serif;
+    }
+    article.prose h1, article.prose h2, article.prose h3, article.prose h4 {
+      font-family: "VoidYield Terminal", "Space Mono", monospace;
+      color: var(--amber-soft);
+      letter-spacing: 0.04em;
+      line-height: 1.2;
+      scroll-margin-top: 24px;
+    }
+    article.prose h1 { font-size: 32px; margin: 32px 0 18px; }
+    article.prose h2 {
+      font-size: 22px;
+      margin: 36px 0 14px;
+      padding-bottom: 8px;
+      border-bottom: 1px dashed var(--edge);
+      color: var(--teal-soft);
+    }
+    article.prose h3 { font-size: 18px; margin: 28px 0 10px; }
+    article.prose h4 { font-size: 15px; margin: 22px 0 8px; color: var(--amber); }
+    article.prose p, article.prose ul, article.prose ol { margin: 12px 0; }
+    article.prose ul, article.prose ol { padding-left: 22px; }
+    article.prose li { margin: 4px 0; }
+    article.prose a {
+      color: var(--teal-soft);
+      text-decoration: underline;
+      text-decoration-color: rgba(117, 229, 242, 0.4);
+      text-underline-offset: 3px;
+    }
+    article.prose a:hover { color: var(--amber-soft); text-decoration-color: var(--amber-soft); }
+    article.prose strong { color: var(--amber-soft); }
+    article.prose em { color: var(--text); font-style: italic; }
+    article.prose code {
+      padding: 1px 6px;
+      border-radius: 4px;
+      background: var(--code-bg);
+      color: var(--amber-soft);
+      font-family: "Space Mono", ui-monospace, monospace;
+      font-size: 0.9em;
+    }
+    article.prose pre {
+      margin: 18px 0;
+      padding: 16px;
+      border-radius: 12px;
+      border: 1px solid var(--edge);
+      background: rgba(0, 0, 0, 0.46);
+      overflow-x: auto;
+    }
+    article.prose pre code {
+      padding: 0;
+      background: transparent;
+      color: inherit;
+      font-size: 12.5px;
       line-height: 1.55;
     }
+    article.prose blockquote {
+      margin: 18px 0;
+      padding: 12px 18px;
+      border-left: 3px solid var(--teal);
+      background: var(--teal-dim);
+      color: var(--text-soft);
+      border-radius: 0 8px 8px 0;
+    }
+    article.prose blockquote p { margin: 6px 0; }
+    article.prose hr {
+      margin: 32px 0;
+      border: none;
+      border-top: 1px dashed var(--edge);
+    }
+    article.prose table {
+      display: block;
+      overflow-x: auto;
+      width: 100%;
+      margin: 18px 0;
+      border-collapse: collapse;
+      font-size: 13px;
+    }
+    article.prose th, article.prose td {
+      padding: 8px 12px;
+      border: 1px solid var(--edge);
+      text-align: left;
+      vertical-align: top;
+    }
+    article.prose th {
+      background: var(--amber-dim);
+      color: var(--amber-soft);
+      font-weight: 700;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      font-size: 11px;
+    }
+    article.prose tr:nth-child(even) td { background: rgba(255,255,255,0.02); }
+    article.prose img { max-width: 100%; height: auto; border-radius: 8px; }
 
-    .spec-chip:hover {
-      border-color: rgba(0,184,212,0.38);
-      color: var(--teal-soft);
-      background: rgba(0,184,212,0.08);
+    .heading-anchor {
+      margin-left: 8px;
+      color: var(--text-dim);
+      text-decoration: none;
+      font-size: 0.7em;
+      opacity: 0;
+      transition: opacity .15s;
+    }
+    article.prose h1:hover .heading-anchor,
+    article.prose h2:hover .heading-anchor,
+    article.prose h3:hover .heading-anchor,
+    article.prose h4:hover .heading-anchor { opacity: 1; }
+
+    /* ─── MOCK VIEW ─── */
+    .mock-view {
+      max-width: 1100px;
+      margin: 0 auto;
+    }
+    .mock-frame {
+      position: relative;
+      padding: 18px;
+      border: 1px solid var(--edge);
+      border-radius: 16px;
+      background: rgba(4, 8, 16, 0.55);
+      box-shadow: var(--shadow);
+    }
+    .mock-frame img {
+      display: block;
+      max-width: 100%;
+      height: auto;
+      margin: 0 auto;
+      image-rendering: pixelated;
+    }
+    .mock-frame iframe {
+      display: block;
+      width: 100%;
+      height: 720px;
+      border: none;
+      border-radius: 10px;
+      background: #000;
+    }
+    .mock-meta {
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+      margin-top: 14px;
+      color: var(--text-dim);
+      font-size: 11px;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+    }
+    .mock-meta .key { color: var(--teal); }
+
+    /* ─── GALLERY ─── */
+    .gallery {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(360px, 1fr));
+      gap: 14px;
+      max-width: 1400px;
+      margin: 0 auto;
+    }
+    .gallery-card {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      padding: 12px;
+      border: 1px solid var(--edge);
+      border-radius: 12px;
+      background: rgba(4, 8, 16, 0.6);
+      text-decoration: none;
+      transition: transform .15s, border-color .15s;
+    }
+    .gallery-card:hover {
+      transform: translateY(-2px);
+      border-color: var(--edge-strong);
+    }
+    .gallery-card .thumb {
+      aspect-ratio: 16 / 9;
+      border-radius: 8px;
+      overflow: hidden;
+      background: rgba(0,0,0,0.4);
+      display: flex; align-items: center; justify-content: center;
+    }
+    .gallery-card .thumb img {
+      width: 100%; height: 100%; object-fit: contain; image-rendering: pixelated;
+    }
+    .gallery-card .thumb.placeholder {
+      color: var(--text-dim);
+      font-size: 24px;
+      letter-spacing: 0.3em;
+    }
+    .gallery-card .meta {
+      display: flex;
+      align-items: baseline;
+      gap: 8px;
+    }
+    .gallery-card .meta strong {
+      color: var(--amber-soft);
+      font-size: 13px;
+      letter-spacing: 0.06em;
+    }
+    .gallery-card .meta .num {
+      font-size: 10px;
+      color: var(--teal);
+      letter-spacing: 0.18em;
     }
 
-    @media (max-width: 900px) {
-      .layout {
-        grid-template-columns: 1fr;
-      }
+    /* ─── RIGHT RAIL (inline TOC) ─── */
+    aside.rail {
+      overflow-y: auto;
+      padding: 28px 16px 32px;
+      border-left: 1px solid var(--edge);
+      background: rgba(4, 8, 16, 0.4);
+      scrollbar-width: thin;
+      scrollbar-color: var(--edge) transparent;
+    }
+    .rail-title {
+      color: var(--teal);
+      font-size: 10px;
+      letter-spacing: 0.22em;
+      text-transform: uppercase;
+      padding-bottom: 10px;
+      border-bottom: 1px solid var(--edge-teal);
+      margin-bottom: 12px;
+    }
+    .rail-list {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+    }
+    .rail-list a {
+      display: block;
+      padding: 4px 8px;
+      border-left: 2px solid transparent;
+      color: var(--text-soft);
+      text-decoration: none;
+      font-size: 11.5px;
+      line-height: 1.5;
+      letter-spacing: 0.02em;
+      transition: all .12s;
+    }
+    .rail-list a:hover {
+      color: var(--amber-soft);
+      border-left-color: var(--amber-soft);
+      background: var(--amber-dim);
+    }
+    .rail-list a.h3 { padding-left: 20px; font-size: 11px; color: var(--text-dim); }
+    .rail-list a.h4 { padding-left: 32px; font-size: 10.5px; color: var(--text-dim); }
+    .rail-list a.active {
+      color: var(--teal-soft);
+      border-left-color: var(--teal);
+      background: var(--teal-dim);
+    }
 
-      .spec-grid {
-        grid-template-columns: 1fr;
+    .rail-empty {
+      color: var(--text-dim);
+      font-size: 11px;
+      font-style: italic;
+    }
+
+    /* ─── LOADING / ERROR ─── */
+    .loading, .error {
+      max-width: 720px;
+      margin: 60px auto;
+      padding: 28px;
+      border: 1px solid var(--edge);
+      border-radius: 16px;
+      text-align: center;
+      color: var(--text-soft);
+      background: var(--panel);
+    }
+    .error { border-color: rgba(212, 67, 67, 0.4); color: #f1b3b3; }
+    .error code { color: var(--amber-soft); }
+
+    /* ─── MOBILE ─── */
+    .mobile-toggle {
+      display: none;
+      width: 36px; height: 30px;
+      border: 1px solid var(--edge);
+      border-radius: 6px;
+      background: transparent;
+      color: var(--amber-soft);
+      cursor: pointer;
+      font-size: 16px;
+    }
+
+    @media (max-width: 1100px) {
+      .layout { grid-template-columns: 260px minmax(0, 1fr); }
+      .rail { display: none; }
+    }
+    @media (max-width: 760px) {
+      .header-search { max-width: none; }
+      .header-link { display: none; }
+      .mobile-toggle { display: inline-flex; align-items: center; justify-content: center; }
+      .layout { grid-template-columns: 1fr; }
+      aside.sidebar {
+        position: fixed;
+        inset: var(--header-h) 0 0 0;
+        z-index: 25;
+        transform: translateX(-100%);
+        transition: transform .2s;
+        background: rgba(4, 8, 16, 0.96);
       }
+      body[data-sidebar-open="1"] aside.sidebar { transform: translateX(0); }
+      main.content { padding: 20px 16px 60px; }
+      .hero { padding: 22px; }
+      .hero h1 { font-size: 30px; }
+    }
+
+    /* ─── PRINT ─── */
+    @media print {
+      header.bar, aside.sidebar, aside.rail { display: none; }
+      .layout { display: block; height: auto; }
+      main.content { overflow: visible; padding: 0; }
+      body { background: white; color: black; overflow: visible; }
+      article.prose { color: black; max-width: none; }
+      article.prose h1, article.prose h2, article.prose h3, article.prose h4 { color: #333; }
     }
   </style>
 </head>
-<body>
-  <main class="page">
-    <section class="hero">
-      <div class="eyebrow">Published docs directory</div>
-      <h1>VoidYield docs</h1>
-      <p>
-        This is the published documentation hub for the GitHub Pages site. It gives you direct access to the tracked
-        design docs, the specs directory, and the older docs-side design mock set.
-      </p>
-      <div class="quick-links">
-        <a href="../mocks/home.html">Review home</a>
-        <a href="./specs/">Specs directory</a>
-        <a href="./design_mocks/">Docs design mocks</a>
-      </div>
-    </section>
+<body data-view="standard">
+  <header class="bar">
+    <button class="mobile-toggle" id="mobile-toggle" aria-label="Toggle navigation">☰</button>
+    <a class="brand" href="#welcome">
+      <span class="dot"></span>
+      VoidYield
+      <small>Docs &amp; Mocks Hub</small>
+    </a>
+    <div class="header-search">
+      <input id="search" type="search" placeholder="Search docs and mocks…" autocomplete="off" />
+    </div>
+    <div class="view-toggle" role="group" aria-label="View mode">
+      <button data-mode="standard" title="Standard (3 panes)">▦</button>
+      <button data-mode="wide"     title="Wide (hide TOC rail)">▥</button>
+      <button data-mode="focus"    title="Focus (content only)">▢</button>
+    </div>
+    <a class="header-link" href="../">↩ Game</a>
+  </header>
 
-    <section class="layout">
-      <div class="section">
-        <h2>Core docs</h2>
-        <div class="link-list">
-          <a class="doc-link" href="./GAME_DESIGN.md">
-            <strong>Game Design</strong>
-            <span>Master vision, systems map, progression arc, and reading guide.</span>
-          </a>
-          <a class="doc-link" href="./CORE_LOOP_TDD_SSD.md">
-            <strong>Core Loop TDD SSD</strong>
-            <span>Detailed implementation and system behavior reference.</span>
-          </a>
-          <a class="doc-link" href="./IMPLEMENTATION_ROADMAP.md">
-            <strong>Implementation Roadmap</strong>
-            <span>Planned sequencing and milestone direction.</span>
-          </a>
-          <a class="doc-link" href="./VOID_YIELD_UI_PRD.md">
-            <strong>UI PRD</strong>
-            <span>Interface goals, UX framing, and presentation direction.</span>
-          </a>
-          <a class="doc-link" href="./CORE_LOOP_DESIGN_REVIEW.md">
-            <strong>Core Loop Review</strong>
-            <span>Review notes and analysis tied to the overall loop.</span>
-          </a>
-          <a class="doc-link" href="./UI_MENU_CATALOG.md">
-            <strong>UI Menu Catalog</strong>
-            <span>Factual catalog of every UI surface, element, and interaction. UX redesign baseline.</span>
-          </a>
-          <a class="doc-link" href="./design_mocks/">
-            <strong>Docs Design Mocks</strong>
-            <span>Previously published HTML mock pages under the docs tree.</span>
-          </a>
-        </div>
-      </div>
+  <div class="layout">
+    <aside class="sidebar" id="sidebar">
+      <nav id="nav"><div class="nav-empty">Loading manifest…</div></nav>
+    </aside>
+    <main class="content" id="content">
+      <div class="loading">Booting hub…</div>
+    </main>
+    <aside class="rail" id="rail">
+      <div class="rail-title">On this page</div>
+      <div class="rail-empty">Select a document to see its outline.</div>
+    </aside>
+  </div>
 
-      <div class="section">
-        <h2>Specs directory</h2>
-        <p>
-          The full spec set is published under <code>/docs/specs/</code>. The most common way in is the directory index below.
-        </p>
-        <div class="spec-grid">
-          <a class="spec-chip" href="./specs/00_a2_transit.md">00 A2 Transit</a>
-          <a class="spec-chip" href="./specs/01_resource_quality.md">01 Resource Quality</a>
-          <a class="spec-chip" href="./specs/02_surveying.md">02 Surveying</a>
-          <a class="spec-chip" href="./specs/03_harvesters.md">03 Harvesters</a>
-          <a class="spec-chip" href="./specs/04_drone_swarm.md">04 Drone Swarm</a>
-          <a class="spec-chip" href="./specs/05_factories.md">05 Factories</a>
-          <a class="spec-chip" href="./specs/06_consumption.md">06 Consumption</a>
-          <a class="spec-chip" href="./specs/07_logistics.md">07 Logistics</a>
-          <a class="spec-chip" href="./specs/08_vehicles.md">08 Vehicles</a>
-          <a class="spec-chip" href="./specs/09_planets.md">09 Planets</a>
-          <a class="spec-chip" href="./specs/10_spacecraft.md">10 Spacecraft</a>
-          <a class="spec-chip" href="./specs/11_tech_tree.md">11 Tech Tree</a>
-          <a class="spec-chip" href="./specs/12_economy.md">12 Economy</a>
-          <a class="spec-chip" href="./specs/13_art_direction.md">13 Art Direction</a>
-          <a class="spec-chip" href="./specs/14_ui_systems.md">14 UI Systems</a>
-          <a class="spec-chip" href="./specs/15_save_load.md">15 Save Load</a>
-          <a class="spec-chip" href="./specs/16_input_map.md">16 Input Map</a>
-          <a class="spec-chip" href="./specs/17_world_generation.md">17 World Generation</a>
-          <a class="spec-chip" href="./specs/26_web_visual_parity.md">26 Web Visual Parity</a>
+  <script src="vendor/marked.min.js"></script>
+  <script src="vendor/highlight.min.js"></script>
+
+  <script>
+  /* eslint-disable */
+  (() => {
+    'use strict';
+
+    // Hub root is always the directory containing this index.html.
+    // Manifest paths are repo-rooted (e.g. "docs/GAME_DESIGN.md", "mocks/foo.svg").
+    // From here we reach them via "../" + path.
+    const BASE = '..';
+    const $ = (sel) => document.querySelector(sel);
+
+    let MANIFEST = null;
+    let ALL_ITEMS = [];     // flat list for search / lookup
+    let CURRENT_PATH = null;
+
+    /* ─── Boot ─── */
+    init().catch((err) => {
+      console.error(err);
+      $('#content').innerHTML = `<div class="error"><h2>Hub failed to start</h2><p>${escapeHtml(err.message)}</p></div>`;
+    });
+
+    async function init() {
+      // Configure marked: GFM, no breaks-on-newline. Headings/links/images are
+      // post-processed in the DOM after parse() runs (more robust than custom
+      // renderers across marked versions).
+      marked.setOptions({ gfm: true, breaks: false });
+
+      // View-mode persistence
+      const savedView = localStorage.getItem('hub:view') || 'standard';
+      setView(savedView);
+      document.querySelectorAll('.view-toggle button').forEach((btn) => {
+        btn.addEventListener('click', () => setView(btn.dataset.mode));
+      });
+
+      // Mobile sidebar toggle
+      const mt = $('#mobile-toggle');
+      mt && mt.addEventListener('click', () => {
+        const open = document.body.getAttribute('data-sidebar-open') === '1';
+        document.body.setAttribute('data-sidebar-open', open ? '0' : '1');
+      });
+
+      // Search
+      const search = $('#search');
+      search.addEventListener('input', () => filterNav(search.value.trim().toLowerCase()));
+
+      // Hash routing
+      window.addEventListener('hashchange', route);
+
+      // Load manifest
+      const res = await fetch('manifest.json', { cache: 'no-cache' });
+      if (!res.ok) throw new Error(`Could not load manifest.json (${res.status})`);
+      MANIFEST = await res.json();
+      ALL_ITEMS = flattenItems(MANIFEST);
+      renderNav();
+      route();
+    }
+
+    function setView(mode) {
+      if (!['standard', 'wide', 'focus'].includes(mode)) mode = 'standard';
+      document.body.dataset.view = mode;
+      localStorage.setItem('hub:view', mode);
+      document.querySelectorAll('.view-toggle button').forEach((b) => {
+        b.classList.toggle('active', b.dataset.mode === mode);
+      });
+    }
+
+    /* ─── Navigation rendering ─── */
+    function flattenItems(manifest) {
+      const out = [];
+      for (const g of manifest.groups) {
+        for (const s of g.sections) {
+          for (const it of s.items) {
+            out.push({ ...it, groupId: g.id, sectionId: s.id });
+          }
+        }
+      }
+      return out;
+    }
+
+    function renderNav() {
+      const nav = $('#nav');
+      const collapsed = JSON.parse(localStorage.getItem('hub:collapsedGroups') || '[]');
+      let html = '';
+      for (const g of MANIFEST.groups) {
+        const isCollapsed = collapsed.includes(g.id);
+        html += `<div class="nav-group${isCollapsed ? ' collapsed' : ''}" data-group="${g.id}">`;
+        html += `<div class="nav-group-header">
+          <span>${g.icon || '·'} ${escapeHtml(g.label)}</span>
+          <span class="glyph">▾</span>
+        </div>`;
+        for (const sec of g.sections) {
+          html += `<div class="nav-section">`;
+          html += `<div class="nav-section-label">${escapeHtml(sec.label)} <span style="opacity:.5">· ${sec.items.length}</span></div>`;
+          for (const it of sec.items) {
+            const ext = (it.path.split('.').pop() || '').toLowerCase();
+            const cls = `is-${ext}`;
+            html += `<a class="nav-item ${cls}" href="#path=${encodeURIComponent(it.path)}" data-path="${escapeAttr(it.path)}">
+              <span class="badge">${ext.toUpperCase()}</span>
+              <span>${escapeHtml(it.title)}</span>
+            </a>`;
+          }
+          html += `</div>`;
+        }
+        html += `</div>`;
+      }
+      nav.innerHTML = html;
+
+      nav.querySelectorAll('.nav-group-header').forEach((h) => {
+        h.addEventListener('click', () => {
+          const g = h.parentElement;
+          g.classList.toggle('collapsed');
+          const id = g.dataset.group;
+          const cur = JSON.parse(localStorage.getItem('hub:collapsedGroups') || '[]');
+          const idx = cur.indexOf(id);
+          if (g.classList.contains('collapsed')) {
+            if (idx === -1) cur.push(id);
+          } else if (idx !== -1) cur.splice(idx, 1);
+          localStorage.setItem('hub:collapsedGroups', JSON.stringify(cur));
+        });
+      });
+
+      // Close mobile sidebar on link click
+      nav.querySelectorAll('.nav-item').forEach((a) => {
+        a.addEventListener('click', () => {
+          if (window.innerWidth <= 760) {
+            document.body.setAttribute('data-sidebar-open', '0');
+          }
+        });
+      });
+
+      highlightActive();
+    }
+
+    function filterNav(q) {
+      const items = document.querySelectorAll('.nav-item');
+      const sections = document.querySelectorAll('.nav-section');
+      if (!q) {
+        items.forEach((el) => el.style.display = '');
+        sections.forEach((el) => el.style.display = '');
+        return;
+      }
+      items.forEach((el) => {
+        const text = el.textContent.toLowerCase();
+        el.style.display = text.includes(q) ? '' : 'none';
+      });
+      sections.forEach((sec) => {
+        const visible = sec.querySelectorAll('.nav-item:not([style*="display: none"])').length;
+        sec.style.display = visible ? '' : 'none';
+      });
+    }
+
+    function highlightActive() {
+      document.querySelectorAll('.nav-item').forEach((el) => {
+        el.classList.toggle('active', el.dataset.path === CURRENT_PATH);
+      });
+    }
+
+    /* ─── Routing ─── */
+    function route() {
+      const hash = window.location.hash.slice(1);
+      const params = new URLSearchParams(hash);
+      const path = params.get('path');
+      const section = params.get('section');
+      CURRENT_PATH = path || null;
+      highlightActive();
+      if (path) {
+        renderItem(path);
+      } else if (section) {
+        renderSection(section);
+      } else {
+        renderWelcome();
+      }
+      window.scrollTo({ top: 0 });
+    }
+
+    /* ─── Welcome ─── */
+    function renderWelcome() {
+      $('#rail').innerHTML = `
+        <div class="rail-title">Quick Links</div>
+        <ul class="rail-list">
+          <li><a href="#path=docs/GAME_DESIGN.md">Game Design (start here)</a></li>
+          <li><a href="#path=docs/CORE_LOOP_TDD_SSD.md">Core Loop TDD/SSD</a></li>
+          <li><a href="#path=docs/specs/00_a2_transit.md">Spec 00 · A2 Transit</a></li>
+          <li><a href="#path=mocks/home.html">Design Review Home</a></li>
+          <li><a href="#path=mocks/29_standard_menu_console.html">Standard Menu Console</a></li>
+        </ul>
+      `;
+      const counts = {};
+      for (const g of MANIFEST.groups) {
+        counts[g.id] = g.sections.reduce((n, s) => n + s.items.length, 0);
+      }
+      const docCount  = counts.docs || 0;
+      const mockCount = counts.mocks || 0;
+      const specCount = (MANIFEST.groups.find(g => g.id === 'docs')?.sections.find(s => s.id === 'specs')?.items.length) || 0;
+
+      $('#content').innerHTML = `
+        <div class="welcome">
+          <section class="hero">
+            <div class="eyebrow">Unified review hub</div>
+            <h1>Docs <span>&amp;</span> Mocks</h1>
+            <p>
+              Every tracked design doc, gameplay spec, and visual mock for VoidYield, in one place.
+              Use the sidebar to jump anywhere; the search bar at the top filters across the entire catalog.
+              Markdown renders inline with a per-page outline; SVG and HTML mocks open in their own viewers.
+            </p>
+            <div class="hero-stats">
+              <div><div class="stat-val">${docCount}</div><div class="stat-lbl">Docs &amp; Specs</div></div>
+              <div><div class="stat-val">${specCount}</div><div class="stat-lbl">Game Specs</div></div>
+              <div><div class="stat-val">${mockCount}</div><div class="stat-lbl">Mocks &amp; Studies</div></div>
+              <div><div class="stat-val">960×540</div><div class="stat-lbl">Base Resolution</div></div>
+            </div>
+          </section>
+
+          <section class="welcome-grid">
+            <a class="welcome-card" href="#path=docs/GAME_DESIGN.md">
+              <span class="badge">Start here</span>
+              <h2>Game Design</h2>
+              <p>The master vision document — pillars, the 5-phase automation arc, system map, reading guide.</p>
+              <span class="cta">Open document →</span>
+            </a>
+            <a class="welcome-card" href="#section=specs">
+              <span class="badge">${specCount} specs</span>
+              <h2>Specs Library</h2>
+              <p>Every individual gameplay spec from A2 Transit through World Generation, with full implementation rules.</p>
+              <span class="cta">Browse specs →</span>
+            </a>
+            <a class="welcome-card" href="#section=mocks">
+              <span class="badge">${mockCount} screens</span>
+              <h2>Mocks Gallery</h2>
+              <p>Every screen mock, HUD study, and interactive HTML prototype, organized by system.</p>
+              <span class="cta">Open gallery →</span>
+            </a>
+            <a class="welcome-card" href="#path=mocks/29_standard_menu_console.html">
+              <span class="badge">New proposal</span>
+              <h2>Menu Console</h2>
+              <p>Latest unified facility-shell UX for marketplace, drone command, electrolysis, forge.</p>
+              <span class="cta">Review proposal →</span>
+            </a>
+            <a class="welcome-card" href="#path=docs/CORE_LOOP_TDD_SSD.md">
+              <span class="badge">Reference</span>
+              <h2>Core Loop TDD</h2>
+              <p>Detailed technical design + system specification for the Phase-1 core loop.</p>
+              <span class="cta">Open document →</span>
+            </a>
+            <a class="welcome-card" href="#section=mock-phase1">
+              <span class="badge">HTML</span>
+              <h2>Phase-1 Studies</h2>
+              <p>Interactive HTML mockups walking through the early-game loop screen by screen.</p>
+              <span class="cta">Browse studies →</span>
+            </a>
+          </section>
         </div>
-      </div>
-    </section>
-  </main>
+      `;
+    }
+
+    /* ─── Item rendering ─── */
+    async function renderItem(repoPath) {
+      const ext = (repoPath.split('.').pop() || '').toLowerCase();
+      const url = `${BASE}/${repoPath}`;
+      const item = ALL_ITEMS.find((i) => i.path === repoPath) || { title: repoPath };
+
+      renderBreadcrumb(item, repoPath);
+
+      try {
+        if (ext === 'md') {
+          const res = await fetch(url, { cache: 'no-cache' });
+          if (!res.ok) throw new Error(`HTTP ${res.status}`);
+          const md = await res.text();
+          renderMarkdown(md, repoPath);
+        } else if (ext === 'svg' || ext === 'png' || ext === 'jpg' || ext === 'jpeg') {
+          renderImage(url, item, repoPath);
+        } else if (ext === 'html' || ext === 'htm') {
+          renderIframe(url, item, repoPath);
+        } else {
+          renderRaw(url, repoPath);
+        }
+      } catch (err) {
+        $('#content').innerHTML = `<div class="error"><h2>Could not load ${escapeHtml(repoPath)}</h2><p>${escapeHtml(err.message)}</p></div>`;
+        $('#rail').innerHTML = `<div class="rail-title">On this page</div><div class="rail-empty">No outline.</div>`;
+      }
+    }
+
+    function renderBreadcrumb(item, repoPath) {
+      const parts = repoPath.split('/');
+      const rawUrl = `${BASE}/${repoPath}`;
+      const breadcrumb = `
+        <div class="breadcrumb">
+          <a href="#welcome">Hub</a>
+          <span class="sep">/</span>
+          ${parts.map((p, i) => i < parts.length - 1
+            ? `<span>${escapeHtml(p)}</span><span class="sep">/</span>`
+            : `<span style="color:var(--amber-soft)">${escapeHtml(p)}</span>`
+          ).join('')}
+          <div class="actions">
+            <a href="${escapeAttr(rawUrl)}" target="_blank" rel="noopener">Raw ↗</a>
+          </div>
+        </div>
+      `;
+      // Stash for renderers to prepend
+      window.__hubBreadcrumb = breadcrumb;
+    }
+
+    /* ── Markdown ── */
+    function renderMarkdown(md, repoPath) {
+      md = md.replace(/^---\n[\s\S]*?\n---\n/, ''); // strip frontmatter
+
+      const rawHtml = marked.parse(md);
+      const article = document.createElement('article');
+      article.className = 'prose';
+      article.innerHTML = rawHtml;
+
+      // 1. Add stable IDs + ¶ anchors to headings.
+      const slugCounts = Object.create(null);
+      article.querySelectorAll('h1, h2, h3, h4, h5, h6').forEach((h) => {
+        const text = h.textContent.trim();
+        const base = text.toLowerCase().replace(/[^\w\s-]/g, '').trim().replace(/\s+/g, '-') || 'section';
+        slugCounts[base] = (slugCounts[base] || 0) + 1;
+        const id = slugCounts[base] === 1 ? base : `${base}-${slugCounts[base] - 1}`;
+        h.id = id;
+        const anchor = document.createElement('a');
+        anchor.className = 'heading-anchor';
+        anchor.href = `#${id}`;
+        anchor.textContent = '¶';
+        anchor.setAttribute('aria-label', 'Anchor');
+        h.appendChild(anchor);
+      });
+
+      // 2. Rewrite links: external → new tab, relative .md → hub hash, other relative → BASE-prefixed.
+      article.querySelectorAll('a[href]').forEach((a) => {
+        const href = a.getAttribute('href');
+        if (!href) return;
+        if (/^https?:\/\//i.test(href) || href.startsWith('mailto:') || href.startsWith('//')) {
+          a.target = '_blank';
+          a.rel = 'noopener';
+          return;
+        }
+        if (href.startsWith('#')) return; // in-page anchor; routing handled below
+        const resolved = resolvePath(repoPath, href.split('#')[0]);
+        const fragment = href.includes('#') ? '#' + href.split('#').slice(1).join('#') : '';
+        if (/\.md$/i.test(resolved)) {
+          a.setAttribute('href', `#path=${encodeURIComponent(resolved)}${fragment}`);
+        } else {
+          a.setAttribute('href', `${BASE}/${resolved}${fragment}`);
+          a.target = '_blank';
+          a.rel = 'noopener';
+        }
+      });
+
+      // 3. Rewrite images: relative → BASE-prefixed.
+      article.querySelectorAll('img[src]').forEach((img) => {
+        const src = img.getAttribute('src') || '';
+        if (/^https?:\/\//i.test(src) || src.startsWith('data:') || src.startsWith('//')) return;
+        const resolved = resolvePath(repoPath, src);
+        img.setAttribute('src', `${BASE}/${resolved}`);
+        img.loading = 'lazy';
+      });
+
+      $('#content').innerHTML = window.__hubBreadcrumb;
+      $('#content').appendChild(article);
+
+      // 4. Highlight code blocks.
+      article.querySelectorAll('pre code').forEach((block) => {
+        try { hljs.highlightElement(block); } catch (e) { /* ignore */ }
+      });
+
+      // 5. Smooth-scroll for in-page anchors; preserve the hub's hash routing.
+      article.querySelectorAll('a[href^="#"]').forEach((a) => {
+        const href = a.getAttribute('href');
+        if (!href || href.startsWith('#path=') || href.startsWith('#section=') || href === '#welcome') return;
+        a.addEventListener('click', (e) => {
+          e.preventDefault();
+          const target = document.getElementById(href.slice(1));
+          if (!target) return;
+          target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        });
+      });
+
+      generateRail();
+    }
+
+    function resolvePath(currentRepoPath, relPath) {
+      // currentRepoPath is the docs/foo/bar.md ... we treat its parent as base.
+      const baseSegs = currentRepoPath.split('/').slice(0, -1);
+      const segs = relPath.split('/');
+      const out = [...baseSegs];
+      for (const s of segs) {
+        if (s === '..') out.pop();
+        else if (s !== '.' && s !== '') out.push(s);
+      }
+      return out.join('/');
+    }
+
+    /* ── Right rail TOC ── */
+    function generateRail() {
+      const rail = $('#rail');
+      const headings = $('#content').querySelectorAll('article.prose h2, article.prose h3, article.prose h4');
+      if (!headings.length) {
+        rail.innerHTML = `<div class="rail-title">On this page</div><div class="rail-empty">No headings.</div>`;
+        return;
+      }
+      let html = `<div class="rail-title">On this page</div><ul class="rail-list">`;
+      headings.forEach((h) => {
+        const tag = h.tagName.toLowerCase();
+        html += `<li><a class="${tag}" href="#${h.id}">${escapeHtml(h.textContent.replace(/¶$/, '').trim())}</a></li>`;
+      });
+      html += `</ul>`;
+      rail.innerHTML = html;
+
+      rail.querySelectorAll('a').forEach((a) => {
+        a.addEventListener('click', (e) => {
+          e.preventDefault();
+          const target = document.getElementById(a.getAttribute('href').slice(1));
+          if (target) target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        });
+      });
+
+      // Scroll-spy: highlight current section
+      const items = Array.from(rail.querySelectorAll('a'));
+      const map = new Map(items.map((a) => [a.getAttribute('href').slice(1), a]));
+      const observer = new IntersectionObserver((entries) => {
+        entries.forEach((e) => {
+          const a = map.get(e.target.id);
+          if (!a) return;
+          if (e.isIntersecting) {
+            items.forEach((x) => x.classList.remove('active'));
+            a.classList.add('active');
+          }
+        });
+      }, { root: $('#content'), threshold: 0.1, rootMargin: '-20% 0px -70% 0px' });
+      headings.forEach((h) => observer.observe(h));
+    }
+
+    /* ── Image / SVG ── */
+    function renderImage(url, item, repoPath) {
+      $('#content').innerHTML = `
+        ${window.__hubBreadcrumb}
+        <div class="mock-view">
+          <h1 style="margin:0 0 12px;color:var(--amber-soft);letter-spacing:0.06em;">${escapeHtml(item.title || repoPath)}</h1>
+          <div class="mock-frame"><img src="${escapeAttr(url)}" alt="${escapeAttr(item.title || repoPath)}" /></div>
+          <div class="mock-meta">
+            <span><span class="key">file</span> ${escapeHtml(repoPath)}</span>
+            ${item.category ? `<span><span class="key">category</span> ${escapeHtml(item.category)}</span>` : ''}
+            ${item.num ? `<span><span class="key">id</span> ${escapeHtml(item.num)}</span>` : ''}
+          </div>
+        </div>
+      `;
+      $('#rail').innerHTML = `<div class="rail-title">On this page</div><div class="rail-empty">No outline for media files.</div>`;
+    }
+
+    /* ── HTML mock (iframe) ── */
+    function renderIframe(url, item, repoPath) {
+      $('#content').innerHTML = `
+        ${window.__hubBreadcrumb}
+        <div class="mock-view">
+          <h1 style="margin:0 0 12px;color:var(--amber-soft);letter-spacing:0.06em;">${escapeHtml(item.title || repoPath)}</h1>
+          <div class="mock-frame"><iframe src="${escapeAttr(url)}" title="${escapeAttr(item.title || repoPath)}" loading="lazy"></iframe></div>
+          <div class="mock-meta">
+            <span><span class="key">file</span> ${escapeHtml(repoPath)}</span>
+            <span><span class="key">type</span> Interactive HTML</span>
+            <span><a href="${escapeAttr(url)}" target="_blank" rel="noopener" style="color:var(--teal-soft)">Open standalone ↗</a></span>
+          </div>
+        </div>
+      `;
+      $('#rail').innerHTML = `<div class="rail-title">On this page</div><div class="rail-empty">Interactive mock — open standalone for full screen.</div>`;
+    }
+
+    /* ── Raw fallback ── */
+    function renderRaw(url, repoPath) {
+      $('#content').innerHTML = `
+        ${window.__hubBreadcrumb}
+        <div class="mock-view">
+          <p>This file type isn't rendered inline. <a href="${escapeAttr(url)}" target="_blank" rel="noopener">Open ${escapeHtml(repoPath)} in a new tab ↗</a></p>
+        </div>
+      `;
+    }
+
+    /* ── Section view (gallery) ── */
+    function renderSection(sectionId) {
+      // sectionId may be a top-level group ('docs', 'mocks') or a section ('specs', 'mock-phase1')
+      let groupMatch = MANIFEST.groups.find(g => g.id === sectionId);
+      let items = [];
+      let label = sectionId;
+      if (groupMatch) {
+        label = groupMatch.label;
+        items = groupMatch.sections.flatMap(s => s.items.map(i => ({ ...i, section: s.label })));
+      } else {
+        for (const g of MANIFEST.groups) {
+          const s = g.sections.find(s => s.id === sectionId);
+          if (s) { items = s.items; label = s.label; break; }
+        }
+      }
+      if (!items.length) return;
+
+      const cards = items.map((it) => {
+        const ext = (it.path.split('.').pop() || '').toLowerCase();
+        const isImage = ['svg', 'png', 'jpg', 'jpeg', 'webp'].includes(ext);
+        const thumb = isImage
+          ? `<div class="thumb"><img src="${escapeAttr(BASE + '/' + it.path)}" alt="${escapeAttr(it.title)}" loading="lazy"></div>`
+          : ext === 'md'
+            ? `<div class="thumb placeholder">MD</div>`
+            : `<div class="thumb placeholder">HTML</div>`;
+        return `
+          <a class="gallery-card" href="#path=${encodeURIComponent(it.path)}">
+            ${thumb}
+            <div class="meta">
+              ${it.num ? `<span class="num">${escapeHtml(it.num)}</span>` : ''}
+              <strong>${escapeHtml(it.title.replace(/^\d+\s·\s/, ''))}</strong>
+            </div>
+          </a>
+        `;
+      }).join('');
+
+      $('#content').innerHTML = `
+        <div class="welcome">
+          <div class="breadcrumb">
+            <a href="#welcome">Hub</a>
+            <span class="sep">/</span>
+            <span style="color:var(--amber-soft)">${escapeHtml(label)}</span>
+          </div>
+          <div class="gallery">${cards}</div>
+        </div>
+      `;
+      $('#rail').innerHTML = `
+        <div class="rail-title">${escapeHtml(label)}</div>
+        <div class="rail-empty">${items.length} item${items.length === 1 ? '' : 's'}</div>
+      `;
+    }
+
+    /* ─── Helpers ─── */
+    function escapeHtml(s) {
+      return String(s == null ? '' : s)
+        .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+    }
+    function escapeAttr(s) { return escapeHtml(s); }
+
+  })();
+  </script>
 </body>
 </html>

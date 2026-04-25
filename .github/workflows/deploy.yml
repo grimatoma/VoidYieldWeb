@@ -34,16 +34,26 @@ jobs:
         env:
           VITE_BASE_URL: /VoidYieldWeb/
 
-      - name: Copy design mocks into dist
+      - name: Stage docs, mocks, and hub manifest into dist
         run: |
-          mkdir -p dist/mocks
-          mkdir -p dist/docs
+          set -euo pipefail
+          mkdir -p dist/docs dist/mocks dist/assets/fonts
+
+          # Regenerate the unified-hub manifest from the current filesystem
+          # so the sidebar always reflects what was just shipped.
+          node scripts/gen_hub_manifest.mjs
+
+          # Full docs tree (markdown, hub index, hub manifest, phase-1 HTML mocks).
           cp -r docs/. dist/docs/
-          cp -r docs/design_mocks/. dist/mocks/
-          cp design_mocks/home.html dist/mocks/
-          cp design_mocks/29_standard_menu_console.html dist/mocks/
-          mkdir -p dist/assets/fonts
+
+          # Full mocks tree (28 SVG screen mocks, HTML mockups, ui/ studies).
+          cp -r design_mocks/. dist/mocks/
+
+          # Pixel font for the hub + legacy pages.
           cp assets/fonts/VoidYieldTerminal.ttf dist/assets/fonts/
+
+          # Disable Jekyll so files starting with '_' (e.g. _shared.md) ship as-is.
+          touch dist/.nojekyll
 
       - uses: actions/configure-pages@v4
 
@@ -59,10 +69,12 @@ jobs:
           {
             echo "## Deployment Links"
             echo ""
-            echo "- Site: ${{ steps.deployment.outputs.page_url }}"
-            echo "- Review home: ${{ steps.deployment.outputs.page_url }}mocks/home.html"
-            echo "- Docs home: ${{ steps.deployment.outputs.page_url }}docs/"
-            echo "- Specs directory: ${{ steps.deployment.outputs.page_url }}docs/specs/"
-            echo "- Mocks index: ${{ steps.deployment.outputs.page_url }}mocks/"
+            echo "- Game: ${{ steps.deployment.outputs.page_url }}"
+            echo "- **Docs &amp; Mocks Hub: ${{ steps.deployment.outputs.page_url }}docs/**"
+            echo "- Mocks gallery (deep link): ${{ steps.deployment.outputs.page_url }}docs/#section=mocks"
+            echo "- Specs gallery (deep link): ${{ steps.deployment.outputs.page_url }}docs/#section=specs"
+            echo "- Game Design (deep link): ${{ steps.deployment.outputs.page_url }}docs/#path=docs/GAME_DESIGN.md"
+            echo "- Legacy mocks index: ${{ steps.deployment.outputs.page_url }}mocks/"
+            echo "- Legacy review home: ${{ steps.deployment.outputs.page_url }}mocks/home.html"
             echo "- Standard menu console: ${{ steps.deployment.outputs.page_url }}mocks/29_standard_menu_console.html"
           } >> "$GITHUB_STEP_SUMMARY"
