@@ -38,6 +38,7 @@ docs/
   GAME_DESIGN.md
   IMPLEMENTATION_ROADMAP.md
   TYPESCRIPT_MIGRATION_PLAN.md
+  UI_MENU_CATALOG.md  # factual catalog of every UI surface (UX redesign baseline)
 design_mocks/      # 28 SVG wireframes
 tests/
   unit/            # Vitest tests
