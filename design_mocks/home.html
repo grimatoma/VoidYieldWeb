@@ -103,7 +103,7 @@
 
     .grid {
       display: grid;
-      grid-template-columns: 1fr 1fr;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
       gap: 18px;
       margin-top: 22px;
     }
@@ -243,6 +243,20 @@
           <li>Useful for comparing the new proposal against prior directions</li>
         </ul>
         <div class="link-row">Open index -></div>
+      </a>
+
+      <a class="card" href="../docs/">
+        <div class="card-badge">Docs directory</div>
+        <h2>Published Docs Hub</h2>
+        <p>
+          Open the tracked documentation set as a browsable website directory, including the specs index and docs-side mocks.
+        </p>
+        <ul>
+          <li>Docs home at <code>/docs/</code></li>
+          <li>Specs index at <code>/docs/specs/</code></li>
+          <li>Direct access to tracked markdown and HTML docs</li>
+        </ul>
+        <div class="link-row">Open docs -></div>
       </a>
     </section>
 
