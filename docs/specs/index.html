@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>VoidYield - Specs Directory</title>
+  <style>
+    @font-face {
+      font-family: "VoidYield Terminal";
+      src: url("../../assets/fonts/VoidYieldTerminal.ttf") format("truetype");
+      font-display: swap;
+    }
+
+    :root {
+      --bg: #070b14;
+      --panel: rgba(14, 22, 40, 0.9);
+      --edge: rgba(212, 168, 67, 0.28);
+      --edge-strong: rgba(212, 168, 67, 0.52);
+      --amber-soft: #f1cb74;
+      --teal-soft: #75e5f2;
+      --text: #edf1f8;
+      --text-soft: #afbccf;
+      --text-dim: #76839b;
+      --shadow: 0 22px 64px rgba(0, 0, 0, 0.42);
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font-family: "VoidYield Terminal", "Space Mono", "Courier New", monospace;
+      color: var(--text);
+      background:
+        radial-gradient(circle at 20% 0%, rgba(0,184,212,0.12), transparent 34%),
+        radial-gradient(circle at 84% 10%, rgba(212,168,67,0.14), transparent 28%),
+        linear-gradient(180deg, #09101d 0%, #05080f 100%);
+    }
+
+    .page {
+      width: min(1100px, calc(100% - 32px));
+      margin: 0 auto;
+      padding: 32px 0 56px;
+    }
+
+    .hero,
+    .panel {
+      border: 1px solid var(--edge);
+      border-radius: 24px;
+      background: var(--panel);
+      box-shadow: var(--shadow);
+    }
+
+    .hero {
+      padding: 28px;
+      margin-bottom: 18px;
+    }
+
+    .eyebrow {
+      display: inline-block;
+      padding: 8px 12px;
+      border-radius: 999px;
+      border: 1px solid rgba(0,184,212,0.28);
+      background: rgba(0,184,212,0.08);
+      color: var(--teal-soft);
+      font-size: 11px;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+    }
+
+    h1 {
+      margin: 18px 0 12px;
+      color: var(--amber-soft);
+      font-size: clamp(32px, 5vw, 54px);
+      line-height: 0.95;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+
+    .hero p {
+      margin: 0;
+      color: var(--text-soft);
+      line-height: 1.7;
+      font-size: 15px;
+      max-width: 720px;
+    }
+
+    .hero-links {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-top: 20px;
+    }
+
+    .hero-links a {
+      padding: 10px 14px;
+      border-radius: 999px;
+      border: 1px solid var(--edge);
+      color: var(--text-soft);
+      text-decoration: none;
+      text-transform: uppercase;
+      letter-spacing: 0.14em;
+      font-size: 11px;
+    }
+
+    .hero-links a:hover {
+      border-color: var(--edge-strong);
+      color: var(--amber-soft);
+      background: rgba(212,168,67,0.08);
+    }
+
+    .panel {
+      padding: 20px;
+    }
+
+    .panel h2 {
+      margin: 0 0 14px;
+      color: var(--amber-soft);
+      font-size: 16px;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+    }
+
+    .spec-list {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+    }
+
+    .spec-link {
+      display: block;
+      padding: 14px;
+      border-radius: 16px;
+      border: 1px solid rgba(255,255,255,0.05);
+      background: rgba(255,255,255,0.02);
+      text-decoration: none;
+      color: var(--text-soft);
+      font-size: 13px;
+      line-height: 1.6;
+    }
+
+    .spec-link:hover {
+      border-color: rgba(0,184,212,0.36);
+      color: var(--teal-soft);
+      background: rgba(0,184,212,0.08);
+    }
+
+    @media (max-width: 800px) {
+      .spec-list {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+  <main class="page">
+    <section class="hero">
+      <div class="eyebrow">Published specs index</div>
+      <h1>Specs directory</h1>
+      <p>
+        Direct entry point for the full tracked spec set published under the site. This keeps <code>/docs/specs/</code>
+        navigable even though GitHub Pages does not provide directory listings by default.
+      </p>
+      <div class="hero-links">
+        <a href="../">Docs home</a>
+        <a href="../../mocks/home.html">Review home</a>
+      </div>
+    </section>
+
+    <section class="panel">
+      <h2>All tracked specs</h2>
+      <div class="spec-list">
+        <a class="spec-link" href="./00_a2_transit.md">00 A2 Transit</a>
+        <a class="spec-link" href="./01_resource_quality.md">01 Resource Quality</a>
+        <a class="spec-link" href="./02_surveying.md">02 Surveying</a>
+        <a class="spec-link" href="./03_harvesters.md">03 Harvesters</a>
+        <a class="spec-link" href="./04_drone_swarm.md">04 Drone Swarm</a>
+        <a class="spec-link" href="./05_factories.md">05 Factories</a>
+        <a class="spec-link" href="./06_consumption.md">06 Consumption</a>
+        <a class="spec-link" href="./07_logistics.md">07 Logistics</a>
+        <a class="spec-link" href="./08_vehicles.md">08 Vehicles</a>
+        <a class="spec-link" href="./09_planets.md">09 Planets</a>
+        <a class="spec-link" href="./10_spacecraft.md">10 Spacecraft</a>
+        <a class="spec-link" href="./11_tech_tree.md">11 Tech Tree</a>
+        <a class="spec-link" href="./12_economy.md">12 Economy</a>
+        <a class="spec-link" href="./13_art_direction.md">13 Art Direction</a>
+        <a class="spec-link" href="./14_ui_systems.md">14 UI Systems</a>
+        <a class="spec-link" href="./15_save_load.md">15 Save Load</a>
+        <a class="spec-link" href="./16_input_map.md">16 Input Map</a>
+        <a class="spec-link" href="./17_world_generation.md">17 World Generation</a>
+        <a class="spec-link" href="./26_web_visual_parity.md">26 Web Visual Parity</a>
+      </div>
+    </section>
+  </main>
+</body>
+</html>
