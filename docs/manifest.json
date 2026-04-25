@@ -1,0 +1,786 @@
+{
+  "generatedAt": "2026-04-25T20:07:18.976Z",
+  "baseFromHub": "..",
+  "groups": [
+    {
+      "id": "docs",
+      "label": "Documentation",
+      "icon": "◈",
+      "sections": [
+        {
+          "id": "core-docs",
+          "label": "Core docs",
+          "items": [
+            {
+              "id": "codebase-status",
+              "title": "Codebase Status",
+              "path": "docs/CODEBASE_STATUS.md",
+              "summary": "Snapshot of what is implemented in the TS / PixiJS port."
+            },
+            {
+              "id": "core-loop-design-review",
+              "title": "Core Loop Design Review",
+              "path": "docs/CORE_LOOP_DESIGN_REVIEW.md",
+              "summary": "Design review notes and analysis on the overall loop."
+            },
+            {
+              "id": "core-loop-tdd-ssd",
+              "title": "Core Loop TDD SSD",
+              "path": "docs/CORE_LOOP_TDD_SSD.md",
+              "summary": "Technical design + system specification document for the core loop."
+            },
+            {
+              "id": "game-design",
+              "title": "Game Design",
+              "path": "docs/GAME_DESIGN.md",
+              "summary": "Master vision, pillars, the 5-phase automation arc, system map, reading guide."
+            },
+            {
+              "id": "implementation-roadmap",
+              "title": "Implementation Roadmap",
+              "path": "docs/IMPLEMENTATION_ROADMAP.md",
+              "summary": "Planned milestone sequencing and direction (M0–M14)."
+            },
+            {
+              "id": "ui-menu-catalog",
+              "title": "UI Menu Catalog",
+              "path": "docs/UI_MENU_CATALOG.md",
+              "summary": "Factual catalog of every UI surface, element, interaction. UX redesign baseline."
+            },
+            {
+              "id": "void-yield-ui-prd",
+              "title": "Void Yield UI PRD",
+              "path": "docs/VOID_YIELD_UI_PRD.md",
+              "summary": "Interface goals, UX framing, presentation direction."
+            }
+          ]
+        },
+        {
+          "id": "specs",
+          "label": "Specs",
+          "items": [
+            {
+              "id": "spec-00",
+              "num": "00",
+              "title": "00 · A2 Transit",
+              "path": "docs/specs/00_a2_transit.md"
+            },
+            {
+              "id": "spec-01",
+              "num": "01",
+              "title": "01 · Resource Quality",
+              "path": "docs/specs/01_resource_quality.md"
+            },
+            {
+              "id": "spec-02",
+              "num": "02",
+              "title": "02 · Surveying",
+              "path": "docs/specs/02_surveying.md"
+            },
+            {
+              "id": "spec-03",
+              "num": "03",
+              "title": "03 · Harvesters",
+              "path": "docs/specs/03_harvesters.md"
+            },
+            {
+              "id": "spec-04",
+              "num": "04",
+              "title": "04 · Drone Swarm",
+              "path": "docs/specs/04_drone_swarm.md"
+            },
+            {
+              "id": "spec-05",
+              "num": "05",
+              "title": "05 · Factories",
+              "path": "docs/specs/05_factories.md"
+            },
+            {
+              "id": "spec-06",
+              "num": "06",
+              "title": "06 · Consumption",
+              "path": "docs/specs/06_consumption.md"
+            },
+            {
+              "id": "spec-07",
+              "num": "07",
+              "title": "07 · Logistics",
+              "path": "docs/specs/07_logistics.md"
+            },
+            {
+              "id": "spec-08",
+              "num": "08",
+              "title": "08 · Vehicles",
+              "path": "docs/specs/08_vehicles.md"
+            },
+            {
+              "id": "spec-09",
+              "num": "09",
+              "title": "09 · Planets",
+              "path": "docs/specs/09_planets.md"
+            },
+            {
+              "id": "spec-10",
+              "num": "10",
+              "title": "10 · Spacecraft",
+              "path": "docs/specs/10_spacecraft.md"
+            },
+            {
+              "id": "spec-11",
+              "num": "11",
+              "title": "11 · Tech Tree",
+              "path": "docs/specs/11_tech_tree.md"
+            },
+            {
+              "id": "spec-12",
+              "num": "12",
+              "title": "12 · Economy",
+              "path": "docs/specs/12_economy.md"
+            },
+            {
+              "id": "spec-13",
+              "num": "13",
+              "title": "13 · Art Direction",
+              "path": "docs/specs/13_art_direction.md"
+            },
+            {
+              "id": "spec-14",
+              "num": "14",
+              "title": "14 · UI Systems",
+              "path": "docs/specs/14_ui_systems.md"
+            },
+            {
+              "id": "spec-15",
+              "num": "15",
+              "title": "15 · Save / Load",
+              "path": "docs/specs/15_save_load.md"
+            },
+            {
+              "id": "spec-16",
+              "num": "16",
+              "title": "16 · Input Map",
+              "path": "docs/specs/16_input_map.md"
+            },
+            {
+              "id": "spec-17",
+              "num": "17",
+              "title": "17 · World Generation",
+              "path": "docs/specs/17_world_generation.md"
+            },
+            {
+              "id": "spec-26",
+              "num": "26",
+              "title": "26 · Web Visual Parity",
+              "path": "docs/specs/26_web_visual_parity.md"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "mocks",
+      "label": "Design Mocks",
+      "icon": "◇",
+      "sections": [
+        {
+          "id": "mock-exploration",
+          "label": "Exploration",
+          "items": [
+            {
+              "id": "mock-01",
+              "num": "01",
+              "title": "01 · Survey Flow",
+              "path": "mocks/01_survey_flow.svg",
+              "type": "svg",
+              "category": "exploration"
+            },
+            {
+              "id": "mock-08",
+              "num": "08",
+              "title": "08 · Survey Quality Report",
+              "path": "mocks/08_survey_quality_report.svg",
+              "type": "svg",
+              "category": "exploration"
+            },
+            {
+              "id": "mock-10",
+              "num": "10",
+              "title": "10 · Planet Comparison",
+              "path": "mocks/10_planet_comparison.svg",
+              "type": "svg",
+              "category": "exploration"
+            },
+            {
+              "id": "mock-20",
+              "num": "20",
+              "title": "20 · Galaxy Map",
+              "path": "mocks/20_galaxy_map.svg",
+              "type": "svg",
+              "category": "exploration"
+            }
+          ]
+        },
+        {
+          "id": "mock-harvesting",
+          "label": "Harvesting",
+          "items": [
+            {
+              "id": "mock-02",
+              "num": "02",
+              "title": "02 · Harvester Gas Loop",
+              "path": "mocks/02_harvester_gas_loop.svg",
+              "type": "svg",
+              "category": "harvesting"
+            },
+            {
+              "id": "mock-03",
+              "num": "03",
+              "title": "03 · Drone Swarm Overview",
+              "path": "mocks/03_drone_swarm_overview.svg",
+              "type": "svg",
+              "category": "harvesting"
+            }
+          ]
+        },
+        {
+          "id": "mock-production",
+          "label": "Production",
+          "items": [
+            {
+              "id": "mock-04",
+              "num": "04",
+              "title": "04 · Crafting Quality Screen",
+              "path": "mocks/04_crafting_quality_screen.svg",
+              "type": "svg",
+              "category": "production"
+            },
+            {
+              "id": "mock-05",
+              "num": "05",
+              "title": "05 · Rocket Assembly Sequence",
+              "path": "mocks/05_rocket_assembly_sequence.svg",
+              "type": "svg",
+              "category": "production"
+            },
+            {
+              "id": "mock-26",
+              "num": "26",
+              "title": "26 · Factory Floor",
+              "path": "mocks/26_factory_floor.svg",
+              "type": "svg",
+              "category": "production"
+            },
+            {
+              "id": "mock-27",
+              "num": "27",
+              "title": "27 · Production Dashboard",
+              "path": "mocks/27_production_dashboard.svg",
+              "type": "svg",
+              "category": "production"
+            }
+          ]
+        },
+        {
+          "id": "mock-logistics",
+          "label": "Logistics",
+          "items": [
+            {
+              "id": "mock-09",
+              "num": "09",
+              "title": "09 · Logistics Route",
+              "path": "mocks/09_logistics_route.svg",
+              "type": "svg",
+              "category": "logistics"
+            },
+            {
+              "id": "mock-15",
+              "num": "15",
+              "title": "15 · Storage Depot",
+              "path": "mocks/15_storage_depot.svg",
+              "type": "svg",
+              "category": "logistics"
+            },
+            {
+              "id": "mock-21",
+              "num": "21",
+              "title": "21 · Cargo Dock",
+              "path": "mocks/21_cargo_dock.svg",
+              "type": "svg",
+              "category": "logistics"
+            },
+            {
+              "id": "mock-23",
+              "num": "23",
+              "title": "23 · Relay Station Panel",
+              "path": "mocks/23_relay_station_panel.svg",
+              "type": "svg",
+              "category": "logistics"
+            }
+          ]
+        },
+        {
+          "id": "mock-vehicles",
+          "label": "Vehicles",
+          "items": [
+            {
+              "id": "mock-06",
+              "num": "06",
+              "title": "06 · Vehicle Roster",
+              "path": "mocks/06_vehicle_roster.svg",
+              "type": "svg",
+              "category": "vehicles"
+            },
+            {
+              "id": "mock-19",
+              "num": "19",
+              "title": "19 · Ship Bay",
+              "path": "mocks/19_ship_bay.svg",
+              "type": "svg",
+              "category": "vehicles"
+            }
+          ]
+        },
+        {
+          "id": "mock-worlds",
+          "label": "Worlds",
+          "items": [
+            {
+              "id": "mock-07",
+              "num": "07",
+              "title": "07 · Planet Stranding Loop",
+              "path": "mocks/07_planet_stranding_loop.svg",
+              "type": "svg",
+              "category": "worlds"
+            },
+            {
+              "id": "mock-22",
+              "num": "22",
+              "title": "22 · Asteroid B World",
+              "path": "mocks/22_asteroid_b_world.svg",
+              "type": "svg",
+              "category": "worlds"
+            }
+          ]
+        },
+        {
+          "id": "mock-hud",
+          "label": "HUD & UI",
+          "items": [
+            {
+              "id": "mock-11",
+              "num": "11",
+              "title": "11 · HUD Desktop",
+              "path": "mocks/11_hud_desktop.svg",
+              "type": "svg",
+              "category": "hud"
+            },
+            {
+              "id": "mock-12",
+              "num": "12",
+              "title": "12 · HUD Mobile",
+              "path": "mocks/12_hud_mobile.svg",
+              "type": "svg",
+              "category": "hud"
+            },
+            {
+              "id": "mock-13",
+              "num": "13",
+              "title": "13 · Shop Panel",
+              "path": "mocks/13_shop_panel.svg",
+              "type": "svg",
+              "category": "hud"
+            },
+            {
+              "id": "mock-14",
+              "num": "14",
+              "title": "14 · Sell Terminal",
+              "path": "mocks/14_sell_terminal.svg",
+              "type": "svg",
+              "category": "hud"
+            },
+            {
+              "id": "mock-16",
+              "num": "16",
+              "title": "16 · Interaction Prompts",
+              "path": "mocks/16_interaction_prompts.svg",
+              "type": "svg",
+              "category": "hud"
+            }
+          ]
+        },
+        {
+          "id": "mock-menus",
+          "label": "Menus & Flow",
+          "items": [
+            {
+              "id": "mock-17",
+              "num": "17",
+              "title": "17 · Pause Settings",
+              "path": "mocks/17_pause_settings.svg",
+              "type": "svg",
+              "category": "menus"
+            },
+            {
+              "id": "mock-18",
+              "num": "18",
+              "title": "18 · Main Menu",
+              "path": "mocks/18_main_menu.svg",
+              "type": "svg",
+              "category": "menus"
+            },
+            {
+              "id": "mock-24",
+              "num": "24",
+              "title": "24 · Launch Transition",
+              "path": "mocks/24_launch_transition.svg",
+              "type": "svg",
+              "category": "menus"
+            },
+            {
+              "id": "mock-25",
+              "num": "25",
+              "title": "25 · Boot Splash",
+              "path": "mocks/25_boot_splash.svg",
+              "type": "svg",
+              "category": "menus"
+            },
+            {
+              "id": "mock-28",
+              "num": "28",
+              "title": "28 · Offline Event Log",
+              "path": "mocks/28_offline_event_log.svg",
+              "type": "svg",
+              "category": "menus"
+            },
+            {
+              "id": "mock-29",
+              "num": "29",
+              "title": "29 · Standard Menu Console",
+              "path": "mocks/29_standard_menu_console.html",
+              "type": "html",
+              "category": "menus"
+            }
+          ]
+        },
+        {
+          "id": "mock-phase1",
+          "label": "Phase-1 Core Loop",
+          "items": [
+            {
+              "id": "phase1-01",
+              "num": "01",
+              "title": "P01 · Outpost Surface",
+              "path": "docs/design_mocks/01_outpost_surface.html",
+              "type": "html"
+            },
+            {
+              "id": "phase1-02",
+              "num": "02",
+              "title": "P02 · Deposit Interaction",
+              "path": "docs/design_mocks/02_deposit_interaction.html",
+              "type": "html"
+            },
+            {
+              "id": "phase1-03",
+              "num": "03",
+              "title": "P03 · Furnace Fabricator",
+              "path": "docs/design_mocks/03_furnace_fabricator.html",
+              "type": "html"
+            },
+            {
+              "id": "phase1-04",
+              "num": "04",
+              "title": "P04 · Building Road Placement",
+              "path": "docs/design_mocks/04_building_road_placement.html",
+              "type": "html"
+            },
+            {
+              "id": "phase1-05",
+              "num": "05",
+              "title": "P05 · Drone Bay Panel",
+              "path": "docs/design_mocks/05_drone_bay_panel.html",
+              "type": "html"
+            },
+            {
+              "id": "phase1-06",
+              "num": "06",
+              "title": "P06 · Production Overlay",
+              "path": "docs/design_mocks/06_production_overlay.html",
+              "type": "html"
+            }
+          ]
+        },
+        {
+          "id": "mock-ui-studies",
+          "label": "UI / Gameplay Studies",
+          "items": [
+            {
+              "id": "ui-coverage-overlay",
+              "title": "Coverage Overlay",
+              "path": "mocks/ui/coverage_overlay.svg",
+              "type": "svg"
+            },
+            {
+              "id": "ui-drone-bay-panel",
+              "title": "Drone Bay Panel",
+              "path": "mocks/ui/drone_bay_panel.svg",
+              "type": "svg"
+            },
+            {
+              "id": "ui-event-log-panel",
+              "title": "Event Log Panel",
+              "path": "mocks/ui/event_log_panel.svg",
+              "type": "svg"
+            },
+            {
+              "id": "ui-fleet-panel",
+              "title": "Fleet Panel",
+              "path": "mocks/ui/fleet_panel.svg",
+              "type": "svg"
+            },
+            {
+              "id": "ui-galaxy-map",
+              "title": "Galaxy Map",
+              "path": "mocks/ui/galaxy_map.svg",
+              "type": "svg"
+            },
+            {
+              "id": "ui-gameplay-a1-start",
+              "title": "Gameplay A1 Start",
+              "path": "mocks/ui/gameplay_a1_start.svg",
+              "type": "svg"
+            },
+            {
+              "id": "ui-gameplay-colony-crisis",
+              "title": "Gameplay Colony Crisis",
+              "path": "mocks/ui/gameplay_colony_crisis.svg",
+              "type": "svg"
+            },
+            {
+              "id": "ui-gameplay-colony-early",
+              "title": "Gameplay Colony Early",
+              "path": "mocks/ui/gameplay_colony_early.svg",
+              "type": "svg"
+            },
+            {
+              "id": "ui-gameplay-crafting-chain",
+              "title": "Gameplay Crafting Chain",
+              "path": "mocks/ui/gameplay_crafting_chain.svg",
+              "type": "svg"
+            },
+            {
+              "id": "ui-gameplay-deposit-found",
+              "title": "Gameplay Deposit Found",
+              "path": "mocks/ui/gameplay_deposit_found.svg",
+              "type": "svg"
+            },
+            {
+              "id": "ui-gameplay-drone-swarm",
+              "title": "Gameplay Drone Swarm",
+              "path": "mocks/ui/gameplay_drone_swarm.svg",
+              "type": "svg"
+            },
+            {
+              "id": "ui-gameplay-drone-v1",
+              "title": "Gameplay Drone v1",
+              "path": "mocks/ui/gameplay_drone_v1.svg",
+              "type": "svg"
+            },
+            {
+              "id": "ui-gameplay-drone-v2-network",
+              "title": "Gameplay Drone v2 Network",
+              "path": "mocks/ui/gameplay_drone_v2_network.svg",
+              "type": "svg"
+            },
+            {
+              "id": "ui-gameplay-factory-complex",
+              "title": "Gameplay Factory Complex",
+              "path": "mocks/ui/gameplay_factory_complex.svg",
+              "type": "svg"
+            },
+            {
+              "id": "ui-gameplay-first-harvester",
+              "title": "Gameplay First Harvester",
+              "path": "mocks/ui/gameplay_first_harvester.svg",
+              "type": "svg"
+            },
+            {
+              "id": "ui-gameplay-interplanetary-logistics",
+              "title": "Gameplay Interplanetary Logistics",
+              "path": "mocks/ui/gameplay_interplanetary_logistics.svg",
+              "type": "svg"
+            },
+            {
+              "id": "ui-gameplay-launchpad-building",
+              "title": "Gameplay Launchpad Building",
+              "path": "mocks/ui/gameplay_launchpad_building.svg",
+              "type": "svg"
+            },
+            {
+              "id": "ui-gameplay-manual-selling",
+              "title": "Gameplay Manual Selling",
+              "path": "mocks/ui/gameplay_manual_selling.svg",
+              "type": "svg"
+            },
+            {
+              "id": "ui-gameplay-mining-operation",
+              "title": "Gameplay Mining Operation",
+              "path": "mocks/ui/gameplay_mining_operation.svg",
+              "type": "svg"
+            },
+            {
+              "id": "ui-gameplay-planet-b-landing",
+              "title": "Gameplay Planet B Landing",
+              "path": "mocks/ui/gameplay_planet_b_landing.svg",
+              "type": "svg"
+            },
+            {
+              "id": "ui-gameplay-planet-b-surface",
+              "title": "Gameplay Planet B Surface",
+              "path": "mocks/ui/gameplay_planet_b_surface.svg",
+              "type": "svg"
+            },
+            {
+              "id": "ui-gameplay-prestige-screen",
+              "title": "Gameplay Prestige Screen",
+              "path": "mocks/ui/gameplay_prestige_screen.svg",
+              "type": "svg"
+            },
+            {
+              "id": "ui-gameplay-processing-plant",
+              "title": "Gameplay Processing Plant",
+              "path": "mocks/ui/gameplay_processing_plant.svg",
+              "type": "svg"
+            },
+            {
+              "id": "ui-gameplay-quality-crafting",
+              "title": "Gameplay Quality Crafting",
+              "path": "mocks/ui/gameplay_quality_crafting.svg",
+              "type": "svg"
+            },
+            {
+              "id": "ui-gameplay-repair-drone",
+              "title": "Gameplay Repair Drone",
+              "path": "mocks/ui/gameplay_repair_drone.svg",
+              "type": "svg"
+            },
+            {
+              "id": "ui-gameplay-rocket-assembly",
+              "title": "Gameplay Rocket Assembly",
+              "path": "mocks/ui/gameplay_rocket_assembly.svg",
+              "type": "svg"
+            },
+            {
+              "id": "ui-gameplay-survey-active",
+              "title": "Gameplay Survey Active",
+              "path": "mocks/ui/gameplay_survey_active.svg",
+              "type": "svg"
+            },
+            {
+              "id": "ui-gameplay-warp-gate-construction",
+              "title": "Gameplay Warp Gate Construction",
+              "path": "mocks/ui/gameplay_warp_gate_construction.svg",
+              "type": "svg"
+            },
+            {
+              "id": "ui-hud-gameplay",
+              "title": "HUD Gameplay",
+              "path": "mocks/ui/hud_gameplay.svg",
+              "type": "svg"
+            },
+            {
+              "id": "ui-inventory-panel",
+              "title": "Inventory Panel",
+              "path": "mocks/ui/inventory_panel.svg",
+              "type": "svg"
+            },
+            {
+              "id": "ui-main-menu",
+              "title": "Main Menu",
+              "path": "mocks/ui/main_menu.svg",
+              "type": "svg"
+            },
+            {
+              "id": "ui-pause-menu",
+              "title": "Pause Menu",
+              "path": "mocks/ui/pause_menu.svg",
+              "type": "svg"
+            },
+            {
+              "id": "ui-planet-select-tooltip",
+              "title": "Planet Select Tooltip",
+              "path": "mocks/ui/planet_select_tooltip.svg",
+              "type": "svg"
+            },
+            {
+              "id": "ui-production-dashboard",
+              "title": "Production Dashboard",
+              "path": "mocks/ui/production_dashboard.svg",
+              "type": "svg"
+            },
+            {
+              "id": "ui-production-overlay",
+              "title": "Production Overlay",
+              "path": "mocks/ui/production_overlay.svg",
+              "type": "svg"
+            },
+            {
+              "id": "ui-resource-quality-inspector",
+              "title": "Resource Quality Inspector",
+              "path": "mocks/ui/resource_quality_inspector.svg",
+              "type": "svg"
+            },
+            {
+              "id": "ui-save-load-screen",
+              "title": "Save Load Screen",
+              "path": "mocks/ui/save_load_screen.svg",
+              "type": "svg"
+            },
+            {
+              "id": "ui-settings-menu",
+              "title": "Settings Menu",
+              "path": "mocks/ui/settings_menu.svg",
+              "type": "svg"
+            },
+            {
+              "id": "ui-survey-tool-ui",
+              "title": "Survey Tool UI",
+              "path": "mocks/ui/survey_tool_ui.svg",
+              "type": "svg"
+            },
+            {
+              "id": "ui-tech-tree-panel",
+              "title": "Tech Tree Panel",
+              "path": "mocks/ui/tech_tree_panel.svg",
+              "type": "svg"
+            }
+          ]
+        },
+        {
+          "id": "mock-extras",
+          "label": "Other Mockups",
+          "items": [
+            {
+              "id": "extra-moon-hud-fullscreen",
+              "title": "Moon HUD Fullscreen",
+              "path": "mocks/moon_hud_fullscreen.html",
+              "type": "html"
+            },
+            {
+              "id": "extra-pixel-art-hud-fullscreen",
+              "title": "Pixel Art HUD Fullscreen",
+              "path": "mocks/pixel_art_hud_fullscreen.html",
+              "type": "html"
+            },
+            {
+              "id": "extra-voidyield-web-game-mockup",
+              "title": "Voidyield Web Game Mockup",
+              "path": "mocks/voidyield_web_game_mockup.html",
+              "type": "html"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
