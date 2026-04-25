@@ -47,7 +47,7 @@ const OUTPOST_REACTOR_POWER = 5;
 const OUTPOST_WORLD_WIDTH  = 1920;
 const OUTPOST_WORLD_HEIGHT = 1080;
 
-// Perimeter fence around the 5×5 build grid (grid spans x:260-700, y:50-490).
+// Perimeter fence around the 5×6 build grid (grid spans x:260-700, y:50-578).
 // The east wall has a gate gap so the player and drones can reach the
 // deposits east of the compound. Wall rects are registered with
 // `obstacleManager` so they block movement and route pathfinding through the
@@ -55,10 +55,10 @@ const OUTPOST_WORLD_HEIGHT = 1080;
 const FENCE_LEFT     = 232;
 const FENCE_TOP      = 22;
 const FENCE_RIGHT    = 712;
-const FENCE_BOTTOM   = 518;
+const FENCE_BOTTOM   = 606;
 const FENCE_THICK    = 10;
-const FENCE_GATE_TOP = 230;  // east-wall gate spans y:230..310 (80px wide opening)
-const FENCE_GATE_BOT = 310;
+const FENCE_GATE_TOP = 274;  // east-wall gate spans y:274..354 (80px wide opening)
+const FENCE_GATE_BOT = 354;
 
 // Build costs per BuildMenuOverlay BUILDABLE list (TDD §3.5)
 const BUILD_COSTS: Record<string, { iron_bar: number; copper_bar: number }> = {
@@ -641,13 +641,13 @@ export class AsteroidOutpostScene implements Scene {
 
   private _drawGrid(): void {
     const g = new Graphics();
-    for (let r = 0; r <= 5; r++) {
+    for (let r = 0; r <= BuildGrid.ROWS; r++) {
       g.moveTo(GRID_ORIGIN.x, GRID_ORIGIN.y + r * CELL_SIZE);
-      g.lineTo(GRID_ORIGIN.x + 5 * CELL_SIZE, GRID_ORIGIN.y + r * CELL_SIZE);
+      g.lineTo(GRID_ORIGIN.x + BuildGrid.COLS * CELL_SIZE, GRID_ORIGIN.y + r * CELL_SIZE);
     }
-    for (let c = 0; c <= 5; c++) {
+    for (let c = 0; c <= BuildGrid.COLS; c++) {
       g.moveTo(GRID_ORIGIN.x + c * CELL_SIZE, GRID_ORIGIN.y);
-      g.lineTo(GRID_ORIGIN.x + c * CELL_SIZE, GRID_ORIGIN.y + 5 * CELL_SIZE);
+      g.lineTo(GRID_ORIGIN.x + c * CELL_SIZE, GRID_ORIGIN.y + BuildGrid.ROWS * CELL_SIZE);
     }
     g.stroke({ width: 1, color: 0x2A3A5A, alpha: 0.8 });
     this._stage!.addChild(g);
@@ -941,10 +941,25 @@ export class AsteroidOutpostScene implements Scene {
     this._placedBuildings.push(fabPb);
     this._buildingLayer!.addChild(fabPb.container);
 
-    // Drone Depot (2x2) at [0,3] (top right)
+    // Drone Depot (2×2) at [0,3] (top right)
     const depotFootprint = BUILD_FOOTPRINTS['drone_depot'];
     buildGrid.place({ buildingId: 'drone_depot_0', buildingType: 'drone_depot', row: 0, col: 3, footprint: depotFootprint });
     this._spawnBuilding('drone_depot', 'drone_depot_0', 0, 3, depotFootprint);
+
+    // Marketplace (1×2) at [2,2] — pre-built
+    const marketFootprint = BUILD_FOOTPRINTS['marketplace'];
+    buildGrid.place({ buildingId: 'marketplace_0', buildingType: 'marketplace', row: 2, col: 2, footprint: marketFootprint });
+    this._spawnBuilding('marketplace', 'marketplace_0', 2, 2, marketFootprint);
+
+    // Electrolysis Unit (3×2) at [3,0] — pre-built
+    const elecFootprint = BUILD_FOOTPRINTS['electrolysis_unit'];
+    buildGrid.place({ buildingId: 'electrolysis_0', buildingType: 'electrolysis_unit', row: 3, col: 0, footprint: elecFootprint });
+    this._spawnBuilding('electrolysis_unit', 'electrolysis_0', 3, 0, elecFootprint);
+
+    // Launchpad (3×3) at [3,2] — pre-built
+    const lpadFootprint = BUILD_FOOTPRINTS['launchpad'];
+    buildGrid.place({ buildingId: 'launchpad_0', buildingType: 'launchpad', row: 3, col: 2, footprint: lpadFootprint });
+    this._spawnBuilding('launchpad', 'launchpad_0', 3, 2, lpadFootprint);
   }
 
   private _initDeposits(): void {
@@ -1644,9 +1659,9 @@ export class AsteroidOutpostScene implements Scene {
   }
 
   private _isPlayerNearGrid(px: number, py: number, radius = 120): boolean {
-    // Grid is roughly centered at GRID_ORIGIN, spans 5×5 cells
+    // Grid is roughly centered at GRID_ORIGIN, spans 5×6 cells
     const gridCenterX = GRID_ORIGIN.x + 2.5 * CELL_SIZE;
-    const gridCenterY = GRID_ORIGIN.y + 2.5 * CELL_SIZE;
+    const gridCenterY = GRID_ORIGIN.y + 3.0 * CELL_SIZE;
     const dx = px - gridCenterX;
     const dy = py - gridCenterY;
     return dx * dx + dy * dy <= radius * radius;
@@ -1988,7 +2003,7 @@ export class AsteroidOutpostScene implements Scene {
 }
 
 // Helper reference for clamping (mirrors BuildGrid statics)
-const BuildGrid = { ROWS: 5, COLS: 5 };
+const BuildGrid = { ROWS: 6, COLS: 5 };
 
 /** Map ore type → user-facing deposit label. */
 const _ORE_LABELS: Record<string, string> = {
