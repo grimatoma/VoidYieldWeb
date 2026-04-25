@@ -8,7 +8,7 @@ import { outpostDispatcher } from '@services/OutpostDispatcher';
 
 const DRONE_SPECS = [
   { type: 'scout' as const, label: 'MINING DRONE', cost: 25  },
-  { type: 'heavy' as const, label: 'HEAVY MINER',  cost: 150 },
+  { type: 'heavy' as const, label: 'HEAVY MINER', cost: 150 },
   { type: 'refinery' as const, label: 'LOGISTICS DRONE', cost: 75 },
 ];
 
@@ -46,23 +46,12 @@ export class DroneDepotOverlay {
     const parent = document.getElementById('ui-layer') ?? document.body;
     this._root = document.createElement('div');
     this._root.id = 'drone-depot-overlay';
-    this._root.style.cssText = [
-      'position:absolute',
-      'top:50%',
-      'left:50%',
-      'transform:translate(-50%,-50%)',
-      'background:rgba(7,18,42,0.98)',
-      'border:1px solid #8040C0',
-      'color:#E8E4D0',
-      'font-family:monospace',
-      'font-size:13px',
-      'padding:0',
-      'min-width:460px',
-      'max-width:540px',
-      'z-index:20',
-      'pointer-events:auto',
-      'display:none',
-    ].join(';');
+    this._root.className = 'facility-panel';
+    this._root.style.display = 'none';
+    this._root.style.setProperty('--facility-accent', '#c084fc');
+    this._root.style.setProperty('--facility-accent-soft', 'rgba(192, 132, 252, 0.14)');
+    this._root.style.setProperty('--facility-accent-border', 'rgba(192, 132, 252, 0.42)');
+    this._root.style.width = 'min(calc(560px * var(--hud-scale)), 94vw)';
     parent.appendChild(this._root);
     this._render();
   }
@@ -77,7 +66,7 @@ export class DroneDepotOverlay {
   open(): void {
     this._open = true;
     if (this._root) {
-      this._root.style.display = 'block';
+      this._root.style.display = 'flex';
       this._render();
     }
     this._startPoll();
@@ -110,138 +99,136 @@ export class DroneDepotOverlay {
     const slots = this._depot.getBaySlots();
     const credits = gameState.credits;
 
-    // Counts
     let minerCount = 0;
     let logiCount = 0;
     let idleCount = 0;
     for (const slot of slots) {
-      const r = slotRole(slot);
-      if (r === 'miner') minerCount++;
-      else if (r === 'logistics') logiCount++;
+      const role = slotRole(slot);
+      if (role === 'miner') minerCount++;
+      else if (role === 'logistics') logiCount++;
       else idleCount++;
     }
     const activeCount = minerCount + logiCount;
     const totalCount = slots.length;
 
-    // Throughput estimates
     const oreIntake = minerCount * MINER_RATE;
     const logiCap = logiCount * LOGI_RATE;
     const isBottleneck = logiCount > 0 && logiCap < oreIntake;
     const isBalanced = !isBottleneck && activeCount > 0;
 
-    // Header
-    let html = `
-      <div style="background:#1A0A2A;color:#CC88FF;padding:8px 14px;font-size:12px;font-weight:bold;border-bottom:1px solid #8040C0;display:flex;justify-content:space-between;align-items:center;">
-        <span>&#x2B21; DRONE BAY</span>
-        <span style="font-size:10px;color:#888;">${totalCount} drones &middot; ${activeCount} active &middot; ${idleCount} idle</span>
-      </div>
-    `;
-
-    // ── ROLE ALLOCATION ──────────────────────────────────────────────────────
     const minerPct = totalCount > 0 ? (minerCount / totalCount) * 100 : 0;
-    const logiPct  = totalCount > 0 ? (logiCount  / totalCount) * 100 : 0;
-    const idlePct  = totalCount > 0 ? (idleCount  / totalCount) * 100 : 0;
-
-    // Slider thumb position: fraction of active drones that are miners
+    const logiPct = totalCount > 0 ? (logiCount / totalCount) * 100 : 0;
+    const idlePct = totalCount > 0 ? (idleCount / totalCount) * 100 : 0;
     const activeDrones = minerCount + logiCount;
     const sliderPct = activeDrones > 0 ? (minerCount / activeDrones) * 100 : 50;
 
-    html += `
-      <div style="padding:10px 14px;border-bottom:1px solid #1A0A2A;">
-        <div style="font-size:10px;color:#8040C0;letter-spacing:1px;text-transform:uppercase;margin-bottom:8px;">Role Allocation</div>
-
-        <div id="ddo-alloc-bar" style="height:16px;display:flex;border:1px solid #2A1A3A;overflow:hidden;border-radius:2px;margin-bottom:6px;">
-          ${minerPct > 0 ? `<div style="width:${minerPct}%;background:linear-gradient(90deg,#8040C0,#6030A0);display:flex;align-items:center;justify-content:center;font-size:9px;color:#fff;font-weight:bold;white-space:nowrap;overflow:hidden;">MINERS &times;${minerCount}</div>` : ''}
-          ${logiPct  > 0 ? `<div style="width:${logiPct}%;background:linear-gradient(90deg,#204080,#2060C0);display:flex;align-items:center;justify-content:center;font-size:9px;color:#fff;font-weight:bold;white-space:nowrap;overflow:hidden;">LOGI &times;${logiCount}</div>` : ''}
-          ${idlePct  > 0 ? `<div style="width:${idlePct}%;background:#1A1A2A;display:flex;align-items:center;justify-content:center;font-size:9px;color:#4A4A6A;white-space:nowrap;overflow:hidden;">IDLE &times;${idleCount}</div>` : ''}
-        </div>
-
-        <div style="display:flex;align-items:center;gap:8px;margin:4px 0 10px;">
-          <span style="font-size:10px;color:#CC88FF;width:60px;">&#x2B21; MINERS</span>
-          <div id="ddo-slider-track" style="flex:1;height:6px;background:#1A1A3A;border:1px solid #3A2A5A;border-radius:3px;position:relative;cursor:pointer;">
-            <div style="position:absolute;left:0;height:100%;width:${sliderPct}%;background:#8040C0;border-radius:3px;"></div>
-            <div id="ddo-slider-thumb" style="position:absolute;width:12px;height:12px;background:#D4A843;border-radius:50%;top:-3px;left:${sliderPct}%;transform:translateX(-50%);cursor:grab;border:1px solid #fff;"></div>
-          </div>
-          <span style="font-size:10px;color:#88AAFF;width:60px;text-align:right;">LOGI &#x2B21;</span>
-        </div>
-        <div style="display:flex;justify-content:space-between;font-size:10px;color:#666;padding:0 2px;margin-bottom:4px;">
-          <span>&larr; more mining throughput</span>
-          <span>more logistics capacity &rarr;</span>
-        </div>
-      </div>
-    `;
-
-    // ── THROUGHPUT ESTIMATES ─────────────────────────────────────────────────
-    const intakeColor = '#E8E4D0';
-    const logiCapColor = isBottleneck ? '#FBBF24' : '#4ADE80';
-    const balancedHtml = isBottleneck
-      ? `<div style="background:#2A1A0A;border:1px solid #FBBF24;padding:6px 10px;font-size:10px;color:#FDE68A;margin:6px 0;">&#x26A0; BOTTLENECK: Logistics &mdash; ore backing up at Storage faster than Furnace consumes it.<br>Suggestion: move 1 drone from Miner &rarr; Logistics.</div>`
+    const statusBadge = isBottleneck
+      ? '<span class="facility-chip facility-chip--warn">Logistics bottleneck</span>'
       : isBalanced
-        ? `<div style="background:#1A2A0A;border:1px solid #4ADE80;padding:6px 10px;font-size:10px;color:#86EFAC;margin:6px 0;">&#x2713; BALANCED &mdash; no bottleneck detected</div>`
-        : '';
+        ? '<span class="facility-chip facility-chip--good">Balanced</span>'
+        : '<span class="facility-chip facility-chip--accent">Awaiting assignments</span>';
 
-    html += `
-      <div style="padding:10px 14px;border-bottom:1px solid #1A0A2A;">
-        <div style="font-size:10px;color:#8040C0;letter-spacing:1px;text-transform:uppercase;margin-bottom:8px;">Live Throughput Estimate</div>
-        <div style="display:flex;justify-content:space-between;align-items:center;font-size:11px;margin-bottom:5px;">
-          <span style="color:#888;">Ore intake rate</span>
-          <span style="color:${intakeColor};">~${oreIntake.toFixed(1)} ore/min <span style="color:#666;font-size:10px;">(${minerCount} miners &times; 4.8)</span></span>
+    let html = `
+      <div class="facility-panel-head">
+        <div class="facility-panel-heading">
+          <div class="facility-panel-kicker">Drone Command</div>
+          <h2 class="facility-panel-title">Drone Bay</h2>
+          <div class="facility-panel-subtitle">Manage miner and logistics assignments from one standard command menu.</div>
         </div>
-        <div style="display:flex;justify-content:space-between;align-items:center;font-size:11px;margin-bottom:5px;">
-          <span style="color:#888;">Logistics capacity</span>
-          <span style="color:${logiCapColor};">~${logiCap.toFixed(0)} units/min <span style="color:#666;font-size:10px;">(${logiCount} drone${logiCount !== 1 ? 's' : ''}, circuit)</span></span>
+        <div class="facility-panel-meta">
+          <span class="facility-chip">${totalCount} total</span>
+          <span class="facility-chip facility-chip--accent">${activeCount} active</span>
+          ${statusBadge}
         </div>
-        <div style="display:flex;justify-content:space-between;align-items:center;font-size:11px;margin-bottom:5px;">
-          <span style="color:#888;">Furnace demand</span>
-          <span style="color:#E8E4D0;">${FURNACE_DEMAND} ore/min <span style="color:#666;font-size:10px;">(recipe &times;2 ore/bar)</span></span>
-        </div>
-        ${balancedHtml}
       </div>
+      <div class="facility-panel-body">
+        <div class="facility-section facility-section--accent">
+          <div class="facility-section-title">Role allocation</div>
+          <div class="facility-segment-bar">
+            ${minerPct > 0 ? `<div class="facility-segment" style="width:${minerPct}%; background:linear-gradient(90deg, #9333ea 0%, #c084fc 100%);">MINERS ×${minerCount}</div>` : ''}
+            ${logiPct > 0 ? `<div class="facility-segment" style="width:${logiPct}%; background:linear-gradient(90deg, #2563eb 0%, #38bdf8 100%);">LOGISTICS ×${logiCount}</div>` : ''}
+            ${idlePct > 0 ? `<div class="facility-segment" style="width:${idlePct}%; background:#1f2937; color:#7c89a6;">IDLE ×${idleCount}</div>` : ''}
+          </div>
+          <div class="facility-row">
+            <span class="facility-row-label">Miners</span>
+            <div class="facility-slider" id="ddo-slider-track">
+              <div class="facility-slider-fill" style="width:${sliderPct}%;"></div>
+              <div class="facility-slider-thumb" id="ddo-slider-thumb" style="left:${sliderPct}%;"></div>
+            </div>
+            <span class="facility-row-label">Logistics</span>
+          </div>
+          <div class="facility-progress-labels">
+            <span>More mining throughput</span>
+            <span>More transport capacity</span>
+          </div>
+        </div>
+
+        <div class="facility-section">
+          <div class="facility-section-title">Live throughput estimate</div>
+          <div class="facility-row">
+            <span class="facility-row-label">Ore intake rate</span>
+            <span class="facility-row-value">~${oreIntake.toFixed(1)} ore/min</span>
+          </div>
+          <div class="facility-row">
+            <span class="facility-row-label">Logistics capacity</span>
+            <span class="facility-row-value ${isBottleneck ? 'facility-row-value--warn' : 'facility-row-value--good'}">~${logiCap.toFixed(0)} units/min</span>
+          </div>
+          <div class="facility-row">
+            <span class="facility-row-label">Furnace demand</span>
+            <span class="facility-row-value">${FURNACE_DEMAND} ore/min</span>
+          </div>
+          ${isBottleneck
+            ? '<div class="facility-note facility-note--warn">Ore is arriving faster than your logistics drones can move it. Shift one drone from Miner to Logistics to prevent storage backups.</div>'
+            : isBalanced
+              ? '<div class="facility-note facility-note--good">No immediate bottleneck detected. Mining and hauling look balanced right now.</div>'
+              : '<div class="facility-note">Purchase or assign drones to start production flow across the outpost.</div>'
+          }
+        </div>
+
+        <div class="facility-section">
+          <div class="facility-section-title">Individual drones</div>
+          <div class="facility-roster">
+            ${slots.map((slot, index) => this._renderDroneRow(slot, index + 1)).join('')}
+          </div>
+        </div>
     `;
 
-    // ── INDIVIDUAL DRONES ────────────────────────────────────────────────────
-    html += `
-      <div style="padding:10px 14px;border-bottom:1px solid #1A0A2A;">
-        <div style="font-size:10px;color:#8040C0;letter-spacing:1px;text-transform:uppercase;margin-bottom:8px;">Individual Drones</div>
-    `;
-
-    for (let i = 0; i < slots.length; i++) {
-      html += this._renderDroneRow(slots[i], i + 1, i === slots.length - 1);
-    }
-
-    html += `</div>`;
-
-    // ── PURCHASE SECTION ─────────────────────────────────────────────────────
-    const emptySlots = slots.filter(s => !s.drone);
+    const emptySlots = slots.filter((slot) => !slot.drone);
     if (emptySlots.length > 0) {
       html += `
-        <div style="padding:10px 14px;border-bottom:1px solid #1A0A2A;">
-          <div style="font-size:10px;color:#8040C0;letter-spacing:1px;text-transform:uppercase;margin-bottom:8px;">Purchase Drone</div>
-          <div id="ddo-credits" style="font-size:11px;color:#00B8D4;margin-bottom:8px;">${credits.toLocaleString()} CR available</div>
+        <div class="facility-section">
+          <div class="facility-section-title">Purchase drone</div>
+          <div class="facility-row">
+            <span class="facility-row-label">Available credits</span>
+            <span class="facility-row-value facility-row-value--accent">${credits.toLocaleString()} CR</span>
+          </div>
       `;
       for (const slot of emptySlots) {
-        const btns = DRONE_SPECS.map(spec => {
-          const canAfford = credits >= spec.cost;
-          const style = this._btnStyle(canAfford ? '#00B8D4' : '#555');
-          const disabled = canAfford ? '' : 'disabled';
-          return `<button id="ddo-buy-${slot.slotId}-${spec.type}" ${disabled} style="${style}">${spec.label} &mdash; ${spec.cost} CR</button>`;
-        }).join(' ');
         html += `
-          <div style="margin-bottom:8px;">
-            <div style="font-size:11px;opacity:0.45;margin-bottom:6px;letter-spacing:1px;">SLOT ${slots.indexOf(slot) + 1} &mdash; EMPTY</div>
-            <div style="display:flex;gap:8px;flex-wrap:wrap;">${btns}</div>
+          <div class="facility-card">
+            <div class="facility-row facility-row--top">
+              <div>
+                <div class="facility-item-title">Slot ${slots.indexOf(slot) + 1}</div>
+                <div class="facility-item-meta">Empty bay slot ready for deployment.</div>
+              </div>
+            </div>
+            <div class="facility-actions" style="margin-top:calc(8px * var(--hud-scale));">
+              ${DRONE_SPECS.map((spec) => {
+                const canAfford = credits >= spec.cost;
+                const classes = `facility-btn facility-btn--small ${spec.type === 'refinery' ? 'facility-btn--accent' : ''}`;
+                return `<button id="ddo-buy-${slot.slotId}-${spec.type}" ${canAfford ? '' : 'disabled'} class="${classes}">${spec.label} • ${spec.cost} CR</button>`;
+              }).join('')}
+            </div>
           </div>
         `;
       }
-      html += `</div>`;
+      html += '</div>';
     }
 
-    // ── ACTIONS ───────────────────────────────────────────────────────────────
     html += `
-      <div style="padding:10px 14px;">
-        <div style="display:flex;gap:8px;flex-wrap:wrap;">
-          <button id="ddo-recall" style="${this._btnStyle('#EA580C')}">RECALL ALL DRONES</button>
-          <button id="ddo-close" style="${this._btnStyle('#3A5A8A')}">CLOSE</button>
+        <div class="facility-actions">
+          <button id="ddo-recall" class="facility-btn facility-btn--danger">Recall all drones</button>
+          <button id="ddo-close" class="facility-btn">Close</button>
         </div>
       </div>
     `;
@@ -250,16 +237,16 @@ export class DroneDepotOverlay {
     this._wireEvents(slots);
   }
 
-  private _renderDroneRow(slot: DroneBaySlot, num: number, isLast: boolean): string {
-    const borderStyle = isLast ? '' : 'border-bottom:1px solid #0F1A2A;';
+  private _renderDroneRow(slot: DroneBaySlot, num: number): string {
     const droneId = `D-${String(num).padStart(2, '0')}`;
-
     if (!slot.drone) {
       return `
-        <div style="display:flex;align-items:center;gap:8px;padding:5px 0;${borderStyle}font-size:11px;">
-          <span style="color:#8040C0;width:36px;font-weight:bold;flex-shrink:0;">${droneId}</span>
-          <span style="padding:2px 7px;font-size:10px;font-weight:bold;border-radius:2px;width:72px;text-align:center;background:#1A1A2A;color:#4A4A6A;border:1px solid #2A2A4A;flex-shrink:0;">IDLE</span>
-          <span style="color:#4A4A6A;flex:1;font-size:10px;">── not assigned</span>
+        <div class="facility-roster-row">
+          <span class="facility-status-dot" style="--dot-color:#475569;"></span>
+          <span class="facility-roster-id">${droneId}</span>
+          <span class="facility-pill">Idle</span>
+          <span class="facility-roster-status">No drone assigned to this slot.</span>
+          <span class="facility-row-value facility-row-value--muted">Empty bay</span>
         </div>
       `;
     }
@@ -267,56 +254,47 @@ export class DroneDepotOverlay {
     const role = slotRole(slot);
     const { dotColor, statusText, statusClass } = this._droneStatusInfo(slot.drone);
 
-    let badgeStyle: string;
-    let badgeLabel: string;
-    if (role === 'miner') {
-      badgeStyle = 'background:#2A0A4A;color:#CC88FF;border:1px solid #8040C0;';
-      badgeLabel = 'MINER';
-    } else if (role === 'logistics') {
-      badgeStyle = 'background:#0A1A4A;color:#88AAFF;border:1px solid #2040C0;';
-      badgeLabel = 'LOGISTICS';
-    } else {
-      badgeStyle = 'background:#1A1A2A;color:#4A4A6A;border:1px solid #2A2A4A;';
-      badgeLabel = 'IDLE';
-    }
+    const pillStyle = role === 'miner'
+      ? '--pill-bg:rgba(88,28,135,0.28); --pill-border:rgba(192,132,252,0.48); --pill-text:#d8b4fe;'
+      : role === 'logistics'
+        ? '--pill-bg:rgba(30,64,175,0.28); --pill-border:rgba(96,165,250,0.48); --pill-text:#93c5fd;'
+        : '--pill-bg:rgba(31,41,55,0.82); --pill-border:rgba(71,85,105,0.48); --pill-text:#94a3b8;';
+    const pillLabel = role === 'miner' ? 'Miner' : role === 'logistics' ? 'Logistics' : 'Idle';
 
-    const mActive = role === 'miner';
-    const lActive = role === 'logistics';
-    const mBtnStyle = mActive
-      ? 'background:#8040C0;color:#fff;'
-      : 'background:#1A0A2A;color:#8040C0;border:1px solid #4A2A6A;';
-    const lBtnStyle = lActive
-      ? 'background:#2060C0;color:#fff;'
-      : 'background:#0A1A3A;color:#88AAFF;border:1px solid #2A4A8A;';
+    const minerBtnClass = `facility-btn facility-btn--small ${role === 'miner' ? 'facility-btn--active' : ''}`;
+    const logiBtnClass = `facility-btn facility-btn--small ${role === 'logistics' ? 'facility-btn--accent' : ''}`;
+    const statusColorClass = statusClass === 'warn'
+      ? 'facility-row-value--warn'
+      : statusClass === 'idle'
+        ? 'facility-row-value--muted'
+        : 'facility-row-value--good';
 
-    const statusColor = statusClass === 'warn' ? '#FBBF24' : statusClass === 'idle' ? '#4A4A6A' : '#4ADE80';
-
-    // Ore-type selector — only shown for miner slots so players can restrict
-    // which resource this drone targets. Options match the outpost deposits.
     const oreOptions: Array<{ value: string; label: string }> = [
-      { value: 'any',        label: 'ANY' },
-      { value: 'iron_ore',   label: 'IRON' },
+      { value: 'any', label: 'ANY' },
+      { value: 'iron_ore', label: 'IRON' },
       { value: 'copper_ore', label: 'COPPER' },
-      { value: 'water',      label: 'WATER' },
+      { value: 'water', label: 'WATER' },
     ];
     const oreSelectHtml = role === 'miner'
-      ? `<select id="ddo-ore-${slot.slotId}" style="font-family:monospace;font-size:10px;background:#1A0A2A;color:#CC88FF;border:1px solid #4A2A6A;padding:2px 4px;cursor:pointer;flex-shrink:0;">${
-          oreOptions.map(o =>
-            `<option value="${o.value}"${slot.oreType === o.value ? ' selected' : ''}>${o.label}</option>`,
-          ).join('')
-        }</select>`
+      ? `
+        <select id="ddo-ore-${slot.slotId}" class="facility-select">
+          ${oreOptions.map((option) => (
+            `<option value="${option.value}"${slot.oreType === option.value ? ' selected' : ''}>${option.label}</option>`
+          )).join('')}
+        </select>
+      `
       : '';
 
     return `
-      <div style="display:flex;align-items:center;gap:8px;padding:5px 0;${borderStyle}font-size:11px;">
-        <span style="color:${dotColor};width:6px;height:6px;border-radius:50%;display:inline-block;flex-shrink:0;margin-left:2px;background:${dotColor};"></span>
-        <span style="color:#8040C0;width:34px;font-weight:bold;flex-shrink:0;">${droneId}</span>
-        <span style="padding:2px 7px;font-size:10px;font-weight:bold;border-radius:2px;width:72px;text-align:center;flex-shrink:0;${badgeStyle}">${badgeLabel}</span>
-        <span style="color:${statusColor};flex:1;font-size:10px;">${statusText}</span>
-        <div style="display:flex;gap:4px;margin-left:auto;flex-shrink:0;align-items:center;">
+      <div class="facility-roster-row">
+        <span class="facility-status-dot" style="--dot-color:${dotColor};"></span>
+        <span class="facility-roster-id">${droneId}</span>
+        <span class="facility-pill" style="${pillStyle}">${pillLabel}</span>
+        <span class="facility-roster-status ${statusColorClass}">${statusText}</span>
+        <div class="facility-inline-actions">
           ${oreSelectHtml}
-          <button id="ddo-role-m-${slot.slotId}" style="padding:2px 7px;font-family:monospace;font-size:10px;cursor:pointer;border:none;${mBtnStyle}">M</button>
-          <button id="ddo-role-l-${slot.slotId}" style="padding:2px 7px;font-family:monospace;font-size:10px;cursor:pointer;border:none;${lBtnStyle}">L</button>
+          <button id="ddo-role-m-${slot.slotId}" class="${minerBtnClass}">M</button>
+          <button id="ddo-role-l-${slot.slotId}" class="${logiBtnClass}">L</button>
         </div>
       </div>
     `;
@@ -326,56 +304,37 @@ export class DroneDepotOverlay {
     const tasks = drone.getTasks();
     const task = tasks[0];
     if (drone.state === 'IDLE' || !task) {
-      return { dotColor: '#4A4A6A', statusText: '── not assigned', statusClass: 'idle' };
+      return { dotColor: '#64748b', statusText: 'Not assigned', statusClass: 'idle' };
     }
     if (drone.state === 'MOVING_TO_TARGET') {
       return task.type === 'MINE'
-        ? { dotColor: '#8040C0', statusText: '&#x25B6; En route to deposit', statusClass: 'active' }
-        : { dotColor: '#00B8D4', statusText: '&#x25B6; Hauling ...', statusClass: 'active' };
+        ? { dotColor: '#c084fc', statusText: 'En route to deposit', statusClass: 'active' }
+        : { dotColor: '#38bdf8', statusText: 'Hauling resources', statusClass: 'active' };
     }
     if (drone.state === 'EXECUTING') {
       return task.type === 'MINE'
-        ? { dotColor: '#FF6D00', statusText: '&#x25B6; Mining ...', statusClass: 'active' }
-        : { dotColor: '#00B8D4', statusText: '&#x25B6; Depositing ...', statusClass: 'active' };
+        ? { dotColor: '#f97316', statusText: 'Mining deposit', statusClass: 'active' }
+        : { dotColor: '#22d3ee', statusText: 'Depositing cargo', statusClass: 'active' };
     }
-    return { dotColor: '#FBBF24', statusText: '&#x26A0; Busy', statusClass: 'warn' };
-  }
-
-  private _btnStyle(color: string): string {
-    return [
-      'font-family:monospace',
-      'font-size:11px',
-      'padding:4px 10px',
-      `border:1px solid ${color}`,
-      'background:transparent',
-      `color:${color}`,
-      'cursor:pointer',
-    ].join(';');
+    return { dotColor: '#fbbf24', statusText: 'Busy', statusClass: 'warn' };
   }
 
   private _wireEvents(slots: readonly DroneBaySlot[]): void {
     if (!this._root) return;
 
-    // Close
     this._root.querySelector('#ddo-close')?.addEventListener('click', () => this.close());
 
-    // Recall all
     this._root.querySelector('#ddo-recall')?.addEventListener('click', () => {
       for (const slot of slots) {
-        if (slot.drone) {
-          slot.drone.clearTasks();
-        }
+        if (slot.drone) slot.drone.clearTasks();
       }
       this._render();
     });
 
-    // Slider drag
     this._wireSlider(slots);
 
-    // Per-slot events
     for (const slot of slots) {
       if (!slot.drone) {
-        // Buy buttons
         for (const spec of DRONE_SPECS) {
           const btn = this._root.querySelector(`#ddo-buy-${slot.slotId}-${spec.type}`);
           btn?.addEventListener('click', () => {
@@ -384,18 +343,15 @@ export class DroneDepotOverlay {
           });
         }
       } else {
-        // Role toggle M
         this._root.querySelector(`#ddo-role-m-${slot.slotId}`)?.addEventListener('click', () => {
           outpostDispatcher.setSlotRole(slot.slotId, 'miner');
           this._render();
         });
-        // Role toggle L
         this._root.querySelector(`#ddo-role-l-${slot.slotId}`)?.addEventListener('click', () => {
           outpostDispatcher.setSlotRole(slot.slotId, 'logistics');
           this._render();
         });
 
-        // Ore select (on occupied slots that are miners)
         const oreSelect = this._root.querySelector<HTMLSelectElement>(`#ddo-ore-${slot.slotId}`);
         oreSelect?.addEventListener('change', () => {
           this._depot.setSlotOreType(slot.slotId, oreSelect.value as OreType | 'any');
@@ -421,17 +377,15 @@ export class DroneDepotOverlay {
     const onMove = (clientX: number) => {
       if (!this._sliderDragging) return;
       const targetFraction = getTargetMinerFraction(clientX);
-      const activeDrones = slots.filter(s => s.drone && slotRole(s) !== 'idle');
-      const currentMiners = activeDrones.filter(s => slotRole(s) === 'miner').length;
+      const activeDrones = slots.filter((slot) => slot.drone && slotRole(slot) !== 'idle');
+      const currentMiners = activeDrones.filter((slot) => slotRole(slot) === 'miner').length;
       const targetMiners = Math.round(targetFraction * activeDrones.length);
 
       if (targetMiners > currentMiners) {
-        // Shift one logi → miner
-        const logiSlot = [...slots].reverse().find(s => s.drone && slotRole(s) === 'logistics');
+        const logiSlot = [...slots].reverse().find((slot) => slot.drone && slotRole(slot) === 'logistics');
         if (logiSlot) outpostDispatcher.setSlotRole(logiSlot.slotId, 'miner');
       } else if (targetMiners < currentMiners) {
-        // Shift one miner → logi
-        const minerSlot = [...slots].reverse().find(s => s.drone && slotRole(s) === 'miner');
+        const minerSlot = [...slots].reverse().find((slot) => slot.drone && slotRole(slot) === 'miner');
         if (minerSlot) outpostDispatcher.setSlotRole(minerSlot.slotId, 'logistics');
       }
       this._render();

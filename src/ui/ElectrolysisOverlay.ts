@@ -29,23 +29,11 @@ export class ElectrolysisOverlay {
     const parent = document.getElementById('ui-layer') ?? document.body;
     this._root = document.createElement('div');
     this._root.id = 'electrolysis-overlay';
-    this._root.style.cssText = [
-      'position:absolute',
-      'top:50%',
-      'left:50%',
-      'transform:translate(-50%,-50%)',
-      'background:rgba(7,18,42,0.98)',
-      'border:1px solid #00B8D4',
-      'color:#E8E4D0',
-      'font-family:monospace',
-      'font-size:13px',
-      'padding:0',
-      'min-width:420px',
-      'max-width:500px',
-      'z-index:20',
-      'pointer-events:auto',
-      'display:none',
-    ].join(';');
+    this._root.className = 'facility-panel';
+    this._root.style.display = 'none';
+    this._root.style.setProperty('--facility-accent', '#5eead4');
+    this._root.style.setProperty('--facility-accent-soft', 'rgba(94, 234, 212, 0.14)');
+    this._root.style.setProperty('--facility-accent-border', 'rgba(94, 234, 212, 0.42)');
     parent.appendChild(this._root);
     this._render();
   }
@@ -61,7 +49,7 @@ export class ElectrolysisOverlay {
   open(): void {
     this._open = true;
     if (this._root) {
-      this._root.style.display = 'block';
+      this._root.style.display = 'flex';
       this._render();
     }
     this._startPoll();
@@ -77,82 +65,108 @@ export class ElectrolysisOverlay {
 
   private _startPoll(): void {
     this._stopPoll();
-    this._pollHandle = setInterval(() => { if (this._open) this._render(); }, 500);
+    this._pollHandle = setInterval(() => {
+      if (this._open) this._render();
+    }, 500);
   }
 
   private _stopPoll(): void {
-    if (this._pollHandle !== null) { clearInterval(this._pollHandle); this._pollHandle = null; }
+    if (this._pollHandle !== null) {
+      clearInterval(this._pollHandle);
+      this._pollHandle = null;
+    }
   }
 
   private _render(): void {
     if (!this._root) return;
-    const u = this._unit;
+    const unit = this._unit;
 
-    const statusColor = u.state === 'RUNNING' ? '#4ADE80' : u.state === 'STALLED_OUTPUT' ? '#FBBF24' : '#4A4A6A';
-    const statusLabel = u.state === 'RUNNING' ? '▶ RUNNING' : u.state === 'STALLED_OUTPUT' ? '⚠ STALLED (OUTPUT FULL)' : '— IDLE';
+    const statusClass = unit.state === 'RUNNING'
+      ? 'facility-chip facility-chip--good'
+      : unit.state === 'STALLED_OUTPUT'
+        ? 'facility-chip facility-chip--warn'
+        : 'facility-chip';
+    const statusLabel = unit.state === 'RUNNING'
+      ? 'Running'
+      : unit.state === 'STALLED_OUTPUT'
+        ? 'Output full'
+        : 'Idle';
 
-    const inputPct  = Math.round((u.inputBuffer  / ElectrolysisUnit.MAX_INPUT)  * 100);
-    const outputPct = Math.round((u.outputBuffer / ElectrolysisUnit.MAX_OUTPUT) * 100);
-    const cyclePct  = Math.round(u.cycleProgress * 100);
-    const cycleRemaining = u.state === 'RUNNING'
-      ? ((1 - u.cycleProgress) * ElectrolysisUnit.CYCLE_SECONDS).toFixed(1) + 's remaining'
-      : '—';
+    const inputPct = Math.round((unit.inputBuffer / ElectrolysisUnit.MAX_INPUT) * 100);
+    const outputPct = Math.round((unit.outputBuffer / ElectrolysisUnit.MAX_OUTPUT) * 100);
+    const cyclePct = Math.round(unit.cycleProgress * 100);
+    const cycleRemaining = unit.state === 'RUNNING'
+      ? `${((1 - unit.cycleProgress) * ElectrolysisUnit.CYCLE_SECONDS).toFixed(1)}s remaining`
+      : 'Waiting for next cycle';
 
-    const barStyle = (pct: number, color: string) =>
-      `display:inline-block;width:${pct}%;height:10px;background:${color};vertical-align:middle;`;
+    const stateNote = unit.state === 'RUNNING'
+      ? `<div class="facility-note facility-note--good">The chamber is actively separating water into fuel. Logistics drones can keep the cycle uninterrupted by feeding water and clearing fuel.</div>`
+      : unit.state === 'STALLED_OUTPUT'
+        ? `<div class="facility-note facility-note--warn">Output buffer is full. Clear Hydrolox Fuel to storage so the chamber can resume.</div>`
+        : `<div class="facility-note">Idle until at least ${ElectrolysisUnit.INPUT_PER_CYCLE} water is available in the input buffer.</div>`;
 
     this._root.innerHTML = `
-      <div style="background:#041229;color:#00B8D4;padding:8px 14px;font-size:12px;font-weight:bold;border-bottom:1px solid #00B8D4;display:flex;justify-content:space-between;align-items:center;">
-        <span>⚗ ELECTROLYSIS UNIT</span>
-        <span style="font-size:10px;color:${statusColor};">${statusLabel}</span>
+      <div class="facility-panel-head">
+        <div class="facility-panel-heading">
+          <div class="facility-panel-kicker">Fuel Processing</div>
+          <h2 class="facility-panel-title">Electrolysis Unit</h2>
+          <div class="facility-panel-subtitle">Converts stored water into Hydrolox fuel for outbound shipping.</div>
+        </div>
+        <div class="facility-panel-meta">
+          <span class="${statusClass}"><span class="facility-chip-dot"></span>${statusLabel}</span>
+        </div>
       </div>
-      <div style="padding:12px 14px;">
-        <div style="font-size:11px;color:#00B8D4;letter-spacing:1px;margin-bottom:10px;">RECIPE</div>
-        <div style="font-size:12px;margin-bottom:14px;padding:8px;background:#071220;border:1px solid #0A3050;">
-          Water × ${ElectrolysisUnit.INPUT_PER_CYCLE} → Hydrolox Fuel × ${ElectrolysisUnit.OUTPUT_PER_CYCLE}
-          <span style="color:#666;font-size:10px;">&nbsp;&nbsp;(cycle: ${ElectrolysisUnit.CYCLE_SECONDS}s)</span>
-        </div>
-
-        <div style="font-size:11px;color:#00B8D4;letter-spacing:1px;margin-bottom:8px;">INPUT BUFFER</div>
-        <div style="margin-bottom:14px;">
-          <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px;">
-            <span style="color:#3D85C6;width:50px;">Water</span>
-            <div style="flex:1;height:10px;background:#0A1A2A;border:1px solid #1A3A5A;position:relative;">
-              <div style="${barStyle(inputPct, '#3D85C6')}"></div>
+      <div class="facility-panel-body">
+        <div class="facility-section facility-section--accent">
+          <div class="facility-section-title">Reaction recipe</div>
+          <div class="facility-card facility-card--accent">
+            <div class="facility-row">
+              <span class="facility-row-label">Conversion</span>
+              <span class="facility-row-value">Water × ${ElectrolysisUnit.INPUT_PER_CYCLE} → Hydrolox Fuel × ${ElectrolysisUnit.OUTPUT_PER_CYCLE}</span>
             </div>
-            <span style="color:#E8E4D0;width:60px;text-align:right;">${u.inputBuffer} / ${ElectrolysisUnit.MAX_INPUT}</span>
+            <div class="facility-item-meta">Cycle length: ${ElectrolysisUnit.CYCLE_SECONDS}s</div>
           </div>
-          <div style="font-size:10px;color:#444;">→ Logistics drone hauls water from Storage</div>
         </div>
 
-        <div style="font-size:11px;color:#00B8D4;letter-spacing:1px;margin-bottom:8px;">OUTPUT BUFFER</div>
-        <div style="margin-bottom:14px;">
-          <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px;">
-            <span style="color:#00E5FF;width:50px;">Fuel</span>
-            <div style="flex:1;height:10px;background:#0A1A2A;border:1px solid #1A3A5A;position:relative;">
-              <div style="${barStyle(outputPct, '#00E5FF')}"></div>
-            </div>
-            <span style="color:#E8E4D0;width:60px;text-align:right;">${u.outputBuffer} / ${ElectrolysisUnit.MAX_OUTPUT}</span>
+        <div class="facility-section">
+          <div class="facility-section-title">Input buffer</div>
+          <div class="facility-progress-labels">
+            <span>Water</span>
+            <span>${unit.inputBuffer} / ${ElectrolysisUnit.MAX_INPUT}</span>
           </div>
-          <div style="font-size:10px;color:#444;">→ Logistics drone hauls fuel to Storage</div>
+          <div class="facility-progress">
+            <div class="facility-progress-fill" style="width:${inputPct}%; background:linear-gradient(90deg, #60a5fa 0%, #5eead4 100%);"></div>
+          </div>
+          <div class="facility-item-meta">Logistics drones haul water from storage into the chamber.</div>
         </div>
 
-        ${u.state === 'RUNNING' ? `
-        <div style="font-size:11px;color:#00B8D4;letter-spacing:1px;margin-bottom:8px;">CYCLE PROGRESS</div>
-        <div style="margin-bottom:14px;">
-          <div style="height:6px;background:#0A1A2A;border:1px solid #1A3A5A;">
-            <div style="${barStyle(cyclePct, '#00B8D4')}"></div>
+        <div class="facility-section">
+          <div class="facility-section-title">Output buffer</div>
+          <div class="facility-progress-labels">
+            <span>Hydrolox Fuel</span>
+            <span>${unit.outputBuffer} / ${ElectrolysisUnit.MAX_OUTPUT}</span>
           </div>
-          <div style="font-size:10px;color:#666;margin-top:4px;">${cycleRemaining}</div>
+          <div class="facility-progress">
+            <div class="facility-progress-fill" style="width:${outputPct}%; background:linear-gradient(90deg, #67e8f9 0%, #22d3ee 100%);"></div>
+          </div>
+          <div class="facility-item-meta">Fuel is export-ready once drones clear the output buffer.</div>
         </div>
-        ` : u.state === 'IDLE' ? `
-        <div style="font-size:11px;color:#4A4A6A;margin-bottom:14px;">Idle — needs ≥ ${ElectrolysisUnit.INPUT_PER_CYCLE} water in input buffer to start.</div>
-        ` : `
-        <div style="font-size:11px;color:#FBBF24;margin-bottom:14px;">⚠ Output full — logistics drone must haul fuel to Storage to resume.</div>
-        `}
 
-        <div style="display:flex;justify-content:flex-end;">
-          <button id="elec-close" style="font-family:monospace;font-size:11px;padding:4px 12px;border:1px solid #3A5A8A;background:transparent;color:#E8E4D0;cursor:pointer;">CLOSE</button>
+        <div class="facility-section">
+          <div class="facility-section-title">Cycle progress</div>
+          <div class="facility-progress facility-progress--thin">
+            <div class="facility-progress-fill" style="width:${cyclePct}%;"></div>
+          </div>
+          <div class="facility-progress-labels">
+            <span>${cyclePct}% complete</span>
+            <span>${cycleRemaining}</span>
+          </div>
+        </div>
+
+        ${stateNote}
+
+        <div class="facility-actions">
+          <button id="elec-close" class="facility-btn">Close</button>
         </div>
       </div>
     `;

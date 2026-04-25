@@ -28,23 +28,12 @@ export class DepositPanel {
     const parent = document.getElementById('ui-layer') ?? document.body;
     this._root = document.createElement('div');
     this._root.id = 'deposit-panel';
-    this._root.style.cssText = [
-      'position:absolute',
-      'top:50%',
-      'left:50%',
-      'transform:translate(-50%,-50%)',
-      'background:#07122a',
-      'border:1px solid #D4A843',
-      'color:#E8E4D0',
-      'font-family:monospace',
-      'font-size:13px',
-      'padding:0',
-      'min-width:320px',
-      'max-width:380px',
-      'z-index:20',
-      'pointer-events:auto',
-      'display:none',
-    ].join(';');
+    this._root.className = 'facility-panel';
+    this._root.style.display = 'none';
+    this._root.style.setProperty('--facility-accent', '#fb923c');
+    this._root.style.setProperty('--facility-accent-soft', 'rgba(251, 146, 60, 0.14)');
+    this._root.style.setProperty('--facility-accent-border', 'rgba(251, 146, 60, 0.42)');
+    this._root.style.width = 'min(calc(380px * var(--hud-scale)), 92vw)';
     parent.appendChild(this._root);
   }
 
@@ -62,7 +51,7 @@ export class DepositPanel {
     this._options = options;
     this._open = true;
     if (this._root) {
-      this._root.style.display = 'block';
+      this._root.style.display = 'flex';
       this._render();
     }
     this._startPoll();
@@ -85,13 +74,10 @@ export class DepositPanel {
     this._renderStockBar();
   }
 
-  // ─── private ───────────────────────────────────────────────────────────────
-
   private _startPoll(): void {
     this._stopPoll();
     this._pollHandle = setInterval(() => {
       if (this._open && this._deposit && this._options) {
-        // Sync remaining from live deposit data
         this._options.stockRemaining = this._deposit.data.yieldRemaining;
         this._renderStockBar();
       }
@@ -111,85 +97,87 @@ export class DepositPanel {
     const hasDrone = opts.assignedDroneName !== null;
     const isExhausted = this._deposit.data.isExhausted;
 
-    // Status badge
-    let badgeHtml: string;
-    if (isExhausted) {
-      badgeHtml = `<span style="font-size:10px;padding:2px 8px;border-radius:2px;background:#1e2030;color:#94a3b8;border:1px solid #475569;">DEPLETED</span>`;
-    } else if (hasDrone) {
-      badgeHtml = `<span style="font-size:10px;padding:2px 8px;border-radius:2px;background:#14532d;color:#4ade80;border:1px solid #22c55e;">MINING</span>`;
-    } else {
-      badgeHtml = `<span style="font-size:10px;padding:2px 8px;border-radius:2px;background:#1e2030;color:#94a3b8;border:1px solid #475569;">UNMINED</span>`;
-    }
+    const badgeClass = isExhausted
+      ? 'facility-chip'
+      : hasDrone
+        ? 'facility-chip facility-chip--good'
+        : 'facility-chip facility-chip--accent';
+    const badgeLabel = isExhausted ? 'Depleted' : hasDrone ? 'Mining' : 'Unclaimed';
 
-    // Stock bar
     const stockBarHtml = this._buildStockBarHtml(opts.stockRemaining, opts.stockMax);
+    const roadText = opts.roadConnected ? 'Connected' : 'No road';
+    const roadClass = opts.roadConnected ? 'facility-row-value facility-row-value--good' : 'facility-row-value facility-row-value--muted';
 
-    // Road access row
-    const roadHtml = opts.roadConnected
-      ? `<span style="color:#4ade80;">&#x2713; Connected</span>`
-      : `<span style="color:#94a3b8;">&#x2717; No road</span>`;
-
-    // Body rows
     let bodyHtml: string;
     if (hasDrone) {
-      // State B — drone assigned
       bodyHtml = `
-        ${stockBarHtml}
-        <hr style="border:none;border-top:1px solid #1a3060;margin:8px 0;">
-        <div style="display:flex;justify-content:space-between;align-items:center;font-size:11px;margin-bottom:8px;">
-          <span style="color:#888;">Drone</span>
-          <span style="color:#4ade80;">${opts.assignedDroneName} &#x25B6; MINING</span>
+        <div class="facility-section facility-section--accent">
+          <div class="facility-section-title">Yield reserve</div>
+          ${stockBarHtml}
         </div>
-        <div style="display:flex;justify-content:space-between;align-items:center;font-size:11px;margin-bottom:8px;">
-          <span style="color:#888;">Output rate</span>
-          <span style="color:#E8E4D0;">4.8 ore/min</span>
+        <div class="facility-section">
+          <div class="facility-row">
+            <span class="facility-row-label">Assigned drone</span>
+            <span class="facility-row-value facility-row-value--good">${opts.assignedDroneName} • mining</span>
+          </div>
+          <div class="facility-row">
+            <span class="facility-row-label">Output rate</span>
+            <span class="facility-row-value">4.8 ore/min</span>
+          </div>
+          <div class="facility-row">
+            <span class="facility-row-label">Road access</span>
+            <span class="${roadClass}">${roadText}</span>
+          </div>
         </div>
-        <hr style="border:none;border-top:1px solid #1a3060;margin:8px 0;">
-        <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:10px;">
-          <button id="dp-recall" style="${this._btnStyle('#ea580c')}">RECALL DRONE</button>
-          <button id="dp-close"  style="${this._btnStyle('#3a5a8a')}">CLOSE</button>
+        <div class="facility-actions">
+          <button id="dp-recall" class="facility-btn facility-btn--danger">Recall drone</button>
+          <button id="dp-close" class="facility-btn">Close</button>
         </div>
       `;
     } else {
-      // State A — no drone
-      const mineDisabled = isExhausted;
-      const mineStyle = mineDisabled
-        ? 'padding:5px 12px;font-family:monospace;font-size:11px;background:#0f1e38;color:#3a5a8a;border:1px solid #1a3060;cursor:default;'
-        : 'padding:5px 12px;font-family:monospace;font-size:11px;background:#D4A843;color:#0D1B3E;font-weight:bold;border:none;cursor:pointer;';
       bodyHtml = `
-        ${stockBarHtml}
-        <hr style="border:none;border-top:1px solid #1a3060;margin:8px 0;">
-        <div style="display:flex;justify-content:space-between;align-items:center;font-size:11px;margin-bottom:8px;">
-          <span style="color:#888;">Road access</span>${roadHtml}
+        <div class="facility-section facility-section--accent">
+          <div class="facility-section-title">Yield reserve</div>
+          ${stockBarHtml}
         </div>
-        <div style="display:flex;justify-content:space-between;align-items:center;font-size:11px;margin-bottom:8px;">
-          <span style="color:#888;">Drone miner</span>
-          <span style="color:#475569;">None assigned</span>
+        <div class="facility-section">
+          <div class="facility-row">
+            <span class="facility-row-label">Road access</span>
+            <span class="${roadClass}">${roadText}</span>
+          </div>
+          <div class="facility-row">
+            <span class="facility-row-label">Drone miner</span>
+            <span class="facility-row-value facility-row-value--muted">None assigned</span>
+          </div>
+          <div class="facility-row">
+            <span class="facility-row-label">Hand-mine yield</span>
+            <span class="facility-row-value">3-5 ore / swing</span>
+          </div>
+          <div class="facility-row">
+            <span class="facility-row-label">Swing interval</span>
+            <span class="facility-row-value">0.8 sec (hold E)</span>
+          </div>
         </div>
-        <div style="display:flex;justify-content:space-between;align-items:center;font-size:11px;margin-bottom:8px;">
-          <span style="color:#888;">Hand-mine yield</span>
-          <span style="color:#E8E4D0;">3&#x2013;5 ore / swing</span>
+        <div class="facility-actions">
+          <button id="dp-mine" ${isExhausted ? 'disabled' : ''} class="facility-btn facility-btn--primary">Hand mine</button>
+          <button id="dp-close" class="facility-btn">Close</button>
         </div>
-        <div style="display:flex;justify-content:space-between;align-items:center;font-size:11px;margin-bottom:8px;">
-          <span style="color:#888;">Swing interval</span>
-          <span style="color:#E8E4D0;">0.8 sec (hold E)</span>
-        </div>
-        <hr style="border:none;border-top:1px solid #1a3060;margin:8px 0;">
-        <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:10px;">
-          <button id="dp-mine"  ${mineDisabled ? 'disabled' : ''} style="${mineStyle}">&#x26CF; HAND MINE (hold E)</button>
-          <button id="dp-close" style="${this._btnStyle('#3a5a8a')}">CLOSE</button>
-        </div>
-        <div style="margin-top:8px;font-size:10px;color:#4ade80;">Ore goes directly to Storage &#x2014; no player carry.</div>
-        <div style="margin-top:4px;font-size:10px;color:#666;">Tip: Assign a Miner drone from a Drone Bay to automate this deposit.</div>
+        <div class="facility-note facility-note--good">Ore goes straight into storage. Assigning a miner drone will automate this deposit.</div>
       `;
     }
 
     this._root.innerHTML = `
-      <div style="background:#1a2d5a;color:#D4A843;padding:6px 12px;font-size:12px;font-weight:bold;border-bottom:1px solid #D4A843;display:flex;justify-content:space-between;align-items:center;">
-        <span>&#x25C9; ${opts.oreLabel}</span>
-        ${badgeHtml}
+      <div class="facility-panel-head">
+        <div class="facility-panel-heading">
+          <div class="facility-panel-kicker">Resource Node</div>
+          <h2 class="facility-panel-title">${opts.oreLabel}</h2>
+          <div class="facility-panel-subtitle">Monitor remaining yield and decide whether to mine manually or automate it.</div>
+        </div>
+        <div class="facility-panel-meta">
+          <span class="${badgeClass}">${badgeLabel}</span>
+        </div>
       </div>
-      <div style="padding:12px;">
+      <div class="facility-panel-body">
         ${bodyHtml}
       </div>
     `;
@@ -200,12 +188,12 @@ export class DepositPanel {
   private _buildStockBarHtml(remaining: number, max: number): string {
     const pct = Math.max(0, Math.min(100, Math.round((remaining / Math.max(1, max)) * 100)));
     return `
-      <div id="dp-stock-row" style="display:flex;align-items:center;gap:8px;font-size:11px;margin-bottom:8px;">
-        <span style="color:#888;width:90px;flex-shrink:0;">Remaining</span>
-        <div style="flex:1;height:8px;background:#1a3060;border:1px solid #2a4080;">
-          <div id="dp-stock-fill" style="height:100%;width:${pct}%;background:#cd6020;"></div>
-        </div>
-        <span id="dp-stock-num" style="color:#E8E4D0;font-size:10px;width:60px;text-align:right;">~${remaining} ore</span>
+      <div class="facility-progress-labels">
+        <span>Remaining reserve</span>
+        <span id="dp-stock-num">~${Math.ceil(remaining)} ore</span>
+      </div>
+      <div class="facility-progress">
+        <div id="dp-stock-fill" class="facility-progress-fill" style="width:${pct}%; background:linear-gradient(90deg, #fb923c 0%, #f97316 100%);"></div>
       </div>
     `;
   }
@@ -213,12 +201,12 @@ export class DepositPanel {
   private _renderStockBar(): void {
     if (!this._root || !this._options) return;
     const fill = this._root.querySelector<HTMLElement>('#dp-stock-fill');
-    const num  = this._root.querySelector<HTMLElement>('#dp-stock-num');
+    const num = this._root.querySelector<HTMLElement>('#dp-stock-num');
     if (!fill || !num) return;
     const { stockRemaining, stockMax } = this._options;
     const pct = Math.max(0, Math.min(100, Math.round((stockRemaining / Math.max(1, stockMax)) * 100)));
     fill.style.width = `${pct}%`;
-    num.textContent  = `~${Math.ceil(stockRemaining)} ore`;
+    num.textContent = `~${Math.ceil(stockRemaining)} ore`;
   }
 
   private _wireEvents(): void {
@@ -237,17 +225,5 @@ export class DepositPanel {
     this._root.querySelector('#dp-recall')?.addEventListener('click', () => {
       opts.onRecall();
     });
-  }
-
-  private _btnStyle(color: string): string {
-    return [
-      'padding:5px 12px',
-      'font-family:monospace',
-      'font-size:11px',
-      `border:1px solid ${color}`,
-      'background:transparent',
-      `color:${color}`,
-      'cursor:pointer',
-    ].join(';');
   }
 }
