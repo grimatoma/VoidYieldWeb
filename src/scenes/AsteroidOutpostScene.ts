@@ -1212,8 +1212,9 @@ export class AsteroidOutpostScene implements Scene {
       <button id="ghost-cancel-btn" style="font-family:monospace;font-size:12px;padding:6px 14px;border:1px solid #8A3A3A;background:transparent;color:#E8E4D0;cursor:pointer;">CANCEL</button>
     `;
     // Stop all pointer/touch events from propagating to the PixiJS canvas below.
+    // Bubble phase (no capture) so child buttons still receive the events first.
     ['pointerdown', 'pointerup', 'touchstart', 'touchend', 'click'].forEach(evt => {
-      panel.addEventListener(evt, (e) => e.stopPropagation(), { capture: true });
+      panel.addEventListener(evt, (e) => e.stopPropagation());
     });
     panel.querySelector('#ghost-cancel-btn')?.addEventListener('click', (e) => {
       e.stopPropagation();
