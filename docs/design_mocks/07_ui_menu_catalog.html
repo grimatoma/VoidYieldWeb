@@ -1,0 +1,333 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>VoidYield — UI Menu Catalog Mock</title>
+<style>
+  :root {
+    --bg: #0d1324;
+    --panel: #121d36;
+    --panel-2: #0f1a31;
+    --line: #28406e;
+    --text: #e7ecf7;
+    --muted: #9eb2d8;
+    --accent: #47c7ff;
+    --good: #45d191;
+    --warn: #ffc857;
+  }
+
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font-family: Inter, "Segoe UI", system-ui, sans-serif;
+    background: radial-gradient(circle at top, #17284a, var(--bg) 55%);
+    color: var(--text);
+  }
+
+  .app {
+    display: grid;
+    grid-template-columns: 320px 1fr;
+    min-height: 100vh;
+  }
+
+  .sidebar {
+    border-right: 1px solid var(--line);
+    background: rgba(7, 13, 27, 0.8);
+    backdrop-filter: blur(6px);
+    padding: 20px;
+    position: sticky;
+    top: 0;
+    height: 100vh;
+    overflow: auto;
+  }
+
+  h1 {
+    margin: 0 0 6px;
+    font-size: 1.1rem;
+    letter-spacing: 0.02em;
+  }
+
+  .subtitle {
+    margin: 0 0 16px;
+    color: var(--muted);
+    font-size: 0.85rem;
+    line-height: 1.35;
+  }
+
+  .search {
+    width: 100%;
+    padding: 10px 12px;
+    border-radius: 8px;
+    border: 1px solid var(--line);
+    background: var(--panel-2);
+    color: var(--text);
+    margin-bottom: 12px;
+  }
+
+  .list {
+    display: grid;
+    gap: 6px;
+  }
+
+  .item {
+    display: grid;
+    gap: 2px;
+    padding: 10px;
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    background: transparent;
+    color: inherit;
+    text-align: left;
+    cursor: pointer;
+  }
+
+  .item:hover, .item.active {
+    border-color: var(--accent);
+    background: rgba(71, 199, 255, 0.1);
+  }
+
+  .item .name {
+    font-size: 0.9rem;
+    font-weight: 650;
+  }
+
+  .item .meta {
+    color: var(--muted);
+    font-size: 0.75rem;
+  }
+
+  .main {
+    padding: 24px;
+    display: grid;
+    gap: 16px;
+    max-width: 1200px;
+  }
+
+  .shell {
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    background: linear-gradient(180deg, var(--panel), #0d162d 75%);
+    overflow: hidden;
+  }
+
+  .shell-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+    border-bottom: 1px solid var(--line);
+    padding: 12px 16px;
+  }
+
+  .key {
+    border: 1px solid var(--line);
+    color: var(--accent);
+    border-radius: 999px;
+    padding: 4px 10px;
+    font-size: 0.78rem;
+  }
+
+  .content {
+    display: grid;
+    grid-template-columns: 1.1fr 0.9fr;
+    gap: 14px;
+    padding: 14px;
+  }
+
+  .panel {
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    background: rgba(8, 15, 29, 0.65);
+    padding: 12px;
+  }
+
+  .panel h3 {
+    margin: 0 0 8px;
+    font-size: 0.88rem;
+    color: var(--accent);
+    letter-spacing: 0.02em;
+  }
+
+  ul {
+    margin: 0;
+    padding-left: 16px;
+    color: var(--muted);
+    line-height: 1.45;
+  }
+
+  .chips {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+
+  .chip {
+    border: 1px solid var(--line);
+    background: var(--panel-2);
+    color: var(--muted);
+    border-radius: 999px;
+    font-size: 0.74rem;
+    padding: 4px 10px;
+  }
+
+  .status { color: var(--good); }
+
+  .mock-screen {
+    border: 1px dashed var(--line);
+    border-radius: 10px;
+    min-height: 280px;
+    padding: 12px;
+    display: grid;
+    gap: 8px;
+    align-content: start;
+    background: linear-gradient(180deg, rgba(72, 123, 197, 0.08), transparent 45%);
+  }
+
+  .bar {
+    display: grid;
+    gap: 6px;
+  }
+
+  .bar > span {
+    color: var(--muted);
+    font-size: 0.74rem;
+  }
+
+  .track {
+    background: #091021;
+    border: 1px solid var(--line);
+    border-radius: 999px;
+    height: 8px;
+    overflow: hidden;
+  }
+
+  .fill {
+    height: 100%;
+    width: var(--w, 45%);
+    background: linear-gradient(90deg, #5be3c6, #47c7ff);
+  }
+
+  @media (max-width: 980px) {
+    .app { grid-template-columns: 1fr; }
+    .sidebar { position: static; height: auto; }
+    .content { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+  <div class="app">
+    <aside class="sidebar">
+      <h1>VoidYield UI Catalog</h1>
+      <p class="subtitle">Interactive menu mock browser for every game UI surface listed in the catalog.</p>
+      <input class="search" id="search" placeholder="Filter menus…" />
+      <div class="list" id="menuList"></div>
+    </aside>
+
+    <main class="main">
+      <section class="shell">
+        <div class="shell-header">
+          <div>
+            <strong id="title">HUD</strong>
+            <div id="purpose" class="subtitle" style="margin: 4px 0 0;"></div>
+          </div>
+          <span id="keyHint" class="key">Always visible</span>
+        </div>
+
+        <div class="content">
+          <article class="panel mock-screen" id="mockScreen"></article>
+
+          <article class="panel">
+            <h3>Open / Close</h3>
+            <p id="lifecycle" class="subtitle" style="margin-bottom: 10px;"></p>
+
+            <h3>Interactions</h3>
+            <ul id="interactions"></ul>
+
+            <h3 style="margin-top: 12px;">Tags</h3>
+            <div id="tags" class="chips"></div>
+          </article>
+        </div>
+      </section>
+    </main>
+  </div>
+
+<script>
+const MENUS = [
+  {name:'HUD', key:'Always on', group:'HUD', purpose:'Heads-up display for resources, storage, credits, drones, and outpost.', lifecycle:'Mounted with scene and never closes.', tags:['read-only','reactive'], elements:['Outpost header','Resource rows','Storage bar','Credits chip','Drones chip'], interactions:['No direct interactions.','Auto-updates from game state.']},
+  {name:'PopulationHUD', key:'Always on', group:'HUD', purpose:'Compact colony status panel with fulfillment bars and productivity.', lifecycle:'Always visible after mount.', tags:['read-only','critical-state'], elements:['Pioneers count','Gas fill bar','H2O fill bar','Productivity %'], interactions:['No input actions.','Responds to population and needs events.']},
+  {name:'TouchMenuOverlay', key:'M', group:'Global', purpose:'Touch-first master menu that exposes all actions and overlays.', lifecycle:'Toggle with M or menu button. Closes on outside click.', tags:['touch','navigation'], elements:['Menu toggle','Views section','Overlays section','Tools section','System section'], interactions:['Dispatches mapped InputAction when item is tapped.','Closes after selection.']},
+  {name:'GalaxyMap', key:'G', group:'Global', purpose:'Planet network modal used to travel between unlocked worlds.', lifecycle:'Toggle with G. Close with backdrop or close button.', tags:['travel','modal'], elements:['Backdrop','Header with close','Route graph','Planet nodes','Travel button'], interactions:['Travel button emits selected planet id.','Current/locked planets are non-interactive.']},
+  {name:'BuildMenuOverlay', key:'N', group:'Build', purpose:'Build catalog with costs, affordance state, and move mode list.', lifecycle:'Toggle with N. Closes on action selection.', tags:['build','placement'], elements:['Header','Resource readout','Buildable list','Placed buildings list'], interactions:['Start build for affordable entries.','Road mode and move mode actions close panel.']},
+  {name:'ProductionDashboard', key:'P', group:'Diagnostics', purpose:'Production and net resource bottleneck summary panel.', lifecycle:'Toggle with P.', tags:['analytics','read-only'], elements:['Header','Resource table','Stall warning flag','Empty state'], interactions:['No direct controls.','Filters zero-activity rows.']},
+  {name:'FleetPanel', key:'T', group:'Diagnostics', purpose:'Read-only roster showing fleet state and active tasks.', lifecycle:'Toggle with T.', tags:['fleet','read-only'], elements:['Header','Drone roster rows','Active/idle footer','Empty state'], interactions:['No interactions.']},
+  {name:'SurveyOverlay', key:'Q', group:'Diagnostics', purpose:'Active survey HUD: detections, scan progress, and result card.', lifecycle:'Shows while survey mode is active. M marks waypoint.', tags:['survey','overlay'], elements:['Header with hints','Detection list','Scan stage + percent','Result card'], interactions:['Q exits survey mode.','M marks waypoint.']},
+  {name:'LogisticsOverlay', key:'L', group:'Diagnostics', purpose:'Trade route board with status, ETA, trips, and manual dispatch.', lifecycle:'Opened via map context or toggle.', tags:['logistics','dispatch'], elements:['Header with route count','Route table','Progress bars','Dispatch button','Empty state'], interactions:['Dispatch button calls onDispatch(routeId).']},
+  {name:'DroneManagementPanel', key:'Menu / Bay', group:'Building', purpose:'Unified drone allocation, roster management, and drone purchase.', lifecycle:'Open from touch menu or drone bay/depot panels.', tags:['drones','management'], elements:['Header status','Allocation section','Drone roster','Buy drone section'], interactions:['Allocate +/- miners by ore.','Destroy with confirmation.','Buy when slot and credits allow.']},
+  {name:'ShopPanel', key:'E near terminal', group:'Building', purpose:'Commerce terminal with upgrades, market, and preview build tab.', lifecycle:'Open/close with E or Esc while in range.', tags:['market','tabs'], elements:['Header','Credits chip','Tab strip','Tab content','Footer hint'], interactions:['Switch tabs.','Buy upgrades.','Buy/sell marketplace resources.']},
+  {name:'ShipBayPanel', key:'E near launchpad', group:'Building', purpose:'Rocket assembly checklist, fuel load, and launch trigger.', lifecycle:'Open with E at launchpad.', tags:['launch','progression'], elements:['Fuel gauge','Assembly status','5 component rows','Load fuel button','Launch button'], interactions:['Buy missing components.','Load fuel from depot.','Launch when requirements are met.']},
+  {name:'DebugOverlay', key:'~', group:'System', purpose:'Developer tools for resources, time skip, unlocks, and HUD scale.', lifecycle:'Hidden by default. Toggle with ~ or debug button.', tags:['debug','tools'], elements:['Action grid','UI scale slider','Quick set scale buttons','Status line'], interactions:['Buttons call debug API actions.','Slider persists user HUD scale in localStorage.']},
+  {name:'OfflineDispatchPanel', key:'Event', group:'Modal', purpose:'Welcome-back summary for offline simulation results.', lifecycle:'Shown from offline simulation completion event.', tags:['offline','summary'], elements:['Duration line','Stats grid','Recent activity list','View dashboard button'], interactions:['View dashboard closes panel and emits dispatch event.']},
+  {name:'PrestigePanel', key:'Event', group:'Modal', purpose:'Choose one sector bonus to carry into the next cycle.', lifecycle:'Shown after sector completion flow.', tags:['prestige','meta-progression'], elements:['Title and subtitle','Bonus card grid','Owned marker','Back button'], interactions:['Select bonus applies prestige reset.','Back returns to sector complete overlay.']},
+];
+
+const menuList = document.getElementById('menuList');
+const search = document.getElementById('search');
+const title = document.getElementById('title');
+const purpose = document.getElementById('purpose');
+const keyHint = document.getElementById('keyHint');
+const lifecycle = document.getElementById('lifecycle');
+const interactions = document.getElementById('interactions');
+const tags = document.getElementById('tags');
+const mockScreen = document.getElementById('mockScreen');
+
+let selected = MENUS[0].name;
+
+function renderList() {
+  const q = search.value.trim().toLowerCase();
+  const filtered = MENUS.filter(m => `${m.name} ${m.group} ${m.tags.join(' ')}`.toLowerCase().includes(q));
+  menuList.innerHTML = '';
+  filtered.forEach(menu => {
+    const btn = document.createElement('button');
+    btn.className = `item ${menu.name === selected ? 'active' : ''}`;
+    btn.innerHTML = `<span class="name">${menu.name}</span><span class="meta">${menu.group} · ${menu.key}</span>`;
+    btn.onclick = () => { selected = menu.name; render(); };
+    menuList.appendChild(btn);
+  });
+
+  if (!filtered.some(m => m.name === selected) && filtered[0]) {
+    selected = filtered[0].name;
+  }
+  if (filtered.length === 0) {
+    menuList.innerHTML = '<div class="subtitle">No menus match this filter.</div>';
+  }
+}
+
+function renderDetails(menu) {
+  title.textContent = menu.name;
+  purpose.textContent = menu.purpose;
+  keyHint.textContent = menu.key;
+  lifecycle.textContent = menu.lifecycle;
+
+  interactions.innerHTML = menu.interactions.map(line => `<li>${line}</li>`).join('');
+  tags.innerHTML = menu.tags.map(t => `<span class="chip">${t}</span>`).join('');
+
+  mockScreen.innerHTML = `
+    <div class="chips"><span class="chip status">${menu.group}</span><span class="chip">Menu Mock</span></div>
+    <strong>${menu.name}</strong>
+    ${menu.elements.map(el => `<div>• ${el}</div>`).join('')}
+    <div class="bar"><span>Sample state</span><div class="track"><div class="fill" style="--w:${Math.max(20, Math.min(90, menu.elements.length * 12))}%"></div></div></div>
+  `;
+}
+
+function render() {
+  renderList();
+  const menu = MENUS.find(m => m.name === selected) || MENUS[0];
+  renderDetails(menu);
+}
+
+search.addEventListener('input', render);
+render();
+</script>
+</body>
+</html>
