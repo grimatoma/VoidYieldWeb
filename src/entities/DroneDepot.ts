@@ -59,8 +59,8 @@ export class DroneDepot implements IDroneBay {
     this.container.x = worldX;
     this.container.y = worldY;
 
-    const w = 2 * CELL_SIZE - 4;
-    const h = 2 * CELL_SIZE - 4;
+    const w = CELL_SIZE - 4;
+    const h = CELL_SIZE - 4;
 
     const body = new Graphics();
     body.rect(-w / 2, -h / 2, w, h).fill(0x3A1A5C);

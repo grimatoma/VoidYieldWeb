@@ -19,9 +19,8 @@ export class Marketplace {
     this.container.x = worldX;
     this.container.y = worldY;
 
-    // 2×1 footprint: 2×CELL_SIZE wide, 1×CELL_SIZE tall, minus 4px padding
-    const w = 2 * CELL_SIZE - 4;
-    const h = 1 * CELL_SIZE - 4;
+    const w = CELL_SIZE - 4;
+    const h = CELL_SIZE - 4;
 
     const body = new Graphics();
     body.rect(-w / 2, -h / 2, w, h).fill(0x1A5C2A);
