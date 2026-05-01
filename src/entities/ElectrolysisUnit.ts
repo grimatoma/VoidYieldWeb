@@ -29,8 +29,8 @@ export class ElectrolysisUnit {
     this.container.x = worldX;
     this.container.y = worldY;
 
-    const w = 2 * CELL_SIZE - 4;
-    const h = 3 * CELL_SIZE - 4;
+    const w = CELL_SIZE - 4;
+    const h = CELL_SIZE - 4;
 
     const body = new Graphics();
     body.rect(-w / 2, -h / 2, w, h).fill(0x0A2A3A);

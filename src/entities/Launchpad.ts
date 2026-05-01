@@ -37,6 +37,8 @@ export class Launchpad {
     const padAnim = makeAnimatedSprite('sheet_launchpad', { frameCount: 8, frameWidth: 96, frameHeight: 96 });
     if (padAnim) {
       padAnim.anchor.set(0.5);
+      padAnim.width = 80;
+      padAnim.height = 80;
       this.container.addChild(padAnim);
     } else if (assetManager.has('building_launch_pad')) {
       const s = new Sprite(assetManager.texture('building_launch_pad'));
@@ -45,8 +47,8 @@ export class Launchpad {
       s.height = 72;
       this.container.addChild(s);
     } else {
-      this.body.rect(-32, -40, 64, 80).fill(0x1A2A1A);
-      this.body.rect(-32, -40, 64, 80).stroke({ width: 2, color: 0xD4A843 });
+      this.body.rect(-30, -30, 60, 60).fill(0x1A2A1A);
+      this.body.rect(-30, -30, 60, 60).stroke({ width: 2, color: 0xD4A843 });
       this.container.addChild(this.body);
     }
 
