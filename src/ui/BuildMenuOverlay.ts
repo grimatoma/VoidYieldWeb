@@ -23,14 +23,14 @@ const BUILDABLE: BuildingDef[] = [
   {
     type: 'drone_depot',
     label: 'Drone Bay',
-    footprintLabel: '2×2',
+    footprintLabel: '1×1',
     ironBarCost: 6,
     copperBarCost: 0,
   },
   {
     type: 'marketplace',
     label: 'Marketplace',
-    footprintLabel: '2×2',
+    footprintLabel: '1×1',
     ironBarCost: 4,
     copperBarCost: 2,
   },
@@ -45,14 +45,14 @@ const BUILDABLE: BuildingDef[] = [
   {
     type: 'electrolysis_unit',
     label: 'Electrolysis Unit',
-    footprintLabel: '2×3',
+    footprintLabel: '1×1',
     ironBarCost: 6,
     copperBarCost: 4,
   },
   {
     type: 'launchpad',
     label: 'Launchpad',
-    footprintLabel: '3×3',
+    footprintLabel: '1×1',
     ironBarCost: 30,
     copperBarCost: 15,
   },

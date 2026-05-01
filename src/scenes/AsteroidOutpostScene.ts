@@ -70,10 +70,10 @@ const BUILD_COSTS: Record<string, { iron_bar: number; copper_bar: number }> = {
 
 // Footprints matching the build menu definitions (TDD §2)
 const BUILD_FOOTPRINTS: Record<string, GridFootprint> = {
-  marketplace:       { rows: 1, cols: 2 },
-  drone_depot:       { rows: 2, cols: 2 },
-  electrolysis_unit: { rows: 3, cols: 2 },
-  launchpad:         { rows: 3, cols: 3 },
+  marketplace:       { rows: 1, cols: 1 },
+  drone_depot:       { rows: 1, cols: 1 },
+  electrolysis_unit: { rows: 1, cols: 1 },
+  launchpad:         { rows: 1, cols: 1 },
 };
 
 export class AsteroidOutpostScene implements Scene {
@@ -935,28 +935,28 @@ export class AsteroidOutpostScene implements Scene {
     buildGrid.place({ buildingId: 'furnace_0', buildingType: 'furnace', row: 2, col: 1, footprint: { rows: 1, cols: 1 } });
     this._buildingLayer!.addChild(this._furnace.container);
 
-    // Fabricator placeholder (2×2) at [0,0] — always pre-placed; [E] opens Build Menu
-    buildGrid.place({ buildingId: 'fabricator_0', buildingType: 'fabricator', row: 0, col: 0, footprint: { rows: 2, cols: 2 } });
-    const fabPb = new PlacedBuilding('fabricator_0', 'fabricator', 0, 0, { rows: 2, cols: 2 });
+    // Fabricator placeholder (1×1) at [0,0] — always pre-placed; [E] opens Build Menu
+    buildGrid.place({ buildingId: 'fabricator_0', buildingType: 'fabricator', row: 0, col: 0, footprint: { rows: 1, cols: 1 } });
+    const fabPb = new PlacedBuilding('fabricator_0', 'fabricator', 0, 0, { rows: 1, cols: 1 });
     this._placedBuildings.push(fabPb);
     this._buildingLayer!.addChild(fabPb.container);
 
-    // Drone Depot (2×2) at [0,3] (top right)
+    // Drone Depot (1×1) at [0,3] (top right)
     const depotFootprint = BUILD_FOOTPRINTS['drone_depot'];
     buildGrid.place({ buildingId: 'drone_depot_0', buildingType: 'drone_depot', row: 0, col: 3, footprint: depotFootprint });
     this._spawnBuilding('drone_depot', 'drone_depot_0', 0, 3, depotFootprint);
 
-    // Marketplace (1×2) at [2,2] — pre-built
+    // Marketplace (1×1) at [2,2] — pre-built
     const marketFootprint = BUILD_FOOTPRINTS['marketplace'];
     buildGrid.place({ buildingId: 'marketplace_0', buildingType: 'marketplace', row: 2, col: 2, footprint: marketFootprint });
     this._spawnBuilding('marketplace', 'marketplace_0', 2, 2, marketFootprint);
 
-    // Electrolysis Unit (3×2) at [3,0] — pre-built
+    // Electrolysis Unit (1×1) at [3,0] — pre-built
     const elecFootprint = BUILD_FOOTPRINTS['electrolysis_unit'];
     buildGrid.place({ buildingId: 'electrolysis_0', buildingType: 'electrolysis_unit', row: 3, col: 0, footprint: elecFootprint });
     this._spawnBuilding('electrolysis_unit', 'electrolysis_0', 3, 0, elecFootprint);
 
-    // Launchpad (3×3) at [3,2] — pre-built
+    // Launchpad (1×1) at [3,2] — pre-built
     const lpadFootprint = BUILD_FOOTPRINTS['launchpad'];
     buildGrid.place({ buildingId: 'launchpad_0', buildingType: 'launchpad', row: 3, col: 2, footprint: lpadFootprint });
     this._spawnBuilding('launchpad', 'launchpad_0', 3, 2, lpadFootprint);
