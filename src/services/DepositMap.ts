@@ -59,6 +59,15 @@ export class DepositMap {
     return nearest;
   }
 
+  /** Returns true if at least one non-exhausted deposit of the given ore type
+   *  exists on the current planet. Used to show "no deposits" warnings in UI. */
+  hasAnyDeposit(oreType: OreType): boolean {
+    for (const dep of this.deposits.values()) {
+      if (!dep.data.isExhausted && dep.data.oreType === oreType) return true;
+    }
+    return false;
+  }
+
   /** Release any deposit claims held by `droneId`. Safe no-op when the drone
    * isn't claiming anything. Called when a drone is disabled/cleared. */
   releaseClaimsBy(droneId: string): void {

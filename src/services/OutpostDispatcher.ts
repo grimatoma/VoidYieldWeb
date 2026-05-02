@@ -8,6 +8,10 @@ import { fleetManager } from './FleetManager';
 import type { BaySlot } from '@services/DroneBayRegistry';
 import type { DroneTask, DroneType } from '@data/types';
 
+/** Squared distance threshold — drones within this range of the depot are
+ *  considered "docked" and will be parked (disabled) when unallocated. */
+const DOCK_RADIUS_SQ = 400; // 20 px
+
 /** Kept for save-load compat — no longer used at runtime. */
 export interface DroneBaySlotData {
   slotId?: string;
@@ -66,7 +70,7 @@ export class OutpostDispatcher {
       if (!MINER_TYPES.has(drone.droneType)) continue;
 
       if (drone.orePreference === null) {
-        // Unallocated: cancel any active MINE task and return to depot.
+        // Unallocated: cancel any active MINE task and return to depot, then park.
         const firstTask = drone.getTasks()[0];
         if (firstTask?.type === 'MINE') {
           drone.clearTasks();
@@ -79,17 +83,22 @@ export class OutpostDispatcher {
               executeDurationSec: 0,
             });
           }
-        } else if (drone.state === 'IDLE' && drone.getTasks().length === 0 && this._depotPos) {
-          // Already idle (e.g. finished a CARRY drop-off); drift back to depot.
-          const dx = drone.x - this._depotPos.x;
-          const dy = drone.y - this._depotPos.y;
-          if (dx * dx + dy * dy > 400) {
-            drone.pushTask({
-              type: 'CARRY',
-              targetX: this._depotPos.x,
-              targetY: this._depotPos.y,
-              executeDurationSec: 0,
-            });
+        } else if (drone.state === 'IDLE' && drone.getTasks().length === 0) {
+          if (this._depotPos) {
+            const dx = drone.x - this._depotPos.x;
+            const dy = drone.y - this._depotPos.y;
+            if (dx * dx + dy * dy > DOCK_RADIUS_SQ) {
+              // Not at depot yet — keep drifting back.
+              drone.pushTask({
+                type: 'CARRY',
+                targetX: this._depotPos.x,
+                targetY: this._depotPos.y,
+                executeDurationSec: 0,
+              });
+            } else {
+              // Docked at depot with no assignment — park (despawn from active fleet).
+              fleetManager.setDroneDisabled(drone.id, true);
+            }
           }
         }
         continue;
@@ -100,7 +109,22 @@ export class OutpostDispatcher {
       const deposit = depositMap.getNearestUnclaimedDeposit(
         drone.x, drone.y, drone.orePreference,
       );
-      if (!deposit) continue;
+      if (!deposit) {
+        // Allocated but no unclaimed deposit available — return to depot and wait.
+        if (this._depotPos) {
+          const dx = drone.x - this._depotPos.x;
+          const dy = drone.y - this._depotPos.y;
+          if (dx * dx + dy * dy > DOCK_RADIUS_SQ) {
+            drone.pushTask({
+              type: 'CARRY',
+              targetX: this._depotPos.x,
+              targetY: this._depotPos.y,
+              executeDurationSec: 0,
+            });
+          }
+        }
+        continue;
+      }
       if (!deposit.claim(drone.id)) continue;
 
       drone.pushTask({
