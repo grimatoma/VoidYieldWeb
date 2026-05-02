@@ -1,7 +1,5 @@
-import { Container, Graphics, Sprite, AnimatedSprite } from 'pixi.js';
+import { Container, Graphics, Text, TextStyle } from 'pixi.js';
 import type { DepositData, QualityLot, OreType, SizeClass } from '@data/types';
-import { assetManager, type AssetKey } from '@services/AssetManager';
-import { makeAnimatedSprite, type SheetSpec } from '@services/SpriteSheetHelper';
 
 const ORE_COLORS: Record<OreType, number> = {
   vorax: 0xFF8C42,
@@ -40,46 +38,89 @@ const ORE_COLORS: Record<OreType, number> = {
   hydrolox_fuel: 0x00E5FF,
 };
 
-/** Legacy icon keys for ore inventory display (small icons, not deposit nodes). */
-const ORE_ICON_KEYS: Partial<Record<OreType, AssetKey>> = {
-  vorax: 'ore_vorax',
-  krysite: 'ore_krysite',
-  aethite: 'ore_aethite',
-  shards: 'ore_shards',
+/** Base icon radius per size class. */
+const SIZE_RADIUS: Record<SizeClass, number> = {
+  small: 14,
+  medium: 20,
+  large: 28,
 };
 
-/** Deposit node sheet specs: frameCount, frameWidth, frameHeight per sizeClass. */
-const DEPOSIT_SPECS: Record<SizeClass, SheetSpec> = {
-  small:  { frameCount: 6, frameWidth: 44, frameHeight: 36 },
-  medium: { frameCount: 6, frameWidth: 64, frameHeight: 52 },
-  large:  { frameCount: 6, frameWidth: 80, frameHeight: 64 },
-};
+// ── icon drawing helpers ─────────────────────────────────────────────────────
 
-/** Special deposit sheet specs (not size-classed). */
-const SPECIAL_DEPOSIT_SPECS: Partial<Record<OreType, SheetSpec>> = {
-  dark_gas:        { frameCount: 8, frameWidth: 56, frameHeight: 64 },
-  resonance_shards:{ frameCount: 8, frameWidth: 64, frameHeight: 80 },
-  bio_resin:       { frameCount: 8, frameWidth: 48, frameHeight: 56 },
-};
+function drawIronOre(g: Graphics, r: number): void {
+  const h = r * 0.78;
+  // Main rock body: flat-topped hexagon
+  g.poly([-r, 0, -r * 0.45, -h, r * 0.45, -h, r, 0, r * 0.45, h * 0.6, -r * 0.45, h * 0.6]);
+  g.fill({ color: 0x7A8B9A });
+  g.stroke({ width: 1.5, color: 0x334455 });
+  // Facet lines — suggest split rock faces
+  g.moveTo(-r * 0.45, -h); g.lineTo(0, 0);
+  g.stroke({ width: 1, color: 0x445566 });
+  g.moveTo(r * 0.45, -h); g.lineTo(0, 0);
+  g.stroke({ width: 1, color: 0x556677 });
+  // Top face highlight
+  g.poly([-r * 0.45, -h, 0, -h * 1.32, r * 0.45, -h, 0, -h * 0.62]);
+  g.fill({ color: 0xAABBCC });
+  // Iron-oxide vein spots (rust red)
+  g.circle(-r * 0.22, -r * 0.18, r * 0.13); g.fill(0x993322);
+  g.circle(r * 0.18, r * 0.08, r * 0.10);  g.fill(0x883322);
+  g.circle(r * 0.01, -r * 0.32, r * 0.08); g.fill(0x993322);
+}
 
-/** Map ore type + size to deposit node animated sheet key. */
-function depositSheetKey(oreType: OreType, sizeClass: SizeClass): AssetKey | null {
+function drawCopperOre(g: Graphics, r: number): void {
+  // Three rounded nodules — characteristic copper mineral cluster
+  // Back-left nodule (darkest)
+  g.circle(-r * 0.38, r * 0.12, r * 0.52);
+  g.fill({ color: 0xAA5A20 }); g.stroke({ width: 1, color: 0x7A3010 });
+  // Back-right nodule
+  g.circle(r * 0.38, r * 0.15, r * 0.48);
+  g.fill({ color: 0xBB6825 }); g.stroke({ width: 1, color: 0x7A3010 });
+  // Front-centre nodule (largest, brightest)
+  g.circle(0, -r * 0.18, r * 0.62);
+  g.fill({ color: 0xD4783A }); g.stroke({ width: 1.5, color: 0x7A3010 });
+  // Highlight gleam
+  g.circle(-r * 0.14, -r * 0.44, r * 0.17); g.fill({ color: 0xE89850, alpha: 0.55 });
+}
+
+function drawWater(g: Graphics, r: number): void {
+  // Oval pool
+  g.ellipse(0, 0, r, r * 0.55);
+  g.fill({ color: 0x1A7ABF }); g.stroke({ width: 1.5, color: 0x0A4A8F });
+  // Inner lighter ring (depth shimmer)
+  g.ellipse(0, -r * 0.06, r * 0.64, r * 0.34); g.fill({ color: 0x3AB0E0, alpha: 0.45 });
+  // Two wave lines
+  const w1 = -r * 0.07;
+  g.moveTo(-r * 0.48, w1); g.lineTo(-r * 0.24, w1 - r * 0.09);
+  g.lineTo(0, w1);          g.lineTo(r * 0.24, w1 + r * 0.09);
+  g.lineTo(r * 0.48, w1);
+  g.stroke({ width: 1, color: 0x80D8F8 });
+  const w2 = r * 0.10;
+  g.moveTo(-r * 0.32, w2); g.lineTo(-r * 0.16, w2 - r * 0.07);
+  g.lineTo(r * 0.16, w2 + r * 0.07); g.lineTo(r * 0.32, w2);
+  g.stroke({ width: 1, color: 0x80D8F8 });
+}
+
+function drawGenericMineral(g: Graphics, oreType: OreType, r: number): void {
+  const color = ORE_COLORS[oreType] ?? 0x888888;
+  // Central crystal + two satellites — readable cluster for any ore type
+  g.circle(0, 0, r * 0.6);
+  g.fill({ color }); g.stroke({ width: 1.5, color: 0x000000, alpha: 0.4 });
+  g.circle(-r * 0.52, 0, r * 0.33);
+  g.fill({ color }); g.stroke({ width: 1, color: 0x000000, alpha: 0.4 });
+  g.circle(r * 0.48, -r * 0.14, r * 0.28);
+  g.fill({ color }); g.stroke({ width: 1, color: 0x000000, alpha: 0.4 });
+}
+
+function drawDepositIcon(g: Graphics, oreType: OreType, r: number): void {
   switch (oreType) {
-    case 'vorax':     return `deposit_vorax_${sizeClass}` as AssetKey;
-    case 'krysite':   return `deposit_krysite_${sizeClass}` as AssetKey;
-    case 'aethite':   return `deposit_aethite_${sizeClass}` as AssetKey;
-    case 'void_cores':
-    case 'void_touched_ore': return `deposit_voidstone_${sizeClass}` as AssetKey;
-    case 'gas':       return sizeClass === 'large' ? 'deposit_gas_large' : 'deposit_gas_small';
-    case 'dark_gas':   return 'deposit_dark_gas_geyser';
-    case 'resonance_shards': return 'deposit_resonance_crystal';
-    case 'bio_resin':  return 'deposit_bio_resin_flora';
-    case 'iron_ore':   return `deposit_iron_ore_${sizeClass}` as AssetKey;
-    case 'copper_ore': return `deposit_copper_ore_${sizeClass}` as AssetKey;
-    case 'water':      return `deposit_water_${sizeClass}` as AssetKey;
-    default:           return null;
+    case 'iron_ore':   drawIronOre(g, r);   break;
+    case 'copper_ore': drawCopperOre(g, r); break;
+    case 'water':      drawWater(g, r);     break;
+    default:           drawGenericMineral(g, oreType, r);
   }
 }
+
+// ────────────────────────────────────────────────────────────────────────────
 
 /** Deposit state — mirrors legacy ore_node.gd FULL / CRACKED / DEPLETED. */
 export type DepositState = 'FULL' | 'CRACKED' | 'DEPLETED';
@@ -87,10 +128,10 @@ export type DepositState = 'FULL' | 'CRACKED' | 'DEPLETED';
 export class Deposit {
   readonly container: Container;
   readonly data: DepositData;
-  private sprite: Sprite | AnimatedSprite | null = null;
-  private fallback: Graphics | null = null;
+  private _icon: Graphics | null = null;
+  private _label: Text | null = null;
   private _initialYield: number;
-  private _holdProgress = 0; // 0..1 — live hold-to-mine progress, set by MiningService
+  private _holdProgress = 0;
   // Drone claim per GDD §11: only one drone targets a node at a time; others
   // skip it. Cleared when the drone releases it or the deposit is depleted.
   private _claimedBy: string | null = null;
@@ -142,7 +183,7 @@ export class Deposit {
     this.data.yieldRemaining -= actual;
     if (this.data.yieldRemaining <= 0) {
       this.data.isExhausted = true;
-      this._claimedBy = null; // auto-release on depletion
+      this._claimedBy = null;
     }
     this._applyState();
     return { oreType: this.data.oreType, quantity: actual, attributes: this.data.qualityAttributes ?? {} };
@@ -165,59 +206,39 @@ export class Deposit {
   }
 
   private _buildVisual(): void {
-    const sheetKey = depositSheetKey(this.data.oreType, this.data.sizeClass);
-    const specialSpec = SPECIAL_DEPOSIT_SPECS[this.data.oreType];
-    const spec = specialSpec ?? DEPOSIT_SPECS[this.data.sizeClass];
+    const r = SIZE_RADIUS[this.data.sizeClass];
+    const g = new Graphics();
+    drawDepositIcon(g, this.data.oreType, r);
+    this._icon = g;
+    this.container.addChild(g);
 
-    if (sheetKey) {
-      const anim = makeAnimatedSprite(sheetKey, spec, 0.07);
-      if (anim) {
-        anim.anchor.set(0.5);
-        this.sprite = anim;
-        this.container.addChild(anim);
-        return;
-      }
-    }
-
-    // Fallback: legacy icon or colour circle
-    const iconKey = ORE_ICON_KEYS[this.data.oreType];
-    if (iconKey && assetManager.has(iconKey)) {
-      this.sprite = new Sprite(assetManager.texture(iconKey));
-      this.sprite.anchor.set(0.5);
-      this.sprite.width = 32;
-      this.sprite.height = 32;
-      this.container.addChild(this.sprite);
-    } else {
-      this.fallback = new Graphics();
-      this.fallback.circle(0, 0, 12);
-      this.fallback.fill(ORE_COLORS[this.data.oreType]);
-      this.container.addChild(this.fallback);
-    }
+    const raw = this.data.oreType.replace(/_/g, ' ').toUpperCase();
+    const label = new Text({
+      text: raw,
+      style: new TextStyle({
+        fontFamily: 'monospace',
+        fontSize: 7,
+        fill: 0xD4A843,
+        align: 'center',
+      }),
+    });
+    label.anchor.set(0.5, 0);
+    label.y = r + 4;
+    this._label = label;
+    this.container.addChild(label);
   }
 
   private _applyState(): void {
-    // Tint mirrors legacy ore_node.gd: white (full), ~C8A078 (cracked), 555555 (depleted)
+    // Tint/alpha mirrors legacy ore_node.gd: white (full), warm-tan (cracked), dark (depleted)
     let tint = 0xFFFFFF;
     let alpha = 1.0;
     switch (this.state) {
-      case 'CRACKED': tint = 0xC8A078; break;
+      case 'CRACKED':  tint = 0xC8A078; break;
       case 'DEPLETED': tint = 0x555555; alpha = 0.55; break;
-      default: tint = 0xFFFFFF;
+      default: break;
     }
-    if (this.sprite) {
-      this.sprite.tint = tint;
-      this.sprite.alpha = alpha;
-    } else if (this.fallback) {
-      this.fallback.clear();
-      const color = this.data.isExhausted
-        ? 0x555555
-        : this.state === 'CRACKED'
-          ? 0xC8A078
-          : ORE_COLORS[this.data.oreType];
-      this.fallback.circle(0, 0, 12);
-      this.fallback.fill(color);
-      this.fallback.alpha = alpha;
-    }
+    if (this._icon)  { this._icon.tint  = tint; this._icon.alpha  = alpha; }
+    if (this._label) { this._label.alpha = alpha; }
   }
 
   serialize(): DepositData {
