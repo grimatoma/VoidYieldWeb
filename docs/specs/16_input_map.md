@@ -41,6 +41,7 @@ Before adding any new key binding to any spec file, check this document. If the 
 | [M] | Toggle on-screen Menu overlay (same entries as the MENU button) | Touch Menu Overlay | 14_ui_systems |
 | [P] | Production Dashboard | Production Dashboard | 14_ui_systems §6 |
 | [J] | Survey Journal / Deposit log | Survey Journal | 14_ui_systems §9 |
+| [H] | Drone Management Panel (Hangar) | Drone Management Panel | 04_drone_swarm |
 | [T] | Fleet / Drone Traffic Overlay | Fleet Command / Traffic Overlay | 04_drone_swarm §7, 14_ui_systems §3 |
 | [G] | Galaxy Map | Galaxy Map | 09_planets §4, 14_ui_systems §9 |
 | [L] | Offline Event Log / Logistics Overlay (when Galaxy Map is open) | Offline Event Log / Logistics Overlay | 07_logistics §8, 14_ui_systems §8 |
@@ -137,6 +138,7 @@ Controller bindings should be remappable in Settings → Controls.
 | Q | Survey Tool |
 | Z | Zone paint tool |
 | R | Retool factory |
+| H | Drone Management Panel (Hangar) |
 | T | Fleet Panel / Traffic Overlay |
 | F | Fleet Dispatch shortcut |
 | G | Galaxy Map |
@@ -170,6 +172,7 @@ interact
 survey_tool_toggle
 zone_paint
 retool_factory
+drone_management
 fleet_panel
 fleet_dispatch
 galaxy_map

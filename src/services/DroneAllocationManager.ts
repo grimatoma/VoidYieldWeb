@@ -63,13 +63,14 @@ class DroneAllocationManager {
       // Reset all miner ore preferences
       for (const drone of miners) drone.orePreference = null;
 
-      // Assign preferences per allocation table
+      // Assign preferences per allocation table; re-enable any parked drones.
       let unassigned = [...miners];
       for (const [ore, count] of this._minerAlloc) {
         let assigned = 0;
         unassigned = unassigned.filter(drone => {
           if (assigned < count && drone.orePreference === null) {
             drone.orePreference = ore;
+            drone.disabled = false;
             assigned++;
             return false;
           }

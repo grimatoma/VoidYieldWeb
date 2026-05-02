@@ -11,6 +11,11 @@ vi.mock('@services/FleetManager', () => ({
   fleetManager: {
     getIdleDrones: () => _mockDrones.filter(d => d.state === 'IDLE' && d.getTasks().length === 0),
     getDronesByType: (type: string) => _mockDrones.filter(d => d.droneType === type),
+    setDroneDisabled: vi.fn((id: string, disabled: boolean) => {
+      const drone = _mockDrones.find(d => d.id === id);
+      if (drone) drone.disabled = disabled;
+      return { disabled, ok: !!drone };
+    }),
   },
 }));
 
@@ -191,19 +196,24 @@ describe('OutpostDispatcher', () => {
     expect(miner.pushTask).toHaveBeenCalledTimes(2); // MINE + CARRY
   });
 
-  it('miner skips when getNearestUnclaimedDeposit returns null', () => {
+  it('miner returns to depot when no deposit is available', () => {
     vi.mocked(depositMap.getNearestUnclaimedDeposit).mockReturnValue(null);
 
     const storage = makeStorage();
     const furnace = makeFurnace('iron');
     const miner = makeDrone('d1', 'scout', 'iron_ore');
+    // Drone starts far from depot so return trip is triggered.
+    miner.x = 0; miner.y = 0;
     const slots: MockBaySlot[] = [occupiedSlot(miner)];
 
     dispatcher.configure(storage as any, furnace as any, { x: 500, y: 500 }, slots as any);
     dispatcher.start();
     dispatcher.update(0.016);
 
-    expect(miner.pushTask).not.toHaveBeenCalled();
+    expect(miner.pushTask).toHaveBeenCalledWith(
+      expect.objectContaining({ type: 'CARRY', targetX: 500, targetY: 500 }),
+    );
+    expect(miner.pushTask).not.toHaveBeenCalledWith(expect.objectContaining({ type: 'MINE' }));
   });
 
   it('miner skips disabled drones', () => {
@@ -274,7 +284,7 @@ describe('OutpostDispatcher', () => {
   // Stuck-drone scenarios
   // ──────────────────────────────────────────────────────────────────────────
 
-  it('miner stays IDLE when no deposits match its orePreference', () => {
+  it('miner returns to depot when no deposits match its orePreference', () => {
     // Only copper_ore available; drone prefers iron_ore.
     vi.mocked(depositMap.getNearestUnclaimedDeposit).mockImplementation(
       (_x, _y, orePref) => (orePref === 'copper_ore' ? makeDeposit('copper_ore') as any : null),
@@ -283,17 +293,22 @@ describe('OutpostDispatcher', () => {
     const storage = makeStorage();
     const furnace = makeFurnace('off');
     const miner = makeDrone('d1', 'scout', 'iron_ore');
+    // Drone starts far from depot so return trip is triggered.
+    miner.x = 0; miner.y = 0;
     const slots: MockBaySlot[] = [occupiedSlot(miner)];
 
     dispatcher.configure(storage as any, furnace as any, { x: 500, y: 500 }, slots as any);
     dispatcher.start();
     dispatcher.update(0.016);
 
-    expect(miner.pushTask).not.toHaveBeenCalled();
+    expect(miner.pushTask).toHaveBeenCalledWith(
+      expect.objectContaining({ type: 'CARRY', targetX: 500, targetY: 500 }),
+    );
+    expect(miner.pushTask).not.toHaveBeenCalledWith(expect.objectContaining({ type: 'MINE' }));
     expect(miner.state).toBe('IDLE');
   });
 
-  it('miner stays IDLE when all deposits of its ore type are exhausted', () => {
+  it('miner returns to depot when all deposits of its ore type are exhausted', () => {
     vi.mocked(depositMap.getNearestUnclaimedDeposit).mockReturnValue(null);
 
     const storage = makeStorage();
@@ -308,7 +323,12 @@ describe('OutpostDispatcher', () => {
 
     for (let i = 0; i < 10; i++) dispatcher.update(0.016);
 
-    expect(miner.pushTask).not.toHaveBeenCalled();
+    // First tick pushes exactly one CARRY-to-depot task; subsequent ticks
+    // see tasks.length > 0 and skip — so pushTask is called exactly once.
+    expect(miner.pushTask).toHaveBeenCalledTimes(1);
+    expect(miner.pushTask).toHaveBeenCalledWith(
+      expect.objectContaining({ type: 'CARRY', targetX: 500, targetY: 500 }),
+    );
     expect(miner.state).toBe('IDLE');
   });
 

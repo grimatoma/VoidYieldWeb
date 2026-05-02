@@ -7,14 +7,15 @@
  *   2. ROSTER — all owned drones with live status and Destroy button.
  *   3. BUY — purchase drone types into the first available empty slot.
  *
- * Opened via the touch menu "Drone Management" button or the "Open Drone
- * Management" button on any per-bay simplified panel. No keyboard shortcut.
+ * Opened via the touch menu "Drone Management" button, the "Open Drone
+ * Management" button on any per-bay simplified panel, or the [H] hotkey.
  */
 import { effect } from '@preact/signals-core';
 import { credits, droneCount } from '@store/gameStore';
 import { fleetManager } from '@services/FleetManager';
 import { droneBayRegistry } from '@services/DroneBayRegistry';
 import { droneAllocationManager } from '@services/DroneAllocationManager';
+import { depositMap } from '@services/DepositMap';
 import { EventBus } from '@services/EventBus';
 import type { DroneBase } from '@entities/DroneBase';
 import type { DroneType, OreType } from '@data/types';
@@ -85,6 +86,12 @@ export class DroneManagementPanel {
     this._root.style.display = 'none';
 
     this._onKeydown = (e) => {
+      if (e.code === 'KeyH') {
+        e.preventDefault();
+        e.stopImmediatePropagation();
+        this.toggle();
+        return;
+      }
       if (!this._visible) return;
       if (e.code === 'Escape') {
         e.preventDefault();
@@ -264,6 +271,10 @@ export class DroneManagementPanel {
       const status = droneStatusLabel(d);
       const allocLbl = allocationLabel(d);
 
+      const noDeposit = MINER_TYPES.has(d.droneType)
+        && d.orePreference !== null
+        && !depositMap.hasAnyDeposit(d.orePreference);
+
       const row = document.createElement('div');
       row.className = 'dronebay-roster-row' + (d.disabled ? ' dronebay-roster-row--off' : '');
       row.style.cssText = 'display:flex;align-items:center;gap:8px;padding:4px 0;';
@@ -274,6 +285,7 @@ export class DroneManagementPanel {
         <span class="dronebay-roster-name" style="font-size:12px;">
           ${typeLabel} #${n}
           <span class="dronebay-roster-status" data-status="${status}">${status}</span>
+          ${noDeposit ? '<span style="color:#E53935;font-size:10px;margin-left:4px;" title="No deposits of this ore type on the current planet">⚠ NO DEPOSITS</span>' : ''}
         </span>
         <div style="font-size:10px;color:#888;margin-top:2px;">${allocLbl}</div>
       `;
